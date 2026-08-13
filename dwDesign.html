@@ -177,11 +177,11 @@
               <p class="mb-0 fw-medium" id="excelFileName">Kéo thả hoặc bấm để chọn Excel</p>
               <input type="file" id="excelFileInput" accept=".xlsx, .xls, .xlsm" required onchange="updateFileName('excelFileInput', 'excelFileName', 'text-success')">
             </div>
-            <small class="text-muted" style="font-size: 11px;">*Hệ thống sẽ tự chèn Link PDF vào file Excel này và lưu trữ.</small>
+            <small class="text-muted" style="font-size: 11px;">*Hệ thống sẽ tự động lưu trữ file Excel vào ổ NAS QA.</small>
           </div>
 
           <button type="submit" class="btn btn-submit w-100 mt-2" id="btnSubmitDesign">
-            <i class="bi bi-send-fill me-2"></i>XÁC NHẬN TẢI LÊN
+            <i class="bi bi-send-fill me-2"></i>TẢI FILE
           </button>
         </form>
       </div>
@@ -280,9 +280,10 @@
   // ==========================================
   function buildToDropdownList() {
     if (typeof pageData === 'undefined' || pageData.length === 0) return;
+    const dwDesignData = pageData.filter(row=>row[2]==="Đang thực hiện")
     
     // Tạo mảng từ pageData
-    globalToList = pageData.map(row => {
+    globalToList = dwDesignData.map(row => {
         const id = row[0];
         const phanLoai = row[3]; // Lấy tạm cột chứa Group
         const dwNo = row[11];
@@ -481,7 +482,7 @@
       return;
     }
     
-    let dataRows = pageData;
+    let dataRows = pageData.filter(row => row[2] === "Đang thực hiện");
     
     // Lọc theo Tab (Phân loại - Dùng Cột D index 3: Group - Barsale, OEM, WE SASH)
     dataRows = dataRows.filter(r => {
@@ -580,7 +581,7 @@
        </tr>
        `;
     });
-    tbody.innerHTML = html;
+    tbody.innerHTML = html; 
     updateDwDesignPaginationUI(totalItems, startIdx, endIdx, dwDesignCurrentPage, totalPages);
   }
 

@@ -73,13 +73,13 @@ function submitForApproval(dataId, base64Data, stt) {
     if (dataId && sheet) {
       // 1. Tạo file mới trên Drive từ dữ liệu Local Server trả về
       var decodedData = Utilities.base64Decode(base64Data);
-      var fileName = dataId + "_signed.pdf";
+      var fileName = dataId + ".pdf";
       var blob = Utilities.newBlob(decodedData, 'application/pdf', fileName);
 
       var folder = DriveApp.getFolderById(targetFolderId);
       var newFile = folder.createFile(blob);
 
-      // Cấp quyền xem cho file
+      // Cấp quyền xem cho file 
       try {
         newFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
       } catch (e) {

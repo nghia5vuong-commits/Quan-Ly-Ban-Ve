@@ -949,7 +949,7 @@
             const reqNo = rowInfo[COL.REQ_NO];
             const percent = item.dwTotal > 0 ? Math.round((item.dwApproved / item.dwTotal) * 100) : 0;
             
-            if (String(rowInfo[COL.REJECT_REASON]).trim() !== "" && rowInfo[COL.STATUS] ==="NG" && rowInfo[COL.DEPT] === user.dept && user.position==="Charger") {
+            if (String(rowInfo[COL.REJECT_REASON]).trim() !== "" && rowInfo[COL.STATUS] ==="NG" && rowInfo[COL.DEPT] === user.dept && user.position==="Charger" && rowInfo[COL.TRANGTHAIDW] !=="Đã ban hành") {
                 disabled = "";
             }
             

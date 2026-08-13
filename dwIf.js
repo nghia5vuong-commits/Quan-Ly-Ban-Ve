@@ -615,7 +615,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     var mappedRowData = new Array(33).fill("");
     mappedRowData[0] = autoId;             // A: ID
     mappedRowData[1] = userEmail;          // B: Mail ID
-    mappedRowData[2] = "Chờ Charger";           // C: Status
+    mappedRowData[2] = "Đang thực hiện";           // C: Status
     mappedRowData[3] = group;              // D: Group
     mappedRowData[4] = type;               // E: Type
     mappedRowData[5] = version;                   // F: Drawing Revise

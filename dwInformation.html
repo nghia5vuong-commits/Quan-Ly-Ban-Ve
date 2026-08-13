@@ -352,6 +352,26 @@
         <div class="modal-body p-4 bg-white">
           <div class="row g-3">
             <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">FYE</label>
+              <input type="text" id="formFYE" class="form-control bg-light" placeholder="FYE27" readonly />
+            </div>
+            <div class="col-md-3 col-sm-12">
+              <label class="form-label fw-semibold">Dự án <span class="text-danger">*</span></label>
+              <input type="text" id="formProject" class="form-control" placeholder="Nhập tên dự án..." required />
+            </div>
+            <div class="col-md-3 col-sm-12">
+              <label class="form-label fw-semibold">Người đảm trách <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="fa fa-user"></i></span>
+                <input type="text" id="formAssignee" class="form-control" placeholder="Tên người phụ trách..."
+                  required />
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Ngày tiếp nhận <span class="text-danger">*</span></label>
+              <input type="date" id="formReceivedDate" class="form-control" required />
+            </div>
+            <div class="col-md-3 col-sm-6">
               <label class="form-label fw-semibold">Group <span class="text-danger">*</span></label>
               <select id="formGroup" class="form-select bg-light" required>
                 <option value="Barsale">Barsale</option>
@@ -373,11 +393,6 @@
             <div class="col-md-3 col-sm-6">
               <label class="form-label fw-semibold">TO <span class="text-danger">*</span></label>
               <input type="text" id="formTO" class="form-control" placeholder="Mã TO..." required />
-            </div>
-
-            <div class="col-md-6 col-sm-12">
-              <label class="form-label fw-semibold">Dự án <span class="text-danger">*</span></label>
-              <input type="text" id="formProject" class="form-control" placeholder="Nhập tên dự án..." required />
             </div>
             <div class="col-md-3 col-sm-6">
               <label class="form-label fw-semibold">Số SO</label>
@@ -405,14 +420,6 @@
                 <option value="V8">V8</option>
               </select>
             </div>
-            <div class="col-md-6 col-sm-12">
-              <label class="form-label fw-semibold">Người đảm trách <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <span class="input-group-text bg-light text-muted"><i class="fa fa-user"></i></span>
-                <input type="text" id="formAssignee" class="form-control" placeholder="Tên người phụ trách..."
-                  required />
-              </div>
-            </div>
 
             <div class="col-md-3 col-sm-6">
               <label class="form-label fw-semibold">Width (mm)</label>
@@ -423,17 +430,8 @@
               <input type="number" id="formHeight" class="form-control" placeholder="0" />
             </div>
             <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Ngày tiếp nhận <span class="text-danger">*</span></label>
-              <input type="date" id="formReceivedDate" class="form-control" required />
-            </div>
-            <div class="col-md-3 col-sm-6">
               <label class="form-label fw-semibold">Ngày ĐT hoàn thành</label>
               <input type="date" id="formAssigneeDoneDate" class="form-control" />
-            </div>
-
-            <div class="col-md-2 col-sm-6">
-              <label class="form-label fw-semibold">FYE</label>
-              <input type="text" id="formFYE" class="form-control bg-light" placeholder="FYE27" readonly />
             </div>
             <div class="col-md-6 col-sm-12">
               <label class="form-label fw-semibold">Hình ảnh mặt cắt (File/Link)</label>
