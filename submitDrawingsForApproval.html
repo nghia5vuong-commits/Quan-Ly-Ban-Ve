@@ -1,0 +1,946 @@
+<div class="page-submitDrawingsForApproval p-3 p-md-4 custom-scroll"
+  style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+
+  <style>
+    /* =========================================================
+       CSS SCOPED CHO TRANG TRÌNH KÝ PHÊ DUYỆT (REDESIGN TABLE & TABS)
+       ========================================================= */
+    .page-submitDrawingsForApproval {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #334155;
+    }
+
+    .page-submitDrawingsForApproval .app-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      padding: 20px;
+      min-height: calc(100vh - 110px);
+    }
+
+    /* Tabs Styling giống dwDesign.html */
+    .page-submitDrawingsForApproval .nav-pills .nav-link {
+      color: #64748b;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 8px 20px;
+      border: 1px solid transparent;
+    }
+
+    .page-submitDrawingsForApproval .nav-pills .nav-link.active {
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #1e40af;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Table Styling */
+    .page-submitDrawingsForApproval .table-custom {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.85rem;
+    }
+
+    .page-submitDrawingsForApproval .table-custom th {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .page-submitDrawingsForApproval .table-custom td {
+      padding: 12px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      transition: background 0.2s;
+    }
+
+    .page-submitDrawingsForApproval .table-custom tbody tr.dw-row:hover td {
+      background: #f8fafc;
+      cursor: pointer;
+    }
+
+    .page-submitDrawingsForApproval .table-custom tbody tr.dw-row.open-row td {
+      background: #eff6ff;
+    }
+
+    /* Badge & Pipeline Dots */
+    .page-submitDrawingsForApproval .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    .page-submitDrawingsForApproval .pipeline-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .page-submitDrawingsForApproval .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      transition: transform 0.15s;
+    }
+
+    .page-submitDrawingsForApproval .dot[data-state="done"] {
+      background: #10b981;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+
+    .page-submitDrawingsForApproval .dot[data-state="waiting"] {
+      background: #f59e0b;
+      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
+    }
+
+    .page-submitDrawingsForApproval .dot[data-state="pending"] {
+      background: #cbd5e1;
+    }
+
+    .page-submitDrawingsForApproval .dot-connector {
+      width: 10px;
+      height: 2px;
+      background: #cbd5e1;
+    }
+
+    /* Nút Xem PDF & Actions */
+    .page-submitDrawingsForApproval .btn-view-pdf {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid #c5e1a5;
+      background: #f0f7ea;
+      color: #3f6212;
+      cursor: pointer;
+      transition: all 0.18s;
+      text-decoration: none;
+    }
+
+    .page-submitDrawingsForApproval .btn-view-pdf:hover:not(:disabled) {
+      background: #7CB342;
+      color: #ffffff;
+      border-color: #7CB342;
+    }
+
+    .page-submitDrawingsForApproval .btn-view-pdf:disabled {
+      background: #f1f5f9;
+      color: #94a3b8;
+      border-color: #e2e8f0;
+      cursor: not-allowed;
+    }
+
+    .page-submitDrawingsForApproval .btn-toggle-detail {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #334155;
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .page-submitDrawingsForApproval .btn-toggle-detail:hover {
+      background: #f1f5f9;
+      color: #1e40af;
+    }
+
+    /* Expandable Detail Section (Card Group 3 Cấp Duyệt) */
+    .page-submitDrawingsForApproval .detail-expand-container {
+      padding: 16px 20px;
+      background: #f8fafc;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .page-submitDrawingsForApproval .level-card-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .page-submitDrawingsForApproval .card-level {
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 14px 18px;
+      border: 1.5px solid #e2e8f0;
+      transition: all 0.2s ease;
+    }
+
+    .page-submitDrawingsForApproval .card-level.waiting {
+      border-color: #3b82f6;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.08);
+    }
+
+    .page-submitDrawingsForApproval .card-level.done {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
+    }
+
+    .page-submitDrawingsForApproval .card-level.pending {
+      border-color: #e2e8f0;
+      opacity: 0.75;
+    }
+
+    .page-submitDrawingsForApproval .card-level-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    .page-submitDrawingsForApproval .level-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-submitDrawingsForApproval .level-desc {
+      font-size: 0.81rem;
+      color: #64748b;
+    }
+
+    .page-submitDrawingsForApproval .level-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #e2e8f0;
+    }
+
+    .page-submitDrawingsForApproval .btn-step-approve {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      background: #10b981;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      transition: all 0.18s;
+      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+    }
+
+    .page-submitDrawingsForApproval .btn-step-approve:hover {
+      background: #059669;
+    }
+
+    .page-submitDrawingsForApproval .btn-step-reject {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .page-submitDrawingsForApproval .btn-step-reject:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .page-submitDrawingsForApproval .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: #94a3b8;
+    }
+
+    .page-submitDrawingsForApproval .chip-cust {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #fef3c7;
+      color: #92400e;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+  </style>
+
+  <div class="app-card">
+
+    <!-- HEADER & KHU VỰC LỌC TÌM KIẾM -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+      <h5 class="fw-bold mb-0 text-dark">
+        <i class="bi bi-file-earmark-check-fill me-2 text-primary"></i>Danh sách Trình ký Phê duyệt
+      </h5>
+
+      <!-- Thanh tìm kiếm -->
+      <div class="input-group shadow-sm" style="width: 280px;">
+        <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control border-start-0 ps-0" id="searchApprovalInput"
+          placeholder="Tìm theo TO, DW Code, KH..." oninput="onSearchApprovalInput()">
+      </div>
+    </div>
+
+    <!-- TABS PHÂN LOẠI (BARSALE, OEM, WE SASH, TẤT CẢ) -->
+    <ul class="nav nav-pills mb-3 border-bottom pb-2" id="approvalCategoryTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-approval-all" type="button" onclick="switchApprovalTab('ALL')">Tất cả</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-approval-barsale" type="button" onclick="switchApprovalTab('BARSALE')">Barsale</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-approval-oem" type="button" onclick="switchApprovalTab('OEM')">OEM</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-approval-we" type="button" onclick="switchApprovalTab('WE SASH')">WE SASH</button>
+      </li>
+      <li class="nav-item ms-auto">
+        <button class="btn btn-sm btn-light border fw-medium text-secondary mt-1" onclick="initSubmitApproval()">
+          <i class="bi bi-arrow-clockwise me-1"></i> Làm mới Data
+        </button>
+      </li>
+    </ul>
+
+    <!-- BẢNG DỮ LIỆU CHUẨN HEADER (Type | To | Dw Code | Ver | Project | Customer | Action) -->
+    <div class="table-responsive custom-scrollbar border rounded-3" style="max-height: calc(100vh - 290px); overflow-y: auto;">
+      <table class="table-custom">
+        <thead class="position-sticky top-0 z-1 shadow-sm">
+          <tr>
+            <th class="text-center" style="width: 3%">#</th>
+            <th style="width: 9%">Type</th>
+            <th style="width: 10%">To</th>
+            <th style="width: 18%">Dw Code</th>
+            <th class="text-center" style="width: 5%">Ver</th>
+            <th style="width: 14%">Project</th>
+            <th style="width: 14%">Customer</th>
+            <th class="text-center" style="width: 13%">Status</th>
+            <th class="text-center" style="width: 14%">Action</th>
+          </tr>
+        </thead>
+        <tbody id="approvalTableBody">
+          <tr>
+            <td colspan="9" class="text-center py-5 text-muted">
+              <span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- PAGINATION TOOLBAR -->
+    <div id="approvalPaginationToolbar" class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 border-top gap-2">
+      <div class="text-muted small" id="approvalPaginationInfo">Hiển thị 0 - 0 / 0 bản vẽ</div>
+      <div class="d-flex align-items-center gap-2">
+        <button class="btn btn-sm btn-outline-secondary rounded-2" id="approvalPrevBtn" onclick="changeApprovalPage(-1)">
+          <i class="bi bi-chevron-left me-1"></i> Trang trước
+        </button>
+        <span class="fw-bold small px-2 text-dark" id="approvalPageIndicator">1 / 1</span>
+        <button class="btn btn-sm btn-outline-secondary rounded-2" id="approvalNextBtn" onclick="changeApprovalPage(1)">
+          Trang sau <i class="bi bi-chevron-right ms-1"></i>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL POPUP TỪ CHỐI BẢN VẼ -->
+  <div id="rejectModal"
+    style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+    <div
+      style="background:#ffffff; border-radius:16px; padding:28px; width:450px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:rmPopIn .2s ease;">
+      <style>
+        @keyframes rmPopIn {
+          from { transform: scale(0.92); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+      </style>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+        <div style="width:42px; height:42px; border-radius:50%; background:#fee2e2; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+          <i class="bi bi-x-circle-fill text-danger fs-5"></i>
+        </div>
+        <div>
+          <div style="font-weight:700; font-size:1.05rem; color:#0f172a;">Từ Chối Bản Vẽ</div>
+          <div id="rejectModalSubtitle" style="font-size:0.82rem; color:#64748b; margin-top:2px;"></div>
+        </div>
+      </div>
+      <label style="font-size:0.85rem; font-weight:600; color:#374151; margin-bottom:8px; display:block;">
+        Lý do từ chối <span style="color:#ef4444;">*</span>
+      </label>
+      <textarea id="rejectReasonInput"
+        placeholder="Nhập lý do chi tiết (sai kích thước, sai thông số, chưa đạt chuẩn...)" rows="4"
+        style="width:100%; padding:12px 14px; border:1.5px solid #cbd5e1; border-radius:10px; font-size:0.88rem; resize:vertical; outline:none; font-family:inherit; box-sizing:border-box; transition:border-color .2s;"
+        onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#cbd5e1'"></textarea>
+      <div id="rejectReasonError" style="color:#ef4444; font-size:0.8rem; margin-top:6px; display:none;">
+        <i class="bi bi-exclamation-circle me-1"></i>Vui lòng nhập lý do từ chối!
+      </div>
+      <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end;">
+        <button onclick="closeRejectModal()"
+          style="padding:8px 20px; border-radius:8px; border:1px solid #cbd5e1; background:#f8fafc; color:#64748b; font-weight:600; font-size:0.85rem; cursor:pointer;">
+          Hủy
+        </button>
+        <button onclick="submitReject()"
+          style="padding:8px 22px; border-radius:8px; border:none; background:#ef4444; color:#ffffff; font-weight:700; font-size:0.85rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(239,68,68,0.3);">
+          <i class="bi bi-x-circle-fill"></i> Xác Nhận Từ Chối
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT XỬ LÝ DỮ LIỆU & TƯƠNG TÁC GIAO DIỆN PHÊ DUYỆT
+     ============================================================ -->
+<script>
+  let currentApprovalTab = 'ALL';
+  let approvalRowsData = [];
+
+  function cleanStr(s) {
+    if (!s) return '';
+    return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  const COL_MAP = {
+    ID: 0,           // Cột A: ID
+    GROUP: 3,        // Cột D: Group
+    TYPE: 4,         // Cột E: Type
+    REQ_NO: 8,       // Cột I: Request No / TO
+    PROJECT: 9,      // Cột J: Dự án
+    CUSTOMER: 10,    // Cột K: Khách hàng
+    DW_NO: 11,       // Cột L: Mã bản vẽ
+    VERSION: 12,     // Cột M: Phiên bản
+    STATUS: 2,       // Cột C: Trạng thái
+    PDF_LINK_O: 14,  // Cột O (15): File Drawing (PDF)
+    PDF_LINK_AF: 31  // Cột AF (32): File Stamped PDF
+  };
+
+  function getLevelStates(status) {
+    const st = cleanStr(status);
+    // 'Chờ Duyệt' = vừa submit lần đầu, Checker 1 đang chờ ký
+    if (st.includes('cho duyet') || st.includes('cho checker 1') || st.includes('checker1')) return ['waiting', 'pending', 'pending'];
+    // 'Chờ Checker 2' = Checker 1 đã ký xong
+    if (st.includes('cho checker 2') || st.includes('checker 2')) return ['done', 'waiting', 'pending'];
+    // 'Chờ Approval' = Checker 2 đã ký xong
+    if (st.includes('cho approval') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')) return ['done', 'done', 'waiting'];
+    // 'Hoàn thành' = Approval đã ký xong
+    if (st.includes('hoan thanh') || st.includes('done') || st.includes('released')) return ['done', 'done', 'done'];
+    // Mặc định: Checker 1 chờ
+    return ['waiting', 'pending', 'pending'];
+  }
+
+  function stateLabel(s) {
+    if (s === 'done') return '<span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Đã ký</span>';
+    if (s === 'waiting') return '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 fw-bold"><i class="bi bi-hourglass-split me-1"></i>Đang chờ ký</span>';
+    return '<span class="badge bg-light text-muted border px-3 py-1">Chưa tới lượt</span>';
+  }
+
+  let approvalCurrentPage = 1;
+  const approvalPageSize = 50;
+  var approvalSearchDebounce = null;
+
+  function onSearchApprovalInput() {
+    if (typeof window.appDebounce === 'function') {
+      if (!approvalSearchDebounce) {
+        approvalSearchDebounce = window.appDebounce(function () {
+          approvalCurrentPage = 1;
+          renderApprovalTable();
+        }, 250);
+      }
+      approvalSearchDebounce();
+    } else {
+      approvalCurrentPage = 1;
+      renderApprovalTable();
+    }
+  }
+
+  function changeApprovalPage(delta) {
+    approvalCurrentPage += delta;
+    renderApprovalTable();
+  }
+
+  function updateApprovalPaginationUI(total, start, end, page, totalPages) {
+    const infoEl = document.getElementById('approvalPaginationInfo');
+    const indicatorEl = document.getElementById('approvalPageIndicator');
+    const prevBtn = document.getElementById('approvalPrevBtn');
+    const nextBtn = document.getElementById('approvalNextBtn');
+    const toolbar = document.getElementById('approvalPaginationToolbar');
+
+    if (!toolbar) return;
+    if (total === 0) {
+      toolbar.classList.add('d-none');
+      return;
+    }
+    toolbar.classList.remove('d-none');
+    if (infoEl) infoEl.textContent = `Hiển thị ${start + 1} - ${Math.min(end, total)} / Tổng số ${total} bản vẽ`;
+    if (indicatorEl) indicatorEl.textContent = `${page} / ${totalPages}`;
+    if (prevBtn) prevBtn.disabled = page <= 1;
+    if (nextBtn) nextBtn.disabled = page >= totalPages;
+  }
+
+  function switchApprovalTab(tabName) {
+    currentApprovalTab = tabName;
+    approvalCurrentPage = 1;
+    const tabs = ['ALL', 'BARSALE', 'OEM', 'WE SASH'];
+    tabs.forEach(t => {
+      let btnId = 'tab-approval-' + (t === 'WE SASH' ? 'we' : t.toLowerCase());
+      let el = document.getElementById(btnId);
+      if (el) el.classList.toggle('active', t === tabName);
+    });
+    renderApprovalTable();
+  }
+
+  function initSubmitApproval() {
+    const tbody = document.getElementById('approvalTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...</td></tr>';
+    approvalCurrentPage = 1;
+
+    setTimeout(() => {
+      const rawData = (typeof pageData !== 'undefined' && Array.isArray(pageData)) ? pageData : (window.pageData || []);
+      if (!rawData || rawData.length === 0) { renderEmptyTable(tbody); return; }
+
+      let rows = rawData;
+      if (rows.length > 0 && String(rows[0][COL_MAP.ID]).toLowerCase().trim() === 'id') {
+        rows = rows.slice(1);
+      }
+
+      approvalRowsData = rows.filter(row => {
+        const id = row[COL_MAP.ID];
+        if (!id || String(id).trim() === '') return false;
+        const st = cleanStr(String(row[COL_MAP.STATUS] || ''));
+        const pdf = row[COL_MAP.PDF_LINK_AF] || row[COL_MAP.PDF_LINK_O] || '';
+        const hasPdf = pdf && String(pdf).includes('http');
+        // Lọc đúng theo các status mới: Chờ Duyệt / Chờ Checker 2 / Chờ Approval
+        const isTarget = st.includes('cho duyet') || st.includes('cho checker') || st.includes('cho approval')
+          || st.includes('checker') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')
+          || st.includes('checking') || st.includes('pending');
+        return isTarget || (hasPdf && !st.includes('hoan thanh') && !st.includes('done') && !st.includes('released'));
+      });
+
+      renderApprovalTable();
+    }, 200);
+  }
+
+  function renderApprovalTable() {
+    const tbody = document.getElementById('approvalTableBody');
+    if (!tbody) return;
+
+    if (!approvalRowsData || approvalRowsData.length === 0) {
+      renderEmptyTable(tbody);
+      updateApprovalPaginationUI(0, 0, 0, 1, 1);
+      return;
+    }
+
+    const keyword = (document.getElementById('searchApprovalInput')?.value || '').toLowerCase().trim();
+
+    let filtered = approvalRowsData.filter(r => {
+      const typeVal = (String(r[COL_MAP.GROUP] || '') + " " + String(r[COL_MAP.TYPE] || '')).toUpperCase();
+      if (currentApprovalTab === 'BARSALE' && !typeVal.includes('BARSALE')) return false;
+      if (currentApprovalTab === 'OEM' && !typeVal.includes('OEM')) return false;
+      if (currentApprovalTab === 'WE SASH' && (typeVal.includes('BARSALE') || typeVal.includes('OEM'))) return false;
+
+      if (keyword) {
+        const toVal = String(r[COL_MAP.REQ_NO] || '').toLowerCase();
+        const dwVal = String(r[COL_MAP.DW_NO] || '').toLowerCase();
+        const custVal = String(r[COL_MAP.CUSTOMER] || '').toLowerCase();
+        const projVal = String(r[COL_MAP.PROJECT] || '').toLowerCase();
+        return toVal.includes(keyword) || dwVal.includes(keyword) || custVal.includes(keyword) || projVal.includes(keyword);
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="9" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>Không có bản vẽ nào trùng khớp.</td></tr>';
+      updateApprovalPaginationUI(0, 0, 0, 1, 1);
+      return;
+    }
+
+    // Phân trang
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / approvalPageSize) || 1;
+    if (approvalCurrentPage < 1) approvalCurrentPage = 1;
+    if (approvalCurrentPage > totalPages) approvalCurrentPage = totalPages;
+
+    const startIdx = (approvalCurrentPage - 1) * approvalPageSize;
+    const endIdx = startIdx + approvalPageSize;
+    const pageRows = filtered.slice(startIdx, endIdx);
+
+    let html = '';
+    pageRows.forEach((row, idx) => {
+      html += buildRowHtml(row, startIdx + idx);
+    });
+    tbody.innerHTML = html;
+
+    updateApprovalPaginationUI(totalItems, startIdx, endIdx, approvalCurrentPage, totalPages);
+  }
+
+  // Lưu trữ PDF URL cho mỗi bản vẽ để tránh nhúng URL phức tạp vào onclick HTML
+  window._approvalPdfMap = window._approvalPdfMap || {};
+
+  function buildRowHtml(row, idx) {
+    const id = String(row[COL_MAP.ID] || '');
+    const type = row[COL_MAP.TYPE] || row[COL_MAP.GROUP] || '—';
+    const reqNo = row[COL_MAP.REQ_NO] || '—';
+    const dwNo = row[COL_MAP.DW_NO] || 'Chưa có mã';
+    const version = row[COL_MAP.VERSION] || '0';
+    const project = row[COL_MAP.PROJECT] || '—';
+    const customer = row[COL_MAP.CUSTOMER] || 'Chưa rõ KH';
+    const statusRaw = String(row[COL_MAP.STATUS] || 'Chờ Duyệt').trim();
+    const pdfUrl = String(row[COL_MAP.PDF_LINK_AF] || row[COL_MAP.PDF_LINK_O] || '');
+    // Lưu PDF URL vào map toàn cục để tránh break URL trong onclick HTML
+    if (id) window._approvalPdfMap[id] = pdfUrl;
+
+    const [c1, c2, c3] = getLevelStates(statusRaw);
+    const hasPdf = pdfUrl.includes('http');
+
+    const st = cleanStr(statusRaw);
+    // Badge color theo status mới
+    let bb = '#dbeafe', bc = '#1e40af'; // mặc định xanh = Chờ Duyệt (Checker 1)
+    if (st.includes('cho checker 2') || st.includes('checker 2')) { bb = '#ede9fe'; bc = '#6d28d9'; }       // tím
+    else if (st.includes('cho approval') || st.includes('approval') || st.includes('duyet')) { bb = '#d1fae5'; bc = '#065f46'; } // xanh lá
+    else if (st.includes('hoan thanh') || st.includes('done') || st.includes('released')) { bb = '#f0fdf4'; bc = '#15803d'; }
+
+    const pdfBtn = hasPdf
+      ? `<button class="btn-view-pdf shadow-sm" onclick="event.stopPropagation();viewApprovalPdf('${pdfUrl}')"><i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF</button>`
+      : `<button class="btn-view-pdf" disabled><i class="bi bi-file-earmark-pdf"></i> N/A</button>`;
+
+    const mkActions = (state, id, dwNo, level, label) => {
+      if (state !== 'waiting') return '';
+      return `
+        <div class="level-actions">
+          <button class="btn-step-approve shadow-sm"
+            data-row-id="${id}" data-dw-no="${dwNo}" data-level="${level}"
+            onclick="handleApproveById(this)">
+            <i class="bi bi-check-circle-fill"></i> ${label}
+          </button>
+          <button class="btn-step-reject shadow-sm" onclick="openRejectModal('${id}','${dwNo}','${level}')">
+            <i class="bi bi-x-circle-fill"></i> Từ chối
+          </button>
+        </div>`;
+    };
+
+    return `
+    <tr class="dw-row" id="dw-card-${id}" onclick="toggleRowDetail('${id}')">
+      <td class="text-center fw-bold text-secondary">${idx + 1}</td>
+      <td><span class="badge bg-light text-dark border px-2 py-1">${type}</span></td>
+      <td><span class="fw-semibold text-dark">${reqNo}</span></td>
+      <td>
+        <span class="fw-bold text-primary">${dwNo}</span>
+      </td>
+      <td class="text-center">
+        <span class="badge bg-secondary-subtle text-secondary border">v${version}</span>
+      </td>
+      <td>${project}</td>
+      <td><span class="chip-cust"><i class="bi bi-building me-1"></i>${customer}</span></td>
+      <td class="text-center">
+        <span class="status-badge mb-1" style="background:${bb};color:${bc};">${statusRaw}</span>
+        <div class="pipeline-dots d-flex justify-content-center mt-1" title="Cấp 1: Checker 1  ->  Cấp 2: Checker 2  ->  Cấp 3: Approval">
+          <span class="dot" data-state="${c1}" title="Cấp 1 - Checker 1"></span>
+          <div class="dot-connector"></div>
+          <span class="dot" data-state="${c2}" title="Cấp 2 - Checker 2"></span>
+          <div class="dot-connector"></div>
+          <span class="dot" data-state="${c3}" title="Cấp 3 - Approval"></span>
+        </div>
+      </td>
+      <td class="text-center" onclick="event.stopPropagation();">
+        <div class="d-flex align-items-center justify-content-center gap-1">
+          ${pdfBtn}
+          <button class="btn-toggle-detail" onclick="toggleRowDetail('${id}')" id="btn-toggle-${id}">
+            <i class="bi bi-chevron-down me-1"></i> Chi tiết
+          </button>
+        </div>
+      </td>
+    </tr>
+    <!-- Dòng mở rộng Chi tiết Trình ký 3 cấp -->
+    <tr id="detail-row-${id}" style="display: none;">
+      <td colspan="9" class="p-0 border-0">
+        <div class="detail-expand-container shadow-inner">
+          <div class="level-card-group">
+
+            <!-- Card Cấp 1 -->
+            <div class="card-level ${c1}">
+              <div class="card-level-header">
+                <div class="level-title"><i class="bi bi-1-circle-fill text-primary fs-5"></i> Cấp 1 — Checker 1</div>
+                ${stateLabel(c1)}
+              </div>
+              <div class="level-desc">Kiểm tra kỹ thuật lần 1 — Xác nhận hình học, kích thước và thông số bản vẽ.</div>
+              ${mkActions(c1, id, dwNo, 'Checker 1', 'Trình ký Checker 1')}
+            </div>
+
+            <!-- Card Cấp 2 -->
+            <div class="card-level ${c2}">
+              <div class="card-level-header">
+                <div class="level-title"><i class="bi bi-2-circle-fill text-indigo fs-5" style="color:#6366f1;"></i> Cấp 2 — Checker 2</div>
+                ${stateLabel(c2)}
+              </div>
+              <div class="level-desc">Kiểm tra kỹ thuật lần 2 — Xác nhận tuân thủ tiêu chuẩn và yêu cầu sản xuất.</div>
+              ${mkActions(c2, id, dwNo, 'Checker 2', 'Trình ký Checker 2')}
+            </div>
+
+            <!-- Card Cấp 3 -->
+            <div class="card-level ${c3}">
+              <div class="card-level-header">
+                <div class="level-title"><i class="bi bi-3-circle-fill text-success fs-5"></i> Cấp 3 — Approval</div>
+                ${stateLabel(c3)}
+              </div>
+              <div class="level-desc">Phê duyệt cuối cùng — Trưởng phòng / Quản lý xác nhận phát hành bản vẽ.</div>
+              ${mkActions(c3, id, dwNo, 'Approval', 'Phê duyệt')}
+            </div>
+
+          </div>
+        </div>
+      </td>
+    </tr>`;
+  }
+
+  function renderEmptyTable(tbody) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="text-center py-5">
+          <i class="bi bi-check2-circle text-success" style="font-size:3.5rem;display:block;margin-bottom:12px;"></i>
+          <h5 class="fw-bold text-dark mb-1">Tuyệt vời! Tất cả bản vẽ đã được duyệt.</h5>
+          <small class="text-muted">Hiện không có bản vẽ nào ở trạng thái chờ duyệt.</small>
+        </td>
+      </tr>`;
+  }
+
+  function toggleRowDetail(id) {
+    const row = document.getElementById('dw-card-' + id);
+    const detailRow = document.getElementById('detail-row-' + id);
+    const btn = document.getElementById('btn-toggle-' + id);
+    if (!detailRow) return;
+
+    const isOpen = detailRow.style.display !== 'none';
+    detailRow.style.display = isOpen ? 'none' : 'table-row';
+    if (row) row.classList.toggle('open-row', !isOpen);
+    if (btn) btn.innerHTML = isOpen ? '<i class="bi bi-chevron-down me-1"></i> Chi tiết' : '<i class="bi bi-chevron-up me-1"></i> Đóng';
+  }
+
+  function viewApprovalPdf(url) {
+    if (!url || !url.includes('http')) {
+      if (typeof Swal !== 'undefined') Swal.fire('Lỗi', 'Bản vẽ này chưa có link PDF đính kèm!', 'error');
+      return;
+    }
+    window.open(url, '_blank');
+  }
+
+  // Wrapper đọc pdfUrl từ map thay vì inject URL trực tiếp vào onclick (tránh URL bị break)
+  function handleApproveById(btnEl) {
+    const rowId = btnEl.getAttribute('data-row-id');
+    const dwNo  = btnEl.getAttribute('data-dw-no');
+    const level = btnEl.getAttribute('data-level');
+    const pdfUrl = (window._approvalPdfMap && window._approvalPdfMap[rowId]) || '';
+    console.log('[handleApproveById] rowId:', rowId, '| level:', level, '| pdfUrl:', pdfUrl);
+    handleApprove(rowId, dwNo, level, pdfUrl);
+  }
+
+  async function handleApprove(rowId, dwNo, level, passedPdfUrl) {
+    // 1. Xác định tọa độ đóng dấu từ window.sign
+    let posKey = String(level || '').toLowerCase().replace(/\s+/g, '');
+    if (posKey.indexOf('checker1') !== -1 || posKey.indexOf('c1') !== -1) posKey = 'checker1';
+    else if (posKey.indexOf('checker2') !== -1 || posKey.indexOf('c2') !== -1) posKey = 'checker2';
+    else if (posKey.indexOf('approval') !== -1 || posKey.indexOf('approver') !== -1) posKey = 'approver';
+    else if (posKey.indexOf('charger') !== -1 || posKey.indexOf('chager') !== -1) posKey = 'chager';
+    else if (typeof user !== 'undefined' && user.position) {
+      posKey = String(user.position).toLowerCase().replace(/\s+/g, '');
+      if (posKey === 'charger') posKey = 'chager';
+    }
+
+    const signObj = window.sign || {
+      chager: [790, 465, 40],
+      checker1: [735, 465, 40],
+      checker2: [715, 480, 40],
+      approver: [640, 465, 40]
+    };
+
+    const coords = signObj[posKey] || signObj['checker1'];
+    const [x, y, width] = coords;
+
+    const targetRow = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
+    const pdfUrl = (passedPdfUrl && passedPdfUrl.includes('http')) ? passedPdfUrl : (targetRow ? String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '') : '');
+
+    const doIt = async () => {
+      try {
+        if (!pdfUrl || !pdfUrl.includes('http')) {
+          throw new Error("Bản vẽ này chưa có đường dẫn file PDF đính kèm trên Google Drive để thực hiện đóng dấu chữ ký!");
+        }
+
+        if (typeof showLoading === 'function') showLoading('BƯỚC 1/3: Đang tải file PDF & con dấu từ Google Drive...');
+
+        const userMail = (typeof user !== 'undefined' && user.mail) ? user.mail : 'System';
+
+        // 1. Lấy Base64 của PDF và Chữ ký từ Google Apps Script
+        const fileData = await new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .getFilesFromDrive(pdfUrl, userMail);
+        });
+
+        if (!fileData || !fileData.success || !fileData.pdfBase64 || !fileData.stampBase64) {
+          throw new Error(fileData ? (fileData.message || fileData.error) : "Không thể lấy dữ liệu PDF/Con dấu từ Google Drive.");
+        }
+
+        if (typeof showLoading === 'function') showLoading(`BƯỚC 2/3: Đang gửi tới Local API (10.156.42.195:8000) đóng dấu cấp ${level} [x:${x}, y:${y}, w:${width}]...`);
+
+        const pdfBlob = await fetch("data:application/pdf;base64," + fileData.pdfBase64).then(res => res.blob());
+        const stampBlob = await fetch("data:image/png;base64," + fileData.stampBase64).then(res => res.blob());
+
+        const formData = new FormData();
+        formData.append("pdf_file", pdfBlob, "document.pdf");
+        formData.append("stamp_file", stampBlob, "stamp.png");
+        formData.append("x", x);
+        formData.append("y", y);
+        formData.append("width", width);
+
+        const localApiUrl = "http://10.156.42.195:8000/signToPDW";
+        console.log(`[handleApprove] Đang gọi Local API: ${localApiUrl} | Tọa độ: x=${x}, y=${y}, width=${width}`);
+
+        const apiResponse = await fetch(localApiUrl, { method: "POST", body: formData });
+
+        if (!apiResponse.ok) {
+          throw new Error(`Local API (${localApiUrl}) trả về lỗi HTTP ${apiResponse.status}. Vui lòng kiểm tra lại dịch vụ đóng dấu!`);
+        }
+
+        const signedPdfBlob = await apiResponse.blob();
+        const base64SignedPdf = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(signedPdfBlob);
+        });
+
+        if (typeof showLoading === 'function') showLoading("BƯỚC 3/3: Đang lưu bản vẽ đã đóng dấu & hoàn tất phê duyệt...");
+
+        // Gửi Base64 file đã đóng dấu lên server để lưu
+        await new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .submitForApproval(rowId, base64SignedPdf);
+        });
+
+        // Cập nhật trạng thái duyệt trên server
+        await new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .approveDrawingOnServer(rowId);
+        });
+
+        if (typeof hideLoading === 'function') hideLoading();
+        if (typeof Swal !== 'undefined') {
+          Swal.fire('Thành công!', `Bản vẽ <b>${dwNo}</b> đã được đóng dấu tại tọa độ [${x}, ${y}, ${width}] và phê duyệt cấp <b>${level}</b>.`, 'success');
+        }
+
+        const el = document.getElementById('dw-card-' + rowId);
+        const detailEl = document.getElementById('detail-row-' + rowId);
+        if (el) el.remove();
+        if (detailEl) detailEl.remove();
+        if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
+
+      } catch (err) {
+        console.error('[handleApprove Stamping Error]', err);
+        if (typeof hideLoading === 'function') hideLoading();
+        if (typeof Swal !== 'undefined') {
+          Swal.fire('Lỗi Đóng Dấu / Ký Duyệt', err.message, 'error');
+        } else {
+          alert('Lỗi Đóng Dấu: ' + err.message);
+        }
+      }
+    };
+
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: 'Xác nhận Ký Phê Duyệt?',
+        html: `Bạn đang ký duyệt cấp <b class="text-primary">${level}</b> (Tọa độ: [x:${x}, y:${y}, w:${width}]) cho bản vẽ: <b>${dwNo}</b>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'Đồng ý, Đóng dấu & Ký!',
+        cancelButtonText: 'Hủy'
+      }).then(r => { if (r.isConfirmed) doIt(); });
+    } else {
+      if (confirm(`Xác nhận Ký duyệt ${level} [x:${x}, y:${y}, w:${width}] cho ${dwNo}?`)) doIt();
+    }
+  }
+
+  /* ---- Modal Từ chối ---- */
+  let _rId = null, _rDw = null;
+  function openRejectModal(rowId, dwNo, level) {
+    _rId = rowId; _rDw = dwNo;
+    document.getElementById('rejectModalSubtitle').textContent = `Bản vẽ: ${dwNo} — Cấp: ${level}`;
+    document.getElementById('rejectReasonInput').value = '';
+    document.getElementById('rejectReasonError').style.display = 'none';
+    document.getElementById('rejectModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('rejectReasonInput').focus(), 150);
+  }
+
+  function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+    _rId = null;
+  }
+
+  function submitReject() {
+    const reason = document.getElementById('rejectReasonInput').value.trim();
+    if (!reason) {
+      document.getElementById('rejectReasonError').style.display = 'block';
+      document.getElementById('rejectReasonInput').focus();
+      return;
+    }
+    document.getElementById('rejectReasonError').style.display = 'none';
+    const rowId = _rId, dwNo = _rDw;
+    closeRejectModal();
+    if (typeof showLoading === 'function') showLoading('Đang gửi phản hồi từ chối...');
+    google.script.run
+      .withSuccessHandler(() => {
+        if (typeof hideLoading === 'function') hideLoading();
+        if (typeof Swal !== 'undefined') Swal.fire('Đã từ chối!', `Bản vẽ <b>${dwNo}</b> đã bị trả lại.<br><br><b>Lý do:</b> <i>"${reason}"</i>`, 'success');
+        const el = document.getElementById('dw-card-' + rowId);
+        const detailEl = document.getElementById('detail-row-' + rowId);
+        if (el) el.remove();
+        if (detailEl) detailEl.remove();
+        if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
+      })
+      .withFailureHandler(err => {
+        if (typeof hideLoading === 'function') hideLoading();
+        if (typeof Swal !== 'undefined') Swal.fire('Lỗi', 'Không thể gửi phản hồi: ' + err.message, 'error');
+      })
+      .rejectDrawingOnServer(rowId, reason);
+  }
+
+  document.getElementById('rejectModal').addEventListener('click', function (e) {
+    if (e.target === this) closeRejectModal();
+  });
+
+  window.initSubmitApproval = initSubmitApproval;
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initSubmitApproval, 500);
+  });
+</script>

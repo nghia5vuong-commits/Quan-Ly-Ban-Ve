@@ -1,0 +1,1459 @@
+<div id="page-seachDwByAI" class="p-3 p-md-4 custom-scroll"
+  style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+
+  <style>
+    /* SIDE PANEL - CỐ ĐỊNH CHUẨN */
+    #page-seachDwByAI .custom-sticky {
+      position: -webkit-sticky;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      max-height: calc(100vh - 130px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+    }
+
+    #page-seachDwByAI .custom-sticky::-webkit-scrollbar {
+      display: none;
+      /* Ẩn thanh cuộn trên Chrome/Safari */
+    }
+
+    #page-seachDwByAI .glass-card,
+    #page-seachDwByAI .app-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      border: 1px solid #e2e8f0;
+      min-height: calc(100vh - 110px);
+    }
+
+    #page-seachDwByAI .upload-title {
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: block;
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+    }
+
+    /* PREVIEW */
+    #page-seachDwByAI #previewContainer {
+      border: 2px dashed #ddd;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fafafa;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 15px;
+      position: relative;
+    }
+
+    #page-seachDwByAI #previewImage {
+      max-width: 100%;
+      max-height: 180px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    #page-seachDwByAI #previewContainer::after {
+      content: "Chưa chọn ảnh";
+      color: #bbb;
+      font-size: 13px;
+    }
+
+    #page-seachDwByAI #previewContainer.has-image::after {
+      display: none;
+    }
+
+    #page-seachDwByAI #previewContainer.has-image #previewImage {
+      display: block;
+    }
+
+    #page-seachDwByAI .btn-search {
+      background-color: #ffffff;
+      color: #1e293b;
+      font-weight: bold;
+      padding: 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+
+    #page-seachDwByAI .btn-search:hover {
+      background-color: #f8fafc;
+      transform: translateY(-2px);
+      color: #1e293b;
+    }
+
+    /* AI LOADER */
+    #page-seachDwByAI .ai-loader {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      background: white;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+
+    #page-seachDwByAI .comparison-scene {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: relative;
+    }
+
+    #page-seachDwByAI .scan-box {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      border: 2px solid #eee;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    #page-seachDwByAI .drawing-pic {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 8px;
+    }
+
+    #page-seachDwByAI .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: var(--primary-color);
+      box-shadow: 0 0 12px var(--primary-color);
+      animation: scanMove 2s infinite ease-in-out;
+      z-index: 2;
+    }
+
+    @keyframes scanMove {
+      0% {
+        top: 0%;
+      }
+
+      50% {
+        top: 100%;
+      }
+
+      100% {
+        top: 0%;
+      }
+    }
+
+    #page-seachDwByAI .robot-icon {
+      font-size: 50px;
+      z-index: 3;
+      animation: robotFloat 1.5s infinite ease-in-out;
+    }
+
+    @keyframes robotFloat {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    /* RESULT CARDS */
+    #page-seachDwByAI .result-card {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      height: 100%;
+      border: 1px solid #eee;
+      transition: 0.3s;
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+    }
+
+    #page-seachDwByAI .result-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+      border-color: var(--primary-color);
+    }
+
+    #page-seachDwByAI .result-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: contain;
+      margin-bottom: 12px;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+
+    #page-seachDwByAI .result-card.best-match {
+      border: 2px solid var(--accent-color);
+      background: #fffdf2;
+      position: relative;
+    }
+
+    #page-seachDwByAI .result-card.best-match::before {
+      content: "🌟 BEST MATCH";
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      background: var(--accent-color);
+      font-size: 10px;
+      font-weight: bold;
+      padding: 4px 10px;
+      border-radius: 10px 0 10px 0;
+      z-index: 5;
+    }
+
+    #page-seachDwByAI .result-info-box {
+      width: 100%;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px dashed #ddd;
+    }
+
+    #page-seachDwByAI .info-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    #page-seachDwByAI .info-label {
+      color: #777;
+    }
+
+    #page-seachDwByAI .info-value {
+      font-weight: 700;
+      color: #333;
+    }
+
+    #page-seachDwByAI .filename-tag {
+      background: #f1f1f1;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 12px;
+      color: #555;
+      display: inline-block;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* MODAL AI */
+    #page-seachDwByAI .modal-header-ai {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+    }
+
+    #page-seachDwByAI .ai-insight-box {
+      border-left: 5px solid var(--primary-color);
+      background: #f9fff0;
+      padding: 20px;
+      border-radius: 5px;
+      font-size: 15px;
+    }
+
+    #page-seachDwByAI .dots::after {
+      content: '';
+      animation: dotsAnim 1.5s infinite;
+    }
+
+    @keyframes dotsAnim {
+      0% {
+        content: '';
+      }
+
+      33% {
+        content: '.';
+      }
+
+      66% {
+        content: '..';
+      }
+
+      100% {
+        content: '...';
+      }
+    }
+
+    /* SEARCHABLE DROPDOWN */
+    #page-seachDwByAI .search-select-wrapper {
+      position: relative;
+    }
+
+    #page-seachDwByAI .search-select-input {
+      display: flex;
+      align-items: center;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #page-seachDwByAI .search-select-input:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(153, 204, 102, 0.2);
+    }
+
+    #page-seachDwByAI .search-select-field {
+      border: none;
+      outline: none;
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 14px;
+      background: transparent;
+      color: var(--text-color);
+    }
+
+    #page-seachDwByAI .search-select-field::placeholder {
+      color: #aaa;
+    }
+
+    #page-seachDwByAI .search-select-field:disabled {
+      cursor: wait;
+    }
+
+    #page-seachDwByAI .search-select-arrow {
+      padding: 0 12px;
+      color: #888;
+      font-size: 12px;
+      transition: transform 0.2s;
+    }
+
+    #page-seachDwByAI .search-select-wrapper.open .search-select-arrow {
+      transform: rotate(180deg);
+    }
+
+    #page-seachDwByAI .search-select-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 1050;
+    }
+
+    #page-seachDwByAI .search-select-wrapper.open .search-select-dropdown {
+      display: block;
+      animation: dropIn 0.15s ease-out;
+    }
+
+    @keyframes dropIn {
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #page-seachDwByAI .search-select-item {
+      padding: 9px 14px;
+      font-size: 13.5px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    #page-seachDwByAI .search-select-item:last-child {
+      border-bottom: none;
+    }
+
+    #page-seachDwByAI .search-select-item:hover,
+    #page-seachDwByAI .search-select-item.active {
+      background: #f0f9e8;
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    #page-seachDwByAI .search-select-item.all-option {
+      color: #888;
+      font-style: italic;
+    }
+
+    #page-seachDwByAI .search-select-item .highlight {
+      background: #fff3cd;
+      border-radius: 2px;
+      padding: 0 1px;
+      font-weight: 700;
+    }
+
+    #page-seachDwByAI .search-select-empty {
+      padding: 14px;
+      text-align: center;
+      color: #aaa;
+      font-size: 13px;
+    }
+
+    #page-seachDwByAI .search-select-dropdown::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    #page-seachDwByAI .search-select-dropdown::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 5px;
+    }
+
+    /* ============================================
+       MODAL TIÊU CHUẨN ĐÓNG GÓI — PREMIUM UI
+       ============================================ */
+
+    /* --- Modal Shell --- */
+    #page-seachDwByAI .std-modal {
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    #page-seachDwByAI .std-modal-header {
+      background: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+      padding: 18px 24px;
+    }
+
+    #page-seachDwByAI .std-modal-header .modal-title {
+      font-size: 18px;
+      letter-spacing: 0.3px;
+    }
+
+    #page-seachDwByAI .std-modal-subtitle {
+      display: block;
+      opacity: 0.8;
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    #page-seachDwByAI .std-modal-footer {
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      padding: 10px 20px;
+    }
+
+    /* --- Table Wrapper --- */
+    #page-seachDwByAI .std-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 70vh;
+    }
+
+    /* Custom Scrollbar */
+    #page-seachDwByAI .std-table-wrap::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+
+    #page-seachDwByAI .std-table-wrap::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    #page-seachDwByAI .std-table-wrap::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, #c5e1a5, #7CB342);
+      border-radius: 10px;
+    }
+
+    #page-seachDwByAI .std-table-wrap::-webkit-scrollbar-thumb:hover {
+      background: #689F38;
+    }
+
+    /* --- Table Base --- */
+    #page-seachDwByAI .std-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      width: max-content;
+      min-width: 100%;
+      font-size: 13px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+
+    /* --- THEAD: Sticky + Styled --- */
+    #page-seachDwByAI .std-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    /* Group Headers */
+    #page-seachDwByAI .std-group {
+      padding: 12px 16px !important;
+      font-weight: 700;
+      font-size: 13px;
+      text-align: center;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-bottom: 2px solid rgba(0, 0, 0, 0.08) !important;
+    }
+
+    #page-seachDwByAI .std-group i {
+      margin-right: 6px;
+      font-size: 14px;
+    }
+
+    #page-seachDwByAI .std-group-info {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #92400e;
+    }
+
+    #page-seachDwByAI .std-group-pack {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+      color: #1e40af;
+    }
+
+    #page-seachDwByAI .std-group-history {
+      background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+      color: #9d174d;
+    }
+
+    /* Sub Headers */
+    #page-seachDwByAI .std-sub-header th {
+      background: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+      font-size: 11.5px;
+      text-transform: uppercase;
+      padding: 10px 14px !important;
+      border-bottom: 2px solid #e2e8f0 !important;
+      border-right: 1px solid #f1f5f9 !important;
+      white-space: nowrap;
+    }
+
+    /* --- TBODY --- */
+    #page-seachDwByAI .std-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      border-right: 1px solid #f8fafc;
+      vertical-align: middle;
+      color: #334155;
+      line-height: 1.5;
+    }
+
+    /* Alternating Rows */
+    #page-seachDwByAI .std-table tbody tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+
+    #page-seachDwByAI .std-table tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+
+    /* Row Hover */
+    #page-seachDwByAI .std-table tbody tr {
+      transition: all 0.15s ease;
+    }
+
+    #page-seachDwByAI .std-table tbody tr:hover {
+      background-color: var(--primary-soft, #f0f7ea) !important;
+      box-shadow: inset 3px 0 0 var(--primary-color, #7CB342);
+    }
+
+    /* Section Dividers — mỗi section có border-left màu khác */
+    #page-seachDwByAI .std-table tbody td:nth-child(1) {
+      border-left: 3px solid #f59e0b;
+    }
+
+    #page-seachDwByAI .std-table tbody td:nth-child(12) {
+      border-left: 3px solid var(--primary-color, #7CB342);
+    }
+
+    #page-seachDwByAI .std-table tbody td:nth-child(21) {
+      border-left: 3px solid #ec4899;
+    }
+
+    /* STT Column */
+    #page-seachDwByAI .std-table tbody td:first-child {
+      font-weight: 700;
+      text-align: center;
+      color: var(--primary-color, #7CB342);
+      font-size: 14px;
+      min-width: 45px;
+    }
+
+    /* --- Badges Nâng Cấp --- */
+    #page-seachDwByAI .badge-blue {
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      color: #1d4ed8;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      display: inline-block;
+      border: 1px solid #93c5fd;
+    }
+
+    #page-seachDwByAI .badge-red {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      color: #b91c1c;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 12px;
+      display: inline-block;
+      border: 1px solid #fca5a5;
+    }
+
+    #page-seachDwByAI .badge-gray {
+      background: #f1f5f9;
+      color: #64748b;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+      font-size: 12px;
+      display: inline-block;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Change Box */
+    #page-seachDwByAI .change-box {
+      background: linear-gradient(135deg, #fffbeb, #fef3c7);
+      border-left: 4px solid #f59e0b;
+      padding: 10px 14px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      color: #78350f;
+      text-align: left;
+      line-height: 1.6;
+    }
+
+    /* Material List */
+    #page-seachDwByAI .std-table .list-unstyled {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 0;
+    }
+
+    #page-seachDwByAI .std-table .list-unstyled li {
+      position: relative;
+      padding-left: 14px;
+      margin-bottom: 3px;
+      text-align: left;
+      font-size: 12.5px;
+    }
+
+    #page-seachDwByAI .std-table .list-unstyled li::before {
+      content: "●";
+      position: absolute;
+      left: 0;
+      color: #94a3b8;
+      font-size: 8px;
+      top: 3px;
+    }
+
+    /* Monospace for sizes */
+    #page-seachDwByAI .std-table td[style*="monospace"] {
+      letter-spacing: 0.5px;
+    }
+
+    /* --- Loading & Empty State --- */
+    #page-seachDwByAI .std-loading-state {
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    #page-seachDwByAI .std-loading-state .spinner-border {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-width: 3px;
+      color: var(--primary-color, #7CB342);
+    }
+
+    #page-seachDwByAI .std-empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: #94a3b8;
+    }
+
+    #page-seachDwByAI .std-empty-state i {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 1000px) {
+      #page-seachDwByAI .std-modal-header {
+        padding: 14px 16px;
+      }
+
+      #page-seachDwByAI .std-modal-header .modal-title {
+        font-size: 15px;
+      }
+
+      #page-seachDwByAI .std-table {
+        font-size: 12px;
+      }
+
+      #page-seachDwByAI .std-table td,
+      #page-seachDwByAI .std-sub-header th {
+        padding: 8px 10px !important;
+      }
+    }
+
+    /* --- FIX: Modal hiện TRÊN header --- */
+    #page-seachDwByAI .modal-backdrop {
+      z-index: 1200 !important;
+    }
+
+    #page-seachDwByAI .modal {
+      z-index: 1210 !important;
+    }
+
+    #page-seachDwByAI #standardModal .modal-dialog {
+      max-width: 98vw;
+      margin: 10px auto;
+    }
+  </style>
+
+  <main class="container-fluid p-0">
+
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-5">
+        <div class="custom-sticky">
+          <div class="glass-card">
+            <label class="upload-title"><i class="bi bi-image"></i> <span data-i18n="upload_title">Hình ảnh đầu
+                vào</span></label>
+            <input type="file" class="form-control mb-3" id="imageInput" accept="image/*"
+              onchange="previewSelectedImage(event)">
+
+            <div id="previewContainer">
+              <img id="previewImage" src="" alt="Xem trước">
+            </div>
+
+            <label class="upload-title"><i class="bi bi-rulers"></i> <span data-i18n="dim_title">Thông số kích
+                thước</span></label>
+            <div class="input-group mb-3">
+              <span class="input-group-text">H</span>
+              <input type="number" id="HInput" class="form-control" placeholder="Chiều cao"
+                data-i18n-placeholder="h_placeholder">
+              <span class="input-group-text">W</span>
+              <input type="number" id="WInput" class="form-control" placeholder="Chiều rộng"
+                data-i18n-placeholder="w_placeholder">
+            </div>
+
+            <label class="upload-title"><i class="bi bi-person-badge"></i> <span data-i18n="cust_title">Khách
+                hàng</span></label>
+            <div class="search-select-wrapper mb-4" id="customerWrapper">
+              <div class="search-select-input" onclick="toggleDropdown()">
+                <input type="text" id="customerSearch" class="search-select-field" placeholder="⏳ Đang tải..."
+                  autocomplete="off" oninput="filterCustomerList()" onfocus="openDropdown()" disabled>
+                <i class="bi bi-chevron-down search-select-arrow"></i>
+              </div>
+              <div class="search-select-dropdown" id="customerDropdown"></div>
+              <input type="hidden" id="customerSelect" value="">
+            </div>
+
+            <button id="viewStandardBtn" class="btn btn-outline-primary w-100 mb-4 mt-2 fw-bold"
+              style="display:none; border-width: 2px;">
+              <i class="bi bi-box-seam"></i> <span data-i18n="btn_standard">Xem tiêu chuẩn đóng gói</span>
+            </button>
+
+            <button id="searchBtn" class="btn btn-search w-100 shadow-sm">
+              <i class="bi bi-search"></i> <span data-i18n="btn_search">PHÂN TÍCH &amp; TÌM KIẾM</span>
+            </button>
+
+            <button id="openAiModalBtn" class="btn btn-outline-success w-100 mt-3 fw-bold" style="display:none;"
+              data-bs-toggle="modal" data-bs-target="#aiAnalysisModal">
+              <i class="bi bi-robot"></i> <span data-i18n="btn_ai">ĐÁNH GIÁ TỪ AI</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-8 col-md-7">
+        <div class="glass-card d-flex flex-column" style="min-height: calc(100vh - 110px);">
+
+          <div id="aiLoader" class="ai-loader text-center my-auto py-5" style="display:none;">
+            <div class="comparison-scene">
+              <div class="scan-box">
+                <img id="loaderOriginalImg" class="drawing-pic" src="" alt="Gốc">
+                <div class="scan-line"></div>
+              </div>
+              <div class="ai-core">
+                <div class="robot-icon">🤖</div>
+              </div>
+              <div class="scan-box">
+                <img class="drawing-pic searching-db"
+                  src="https://img.icons8.com/?size=100&id=Wy3XKG1CjyKf&format=png&color=000000" alt="Quét">
+                <div class="scan-line"></div>
+              </div>
+            </div>
+            <p class="mt-4 fw-bold text-success fs-5"><span data-i18n="ai_loading">AI đang truy xuất dữ liệu mặt
+                cắt</span><span class="dots"></span></p>
+          </div>
+
+          <!-- Welcome Card: hiện khi chưa search -->
+          <div id="welcomeCard" class="text-center p-4 my-auto align-items-center justify-content-center"
+            style="display: flex; flex-direction: column;">
+            <div
+              style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#7CB342,#33691E);display:inline-flex;align-items:center;justify-content:center;margin-bottom:16px;">
+              <i class="bi bi-search" style="font-size:2rem;color:#fff;"></i>
+            </div>
+            <h6 class="fw-bold text-dark mb-2" data-i18n="welcome_title">Tìm kiếm bản vẽ bằng AI</h6>
+            <p class="text-secondary small mb-0" data-i18n="welcome_desc">Tải lên hình ảnh bản vẽ, nhập kích thước và
+              chọn
+              khách hàng ở bảng bên trái, sau đó nhấn <strong>Phân tích &amp; Tìm kiếm</strong>.</p>
+          </div>
+
+
+          <div id="filterSection" class="mb-3" style="display: none;">
+            <div class="d-flex gap-2 align-items-center p-3 bg-light rounded-3 border">
+              <span class="fw-bold small text-muted text-uppercase" data-i18n="filter_title">Bộ lọc nhanh:</span>
+              <button id="filterDimBtn" class="btn btn-sm btn-outline-secondary" onclick="toggleFilter('dimension')">📏
+                <span data-i18n="filter_dim">Theo HxW</span></button>
+              <button id="filterCustBtn" class="btn btn-sm btn-outline-secondary" onclick="toggleFilter('customer')">👤
+                <span data-i18n="filter_cust">Theo khách</span></button>
+              <button class="btn btn-sm text-danger ms-auto fw-bold" onclick="resetFilters()"
+                data-i18n="filter_reset">Làm
+                mới</button>
+            </div>
+          </div>
+
+          <div id="status" class="mb-3 fw-bold text-primary"></div>
+          <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3" id="resultsGrid"></div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="modal fade" id="aiAnalysisModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header modal-header-ai">
+          <h5 class="modal-title fw-bold"><i class="bi bi-robot"></i> <span data-i18n="ai_modal_title">Kết quả phân tích
+              từ SmartVision AI</span></h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="ai-insight-box">
+            <p id="aiAnalysisText" style="white-space: pre-wrap; line-height: 1.8;"></p>
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal"
+            data-i18n="close_btn">Đóng</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="standardModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+      <div class="modal-content border-0 shadow-lg std-modal">
+        <div class="modal-header std-modal-header">
+          <div>
+            <h5 class="modal-title fw-bold" id="standardModalTitle">
+              <i class="bi bi-box-seam-fill me-2"></i><span data-i18n="std_modal_title">Tiêu Chuẩn Đóng Gói</span>
+            </h5>
+            <small class="std-modal-subtitle" id="standardModalSubtitle"></small>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-0">
+          <div class="std-table-wrap">
+            <table class="std-table">
+              <thead>
+                <tr>
+                  <th colspan="11" class="std-group std-group-info">
+                    <i class="bi bi-person-lines-fill"></i> <span data-i18n="std_info_group">Thông tin khách hàng</span>
+                  </th>
+                  <th colspan="9" class="std-group std-group-pack">
+                    <i class="bi bi-box-seam"></i> <span data-i18n="std_pack_group">Tiêu chuẩn đóng gói gốc</span>
+                  </th>
+                  <th colspan="8" class="std-group std-group-history">
+                    <i class="bi bi-clock-history"></i> <span data-i18n="std_history_group">Lịch sử thay đổi</span>
+                  </th>
+                </tr>
+                <tr class="std-sub-header">
+                  <th rowspan="2" class="std-sticky-col">STT</th>
+                  <th rowspan="2">Khách hàng</th>
+                  <th rowspan="2">Phân loại</th>
+                  <th rowspan="2">Bề mặt</th>
+                  <th rowspan="2">Dự án</th>
+                  <th rowspan="2">Địa chỉ</th>
+                  <th rowspan="2">Dự kiến<br>xuất hàng</th>
+                  <th rowspan="2">Mark</th>
+                  <th rowspan="2">Người gửi<br>thông tin</th>
+                  <th rowspan="2">QA Nhập<br>thông tin</th>
+                  <th rowspan="2">QA Đảm<br>trách</th>
+                  <th colspan="3" class="text-center">Pallet / Thùng Carton</th>
+                  <th rowspan="2">Tiêu chuẩn<br>bề mặt</th>
+                  <th rowspan="2">Nguyên<br>vật liệu</th>
+                  <th rowspan="2">Phương pháp<br>đóng gói</th>
+                  <th rowspan="2">Đóng gói<br>1 TO/Pallet</th>
+                  <th rowspan="2">Phương tiện<br>vận chuyển</th>
+                  <th rowspan="2">Ghi chú</th>
+                  <th rowspan="2">Ngày<br>áp dụng</th>
+                  <th rowspan="2">Nội dung<br>thay đổi</th>
+                  <th rowspan="2">Lý do<br>thay đổi</th>
+                  <th colspan="4" class="text-center">Thông tin Pallet mới</th>
+                  <th rowspan="2">Ghi chú</th>
+                </tr>
+                <tr class="std-sub-header">
+                  <th>Type</th>
+                  <th>Size (mm)</th>
+                  <th>Kg max</th>
+                  <th>Type</th>
+                  <th>Size</th>
+                  <th>Kg max</th>
+                  <th>Ngày áp dụng</th>
+                </tr>
+              </thead>
+              <tbody id="standardTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="modal-footer std-modal-footer">
+          <span class="text-muted me-auto" style="font-size:12px;">
+            <i class="bi bi-info-circle"></i> <span data-i18n="scroll_hint">Cuộn ngang để xem đầy đủ bảng</span>
+          </span>
+          <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+            <i class="bi bi-x-lg me-1"></i> Đóng
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="useLinkModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header bg-primary text-secondary">
+          <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-excel"></i> Lưu & Copy Dữ Liệu</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <input type="hidden" id="hiddenLinkXlsx">
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-bold">Chiều cao (H)</label>
+              <input type="number" id="formH" class="form-control" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-bold">Chiều rộng (W)</label>
+              <input type="number" id="formW" class="form-control" required>
+            </div>
+          </div>
+
+          <label class="form-label fw-bold">DW No & Version</label>
+          <div class="search-select-wrapper mb-3" id="dwWrapper">
+            <div class="search-select-input" onclick="toggleDropdownDw()">
+              <input type="text" id="dwNoSearch" class="search-select-field" placeholder="Dw no, Version, To"
+                autocomplete="off" oninput="filterDwList()" onfocus="openDropdownDw()">
+              <i class="bi bi-chevron-down search-select-arrow"></i>
+            </div>
+            <div class="search-select-dropdown" id="dwDropdown"></div>
+            <input type="hidden" id="dwSelectValue" value="">
+          </div>
+        </div>
+        <div class="modal-footer bg-light">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-primary fw-bold" onclick="submitUseForm()">
+            <i class="bi bi-save"></i> Lưu & Cập nhật
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    var originalResults = [];
+    var allResults = [];
+    var currentFilters = { dimension: false, customer: false };
+    var globalDwList = [];
+    var allCustomers = [];
+    var globalDataMap = {};
+
+    function previewSelectedImage(event) {
+      var file = event.target.files[0];
+      var container = document.getElementById('previewContainer');
+      var preview = document.getElementById('previewImage');
+      var loaderImg = document.getElementById('loaderOriginalImg');
+
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+          loaderImg.src = e.target.result;
+          container.classList.add('has-image');
+        };
+        reader.readAsDataURL(file);
+      } else {
+        container.classList.remove('has-image');
+      }
+    }
+
+    function hideWelcomeCard() {
+      var wc = document.getElementById('welcomeCard');
+      if (wc) {
+        wc.style.setProperty('display', 'none', 'important');
+        wc.classList.add('d-none');
+      }
+    }
+
+    function processImageAndSearch(validDataUrl) {
+      hideWelcomeCard();
+      var preview = document.getElementById('previewImage');
+      var loaderImg = document.getElementById('loaderOriginalImg');
+      var container = document.getElementById('previewContainer');
+      var statusDiv = document.getElementById('status');
+      var searchBtn = document.getElementById('searchBtn');
+      var aiLoader = document.getElementById('aiLoader');
+      var resultsGrid = document.getElementById('resultsGrid');
+      var openAiModalBtn = document.getElementById('openAiModalBtn');
+      var filterSection = document.getElementById('filterSection');
+
+      if (preview) preview.src = validDataUrl;
+      if (loaderImg) loaderImg.src = validDataUrl;
+      if (container) container.classList.add('has-image');
+      if (searchBtn) searchBtn.disabled = true;
+      if (aiLoader) aiLoader.style.display = 'flex';
+      if (statusDiv) statusDiv.innerHTML = '';
+      if (resultsGrid) resultsGrid.innerHTML = '';
+      if (openAiModalBtn) openAiModalBtn.style.display = 'none';
+      if (filterSection) filterSection.style.display = 'none';
+
+      var img = new Image();
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        var ctx = canvas.getContext('2d');
+        var maxW = 800, maxH = 800, width = img.width, height = img.height;
+        if (width > height && width > maxW) { height = Math.round(height * maxW / width); width = maxW; }
+        else if (height > maxH) { width = Math.round(width * maxH / height); height = maxH; }
+        canvas.width = Math.round(width); canvas.height = Math.round(height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(function (blob) {
+          if (!blob) {
+            if (aiLoader) aiLoader.style.display = 'none';
+            if (searchBtn) searchBtn.disabled = false;
+            hideWelcomeCard();
+            alert('Khong the tao file anh.');
+            return;
+          }
+          var fd = new FormData();
+          fd.append('file', blob, 'image.jpg');
+          fetch('http://10.156.42.195:8000/search-image', { method: 'POST', body: fd })
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (data) {
+              if (data.status !== 'success') throw new Error(data.message || 'Loi tu AI Server');
+              var results = data.data || [];
+              if (results.length === 0) {
+                if (searchBtn) searchBtn.disabled = false;
+                if (aiLoader) aiLoader.style.display = 'none';
+                hideWelcomeCard();
+                if (statusDiv) statusDiv.innerHTML = t('no_data');
+                return;
+              }
+
+              var ids = results.map(function (i) { return i.id; });
+              var scores = results.map(function (i) { return i.score; });
+
+              var drivePromise = new Promise(function (res, rej) {
+                google.script.run.withSuccessHandler(res).withFailureHandler(rej).fetchImagesFromDrive(ids);
+              });
+              var analyzePromise = fetch('http://10.156.42.195:8000/analyze-results', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_names: ids, scores: scores })
+              }).then(function (r) { return r.json(); }).catch(function () { return null; });
+
+              google.script.run.logSearchActionAsync();
+
+              drivePromise.then(function (driveMap) {
+                results.forEach(function (item) {
+                  item.name = item.name || item.id;
+                  var code = item.id.replace(/\.[^/.]+$/, '');
+                  var row = globalDataMap[code];
+                  item.url = driveMap[item.id] || '';
+                  if (row) { item.customer = row.customer; item.h = row.h; item.w = row.w; item.l = row.l; item.link = row.link; item.link_xlsx = row.link_xlsx; }
+                  else { item.customer = t('no_excel_data'); item.h = 0; item.w = 0; item.l = 0; item.link = '---'; item.link_xlsx = ''; }
+                });
+                if (statusDiv) statusDiv.innerHTML = t('found_results').replace('{0}', results.length);
+                originalResults = results;
+                var fs2 = document.getElementById('filterSection');
+                if (fs2) fs2.style.display = results.length > 0 ? 'block' : 'none';
+                resetFilters();
+                analyzePromise.then(function (ad) {
+                  if (ad && ad.status === 'success') {
+                    var at = document.getElementById('aiAnalysisText'); if (at) at.innerText = ad.analysis;
+                    var oab2 = document.getElementById('openAiModalBtn'); if (oab2) oab2.style.display = 'block';
+                  }
+                  if (searchBtn) searchBtn.disabled = false;
+                  if (aiLoader) aiLoader.style.display = 'none';
+                  hideWelcomeCard();
+                });
+              }).catch(function (err) {
+                if (searchBtn) searchBtn.disabled = false;
+                if (aiLoader) aiLoader.style.display = 'none';
+                hideWelcomeCard();
+                if (statusDiv) statusDiv.innerHTML = t('error_msg') + err.message;
+              });
+            })
+            .catch(function (e) {
+              if (aiLoader) aiLoader.style.display = 'none';
+              if (searchBtn) searchBtn.disabled = false;
+              hideWelcomeCard();
+              if (statusDiv) statusDiv.innerHTML = t('error_msg') + e.message;
+            });
+        }, 'image/jpeg', 0.8);
+      };
+      img.onerror = function () {
+        if (aiLoader) aiLoader.style.display = 'none';
+        if (searchBtn) searchBtn.disabled = false;
+        hideWelcomeCard();
+        alert('Khong the tai hinh anh.');
+      };
+      img.src = validDataUrl;
+    }
+
+    function executeSearchWithImage(imgSrc) {
+      if (!imgSrc) { alert('Chua co hinh anh de tim kiem!'); return; }
+      var navBtn = document.getElementById('nav-btn-seachDwByAi');
+      if (typeof switchTab === 'function') switchTab('seachDwByAi', navBtn);
+
+      hideWelcomeCard();
+      var aiLoader = document.getElementById('aiLoader');
+      var searchBtn = document.getElementById('searchBtn');
+      var statusDiv = document.getElementById('status');
+      var resultsGrid = document.getElementById('resultsGrid');
+      var openAiModalBtn = document.getElementById('openAiModalBtn');
+      var filterSection = document.getElementById('filterSection');
+
+      if (aiLoader) aiLoader.style.display = 'flex';
+      if (searchBtn) searchBtn.disabled = true;
+      if (statusDiv) statusDiv.innerHTML = '';
+      if (resultsGrid) resultsGrid.innerHTML = '';
+      if (openAiModalBtn) openAiModalBtn.style.display = 'none';
+      if (filterSection) filterSection.style.display = 'none';
+
+      if (String(imgSrc).indexOf('data:image') === 0) {
+        processImageAndSearch(imgSrc);
+      } else {
+        google.script.run
+          .withSuccessHandler(function (base64Data) {
+            hideWelcomeCard();
+            var finalTarget = (base64Data && base64Data.length > 50) ? base64Data : imgSrc;
+            processImageAndSearch(finalTarget);
+          })
+          .withFailureHandler(function (err) {
+            hideWelcomeCard();
+            processImageAndSearch(imgSrc);
+          })
+          .getBase64FromUrlOrId(imgSrc);
+
+      }
+    }
+
+    function uploadAndSearch() {
+      var fileInput = document.getElementById('imageInput');
+      var previewImg = document.getElementById('previewImage');
+      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        if (previewImg && previewImg.src && previewImg.src.length > 20) {
+          executeSearchWithImage(previewImg.src);
+          return;
+        }
+        alert(t('no_image'));
+        return;
+      }
+      var file = fileInput.files[0];
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        processImageAndSearch(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+
+
+
+    function toggleFilter(type) {
+      currentFilters[type] = !currentFilters[type];
+      var fd = document.getElementById('filterDimBtn'); if (fd) fd.classList.toggle('active', currentFilters.dimension);
+      var fc = document.getElementById('filterCustBtn'); if (fc) fc.classList.toggle('active', currentFilters.customer);
+      applyFilters();
+    }
+
+    function resetFilters() {
+      currentFilters.dimension = false; currentFilters.customer = false;
+      var btns = document.querySelectorAll('.btn-sm');
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+      renderResults(originalResults);
+    }
+
+    function applyFilters() {
+      var filtered = originalResults.slice();
+      if (currentFilters.customer) {
+        var sel = document.getElementById('customerSelect'); var sc = sel ? sel.value : '';
+        if (sc) filtered = filtered.filter(function (item) { return item.customer === sc; });
+      }
+      if (currentFilters.dimension) {
+        var h = parseFloat(document.getElementById('HInput').value) || 0;
+        var w = parseFloat(document.getElementById('WInput').value) || 0;
+        filtered.sort(function (a, b) {
+          return (Math.abs(h - (a.h || 0)) + Math.abs(w - (a.w || 0))) - (Math.abs(h - (b.h || 0)) + Math.abs(w - (b.w || 0)));
+        });
+      }
+      renderResults(filtered);
+    }
+
+    function renderResults(results) {
+      var grid = document.getElementById('resultsGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      if (!results || results.length === 0) { grid.innerHTML = '<div class="col-12 text-center p-5">' + t('no_data') + '</div>'; return; }
+      results.forEach(function (item, index) {
+        var col = document.createElement('div'); col.className = 'col';
+        var cleanName = item.name ? (item.name.split('.').slice(0, -1).join('.') || item.name) : 'N/A';
+        var scoreHtml = item.score ? ('<div class="fw-bold text-danger mb-1">#' + (index + 1) + ' - ' + t('match_rate') + ' ' + item.score + '%</div>') : ('<div class="fw-bold text-muted mb-1">#' + (index + 1) + '</div>');
+        col.innerHTML = '<div class="result-card ' + (index === 0 ? 'best-match' : '') + '" onclick="openLink(\'' + (item.link || '') + '\')" style="cursor:pointer;position:relative;">' +
+          '<img src="' + (item.url || '') + '" alt="' + cleanName + '" onerror="this.src=\'https://via.placeholder.com/200?text=No+Image\';">' +
+          scoreHtml +
+          '<div class="mb-2"><span class="filename-tag">' + cleanName + '</span></div>' +
+          '<div class="result-info-box mb-3">' +
+          '<div class="info-item"><span class="info-label">&#128207; ' + t('size_label') + '</span><span class="info-value">' + (item.h || '--') + ' x ' + (item.w || '--') + '</span></div>' +
+          '<div class="info-item"><span class="info-label">&#128100; ' + t('cust_label') + '</span><span class="info-value text-primary">' + (item.customer || t('general_cust')) + '</span></div>' +
+          '</div>' +
+          '<button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm rounded-pill" onclick="event.stopPropagation();openform(\'' + (item.link_xlsx || '') + '\')">' +
+          '<i class="bi bi-file-earmark-check"></i> ' + t('action_to_link') +
+          '</button></div>';
+        grid.appendChild(col);
+      });
+    }
+
+    function openform(link_xlsx) {
+      if (!link_xlsx || link_xlsx === '---' || link_xlsx === '') { alert('Ban ghi nay khong co link xlsx!'); return; }
+      document.getElementById('formH').value = document.getElementById('HInput').value;
+      document.getElementById('formW').value = document.getElementById('WInput').value;
+      document.getElementById('hiddenLinkXlsx').value = link_xlsx;
+      document.getElementById('dwNoSearch').value = '';
+      document.getElementById('dwSelectValue').value = '';
+      renderDwDropdown(globalDwList);
+      new bootstrap.Modal(document.getElementById('useLinkModal')).show();
+    }
+
+    function toggleDropdownDw() { document.getElementById('dwWrapper').classList.toggle('open'); }
+    function openDropdownDw() { document.getElementById('dwWrapper').classList.add('open'); }
+    function closeDropdownDw() { document.getElementById('dwWrapper').classList.remove('open'); }
+
+    function renderDwDropdown(list, keyword) {
+      var dropdown = document.getElementById('dwDropdown');
+      var html = '';
+      if (!list || list.length === 0) { html = '<div class="search-select-empty">Khong tim thay ma nao</div>'; }
+      else {
+        list.forEach(function (item) {
+          var display = item.dwno + ' - Ver: ' + item.version + ' - To: ' + item.to;
+          var val = item.dwno + '|' + item.version + '|' + item.to;
+          if (keyword) { display = display.replace(new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<span class="highlight">$1</span>'); }
+          html += '<div class="search-select-item" onclick="selectDw(\'' + val.replace(/'/g, "\\'") + '\',\'' + display.replace(/<[^>]+>/g, '').replace(/'/g, "\\'") + '\')">' + display + '</div>';
+        });
+      }
+      dropdown.innerHTML = html;
+    }
+
+    function filterDwList() {
+      var kw = document.getElementById('dwNoSearch').value.trim().toLowerCase();
+      if (!kw) { renderDwDropdown(globalDwList); return; }
+      renderDwDropdown(globalDwList.filter(function (i) { return i.dwno.toLowerCase().indexOf(kw) !== -1 || i.version.toLowerCase().indexOf(kw) !== -1; }), kw);
+      openDropdownDw();
+    }
+
+    function selectDw(value, label) {
+      document.getElementById('dwSelectValue').value = value;
+      document.getElementById('dwNoSearch').value = label;
+      closeDropdownDw();
+    }
+
+    function submitUseForm() {
+      var h = document.getElementById('formH').value;
+      var w = document.getElementById('formW').value;
+      var link_xlsx = document.getElementById('hiddenLinkXlsx').value;
+      var dwVal = document.getElementById('dwSelectValue').value;
+      var fileInput = document.getElementById('imageInput');
+      if (!h || !w || !dwVal) { alert('Vui long nhap day du thong tin!'); return; }
+      var parts = dwVal.split('|');
+      var btnSave = document.querySelector('#useLinkModal .btn-primary');
+      btnSave.disabled = true; btnSave.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lí...';
+      var payload = { h: h, w: w, link_xlsx: link_xlsx, dwno: parts[0], version: parts[1], to: parts[2] };
+      function send(fp) {
+        google.script.run
+          .withSuccessHandler(function (res) {
+            btnSave.disabled = false; btnSave.innerHTML = '<i class="bi bi-save"></i> Lưu & cập nhật';
+            bootstrap.Modal.getInstance(document.getElementById('useLinkModal')).hide();
+            if (res && res.newLink) window.open(res.newLink, '_blank');
+            else alert('Luu thanh cong!');
+          })
+          .withFailureHandler(function (err) {
+            alert('Loi: ' + err.message); btnSave.disabled = false; btnSave.innerHTML = '<i class="bi bi-save"></i> Lưu & cập nhật';
+          })
+          .processCopyAndSave(fp);
+      }
+      if (fileInput.files && fileInput.files.length > 0) {
+        var fr = new FileReader(); var f = fileInput.files[0];
+        fr.onload = function (e) { payload.imageBytes = e.target.result.split(',')[1]; payload.mimeType = f.type; payload.extension = f.name.split('.').pop(); send(payload); };
+        fr.readAsDataURL(f);
+      } else { send(payload); }
+    }
+
+    function openLink(url) { if (url && url !== '---') window.open(url, '_blank'); else alert(t('no_link')); }
+
+    function toggleDropdown() { var w = document.getElementById('customerWrapper'); w.classList.contains('open') ? closeDropdown() : openDropdown(); }
+    function openDropdown() { document.getElementById('customerWrapper').classList.add('open'); }
+    function closeDropdown() { document.getElementById('customerWrapper').classList.remove('open'); }
+
+    function renderDropdownItems(list, keyword) {
+      var dropdown = document.getElementById('customerDropdown');
+      var html = '<div class="search-select-item all-option" onclick="selectCustomer(\'\',\'' + t('all_customers').replace(/'/g, "\\'") + '\')">' + t('all_customers') + '</div>';
+      (list || []).forEach(function (name) {
+        var display = name;
+        if (keyword) display = name.replace(new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<span class="highlight">$1</span>');
+        html += '<div class="search-select-item" onclick="selectCustomer(\'' + name.replace(/'/g, "\\'") + '\',\'' + name.replace(/'/g, "\\'") + '\')">' + display + '</div>';
+      });
+      dropdown.innerHTML = html;
+    }
+
+    function filterCustomerList() {
+      var kw = document.getElementById('customerSearch').value.trim().toLowerCase();
+      if (!kw) { renderDropdownItems(allCustomers); return; }
+      renderDropdownItems(allCustomers.filter(function (n) { return n.toLowerCase().indexOf(kw) !== -1; }), kw);
+      openDropdown();
+    }
+
+    function selectCustomer(value, label) {
+      document.getElementById('customerSelect').value = value;
+      document.getElementById('customerSearch').value = value ? label : '';
+      var btn = document.getElementById('viewStandardBtn');
+      if (value) { btn.style.display = 'block'; btn.innerHTML = '<i class="bi bi-box-seam"></i> ' + t('view_standard_for') + ' ' + label; btn.onclick = function () { getcustomerSTD(value); }; }
+      else { btn.style.display = 'none'; }
+      closeDropdown();
+    }
+
+    function badge(type, text) { if (!text || text === '0') return '<span class="badge-gray">-</span>'; return '<span class="badge-' + type + '">' + text + '</span>'; }
+    function palletBadge(type) {
+      if (!type || type === '0') return '-';
+      var tl = String(type).toLowerCase();
+      if (tl.indexOf('sat') !== -1) return '<span class="badge-red">' + type + '</span>';
+      if (tl.indexOf('go') !== -1) return '<span class="badge-blue">' + type + '</span>';
+      return '<span class="badge-gray">' + type + '</span>';
+    }
+    function changeBox(text) { if (!text || text === '0') return '-'; return '<div class="change-box">' + text + '</div>'; }
+    function kgBold(val) { if (!val || val === '0') return '-'; return '<strong style="color:#dc2626;font-size:14px;">' + val + '</strong>'; }
+
+    function getcustomerSTD(customerName) {
+      var tbody = document.getElementById('standardTableBody');
+      var titleEl = document.getElementById('standardModalTitle');
+      var subtitleEl = document.getElementById('standardModalSubtitle');
+      tbody.innerHTML = '<tr><td colspan="28" class="std-loading-state"><div class="spinner-border" role="status"></div><p class="mt-3 mb-0 text-muted">' + t('std_loading') + '</p></td></tr>';
+      titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
+      subtitleEl.textContent = t('retrieving_for') + ' ' + customerName + '...';
+      new bootstrap.Modal(document.getElementById('standardModal')).show();
+      google.script.run
+        .withSuccessHandler(function (rows) {
+          if (!rows || rows.length === 0) {
+            titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
+            subtitleEl.textContent = customerName;
+            tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-inbox"></i><p class="mb-1 fw-bold" style="color:#64748b;">' + t('std_empty') + '</p><small>' + t('std_empty_desc') + ' <strong>' + customerName + '</strong></small></td></tr>';
+            return;
+          }
+          titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
+          subtitleEl.textContent = customerName + ' - ' + rows.length + ' ' + t('records');
+          var html = '';
+          rows.forEach(function (r, i) {
+            html += '<tr><td class="text-center fw-bold">' + (i + 1) + '</td><td><strong>' + (r[0] || '') + '</strong></td><td>' + badge('gray', r[1]) + '</td><td class="text-center">' + (r[2] || '-') + '</td><td style="color:#2563eb;font-weight:500;">' + (r[3] || '-') + '</td><td>' + (r[4] || '-') + '</td><td>' + (r[5] || '-') + '</td><td>' + (r[6] || '-') + '</td><td class="text-center">' + (r[7] || '-') + '</td><td>' + (r[8] || '-') + '</td><td>' + (r[9] || '-') + '</td><td>' + palletBadge(r[10]) + '</td><td class="text-center" style="font-family:monospace;">' + (r[11] || '-') + '</td><td class="text-center">' + (r[12] || '-') + '</td><td class="text-start">' + (r[13] || '-') + '</td><td class="text-start">' + (r[14] || '-') + '</td><td class="text-center">' + (r[15] || '-') + '</td><td class="text-center">' + (r[16] || '-') + '</td><td>' + badge('gray', r[17]) + '</td><td class="text-start text-muted">' + (r[18] || '-') + '</td><td class="text-center">' + (r[19] || '-') + '</td><td>' + changeBox(r[20]) + '</td><td class="text-start">' + (r[21] || '-') + '</td><td class="text-center">' + (r[22] || '-') + '</td><td class="text-center" style="font-family:monospace;">' + (r[23] || '-') + '</td><td class="text-center">' + kgBold(r[24]) + '</td><td class="text-center">' + (r[25] || '-') + '</td><td class="text-center">' + (r[26] || '-') + '</td></tr>';
+          });
+          tbody.innerHTML = html;
+        })
+        .withFailureHandler(function (err) {
+          titleEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + t('std_error');
+          subtitleEl.textContent = '';
+          tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-exclamation-circle text-danger"></i><p class="text-danger fw-bold">' + err.message + '</p></td></tr>';
+        })
+        .getCustomerStandard(customerName);
+    }
+
+    var i18n = {
+      vi: { upload_title: 'Hinh anh dau vao', dim_title: 'Thong so kich thuoc', h_placeholder: 'Chieu cao', w_placeholder: 'Chieu rong', cust_title: 'Doi tuong khach hang', btn_standard: 'Xem tieu chuan', btn_search: 'PHAN TICH & TIM KIEM', btn_ai: 'DANH GIA TU AI', filter_title: 'Bo loc nhanh:', filter_dim: 'Theo HxW', filter_cust: 'Theo khach', filter_reset: 'Lam moi', all_customers: '-- Tat ca khach hang --', search_placeholder: 'Go de tim khach hang...', loading_data: 'Dang tai...', no_data: 'Khong co du lieu phu hop.', match_rate: 'Khop', size_label: 'Kich thuoc:', cust_label: 'Khach hang:', general_cust: 'Chung', found_results: 'Da tim thay {0} ket qua.', error_msg: 'Loi: ', no_link: 'Chua co link ban ve!', no_image: 'Vui long chon anh!', ai_loading: 'AI dang phan tich', view_standard_for: 'Xem tieu chuan cua', std_modal_title: 'Tieu Chuan Dong Goi', std_loading: 'Dang tai...', std_empty: 'Chua co du lieu', std_empty_desc: 'Khong tim thay tieu chuan cho', std_error: 'Loi', std_info_group: 'Thong tin khach hang', std_pack_group: 'Tieu chuan dong goi', std_history_group: 'Lich su thay doi', ai_modal_title: 'Ket qua SmartVision AI', close_btn: 'Dong', scroll_hint: 'Cuon ngang de xem day du', retrieving_for: 'Dang truy xuat cho', records: 'ban ghi', not_found: 'Khong tim thay', no_excel_data: 'Khong co du lieu', action_to_link: 'Su dung' },
+      en: { upload_title: 'Input Image', dim_title: 'Dimensions', h_placeholder: 'Height', w_placeholder: 'Width', cust_title: 'Target Customer', btn_standard: 'View Standard', btn_search: 'ANALYZE & SEARCH', btn_ai: 'AI EVALUATION', filter_title: 'Quick filter:', filter_dim: 'By HxW', filter_cust: 'By Customer', filter_reset: 'Reset', all_customers: '-- All Customers --', search_placeholder: 'Search customer...', loading_data: 'Loading...', no_data: 'No matching data.', match_rate: 'Match', size_label: 'Dimensions:', cust_label: 'Customer:', general_cust: 'General', found_results: 'Found {0} results.', error_msg: 'Error: ', no_link: 'No drawing link!', no_image: 'Please select an image!', ai_loading: 'AI is analyzing', view_standard_for: 'View standard for', std_modal_title: 'Packaging Standard', std_loading: 'Loading...', std_empty: 'No data', std_empty_desc: 'No standard for', std_error: 'Error', std_info_group: 'Customer Info', std_pack_group: 'Packaging Standard', std_history_group: 'Change History', ai_modal_title: 'SmartVision AI Results', close_btn: 'Close', scroll_hint: 'Scroll to see full table', retrieving_for: 'Retrieving for', records: 'records', not_found: 'Not found', no_excel_data: 'No data', action_to_link: 'Use' }
+    };
+
+    function t(key) { var l = i18n[currentLang]; return (l && l[key]) ? l[key] : key; }
+
+    function changeLang(lang, btnEl) {
+      currentLang = lang;
+      var btns = document.querySelectorAll('.lang-btn');
+      for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+      if (btnEl) btnEl.classList.add('active');
+      var els = document.querySelectorAll('[data-i18n]');
+      for (var j = 0; j < els.length; j++) { var k = els[j].getAttribute('data-i18n'); if (i18n[lang] && i18n[lang][k]) els[j].innerHTML = i18n[lang][k]; }
+      var cs = document.getElementById('customerSearch'); if (cs) cs.placeholder = t('search_placeholder');
+      filterCustomerList();
+    }
+
+    document.addEventListener('click', function (e) {
+      var cw = document.getElementById('customerWrapper'); if (cw && !cw.contains(e.target)) closeDropdown();
+      var dw = document.getElementById('dwWrapper'); if (dw && !dw.contains(e.target)) closeDropdownDw();
+    });
+
+    (function loadInitialData() {
+      google.script.run.withSuccessHandler(function (response) {
+        globalDataMap = response.dataMap || {};
+        allCustomers = response.customers || [];
+        globalDwList = response.dwList || [];
+        var input = document.getElementById('customerSearch');
+        if (input) { input.placeholder = t('search_placeholder'); input.disabled = false; }
+        renderDropdownItems(allCustomers);
+      }).getInitialData();
+    })();
+
+    // Export all to window scope
+    window.hideWelcomeCard = hideWelcomeCard;
+    window.previewSelectedImage = previewSelectedImage;
+    window.processImageAndSearch = processImageAndSearch;
+    window.executeSearchWithImage = executeSearchWithImage;
+    window.uploadAndSearch = uploadAndSearch;
+    window.toggleFilter = toggleFilter;
+    window.resetFilters = resetFilters;
+    window.applyFilters = applyFilters;
+    window.openform = openform;
+    window.openLink = openLink;
+    window.toggleDropdown = toggleDropdown;
+    window.openDropdown = openDropdown;
+    window.closeDropdown = closeDropdown;
+    window.filterCustomerList = filterCustomerList;
+    window.selectCustomer = selectCustomer;
+    window.toggleDropdownDw = toggleDropdownDw;
+    window.openDropdownDw = openDropdownDw;
+    window.closeDropdownDw = closeDropdownDw;
+    window.filterDwList = filterDwList;
+    window.selectDw = selectDw;
+    window.submitUseForm = submitUseForm;
+    window.getcustomerSTD = getcustomerSTD;
+    window.changeLang = changeLang;
+
+    // Attach searchBtn
+    (function () { var btn = document.getElementById('searchBtn'); if (btn) btn.onclick = uploadAndSearch; })();
+  </script>
+
+</div>

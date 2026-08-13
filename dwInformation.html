@@ -1,0 +1,1285 @@
+<div class="page-dwIf p-3 p-md-4 custom-scroll" style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+
+  <!-- ================= CUSTOM CSS ĐÃ ĐÓNG GÓI (.page-dwIf) ================= -->
+  <style>
+    /* Global Layout & Soft Styling */
+    .page-dwIf {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Tabs */
+    .page-dwIf .custom-tabs {
+      background: #ffffff;
+      padding: 6px;
+      border-radius: 12px;
+      display: inline-flex;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+    }
+
+    .page-dwIf .custom-tabs .nav-link {
+      color: #64748b;
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 10px 24px;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .page-dwIf .custom-tabs .nav-link:hover {
+      color: var(--primary-color, #7CB342);
+      background: #f1f5f9;
+    }
+
+    .page-dwIf .custom-tabs .nav-link.active {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: var(--primary-color, #7CB342);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    }
+
+    /* Khung chính Glass Panel */
+    .page-dwIf .glass-panel {
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+
+    /* Danh sách Email */
+    .page-dwIf .email-list-container {
+      background: #f8fafc;
+      border-right: 1px solid #e2e8f0;
+    }
+
+    .page-dwIf .email-item {
+      border-left: 4px solid transparent;
+      border-bottom: 1px solid #f1f5f9;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      padding: 14px 16px;
+      background: #ffffff;
+    }
+
+    .page-dwIf .email-item.status-pending {
+      border-left-color: #f59e0b !important;
+      background-color: #fffbeb;
+    }
+
+    .page-dwIf .email-item.status-received {
+      border-left-color: #10b981 !important;
+      background-color: #ecfdf5;
+    }
+
+    .page-dwIf .email-item:hover {
+      background: #f8fafc;
+      transform: translateX(2px);
+    }
+
+    .page-dwIf .email-item.active {
+      background: var(--primary-soft, #f0f7ea) !important;
+      border-left-color: var(--primary-color, #7CB342) !important;
+    }
+
+    .page-dwIf .email-item.unread .email-sender {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    /* Datagridview Table Styling */
+    .page-dwIf .custom-table {
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .page-dwIf .custom-table thead th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      padding: 14px 18px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .page-dwIf .custom-table tbody td {
+      padding: 14px 18px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.9rem;
+      color: #334155;
+    }
+
+    .page-dwIf .custom-table tbody tr {
+      transition: all 0.15s ease;
+    }
+
+    .page-dwIf .custom-table tbody tr:hover {
+      background-color: #f8fafc !important;
+    }
+
+    /* Modal Styling Premium */
+    .page-dwIf .modal-content {
+      border-radius: 20px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    }
+
+    .page-dwIf .modal-header {
+      background: #ffffff;
+      border-bottom: 1px solid #f1f5f9;
+      padding: 20px 28px;
+    }
+
+    .page-dwIf .modal-footer {
+      background: #f8fafc;
+      border-top: 1px solid #f1f5f9;
+      padding: 16px 28px;
+    }
+
+    .page-dwIf .form-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--primary-color, #7CB342);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-dwIf .form-section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+
+    /* Inputs Focus & Hover */
+    .page-dwIf .form-control,
+    .page-dwIf .form-select {
+      border-color: #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      padding: 9px 13px;
+      transition: all 0.2s ease;
+    }
+
+    .page-dwIf .form-control:focus,
+    .page-dwIf .form-select:focus {
+      border-color: var(--primary-color, #7CB342);
+      box-shadow: 0 0 0 4px rgba(124, 179, 66, 0.12);
+    }
+
+    .page-dwIf .form-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+
+    /* Scrollbar */
+    .page-dwIf .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    .page-dwIf .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .page-dwIf .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .page-dwIf .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+
+
+
+  <!-- ================= TABS NAVIGATION ================= -->
+  <div class="d-flex justify-content-center mb-4 d-none">
+    <ul class="nav nav-pills custom-tabs gap-2" id="dwIfTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="mail-tab" data-bs-toggle="pill" data-bs-target="#mail-section" type="button"
+          role="tab">
+          <i class="fa fa-envelope-open-text me-2"></i> Hộp thư dự án bản vẽ từ khách hàng
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="manual-tab" data-bs-toggle="pill" data-bs-target="#manual-section" type="button"
+          role="tab">
+          <i class="fa fa-file-signature me-2"></i> Nhập dữ liệu bản vẽ
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ================= TABS CONTENT ================= -->
+  <div class="tab-content glass-panel" id="dwIfTabContent" style="min-height: 500px;">
+
+    <!-- TAB 1: NHẬN THÔNG TIN MAIL -->
+    <div class="tab-pane fade show active h-100" id="mail-section" role="tabpanel">
+      <div class="row g-0 h-100">
+
+        <!-- SIDEBAR EMAIL LIST -->
+        <div class="col-md-4 col-lg-3 d-flex flex-column email-list-container h-100">
+
+          <div class="p-3 border-bottom bg-white">
+            <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden border">
+              <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="fa fa-search"></i></span>
+              <input type="text" id="searchInput" class="form-control border-0 shadow-none bg-white"
+                placeholder="Tìm kiếm email..." onkeydown="if(event.key==='Enter') searchEmails()" />
+              <button class="btn btn-primary px-3 rounded-pill" onclick="searchEmails()"><i
+                  class="fa fa-arrow-right"></i></button>
+            </div>
+          </div>
+
+          <div class="flex-grow-1 overflow-auto custom-scroll" id="emailList">
+            <!-- JS Render Email Items Here -->
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center p-3 border-top bg-white" id="pagination"
+            style="display:none !important;">
+            <small class="text-muted fw-semibold" id="pageInfo"></small>
+            <div class="btn-group shadow-sm">
+              <button class="btn btn-sm btn-light border" id="prevBtn" onclick="changePage(-1)"><i
+                  class="fa fa-chevron-left text-secondary"></i></button>
+              <button class="btn btn-sm btn-light border" id="nextBtn" onclick="changePage(1)"><i
+                  class="fa fa-chevron-right text-secondary"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- EMAIL DETAIL -->
+        <div class="col-md-8 col-lg-9 d-flex flex-column h-100 bg-white">
+          <div class="d-flex flex-column justify-content-center align-items-center h-100 text-muted" id="emptyState">
+            <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mb-3"
+              style="width: 80px; height: 80px;">
+              <i class="fa fa-inbox fa-2x text-secondary"></i>
+            </div>
+            <h5 class="fw-bold text-dark">Chọn email để xem nội dung</h5>
+            <small>Email có tiêu đề [MANUFACTURING ORDER] hoặc [NEW PROJECT] sẽ hiển thị ở đây</small>
+          </div>
+
+          <div id="detailContent" class="d-flex flex-column h-100 d-none">
+            <div id="detailHeader" class="p-4 border-bottom shadow-sm z-1 bg-white"></div>
+            <div id="detailBody" class="flex-grow-1 overflow-auto custom-scroll p-4" style="background-color: #f8fafc;">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: QUẢN LÝ DỮ LIỆU BẢN VẼ -->
+    <div class="tab-pane fade" id="manual-section" role="tabpanel">
+      <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+
+        <!-- Thanh công cụ: Tìm kiếm & Thêm mới -->
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 pb-3 mb-3 border-bottom">
+          <div class="input-group" style="max-width: 350px;">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
+            <input type="text" id="searchDrawingInput" class="form-control border-start-0 bg-light shadow-none"
+              placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchDrawingData()">
+          </div>
+
+          <button class="btn btn-primary fw-bold px-4 rounded-pill" onclick="openAddDrawingForm()">
+            <i class="fa fa-plus me-2"></i>Thêm mới
+          </button>
+        </div>
+
+        <!-- Bảng DataGridView -->
+        <div class="position-relative">
+          <div class="table-responsive border rounded-3 overflow-auto" style="max-height: 480px;">
+            <table class="table table-hover align-middle mb-0" id="drawingDataTable">
+              <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0">Type</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">TO</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Dw Code</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Customer</th>
+                  <th scope="col" class="text-end pe-4 text-muted fw-semibold py-3 border-bottom-0"
+                    style="width: 120px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="drawingTableBody">
+                <!-- Dữ liệu JS sẽ đổ vào đây -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Trạng thái trống (Empty state) -->
+          <div id="emptyTableState" class="position-absolute top-50 start-50 translate-middle text-center w-100 d-none">
+            <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mb-3 mx-auto"
+              style="width: 70px; height: 70px;">
+              <i class="fa fa-folder-open fa-2x text-secondary opacity-50"></i>
+            </div>
+            <h6 class="fw-bold text-secondary">Không có dữ liệu</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div> <!-- End Tab Content -->
+
+<!-- ================= POPUP FORM (MODAL) ================= -->
+<div class="modal fade" id="drawingFormModal" tabindex="-1" aria-labelledby="modalFormTitle" aria-hidden="true"
+  data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <form id="drawingForm" onsubmit="handleDrawingFormSubmit(event)">
+        <div class="modal-header bg-light border-bottom p-4">
+          <div class="d-flex align-items-center">
+            <div
+              class="bg-primary bg-opacity-10 text-primary rounded d-flex justify-content-center align-items-center me-3"
+              style="width: 40px; height: 40px;">
+              <i class="fa fa-file-pen fs-5"></i>
+            </div>
+            <h5 class="modal-title fw-bold text-dark" id="modalFormTitle">Form Nhập Dữ Liệu</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeDrawingForm()"
+            aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-white">
+          <div class="row g-3">
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Group <span class="text-danger">*</span></label>
+              <select id="formGroup" class="form-select bg-light" required>
+                <option value="Barsale">Barsale</option>
+                <option value="OEM">OEM</option>
+                <option value="WE SASH">WE SASH</option>
+              </select>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
+              <select id="formType" class="form-select bg-light" required>
+                <option value="New">New</option>
+                <option value="Revise">Revise</option>
+              </select>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Customer <span class="text-danger">*</span></label>
+              <input type="text" id="formCustomer" class="form-control" placeholder="Tên khách hàng..." required />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">TO <span class="text-danger">*</span></label>
+              <input type="text" id="formTO" class="form-control" placeholder="Mã TO..." required />
+            </div>
+
+            <div class="col-md-6 col-sm-12">
+              <label class="form-label fw-semibold">Dự án <span class="text-danger">*</span></label>
+              <input type="text" id="formProject" class="form-control" placeholder="Nhập tên dự án..." required />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Số SO</label>
+              <input type="text" id="formSO" class="form-control" placeholder="Ví dụ: SO12345" />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Dw Code <span class="text-danger">*</span></label>
+              <input type="text" id="formDwCode" class="form-control bg-light" required />
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Version <span class="text-danger">*</span></label>
+              <select id="formVersion" class="form-select bg-light" required>
+                <option value="v1.0">v1.0</option>
+                <option value="v1.1">v1.1</option>
+                <option value="v2.0">v2.0</option>
+                <option value="v3.0">v3.0</option>
+              </select>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Type DW <span class="text-danger">*</span></label>
+              <select id="formTypeDw" class="form-select bg-light" required>
+                <option value="V2">V2</option>
+                <option value="V3">V3</option>
+                <option value="V8">V8</option>
+              </select>
+            </div>
+            <div class="col-md-6 col-sm-12">
+              <label class="form-label fw-semibold">Người đảm trách <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="fa fa-user"></i></span>
+                <input type="text" id="formAssignee" class="form-control" placeholder="Tên người phụ trách..."
+                  required />
+              </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Width (mm)</label>
+              <input type="number" id="formWidth" class="form-control" placeholder="0" />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Height (mm)</label>
+              <input type="number" id="formHeight" class="form-control" placeholder="0" />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Ngày tiếp nhận <span class="text-danger">*</span></label>
+              <input type="date" id="formReceivedDate" class="form-control" required />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Ngày ĐT hoàn thành</label>
+              <input type="date" id="formAssigneeDoneDate" class="form-control" />
+            </div>
+
+            <div class="col-md-2 col-sm-6">
+              <label class="form-label fw-semibold">FYE</label>
+              <input type="text" id="formFYE" class="form-control bg-light" placeholder="FYE27" readonly />
+            </div>
+            <div class="col-md-6 col-sm-12">
+              <label class="form-label fw-semibold">Hình ảnh mặt cắt (File/Link)</label>
+              <input type="file" id="formImageFile" class="form-control" accept="image/*" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light border-top p-3">
+          <button type="submit" class="btn btn-primary px-4 shadow-sm fw-bold"><i class="fa fa-floppy-disk me-2"></i>Lưu
+            Dữ Liệu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ==========================================================================
+     HÀM TIỆN ÍCH
+     ========================================================================== */
+  function escHtml(str) { return str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
+  function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val !== undefined ? val : '–'; }
+
+  function showToast(message, type) {
+    type = type || 'success';
+    var container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div'); container.id = 'toastContainer'; container.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;display:flex;flex-direction:column;gap:10px;pointer-events:none;'; document.body.appendChild(container);
+    }
+    var bg = type === 'error' ? '#fee2e2' : type === 'warning' ? '#fef9c3' : '#dcfce7', border = type === 'error' ? '#f87171' : type === 'warning' ? '#fde047' : '#4ade80', color = type === 'error' ? '#991b1b' : type === 'warning' ? '#854d0e' : '#166534';
+    var icon = type === 'error' ? '<i class="fa fa-circle-xmark me-2"></i>' : type === 'warning' ? '<i class="fa fa-triangle-exclamation me-2"></i>' : '<i class="fa fa-circle-check me-2"></i>';
+    var toast = document.createElement('div');
+    toast.style.cssText = 'background:' + bg + '; border:1px solid ' + border + '; color:' + color + '; padding:12px 20px; border-radius:8px; font-size:14px; font-weight:600; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); pointer-events:auto; transition:opacity 0.3s; display:flex; align-items:center;';
+    toast.innerHTML = icon + '<span>' + escHtml(message) + '</span>';
+    container.appendChild(toast);
+    setTimeout(function () { toast.style.opacity = '0'; setTimeout(function () { toast.remove(); }, 300); }, 4000);
+  }
+
+  /* ==========================================================================
+     MODULE 1.1: NHẬN THÔNG TIN MAIL (ÁP DỤNG PROMISE ĐỂ CHẠY SONG SONG)
+     ========================================================================== */
+  var state = { emails: [], currentPage: 0, totalEmails: 0, hasMore: false, selectedId: null, keyword: '', currentEmailDetail: null };
+
+  function initThongTinBanVe() {
+    loadEmailsAndStats(0);
+  }
+
+  async function loadEmailsAndStats(page) {
+    loadingRequests++;
+    state.currentPage = page;
+
+    try {
+      // Bắn 2 luồng xuống máy chủ cùng một lúc bằng Promise.all
+      const [emailRes, statsRes] = await Promise.all([
+        new Promise((resolve, reject) => {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getManufacturingEmails(page, state.keyword);
+        }),
+        new Promise((resolve, reject) => {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getStatistics();
+        })
+      ]);
+
+      hideLoading(); // <--- TẮT LOADING
+
+      // Xử lý kết quả Email
+      if (!emailRes || !emailRes.success) {
+        showToast('Lỗi tải danh sách: ' + (emailRes ? emailRes.error : 'rỗng'), 'error');
+      } else {
+        state.emails = emailRes.emails;
+        state.totalEmails = emailRes.total;
+        state.hasMore = emailRes.hasMore;
+        renderEmailList(emailRes.emails);
+        renderPagination(emailRes);
+      }
+
+      // Xử lý kết quả Thống Kê
+      if (statsRes && statsRes.success) {
+        setText('statTotal', statsRes.total);
+        setText('statUnread', statsRes.unread);
+        setText('statToday', statsRes.today);
+        setText('statWeek', statsRes.thisWeek);
+      }
+    } catch (err) {
+      hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
+      showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
+    }
+  }
+
+  function searchEmails() {
+    var input = document.getElementById('searchInput');
+    if (input) state.keyword = input.value.trim();
+    loadEmailsAndStats(0);
+  }
+
+  function changePage(dir) {
+    var newPage = state.currentPage + dir;
+    if (newPage < 0) return;
+    loadEmailsAndStats(newPage);
+  }
+
+  function updateSidebarStatus(threadId, isReceived) {
+    // 1. Cập nhật trạng thái trong mảng data để khi chuyển trang không bị mất
+    var emailObj = state.emails.find(function (e) { return e.id === threadId; });
+    if (emailObj) emailObj.isReceived = isReceived;
+
+    // 2. Tìm thẻ HTML ở danh sách bên trái và đổi class màu
+    var sidebarItem = document.querySelector('#emailList .email-item[onclick*="' + threadId + '"]');
+    if (sidebarItem) {
+      if (isReceived) {
+        sidebarItem.classList.remove('status-pending');
+        sidebarItem.classList.add('status-received');
+      } else {
+        sidebarItem.classList.remove('status-received');
+        sidebarItem.classList.add('status-pending');
+      }
+    }
+  }
+
+  function renderEmailList(emails) {
+    var list = document.getElementById('emailList');
+    if (!list) return;
+    if (!emails || emails.length === 0) {
+      list.innerHTML = '<div class="text-center text-muted py-5"><i class="fa fa-inbox fs-4 mb-2"></i><br><small>Không tìm thấy email</small></div>'; return;
+    }
+
+    // 1. Sắp xếp danh sách: Chưa tiếp nhận (false/undefined) lên đầu, Đã tiếp nhận (true) xuống cuối
+    var sortedEmails = emails.slice().sort(function (a, b) {
+      var aStatus = a.isReceived ? 1 : 0;
+      var bStatus = b.isReceived ? 1 : 0;
+      return aStatus - bStatus;
+    });
+
+    // 2. Render HTML
+    var htmlBuffer = [];
+    for (var i = 0; i < sortedEmails.length; i++) {
+      var email = sortedEmails[i];
+      var isActive = email.id === state.selectedId ? ' active' : '';
+      var isUnread = email.isUnread ? ' unread' : '';
+
+      var statusClass = email.isReceived ? ' status-received' : ' status-pending';
+
+      var dot = email.isUnread ? '<span class="position-absolute top-0 start-0 translate-middle p-1 bg-primary border border-light rounded-circle" style="margin-top:20px; margin-left:10px;"></span>' : '';
+
+      htmlBuffer.push(
+        '<div class="email-item position-relative' + isActive + isUnread + statusClass + '" onclick="openEmail(\'' + email.id + '\'); return false;">' +
+        dot +
+        '<div class="d-flex justify-content-between align-items-center mb-1">' +
+        '<span class="email-sender text-truncate pe-2" style="font-size:0.9rem;">' + escHtml(email.senderName || email.senderEmail) + '</span>' +
+        '<small class="text-muted text-nowrap" style="font-size:0.75rem;">' + escHtml(email.date) + '</small>' +
+        '</div>' +
+        '<div class="email-subject text-secondary text-truncate" style="font-size:0.85rem;">' + escHtml(email.subject) + '</div>' +
+        '</div>'
+      );
+    }
+    list.innerHTML = htmlBuffer.join('');
+  }
+
+  function renderPagination(data) {
+    var pag = document.getElementById('pagination'); if (!pag) return;
+    if (data.total <= 50) { pag.classList.replace('d-flex', 'd-none'); return; }
+    pag.classList.replace('d-none', 'd-flex');
+    document.getElementById('prevBtn').disabled = state.currentPage === 0;
+    document.getElementById('nextBtn').disabled = !data.hasMore;
+  }
+
+  async function openEmail(threadId) {
+    if (state.selectedId === threadId) return;
+    state.selectedId = threadId;
+    document.querySelectorAll('#emailList .email-item').forEach(function (el) {
+      el.classList.toggle('active', el.getAttribute('onclick').includes(threadId));
+    });
+
+    showLoading('Đang tải nội dung email...');
+
+    try {
+      const [detailRes, statusRes] = await Promise.all([
+        new Promise((resolve, reject) => {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getEmailDetail(threadId);
+        }),
+        new Promise((resolve, reject) => {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).checkEmailReceived(threadId);
+        })
+      ]);
+
+      hideLoading();
+
+      if (!detailRes || !detailRes.success) {
+        return showToast('Lỗi tải nội dung: ' + (detailRes ? detailRes.error : 'rỗng'), 'error');
+      }
+
+      renderEmailDetail(detailRes);
+
+      var badgeEl = document.getElementById('receivedBadge');
+      if (badgeEl && statusRes && statusRes.success && statusRes.isReceived) {
+        badgeEl.innerHTML = '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>';
+
+        var btn = document.getElementById('btnTiepNhan');
+        if (btn) btn.classList.add('d-none');
+
+        // BỔ SUNG ĐỒNG BỘ MÀU XANH CHO SIDEBAR
+        updateSidebarStatus(threadId, true);
+      }
+
+      google.script.run.withSuccessHandler(function (statsData) {
+        if (statsData && statsData.success) setText('statUnread', statsData.unread);
+      }).getStatistics();
+
+    } catch (err) {
+      hideLoading();
+      showToast('Lỗi xử lý email: ' + err.message, 'error');
+    }
+  }
+
+  function renderEmailDetail(data) {
+    state.currentEmailDetail = data;
+    var firstMsg = data.messages[0];
+    var subject = data.subject || '(Không có tiêu đề)';
+
+    // Kiểm tra nhanh trạng thái tiếp nhận từ danh sách email
+    var currentEmail = state.emails.find(function (e) { return e.id === data.threadId; });
+    var isReceived = currentEmail ? currentEmail.isReceived : false;
+
+    // Render Huy hiệu & Nút bấm dựa trên trạng thái
+    var badgeHtml = '<span id="receivedBadge">' +
+      (isReceived ? '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>' : '') +
+      '</span>';
+
+    var btnHtml = isReceived ? '' :
+      '<button id="btnTiepNhan" class="btn btn-primary shadow-sm text-nowrap" onclick="handleTiepNhanThietKe()">' +
+      '<i class="fa fa-file-signature me-2"></i>Tiếp nhận thiết kế' +
+      '</button>';
+
+    var headerHtml =
+      '<div class="d-flex justify-content-between align-items-start gap-3">' +
+      '<h4 class="fw-bold text-dark mb-0 lh-base">' + escHtml(subject) + badgeHtml + '</h4>' +
+      btnHtml +
+      '</div>' +
+      '<div class="d-flex align-items-center mt-4">' +
+      '<div class="bg-white border text-secondary rounded-circle d-flex justify-content-center align-items-center me-3 shadow-sm" style="width:45px;height:45px;font-size:20px;font-weight:bold;">' +
+      (firstMsg.senderName[0] || '?').toUpperCase() +
+      '</div>' +
+      '<div>' +
+      '<div class="fw-bold text-dark fs-6">' + escHtml(firstMsg.senderName) + ' <span class="text-muted fw-normal" style="font-size:0.85rem;">&lt;' + escHtml(firstMsg.senderEmail) + '&gt;</span></div>' +
+      '<small class="text-muted"><i class="fa fa-calendar-alt me-1"></i> ' + escHtml(firstMsg.date) + '</small>' +
+      '</div>' +
+      '</div>';
+
+    document.getElementById('detailHeader').innerHTML = headerHtml;
+
+    var bodyHtml = data.messages.map(function (msg, idx) {
+      var safeBody = escHtml(msg.plainBody || '');
+
+      var urlRegex = /((?:https?:\/\/|www\.)[^\s]+)/ig;
+      var links = [];
+      var match;
+      while ((match = urlRegex.exec(safeBody)) !== null) {
+        var cleanUrl = match[1].replace(/(&quot;|&lt;|&gt;|&amp;|[.,;)])+$/g, '');
+        if (links.indexOf(cleanUrl) === -1) { links.push(cleanUrl); }
+      }
+
+      var formattedBody = safeBody.replace(urlRegex, function (m) {
+        var cUrl = m.replace(/(&quot;|&lt;|&gt;|&amp;|[.,;)])+$/g, '');
+        var trailing = m.substring(cUrl.length);
+        var href = cUrl.toLowerCase().indexOf('http') === 0 ? cUrl : 'https://' + cUrl;
+        return '<a href="' + href + '" target="_blank" class="text-decoration-none">' + cUrl + '</a>' + trailing;
+      });
+
+      var linksFooterHtml = '';
+      if (links.length > 0) {
+        linksFooterHtml = '<div class="mt-4 pt-3 border-top">' +
+          '<h6 class="fw-bold text-dark mb-2" style="font-size:0.85rem;"><i class="fa fa-link me-2 text-primary"></i>Liên kết trong email:</h6>' +
+          '<div class="d-flex flex-wrap gap-2">';
+        for (var i = 0; i < links.length; i++) {
+          var linkUrl = links[i];
+          var linkHref = linkUrl.toLowerCase().indexOf('http') === 0 ? linkUrl : 'https://' + linkUrl;
+          var displayUrl = linkUrl.length > 40 ? linkUrl.substring(0, 40) + '...' : linkUrl;
+          linksFooterHtml += '<a href="' + linkHref + '" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill py-1 px-3 shadow-sm text-decoration-none" style="font-size:0.85rem;"><i class="fa fa-external-link-alt me-2"></i>' + displayUrl + '</a>';
+        }
+        linksFooterHtml += '</div></div>';
+      }
+
+      var attachmentsFooterHtml = '';
+      if (msg.attachments && msg.attachments.length > 0) {
+        attachmentsFooterHtml = '<div class="mt-3 pt-3 border-top">' +
+          '<h6 class="fw-bold text-dark mb-2" style="font-size:0.85rem;"><i class="fa fa-paperclip me-2 text-primary"></i>File đính kèm:</h6>' +
+          '<div class="d-flex flex-wrap gap-2">';
+        for (var j = 0; j < msg.attachments.length; j++) {
+          var att = msg.attachments[j];
+          var attName = escHtml(att.name || 'Tập tin không tên');
+          var iconClass = att.isSheet ? 'fa-file-excel text-success' : 'fa-file text-secondary';
+          attachmentsFooterHtml += '<button type="button" onclick="viewAttachment(\'' + data.threadId + '\', ' + idx + ', ' + j + ', \'' + attName.replace(/'/g, "\\'") + '\')" class="btn btn-sm btn-light border p-2 px-3 d-flex align-items-center shadow-sm rounded-pill text-dark hover-card" style="font-size:0.85rem; transition: all 0.2s;" title="Nhấn để xem"><i class="fa ' + iconClass + ' me-2 fs-6"></i>' + attName + '</button>';
+        }
+        attachmentsFooterHtml += '</div></div>';
+      }
+
+      return '<div class="card mb-4 border-0 shadow-sm rounded-4 overflow-hidden">' +
+        '<div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between">' +
+        '<span class="fw-bold text-secondary"><i class="fa fa-reply fa-rotate-180 me-2 text-primary"></i>' + escHtml(msg.senderName) + '</span>' +
+        '<small class="text-muted">' + escHtml(msg.date) + '</small>' +
+        '</div>' +
+        '<div class="card-body pt-2 text-dark" style="font-size:14px;white-space:pre-wrap;line-height:1.6;">' +
+        formattedBody + linksFooterHtml + attachmentsFooterHtml +
+        '</div></div>';
+    }).join('');
+
+    document.getElementById('detailBody').innerHTML = bodyHtml;
+    document.getElementById('emptyState').classList.replace('d-flex', 'd-none');
+    document.getElementById('detailContent').classList.replace('d-none', 'd-flex');
+  }
+
+  function viewAttachment(threadId, msgIndex, attIndex, fileName) {
+    showLoading('Đang tải file từ server...');
+
+    // Mở tab mới ngay lập tức
+    var viewerTab = window.open('', '_blank');
+    if (!viewerTab) {
+      hideLoading();
+      return showToast('Vui lòng tắt trình chặn Popup (Popup Blocker) cho trang này.', 'error');
+    }
+
+    // Hiển thị giao diện chờ trên Tab mới
+    viewerTab.document.write('<title>Đang tải...</title><div style="font-family:sans-serif; padding: 30px; text-align:center; color:#64748b; margin-top: 50px;"><h3>Đang tải dữ liệu file...</h3><p>Vui lòng đợi trong giây lát.</p></div>');
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        hideLoading();
+        if (res && res.success && res.dataBase64) {
+          try {
+            // Tối ưu hóa việc giải mã Base64 cho file lớn bằng cách cắt nhỏ (chunking)
+            var byteCharacters = atob(res.dataBase64);
+            var byteArrays = [];
+            var sliceSize = 512;
+
+            for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+              var slice = byteCharacters.slice(offset, offset + sliceSize);
+              var byteNumbers = new Array(slice.length);
+              for (var i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+              }
+              var byteArray = new Uint8Array(byteNumbers);
+              byteArrays.push(byteArray);
+            }
+
+            // Tạo Blob URL
+            var blob = new Blob(byteArrays, { type: res.mimeType });
+            var blobUrl = URL.createObjectURL(blob);
+
+            // Render iframe full màn hình vào Tab mới thay vì đổi location.href
+            viewerTab.document.body.style.margin = '0';
+            viewerTab.document.body.style.overflow = 'hidden';
+            viewerTab.document.title = fileName; // Cập nhật tên Tab bằng tên file
+            viewerTab.document.body.innerHTML = '<iframe src="' + blobUrl + '" style="width:100vw; height:100vh; border:none;"></iframe>';
+
+          } catch (e) {
+            viewerTab.close();
+            showToast('Lỗi xử lý file trên trình duyệt: ' + e.message, 'error');
+          }
+        } else {
+          viewerTab.close();
+          showToast('Lỗi tải file: ' + (res ? res.error : 'Không có dữ liệu trả về'), 'error');
+        }
+      })
+      .withFailureHandler(function (err) {
+        hideLoading();
+        viewerTab.close();
+        showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
+      })
+      .getAttachmentForDownload(threadId, msgIndex, attIndex);
+  }
+
+  function handleTiepNhanThietKe() {
+    var data = state.currentEmailDetail;
+    if (!data) return showToast('Vui lòng chọn email!', 'error');
+
+    var msgIndex = -1, attIndex = -1;
+    for (var i = 0; i < data.messages.length; i++) {
+      if (data.messages[i].attachments) {
+        for (var j = 0; j < data.messages[i].attachments.length; j++) {
+          if (data.messages[i].attachments[j].isSheet) { msgIndex = i; attIndex = j; break; }
+        }
+      }
+      if (msgIndex !== -1) break;
+    }
+
+    showLoading('Đang bóc tách file Excel và lưu vào tab Log...');
+
+    if (msgIndex !== -1 && attIndex !== -1) {
+      google.script.run
+        .withSuccessHandler(function (res) {
+          if (!res) return hideLoading();
+          if (!res.success || !res.dataBase64) { hideLoading(); return showToast('Lỗi đọc file đính kèm', 'error'); }
+          try {
+            var workbook = XLSX.read(res.dataBase64, { type: 'base64', cellDates: true });
+            var sheet = workbook.Sheets[workbook.SheetNames[0]];
+            var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+            var headerRowIdx = -1, colSO = -1, colCustomer = -1, colMaterial = -1;
+            for (var r = 0; r < rows.length; r++) {
+              if (!rows[r]) continue;
+              for (var c = 0; c < rows[r].length; c++) {
+                var val = String(rows[r][c] || '').trim().toLowerCase();
+                if (val === 'sales document') { headerRowIdx = r; colSO = c; }
+                if (val === 'item descr.') { headerRowIdx = r; colCustomer = c; }
+                if (val === 'material') { colMaterial = c; }
+              }
+              if (headerRowIdx !== -1) break;
+            }
+            var parsedData = { so: '', customer: '', to: '' };
+            if (headerRowIdx !== -1 && rows.length > headerRowIdx + 1) {
+              var dataRow = rows[headerRowIdx + 1];
+              if (colSO !== -1 && dataRow[colSO]) parsedData.so = 'SO' + String(dataRow[colSO]).replace(/[^0-9]/g, '');
+              if (colCustomer !== -1 && dataRow[colCustomer]) parsedData.customer = String(dataRow[colCustomer]).trim().toUpperCase();
+              if (colMaterial !== -1 && dataRow[colMaterial]) {
+                var rawMat = String(dataRow[colMaterial]).trim();
+                parsedData.to = rawMat.length > 1 ? rawMat.substring(1) : rawMat;
+              }
+            }
+            google.script.run.withSuccessHandler(function (sRes) {
+              hideLoading();
+              if (!sRes) return;
+              if (sRes.success) {
+                showToast('Tiếp nhận dữ liệu thành công!', 'success');
+                document.getElementById('receivedBadge').innerHTML = '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>';
+
+                var btn = document.getElementById('btnTiepNhan');
+                if (btn) btn.classList.add('d-none');
+
+                updateSidebarStatus(data.threadId, true);
+
+                // THÊM LOGIC ĐẨY THÔNG BÁO Ở ĐÂY
+                if (typeof appLogSystem === 'function') {
+                  var notiMsg = "Đã tiếp nhận bản vẽ " + (parsedData.so || "") + (parsedData.customer ? " của khách hàng " + parsedData.customer : "");
+                  appLogSystem(notiMsg);
+                }
+              }
+              else showToast('Lỗi: ' + sRes.error, 'error');
+            }).saveToLogSheet(data.threadId, data.subject, parsedData, JSON.stringify(rows));
+          } catch (e) { hideLoading(); showToast('Lỗi parse file Excel', 'error'); }
+        }).getAttachmentParsedData(data.threadId, msgIndex, attIndex);
+    } else {
+      google.script.run.withSuccessHandler(function (sRes) {
+        hideLoading();
+        if (!sRes) return;
+        if (sRes.success) {
+          showToast('Đã tiếp nhận thành công (Không có file Excel)!', 'success');
+          document.getElementById('receivedBadge').innerHTML = '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>';
+
+          var btn = document.getElementById('btnTiepNhan');
+          if (btn) btn.classList.add('d-none');
+
+          updateSidebarStatus(data.threadId, true);
+
+          // THÊM LOGIC ĐẨY THÔNG BÁO Ở ĐÂY
+          if (typeof appLogSystem === 'function') {
+            appLogSystem("Đã tiếp nhận bản vẽ từ email: " + (data.subject || ""));
+          }
+        }
+        else showToast('Lỗi: ' + sRes.error, 'error');
+      }).saveToLogSheet(data.threadId, data.subject, {}, '');
+    }
+  }
+
+  /* ==========================================================================
+     MODULE 1.2: NHẬP DỮ LIỆU BẢN VẼ
+     ========================================================================== */
+  var pendingState = { selectedLogIdx: null, subject: '' };
+  var drawingDataList = [];
+  var drawingModalInstance = null; // Quản lý instance của Modal
+
+  function getDrawingModal() {
+    if (!drawingModalInstance) {
+      drawingModalInstance = new bootstrap.Modal(document.getElementById('drawingFormModal'));
+    }
+    return drawingModalInstance;
+  }
+
+  async function initNhapDuLieuBanVe() {
+    loadingRequests++;
+    closeDrawingForm();
+    try {
+      const res = await new Promise((resolve, reject) => {
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getPendingLogData();
+      });
+
+      hideLoading(); // <--- TẮT LOADING
+      if (!res) return showToast('Lỗi phản hồi rỗng', 'error');
+      if (res.success) renderPendingList(res.data);
+      else showToast('Lỗi tải danh sách: ' + res.error, 'error');
+    } catch (err) {
+      hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
+      showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
+    }
+  }
+
+  function renderPendingList(logs) {
+    drawingDataList = logs || [];
+    renderDrawingTable(drawingDataList);
+  }
+
+  function renderDrawingTable(data) {
+    pendingState.selectedLogIdx = null;
+
+    var tbody = document.getElementById('drawingTableBody');
+    var emptyState = document.getElementById('emptyTableState');
+    if (!tbody || !emptyState) return;
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '';
+      emptyState.classList.remove('d-none');
+    } else {
+      emptyState.classList.add('d-none');
+      var html = data.map(function (item) {
+        var type = escHtml(item.type || 'New');
+        var to = escHtml(item.to || 'N/A');
+        var dwCode = escHtml(item.dwCode || 'DW-V2-01V');
+        var customer = escHtml(item.customer || 'Unknown');
+        var id = item.rowIdx;
+        var subject = escHtml(item.subject || '').replace(/'/g, "\\'");
+        var soRaw = item.so || '';
+
+        // Kiểm tra xem Mã SO đã tồn tại trong sheet Data hay chưa
+        var exists = !!item.existsInData;
+        if (!exists && soRaw) {
+          var cleanSo = String(soRaw).trim().toUpperCase().replace(/\s+/g, "");
+          var digitsSo = cleanSo.replace(/[^0-9]/g, "");
+          if (window.pageDataSoSet && window.pageDataSoSet.size > 0) {
+            exists = (cleanSo && window.pageDataSoSet.has(cleanSo)) || (digitsSo && window.pageDataSoSet.has(digitsSo));
+          } else if (window.pageData && Array.isArray(window.pageData)) {
+            exists = window.pageData.some(function (r) {
+              if (!Array.isArray(r)) return false;
+              var rSo8 = String(r[8] || '').trim().toUpperCase().replace(/\s+/g, "");
+              var rSo4 = String(r[4] || '').trim().toUpperCase().replace(/\s+/g, "");
+              return (cleanSo && (rSo8.indexOf(cleanSo) !== -1 || rSo4.indexOf(cleanSo) !== -1)) || 
+                     (digitsSo && (rSo8.indexOf(digitsSo) !== -1 || rSo4.indexOf(digitsSo) !== -1));
+            });
+          }
+        }
+
+        var actionHtml = '';
+        if (exists) {
+          // Đã tồn tại trong Data -> Ẩn nút Sửa/Xóa, Hiện nút Tìm kiếm bản vẽ đóng gói
+          var imgUrl = escHtml(item.imageUrl || '');
+          var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
+          actionHtml = '<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
+            '<i class="fa fa-search me-1"></i>Tìm kiếm</button>';
+        } else {
+          // Chưa có trong Data -> Hiện nút Sửa & Xóa
+          actionHtml = '<div class="btn-group shadow-sm">' +
+            '<button class="btn btn-sm btn-light border text-primary" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen me-1"></i>Sửa</button>' +
+            '<button class="btn btn-sm btn-light border text-danger" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash me-1"></i>Xóa</button>' +
+            '</div>';
+        }
+
+        return '<tr class="bg-white" style="transition: all 0.2s;">' +
+          '<td class="ps-4 fw-bold text-dark">' + type + '</td>' +
+          '<td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1">' + to + '</span></td>' +
+          '<td><code class="text-danger bg-light px-2 py-1 rounded fw-bold border">' + dwCode + '</code></td>' +
+          '<td class="text-secondary fw-medium">' + customer + '</td>' +
+          '<td class="text-end pe-4">' + actionHtml + '</td>' +
+          '</tr>';
+      }).join('');
+      tbody.innerHTML = html;
+    }
+  }
+
+  function handleSearchPackagingDrawing(imageUrl, so) {
+    // 1. Tự động chuyển giao diện sang Tab "Tìm Kiếm Bản Vẽ Bằng AI"
+    var navBtn = document.getElementById('nav-btn-seachDwByAi');
+    if (typeof switchTab === 'function') {
+      switchTab('seachDwByAi', navBtn);
+    }
+
+    // 2. Tra cứu imageUrl từ pageData nếu chưa có từ server
+    if (!imageUrl && window.pageData && Array.isArray(window.pageData) && so) {
+      var cleanSo = String(so).trim().toUpperCase().replace(/\s+/g, "");
+      var digitsSo = cleanSo.replace(/[^0-9]/g, "");
+      for (var i = 0; i < window.pageData.length; i++) {
+        var r = window.pageData[i];
+        if (!Array.isArray(r)) continue;
+        if (r[32] && typeof r[32] === 'string' && r[32].length > 10) {
+          var rSo8 = String(r[8] || '').trim().toUpperCase().replace(/\s+/g, "");
+          var rSo4 = String(r[4] || '').trim().toUpperCase().replace(/\s+/g, "");
+          if ((cleanSo && (rSo8.indexOf(cleanSo) !== -1 || rSo4.indexOf(cleanSo) !== -1)) || 
+              (digitsSo && (rSo8.indexOf(digitsSo) !== -1 || rSo4.indexOf(digitsSo) !== -1))) {
+            imageUrl = r[32];
+            break;
+          }
+        }
+      }
+    }
+
+    var defaultImg = "https://img.icons8.com/?size=100&id=Wy3XKG1CjyKf&format=png&color=000000";
+    var finalImg = imageUrl || defaultImg;
+
+    // 3. Thực thi kích hoạt dán ảnh và tìm kiếm trên seachDwByAi
+    setTimeout(function () {
+      if (typeof window.executeSearchWithImage === 'function') {
+        window.executeSearchWithImage(finalImg);
+      } else {
+        var preview = document.getElementById('previewImage');
+        var loaderImg = document.getElementById('loaderOriginalImg');
+        var container = document.getElementById('previewContainer');
+        if (preview) preview.src = finalImg;
+        if (loaderImg) loaderImg.src = finalImg;
+        if (container) container.classList.add('has-image');
+
+        if (typeof uploadAndSearch === 'function') {
+          uploadAndSearch();
+        } else {
+          showToast('Đã dán ảnh thành công vào trang tìm kiếm!', 'success');
+        }
+      }
+    }, 150);
+  }
+
+  function toggleDrawingForm(rowIdx, subject, customer, to, so) {
+    var container = document.getElementById('form-container-' + rowIdx);
+    var form = document.getElementById('drawingForm');
+    var btn = document.getElementById('btn-toggle-' + rowIdx);
+
+    if (pendingState.selectedLogIdx === rowIdx && !container.classList.contains('d-none')) {
+      closeDrawingForm(); return;
+    }
+
+    if (pendingState.selectedLogIdx) {
+      var oldBtn = document.getElementById('btn-toggle-' + pendingState.selectedLogIdx);
+      if (oldBtn) {
+        oldBtn.innerHTML = '<i class="fa fa-pen me-2"></i>Nhập dữ liệu';
+        oldBtn.classList.replace('btn-primary', 'btn-outline-primary');
+        oldBtn.classList.remove('text-white');
+      }
+      var oldContainer = document.getElementById('form-container-' + pendingState.selectedLogIdx);
+      if (oldContainer) oldContainer.classList.add('d-none');
+    }
+
+    pendingState.selectedLogIdx = rowIdx;
+    pendingState.subject = subject;
+
+    form.reset();
+    var rDate = document.getElementById('formReceivedDate');
+    if (rDate) rDate.value = new Date().toISOString().split('T')[0];
+    if (document.getElementById('formCustomer')) document.getElementById('formCustomer').value = customer || '';
+    if (document.getElementById('formTO')) document.getElementById('formTO').value = to || '';
+    if (document.getElementById('formSO')) document.getElementById('formSO').value = so || '';
+
+    generateDwCode();
+
+    container.appendChild(form);
+    container.classList.remove('d-none');
+
+    btn.innerHTML = '<i class="fa fa-chevron-up me-2"></i>Đóng form';
+    btn.classList.replace('btn-outline-primary', 'btn-primary');
+    btn.classList.add('text-white');
+  }
+
+  function openAddDrawingForm() {
+    pendingState.selectedLogIdx = 'NEW';
+    pendingState.subject = 'Bản vẽ mới (Nhập thủ công)';
+    document.getElementById('modalFormTitle').textContent = 'Thêm Mới Bản Vẽ';
+
+    var form = document.getElementById('drawingForm');
+    if (!form) return;
+
+    form.reset();
+    var rDate = document.getElementById('formReceivedDate');
+    if (rDate) rDate.value = new Date().toISOString().split('T')[0];
+    generateDwCode();
+
+    getDrawingModal().show();
+  }
+
+  // Mở Popup Sửa
+  function openEditDrawingForm(rowIdx, subject, customer, to, so) {
+    pendingState.selectedLogIdx = rowIdx;
+    pendingState.subject = subject;
+    document.getElementById('modalFormTitle').textContent = 'Chỉnh Sửa Dữ Liệu Bản Vẽ';
+
+    var form = document.getElementById('drawingForm');
+    if (!form) return;
+
+    form.reset();
+    var rDate = document.getElementById('formReceivedDate');
+    if (rDate) rDate.value = new Date().toISOString().split('T')[0];
+    if (document.getElementById('formCustomer')) document.getElementById('formCustomer').value = customer || '';
+    if (document.getElementById('formTO')) document.getElementById('formTO').value = to || '';
+    if (document.getElementById('formSO')) document.getElementById('formSO').value = so || '';
+    generateDwCode();
+
+    getDrawingModal().show();
+  }
+
+  function closeDrawingForm() {
+    var modalEl = document.getElementById('drawingFormModal');
+    if (modalEl) {
+      var modalInstance = bootstrap.Modal.getInstance(modalEl);
+      if (modalInstance) {
+        modalInstance.hide();
+      } else {
+        // Nếu chưa có Instance thì khởi tạo tạm để ẩn
+        new bootstrap.Modal(modalEl).hide();
+      }
+    }
+
+    // Reset lại trạng thái form
+    var form = document.getElementById('drawingForm');
+    if (form) form.reset();
+    pendingState.selectedLogIdx = null;
+  }
+
+  // Chức năng Xóa với thông báo mới
+  function deleteDrawing(rowIdx) {
+    Swal.fire({
+      title: 'Bạn có chắc chắn muốn xóa dự án này?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Đồng ý xóa',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        showLoading('Đang xóa dữ liệu...');
+        google.script.run
+          .withSuccessHandler(function (res) {
+            hideLoading();
+            if (res && res.success) {
+              showToast('Xóa thành công!', 'success');
+              initNhapDuLieuBanVe(); // Load lại bảng
+            } else {
+              showToast('Lỗi xóa: ' + (res ? res.error : 'Không rõ'), 'error');
+            }
+          })
+          .withFailureHandler(function (err) {
+            hideLoading();
+            showToast('Lỗi kết nối: ' + err.message, 'error');
+          })
+          .deleteDrawingLog(rowIdx); // Giả định backend code chứa function này
+      }
+    });
+  }
+
+  function closeDrawingForm() {
+    if (!pendingState.selectedLogIdx) return;
+    var container = document.getElementById('form-container-' + pendingState.selectedLogIdx);
+    var templateWrapper = document.getElementById('formTemplateWrapper');
+    var form = document.getElementById('drawingForm');
+    var btn = document.getElementById('btn-toggle-' + pendingState.selectedLogIdx);
+
+    if (container) container.classList.add('d-none');
+    if (btn) {
+      btn.innerHTML = '<i class="fa fa-pen me-2"></i>Nhập dữ liệu';
+      btn.classList.replace('btn-primary', 'btn-outline-primary');
+      btn.classList.remove('text-white');
+    }
+    if (templateWrapper && form) templateWrapper.appendChild(form);
+
+    pendingState.selectedLogIdx = null;
+  }
+
+  function calculateFYE() {
+    var actualDate = document.getElementById('formActualDoneDate');
+    var fye = document.getElementById('formFYE');
+    if (actualDate && fye) fye.value = actualDate.value ? 'FY' + String(new Date(actualDate.value).getFullYear()).substring(2) : '';
+  }
+
+  function generateDwCode() {
+    var typeDw = document.getElementById('formTypeDw');
+    var dwCode = document.getElementById('formDwCode');
+    var tValue = typeDw ? typeDw.value : 'V2';
+    if (dwCode) dwCode.value = 'DW-' + tValue + '-01V';
+  }
+  document.addEventListener('change', function (e) { if (e.target && e.target.id === 'formTypeDw') generateDwCode(); });
+
+  function handleDrawingFormSubmit(e) {
+    e.preventDefault();
+
+    // Lấy Element an toàn để tránh lỗi null value
+    var getVal = function (id) {
+      var el = document.getElementById(id);
+      return el ? el.value : "";
+    };
+
+    // Mảng 17 trường theo đúng thứ tự Form mới
+    var rowData = [
+      getVal('formGroup'),            // 0: Group
+      getVal('formType'),             // 1: Type
+      getVal('formCustomer'),         // 2: Customer
+      getVal('formTO'),               // 3: TO
+      getVal('formProject'),          // 4: Dự án
+      getVal('formSO'),               // 5: Số SO
+      getVal('formDwCode'),           // 6: Dw Code
+      getVal('formVersion'),          // 7: Version
+      getVal('formTypeDw'),           // 8: Type DW
+      getVal('formAssignee'),         // 9: Người đảm trách
+      getVal('formWidth'),            // 10: Width
+      getVal('formHeight'),           // 11: Height
+      getVal('formReceivedDate'),     // 12: Ngày tiếp nhận
+      getVal('formAssigneeDoneDate'), // 13: Ngày ĐT hoàn thành
+      getVal('formActualDoneDate'),   // 14: Ngày HT thực tế (An toàn nếu rỗng)
+      getVal('formFYE'),              // 15: FYE
+      getVal('formNote')              // 16: Note
+    ];
+
+    var form = document.getElementById('drawingForm');
+    var fileInput = form ? form.querySelector('input[type="file"]') : null;
+    var file = (fileInput && fileInput.files.length > 0) ? fileInput.files[0] : null;
+
+    showLoading('Đang xử lý dữ liệu và lưu...');
+
+    if (file) {
+      var reader = new FileReader();
+      reader.onload = function (event) {
+        var base64String = event.target.result.split(',')[1];
+        var imageObj = { base64: base64String, mimeType: file.type, name: file.name };
+        rowData.push(imageObj);
+        sendDataToGas(rowData);
+      };
+      reader.onerror = function () {
+        hideLoading();
+        showToast('Không thể đọc file hình ảnh', 'error');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      rowData.push(null);
+      sendDataToGas(rowData);
+    }
+  }
+
+  function sendDataToGas(rowData) {
+    google.script.run
+      .withSuccessHandler(function (res) {
+        hideLoading();
+        if (!res) return showToast('Lỗi phản hồi rỗng', 'error');
+        if (res.success) {
+          showToast('Đã lưu thành công!', 'success');
+          closeDrawingForm();
+          initNhapDuLieuBanVe();
+          if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
+        }
+        else showToast('Lỗi lưu sheet: ' + res.error, 'error');
+      })
+      .withFailureHandler(function (err) {
+        hideLoading();
+        showToast('Lỗi hệ thống: ' + err.message, 'error');
+      })
+      .saveDataToTestSheet(pendingState.subject, [rowData], pendingState.selectedLogIdx);
+  }
+</script>
+</div>

@@ -1,0 +1,900 @@
+<div class="page-dashboard p-3 p-md-4 custom-scroll" style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+  <style>
+    /* =========================================================
+       CSS SCOPED CHO TRANG TỔNG QUAN (DASHBOARD)
+       ========================================================= */
+    .page-dashboard {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text-main, #1e293b);
+    }
+
+    .page-dashboard .kpi-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px 18px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .page-dashboard .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+      border-color: #cbd5e1;
+    }
+
+    .page-dashboard .kpi-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .page-dashboard .filter-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 14px 20px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+      transition: all 0.2s ease;
+    }
+
+    .page-dashboard .filter-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 6px 24px -2px rgba(15, 23, 42, 0.06);
+    }
+
+    .page-dashboard .filter-icon-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #f0f7ea 0%, #e1f0d4 100%);
+      border: 1px solid rgba(124, 179, 66, 0.25);
+      color: #689F38;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 6px rgba(124, 179, 66, 0.12);
+    }
+
+    .page-dashboard .segmented-control {
+      display: inline-flex;
+      align-items: center;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      gap: 3px;
+    }
+
+    .page-dashboard .segmented-btn {
+      border: none;
+      background: transparent;
+      color: #64748b;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 16px;
+      border-radius: 9px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      user-select: none;
+      line-height: 1.3;
+    }
+
+    .page-dashboard .segmented-btn:hover {
+      color: #1e293b;
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .page-dashboard .segmented-btn.active {
+      background: #ffffff;
+      color: #558b2f;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+
+    .page-dashboard .segmented-btn .badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #7CB342;
+      display: inline-block;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s ease;
+    }
+
+    .page-dashboard .segmented-btn.active .badge-dot {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .page-dashboard .fye-select-group {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      padding: 2px 4px 2px 10px;
+      transition: all 0.2s ease;
+    }
+
+    .page-dashboard .fye-select-group:focus-within, 
+    .page-dashboard .fye-select-group:hover {
+      border-color: #7CB342;
+      box-shadow: 0 0 0 3px rgba(124, 179, 66, 0.12);
+    }
+
+    .page-dashboard .btn-reset-filter {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #64748b;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .page-dashboard .btn-reset-filter:hover {
+      background: #f8fafc;
+      color: #1e293b;
+      border-color: #94a3b8;
+      transform: rotate(180deg);
+    }
+
+    .page-dashboard .kpi-card:hover {
+      border-color: #7CB342;
+      box-shadow: 0 4px 16px rgba(124,179,66,0.13);
+      transform: translateY(-2px);
+    }
+    .page-dashboard .kpi-card.kpi-active {
+      border-color: #7CB342;
+      background: linear-gradient(135deg, #f0f7ea 0%, #fff 100%);
+      box-shadow: 0 4px 18px rgba(124,179,66,0.18);
+    }
+    .page-dashboard .kpi-card.kpi-active-design {
+      border-color: #f59e0b;
+      background: linear-gradient(135deg, #fffbeb 0%, #fff 100%);
+      box-shadow: 0 4px 18px rgba(245,158,11,0.16);
+    }
+    .page-dashboard .kpi-card.kpi-active-approve {
+      border-color: #3b82f6;
+      background: linear-gradient(135deg, #eff6ff 0%, #fff 100%);
+      box-shadow: 0 4px 18px rgba(59,130,246,0.16);
+    }
+    .page-dashboard .kpi-card.kpi-active-release {
+      border-color: #10b981;
+      background: linear-gradient(135deg, #ecfdf5 0%, #fff 100%);
+      box-shadow: 0 4px 18px rgba(16,185,129,0.16);
+    }
+
+    .page-dashboard .chart-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+    }
+
+    .page-dashboard .table-custom {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .page-dashboard .table-custom th {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .page-dashboard .table-custom td {
+      padding: 12px 16px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      font-size: 0.85rem;
+    }
+
+    .page-dashboard .table-custom tbody tr:hover td {
+      background: #f8fafc;
+    }
+  </style>
+
+  <!-- BỘ LỌC TỔNG QUAN (FYE & TYPE FILTER BAR) -->
+  <div class="filter-card mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="filter-icon-box">
+          <i class="bi bi-funnel-fill"></i>
+        </div>
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.2px;">Bộ Lọc Thống Kê Dashboard</h6>
+            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0" style="font-size: 0.7rem; font-weight: 600;">Live Data</span>
+          </div>
+          <small class="text-muted" style="font-size: 0.78rem;">Lọc chỉ số và 2 biểu đồ cột theo Năm tài chính (FYE) &amp; Phân loại Type</small>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-3 flex-wrap">
+        <!-- Lọc FYE Select Dropdown -->
+        <div class="d-flex align-items-center fye-select-group shadow-sm">
+          <i class="bi bi-calendar3 text-primary me-2 ms-1" style="font-size: 0.9rem;"></i>
+          <select class="form-select form-select-sm border-0 bg-transparent fw-semibold text-dark shadow-none pe-4" id="dashFyeFilter"
+            onchange="updateDashboardStats()" style="cursor: pointer; font-size: 0.82rem;">
+            <option value="ALL">📅 Tất cả FYE</option>
+            <option value="FYE27">FYE27</option>
+            <option value="FYE26">FYE26</option>
+            <option value="FYE25">FYE25</option>
+            <option value="FYE24">FYE24</option>
+            <option value="FYE23">FYE23</option>
+            <option value="FYE22">FYE22</option>
+            <option value="FYE21">FYE21</option>
+            <option value="FYE20">FYE20</option>
+            <option value="FYE19">FYE19</option>
+            <option value="FYE18">FYE18</option>
+            <option value="FYE17">FYE17</option>
+            <option value="FYE16">FYE16</option>
+            <option value="FYE15">FYE15</option>
+          </select>
+        </div>
+
+        <!-- Lọc TYPE Segmented Control -->
+        <div class="segmented-control shadow-sm" role="group" id="dashTypeBtnGroup">
+          <button type="button" class="btn segmented-btn active" onclick="setDashTypeFilter('ALL', this)">
+            <span class="badge-dot"></span>Tất cả
+          </button>
+          <button type="button" class="btn segmented-btn" onclick="setDashTypeFilter('BARSALE', this)">
+            <span class="badge-dot"></span>BARSALE
+          </button>
+          <button type="button" class="btn segmented-btn" onclick="setDashTypeFilter('OEM', this)">
+            <span class="badge-dot"></span>OEM
+          </button>
+          <button type="button" class="btn segmented-btn" onclick="setDashTypeFilter('WE SASH', this)">
+            <span class="badge-dot"></span>WE SASH
+          </button>
+        </div>
+
+        <!-- Nút Reset Filter -->
+        <button class="btn-reset-filter shadow-sm" onclick="resetDashFilters()" title="Đặt lại bộ lọc">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="row g-3 mb-4">
+    <!-- Tổng Số Yêu Cầu -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="kpi-card" id="kpiCard-all" onclick="setKpiFilter('all')" title="Xem tất cả">
+        <div>
+          <span class="text-muted fw-semibold small d-block mb-1">Tổng Số Yêu Cầu</span>
+          <h3 class="fw-bold text-dark mb-0" id="dashTotalCount">--</h3>
+          <span class="text-success small fw-medium"><i class="fa fa-arrow-up me-1"></i>Theo bộ lọc</span>
+        </div>
+        <div class="kpi-icon" style="background: #f0f7ea; color: #7CB342;">
+          <i class="fa fa-folder-open"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chờ Thiết Kế -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="kpi-card" id="kpiCard-design" onclick="setKpiFilter('design')" title="Xem bản vẽ chờ thiết kế">
+        <div>
+          <span class="text-muted fw-semibold small d-block mb-1">Chờ Thiết Kế</span>
+          <h3 class="fw-bold text-dark mb-0" id="dashDesignCount">--</h3>
+          <span class="text-warning small fw-medium"><i class="fa fa-clock me-1"></i>Cần xử lý</span>
+        </div>
+        <div class="kpi-icon" style="background: #fffbeb; color: #f59e0b;">
+          <i class="fa fa-pen-nib"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chờ Ký Duyệt -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="kpi-card" id="kpiCard-approve" onclick="setKpiFilter('approve')" title="Xem bản vẽ chờ ký duyệt">
+        <div>
+          <span class="text-muted fw-semibold small d-block mb-1">Chờ Ký Duyệt</span>
+          <h3 class="fw-bold text-dark mb-0" id="dashApprovalCount">--</h3>
+          <span class="text-info small fw-medium"><i class="fa fa-file-signature me-1"></i>QA / Quản lý</span>
+        </div>
+        <div class="kpi-icon" style="background: #eff6ff; color: #3b82f6;">
+          <i class="fa fa-user-check"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Đã Ban Hành -->
+    <div class="col-12 col-sm-6 col-xl-3">
+      <div class="kpi-card" id="kpiCard-release" onclick="setKpiFilter('release')" title="Xem bản vẽ đã ban hành">
+        <div>
+          <span class="text-muted fw-semibold small d-block mb-1">Đã Ban Hành</span>
+          <h3 class="fw-bold text-dark mb-0" id="dashReleasedCount">--</h3>
+          <span class="text-success small fw-medium"><i class="fa fa-check-circle me-1"></i>Hoàn tất</span>
+        </div>
+        <div class="kpi-icon" style="background: #ecfdf5; color: #10b981;">
+          <i class="fa fa-paper-plane"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HAi BIỂU ĐỒ CỘT THỐNG KÊ (RECEPTION STATUS & NEW VS REVISE) -->
+  <div class="row g-4 mb-4">
+    <!-- Chart 1: Tiếp Nhận vs Chưa Tiếp Nhận -->
+    <div class="col-12 col-lg-6">
+      <div class="chart-card h-100 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-success me-2"></i>Thống Kê Tiếp Nhận
+              Bản Vẽ</h6>
+            <small class="text-muted" style="font-size: 0.78rem;">So sánh bản vẽ Đã Tiếp Nhận và Chưa Tiếp Nhận</small>
+          </div>
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold"
+            style="font-size: 0.72rem;">Tiếp Nhận</span>
+        </div>
+        <div class="flex-grow-1 position-relative" style="min-height: 240px; max-height: 270px;">
+          <canvas id="chartReceptionStatus"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart 2: NEW vs REVISE -->
+    <div class="col-12 col-lg-6">
+      <div class="chart-card h-100 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Phân Loại Bản
+              Vẽ (NEW vs REVISE)</h6>
+            <small class="text-muted" style="font-size: 0.78rem;">Tỷ lệ bản vẽ Thiết Kế Mới và Chỉnh Sửa
+              (Revise)</small>
+          </div>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-bold"
+            style="font-size: 0.72rem;">Quy Cách</span>
+        </div>
+        <div class="flex-grow-1 position-relative" style="min-height: 240px; max-height: 270px;">
+          <canvas id="chartNewVsRevise"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BẢNG YÊU CẦU / BẢN VẼ MỚI CẬP NHẬT -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="chart-card">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <div>
+            <h6 class="fw-bold text-dark mb-0" id="dashTableTitle">
+              <i class="fa fa-history me-2 text-success"></i>Bản Vẽ / Yêu Cầu Gần Đây
+            </h6>
+            <small class="text-muted" style="font-size: 0.78rem;" id="dashTableSubtitle">Danh sách yêu cầu mới cập nhật nhất theo bộ lọc đang chọn—nhấp KPI để lọc nhanh</small>
+          </div>
+          <div class="d-flex gap-2 align-items-center">
+            <span id="dashTableFilterBadge" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold d-none" style="font-size: 0.72rem;"></span>
+            <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold"
+              onclick="switchTab('release', document.getElementById('nav-btn-release'))">
+              Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive border rounded-3 custom-scrollbar">
+          <table class="table-custom w-100">
+            <thead>
+              <tr>
+                <th width="18%">Request / ID</th>
+                <th width="24%">Mã Bản Vẽ / TO</th>
+                <th width="16%">Hình thức</th>
+                <th width="14%">Phiên bản</th>
+                <th width="18%">Trạng thái</th>
+                <th width="10%" class="text-center">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="dashRecentTableBody">
+              <tr>
+                <td colspan="6" class="text-center text-muted py-4 small">
+                  <i class="fa fa-spinner fa-spin me-2"></i>Đang tải dữ liệu tổng quan...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  var currentDashTypeFilter = 'ALL';
+  var dashChart1Instance = null;
+  var dashChart2Instance = null;
+
+  function setDashTypeFilter(typeVal, btnEl) {
+    currentDashTypeFilter = typeVal;
+    var btns = document.querySelectorAll('#dashTypeBtnGroup .btn');
+    btns.forEach(b => b.classList.remove('active'));
+    if (btnEl) btnEl.classList.add('active');
+    updateDashboardStats();
+  }
+
+  function resetDashFilters() {
+    currentDashTypeFilter = 'ALL';
+    var fyeSel = document.getElementById('dashFyeFilter');
+    if (fyeSel) fyeSel.value = 'ALL';
+    var defaultBtn = document.querySelector('#dashTypeBtnGroup .btn');
+    setDashTypeFilter('ALL', defaultBtn);
+  }
+
+  // Danh sách FYE cố định FYE15 -> FYE27 (năm tài chính 2 chữ số, ví dụ: FYE27 = năm 2026)
+  var STATIC_FYE_LIST = [
+    'FYE27', 'FYE26', 'FYE25', 'FYE24', 'FYE23', 'FYE22',
+    'FYE21', 'FYE20', 'FYE19', 'FYE18', 'FYE17', 'FYE16', 'FYE15'
+  ];
+
+  function populateDashFyeOptions(rawData) {
+    var select = document.getElementById('dashFyeFilter');
+    if (!select) return;
+    var currentVal = select.value || 'ALL';
+
+    // Bắt đầu từ danh sách cứng FYE15 → FYE27
+    var fyeSet = new Set(STATIC_FYE_LIST);
+
+    // Merge them FYE tinh tu du lieu (uu tien row[23], fallback tinh tu ngay row[6])
+    rawData.forEach(function(row) {
+      var fyeVal = '';
+      if (Array.isArray(row)) {
+        fyeVal = String(row[23] || '').trim();
+        // Neu row[23] rong, tinh tu ngay tiep nhan
+        if (!fyeVal && row[6]) fyeVal = computeFYE(String(row[6]));
+      } else if (row && typeof row === 'object') {
+        fyeVal = String(row.fye || row.FYE || row[23] || '').trim();
+        if (!fyeVal && (row.date || row[6])) fyeVal = computeFYE(String(row.date || row[6]));
+      }
+      // Chuan hoa: FYE2027 -> FYE27
+      if (fyeVal) {
+        fyeVal = fyeVal.toUpperCase();
+        if (!fyeVal.startsWith('FYE')) fyeVal = 'FYE' + fyeVal;
+        var m = fyeVal.match(/^FYE(20(\d{2}))$/);
+        if (m) fyeVal = 'FYE' + m[2];
+        if (fyeVal !== 'FYE' && fyeVal.length <= 5) fyeSet.add(fyeVal);
+      }
+    });
+
+    var allFye = Array.from(fyeSet).sort(function (a, b) {
+      return parseInt(b.replace('FYE', '')) - parseInt(a.replace('FYE', ''));
+    });
+
+    var optionsHtml = '<option value="ALL">📅 Tất cả FYE</option>';
+    allFye.forEach(f => {
+      optionsHtml += `<option value="${f}">${f}</option>`;
+    });
+
+    select.innerHTML = optionsHtml;
+    if (allFye.includes(currentVal)) {
+      select.value = currentVal;
+    } else {
+      var todayFye = computeFYE(new Date());
+      if (allFye.includes(todayFye)) select.value = todayFye;
+    }
+  }
+
+  // ==========================================================
+  // Tinh FYE tu ngay tiep nhan:
+  // Thang 4 -> Thang 3 nam sau = 1 FYE
+  // Vi du: T8/2026 -> FYE27 | T2/2026 -> FYE26 | T4/2025 -> FYE26
+  // ==========================================================
+  function computeFYE(input) {
+    var month, year;
+    if (input instanceof Date) {
+      month = input.getMonth() + 1;
+      year = input.getFullYear();
+    } else {
+      var parts = String(input || '').split('/');
+      if (parts.length !== 3) return '';
+      month = parseInt(parts[1], 10);
+      year = parseInt(parts[2], 10);
+      if (isNaN(month) || isNaN(year) || year < 2000) return '';
+    }
+    var fyeYear = (month >= 4) ? year + 1 : year;
+    var fyeNum = fyeYear % 100;
+    return 'FYE' + (fyeNum < 10 ? '0' + fyeNum : String(fyeNum));
+  }
+
+  function getRowValue(row, key) {
+    if (Array.isArray(row)) {
+      switch (key) {
+        case 'id': return String(row[0] || '');
+        case 'status': return String(row[2] || '');
+        case 'group': return String(row[3] || row[1] || '');
+        case 'type': return String(row[3] || row[4] || row[1] || '');
+        case 'version': return String(row[5] || row[12] || '');
+        case 'reqNo': return String(row[8] || row[0] || '');
+        case 'dwNo': return String(row[11] || row[8] || '');
+        case 'fye': {
+          var f = String(row[23] || '').trim();
+          if (!f) f = computeFYE(String(row[6] || ''));
+          return f;
+        }
+        case 'date': return String(row[6] || '');
+        case 'note': return String(row[22] || row[13] || '');
+        case 'pdfSample': return String(row[31] || '');
+        default: return '';
+      }
+    } else if (row && typeof row === 'object') {
+      switch (key) {
+        case 'id': return String(row.id || row.ID || row[0] || '');
+        case 'status': return String(row.status || row.TrangThai || row[2] || '');
+        case 'group': return String(row.group || row.Group || row[3] || '');
+        case 'type': return String(row.group || row.Group || row[3] || row.type || row.Type || row[4] || '');
+        case 'version': return String(row.version || row.Ver || row.Version || row[5] || row[12] || '');
+        case 'reqNo': return String(row.reqNo || row.requestNo || row[8] || row[0] || '');
+        case 'dwNo': return String(row.dwNo || row.drawingNo || row[11] || '');
+        case 'fye': {
+          var f = String(row.fye || row.FYE || row[23] || '').trim();
+          if (!f) f = computeFYE(String(row.date || row.Date || row[6] || ''));
+          return f;
+        }
+        case 'date': return String(row.date || row.Date || row[6] || '');
+        case 'note': return String(row.note || row.Note || row[22] || '');
+        case 'pdfSample': return String(row.pdfSample || row[31] || '');
+        default: return '';
+      }
+    }
+    return '';
+  }
+
+  // Hàm tự động cập nhật số liệu Dashboard & 2 Biểu đồ cột
+  function updateDashboardStats() {
+    var rawData = (window.pageData && Array.isArray(window.pageData)) ? window.pageData : [];
+    if (!rawData || rawData.length === 0) return;
+
+    // Bỏ dòng tiêu đề nếu có
+    if (rawData.length > 0 && String(getRowValue(rawData[0], 'id')).toLowerCase() === 'id') {
+      rawData = rawData.slice(1);
+    }
+
+    populateDashFyeOptions(rawData);
+
+    var fyeFilter = (document.getElementById('dashFyeFilter')?.value || 'ALL').toUpperCase();
+    var typeFilter = currentDashTypeFilter.toUpperCase();
+
+    // 1. LỌC DỮ LIỆU THEO FYE VÀ TYPE (CỘT D - GROUP: BARSALE, OEM, WE SASH)
+    var filteredData = rawData.filter(function (row) {
+      var itemGroup = (getRowValue(row, 'group') + " " + getRowValue(row, 'type') + " " + String(row[3] || '') + " " + String(row[1] || '')).toUpperCase();
+      var itemFye = getRowValue(row, 'fye').toUpperCase();
+
+      // Lọc theo Type/Group
+      if (typeFilter === 'BARSALE' && !itemGroup.includes('BARSALE')) return false;
+      if (typeFilter === 'OEM' && !itemGroup.includes('OEM')) return false;
+      if (typeFilter === 'WE SASH' && (itemGroup.includes('BARSALE') || itemGroup.includes('OEM'))) return false;
+
+      // Loc theo FYE: so sanh chinh xac (FYE27 === FYE27)
+      if (fyeFilter !== 'ALL' && itemFye !== fyeFilter) return false;
+
+      return true;
+    });
+
+    // 2. TÍNH TOÁN KPI
+    var total = filteredData.length;
+    var pendingDesign = 0;
+    var pendingApprove = 0;
+    var released = 0;
+
+    var receivedCount = 0;
+    var unreceivedCount = 0;
+
+    var newCount = 0;
+    var reviseCount = 0;
+
+    filteredData.forEach(function (row) {
+      var st = getRowValue(row, 'status').toLowerCase();
+      var ver = getRowValue(row, 'version').toLowerCase();
+      var note = getRowValue(row, 'note').toLowerCase();
+      var pdfSample = getRowValue(row, 'pdfSample').trim();
+
+      // KPI: Chờ Thiết Kế = cột Sample File PDF (row[31]) rỗng
+      if (!pdfSample || pdfSample === '') {
+        pendingDesign++;
+      } else if (st.includes('chờ checker 1') || st.includes('chờ checker 2') || st.includes('chờ approval')) {
+        pendingApprove++;
+      } else if (st.includes('đã ban hành') || st.includes('released') || st.includes('hoàn tất')) {
+        released++;
+      }
+
+      // Biểu đồ 1: Tiếp nhận vs Chưa tiếp nhận
+      if (st.includes('chưa tiếp nhận') || st.includes('chưa xử lý') || st.includes('unreceived') || st === '') {
+        unreceivedCount++;
+      } else {
+        receivedCount++;
+      }
+
+      // Biểu đồ 2: NEW vs REVISE
+      if (ver === '0' || ver === 'v0' || ver.includes('new') || ver.includes('mới') || note.includes('tạo mới') || note.includes('new project')) {
+        newCount++;
+      } else if (ver === '1' || ver === '2' || ver.includes('rev') || ver.includes('sửa') || note.includes('sửa') || note.includes('revise') || (parseInt(ver) > 0)) {
+        reviseCount++;
+      } else {
+        newCount++; // Mặc định nếu không có thông tin phiên bản
+      }
+    });
+
+    var elTotal = document.getElementById('dashTotalCount');
+    var elDesign = document.getElementById('dashDesignCount');
+    var elApprove = document.getElementById('dashApprovalCount');
+    var elRelease = document.getElementById('dashReleasedCount');
+
+    if (elTotal) elTotal.textContent = total;
+    if (elDesign) elDesign.textContent = pendingDesign;
+    if (elApprove) elApprove.textContent = pendingApprove;
+    if (elRelease) elRelease.textContent = released;
+
+    // 3. VẼ VÀ CẬP NHẬT 2 BIỂU ĐỒ CỘT (CHART.JS)
+    renderDashCharts(receivedCount, unreceivedCount, newCount, reviseCount);
+
+    // Lấy số liệu Email Tiếp Nhận / Chưa Tiếp Nhận trực tiếp từ Gmail Server
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      google.script.run.withSuccessHandler(function (res) {
+        if (res && res.success) {
+          renderReceptionChart(res.received || receivedCount, res.unreceived || 0);
+        }
+      }).getEmailReceptionStats();
+    }
+
+    // 4. RENDER BẢNG BẢN VẼ GẦN ĐÂY (lưu data để KPI card filter dùng lại)
+    _lastFilteredData = filteredData;
+    renderDashRecentTable(filteredData, currentKpiFilter);
+  }
+
+  function renderReceptionChart(recCount, unrecCount) {
+    if (typeof Chart === 'undefined') return;
+    var canvas1 = document.getElementById('chartReceptionStatus');
+    if (!canvas1) return;
+    var ctx1 = canvas1.getContext('2d');
+    if (dashChart1Instance) dashChart1Instance.destroy();
+
+    dashChart1Instance = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: ['Đã tiếp nhận', 'Chưa tiếp nhận (Email)'],
+        datasets: [{
+          label: 'Số lượng Email / Bản vẽ',
+          data: [recCount, unrecCount],
+          backgroundColor: ['rgba(124, 179, 66, 0.85)', 'rgba(245, 158, 11, 0.85)'],
+          borderColor: ['#689F38', '#D97706'],
+          borderWidth: 1.5,
+          borderRadius: 8,
+          barThickness: 45
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            titleFont: { family: 'Inter', size: 13, weight: 'bold' },
+            bodyFont: { family: 'Inter', size: 12 },
+            padding: 10,
+            cornerRadius: 8
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: { color: '#f1f5f9' },
+            ticks: { font: { family: 'Inter', size: 11 }, precision: 0 }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: 'Inter', size: 12, weight: '600' } }
+          }
+        }
+      }
+    });
+  }
+
+  function renderDashCharts(receivedCount, unreceivedCount, newCount, reviseCount) {
+    if (typeof Chart === 'undefined') return;
+    renderReceptionChart(receivedCount, unreceivedCount);
+
+
+    // --- CHART 2: NEW VS REVISE ---
+    var canvas2 = document.getElementById('chartNewVsRevise');
+    if (canvas2) {
+      var ctx2 = canvas2.getContext('2d');
+      if (dashChart2Instance) dashChart2Instance.destroy();
+
+      dashChart2Instance = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: ['Thiết kế mới (NEW)', 'Chỉnh sửa (REVISE)'],
+          datasets: [{
+            label: 'Số lượng bản vẽ',
+            data: [newCount, reviseCount],
+            backgroundColor: ['rgba(59, 130, 246, 0.85)', 'rgba(99, 102, 241, 0.85)'],
+            borderColor: ['#2563EB', '#4F46E5'],
+            borderWidth: 1.5,
+            borderRadius: 8,
+            barThickness: 45
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              titleFont: { family: 'Inter', size: 13, weight: 'bold' },
+              bodyFont: { family: 'Inter', size: 12 },
+              padding: 10,
+              cornerRadius: 8
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: { font: { family: 'Inter', size: 11 }, precision: 0 }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Inter', size: 12, weight: '600' } }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  // ===========================================================
+  // KPI FILTER (click vào card để lọc bảng dưới)
+  // ===========================================================
+  var currentKpiFilter = 'all'; // 'all' | 'design' | 'approve' | 'release'
+  var _lastFilteredData = [];
+
+  function setKpiFilter(group) {
+    currentKpiFilter = group;
+
+    // Xóa active củ tất cả card
+    ['all', 'design', 'approve', 'release'].forEach(function(g) {
+      var c = document.getElementById('kpiCard-' + g);
+      if (c) c.className = 'kpi-card';
+    });
+
+    // Gắn active mới
+    var activeCard = document.getElementById('kpiCard-' + group);
+    var activeMap = { all: 'kpi-active', design: 'kpi-active-design', approve: 'kpi-active-approve', release: 'kpi-active-release' };
+    if (activeCard) activeCard.classList.add(activeMap[group] || 'kpi-active');
+
+    // Cập nhật tiêu đề và badge bảng
+    var titleMap = {
+      all: { icon: 'fa-history text-success', label: 'Bản Vẽ / Yêu Cầu Gần Đây', badge: null },
+      design: { icon: 'fa-pen-nib text-warning', label: 'Bản Vẽ Đang Chờ Thiết Kế', badge: '⚠️ Chờ Thiết Kế' },
+      approve: { icon: 'fa-file-signature text-primary', label: 'Bản Vẽ Chờ Ký Duyệt', badge: '🖊️ Chờ Ký Duyệt' },
+      release: { icon: 'fa-check-circle text-success', label: 'Bản Vẽ Đã Ban Hành', badge: '✅ Đã Ban Hành' }
+    };
+    var t = titleMap[group] || titleMap.all;
+    var titleEl = document.getElementById('dashTableTitle');
+    var badgeEl = document.getElementById('dashTableFilterBadge');
+    if (titleEl) titleEl.innerHTML = '<i class="fa ' + t.icon + ' me-2"></i>' + t.label;
+    if (badgeEl) {
+      if (t.badge) { badgeEl.textContent = t.badge; badgeEl.classList.remove('d-none'); }
+      else { badgeEl.classList.add('d-none'); }
+    }
+
+    // Re-render table với data đã lưu
+    renderDashRecentTable(_lastFilteredData, group);
+
+    // Scroll đến bảng
+    var tableEl = document.getElementById('dashRecentTableBody');
+    if (tableEl) tableEl.closest('.chart-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderDashRecentTable(dataList, kpiGroup) {
+    var tbody = document.getElementById('dashRecentTableBody');
+    if (!tbody) return;
+    kpiGroup = kpiGroup || currentKpiFilter;
+
+    // Lọc theo nhóm KPI
+    var rows = (dataList || []).filter(function(row) {
+      var pdfSample = getRowValue(row, 'pdfSample').trim();
+      var st = getRowValue(row, 'status').toLowerCase();
+      if (kpiGroup === 'design') return !pdfSample || pdfSample === '';
+      if (kpiGroup === 'approve') return (pdfSample !== '') && (st.includes('chờ checker') || st.includes('chờ approval') || st.includes('trình ký') || st.includes('checking'));
+      if (kpiGroup === 'release') return st.includes('đã ban hành') || st.includes('released') || st.includes('hoàn tất');
+      return true; // 'all'
+    });
+
+    if (rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4 small"><i class="bi bi-inbox fs-3 d-block mb-1"></i>Không có dữ liệu trùng khớp.</td></tr>';
+      return;
+    }
+
+    var recent = rows.slice(0, 15);
+    var html = '';
+    recent.forEach(function(row) {
+      var id = getRowValue(row, 'id');
+      var reqNo = getRowValue(row, 'reqNo') || id || 'N/A';
+      var dwNo = getRowValue(row, 'dwNo') || 'Chưa có mã';
+      var type = getRowValue(row, 'type') || '—';
+      var version = getRowValue(row, 'version') || '0';
+      var st = getRowValue(row, 'status') || 'Chưa xác định';
+      var pdfSample = getRowValue(row, 'pdfSample').trim();
+
+      var badgeClass = 'bg-secondary';
+      var stLower = st.toLowerCase();
+      if (stLower.includes('ban hành') || stLower.includes('released')) badgeClass = 'bg-success';
+      else if (stLower.includes('chờ') || stLower.includes('checking') || stLower.includes('trình ký')) badgeClass = 'bg-warning text-dark';
+      else if (stLower.includes('trả') || stLower.includes('returned')) badgeClass = 'bg-danger';
+
+      // Action button theo nhóm KPI
+      var actionBtn = '';
+      if (kpiGroup === 'design' || (!pdfSample)) {
+        // Chờ thiết kế → mở trang Design
+        actionBtn = '<button class="btn btn-sm btn-warning rounded-pill px-2 fw-semibold" ' +
+          'onclick="switchTab(\'dwDesign\', document.getElementById(\'nav-btn-dwDesign\'))" title="Mở trang Thiết Kế">'+
+          '<i class="fa fa-pen-nib me-1"></i>Thiết Kế</button>';
+      } else if (kpiGroup === 'approve') {
+        // Chờ ký duyệt → mở Submit Approval
+        actionBtn = '<button class="btn btn-sm btn-primary rounded-pill px-2 fw-semibold" ' +
+          'onclick="switchTab(\'submitDrawingsForApproval\', document.getElementById(\'nav-btn-submitDrawingsForApproval\'))" title="Mở trang Trình Ký">' +
+          '<i class="fa fa-file-signature me-1"></i>Trình Ký</button>';
+      } else if (kpiGroup === 'release') {
+        // Đã ban hành → mở trang Release
+        actionBtn = '<button class="btn btn-sm btn-success rounded-pill px-2 fw-semibold" ' +
+          'onclick="switchTab(\'release\', document.getElementById(\'nav-btn-release\'))" title="Xem Ban Hành">' +
+          '<i class="fa fa-check-circle me-1"></i>Xem</button>';
+      } else {
+        // Tất cả → nút arrow cũ
+        actionBtn = '<button class="btn btn-sm btn-light border rounded-circle shadow-sm" ' +
+          'onclick="switchTab(\'release\', document.getElementById(\'nav-btn-release\'))" title="Xem chi tiết">' +
+          '<i class="fa fa-arrow-right text-muted"></i></button>';
+      }
+
+      html += '<tr>' +
+        '<td class="fw-bold text-success">' + escHtml(reqNo) + '</td>' +
+        '<td class="fw-semibold">' + escHtml(dwNo) + '</td>' +
+        '<td><span class="badge bg-light text-dark border px-2 py-1">' + escHtml(type) + '</span></td>' +
+        '<td class="fw-medium text-secondary">v' + escHtml(version) + '</td>' +
+        '<td><span class="badge ' + badgeClass + ' font-weight-semibold">' + escHtml(st) + '</span></td>' +
+        '<td class="text-center">' + actionBtn + '</td>' +
+        '</tr>';
+    });
+    tbody.innerHTML = html;
+  }
+
+  function escHtml(str) {
+    return str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : '';
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    setTimeout(updateDashboardStats, 500);
+  });
+</script>

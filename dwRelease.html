@@ -1,0 +1,1672 @@
+<div id="stats-history" class="p-3 p-md-4 custom-scroll" style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+
+  <style>
+    /* --- CSS CÔ LẬP CHO TRANG QUẢN LÝ BAN HÀNH (SCOPED CSS) --- */
+    #stats-history {
+      font-family: 'Inter', 'Segoe UI', sans-serif;
+      background-color: transparent;
+      color: #374151;
+    }
+
+    /* 1. Dashboard Cards */
+    #stats-history .card-dashboard {
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid #e5e7eb; 
+      background-color: #ffffff;
+      position: relative;
+      overflow: hidden;
+    }
+    #stats-history .card-dashboard::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+      background: transparent; transition: all 0.3s ease;
+    }
+    #stats-history .card-dashboard:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.06) !important;
+      border-color: #d1d5db;
+    }
+    
+    #stats-history #dept-card-total:hover::before { background: var(--primary-color, #7CB342); }
+    #stats-history #dept-card-approved:hover::before { background: #10b981; }
+    #stats-history #dept-card-checking:hover::before { background: #f59e0b; }
+    #stats-history #dept-card-returned:hover::before { background: #ef4444; }
+
+    #stats-history .active-card {
+      background-color: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    #stats-history .active-card::before { background: #64748b !important; }
+
+    #stats-history .icon-box {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+    }
+
+    /* 2. Main Table Container */
+    #stats-history .table-card-container {
+      background: #ffffff; border: 1px solid #e5e7eb;
+      border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); overflow: hidden;
+    }
+    #stats-history .table-header-custom { background: #f8fafc; border-bottom: 1px solid #e5e7eb; }
+
+    /* App Card — matches index/dwInfo standard */
+    #stats-history .app-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+      padding: 20px;
+    }
+    
+    /* Table Styling */
+    #stats-history .table-hover tbody tr { transition: all 0.2s; }
+    #stats-history .table-hover tbody tr:hover { background-color: #f8fafc; }
+    #stats-history .table th {
+      font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;
+      color: #64748b; padding: 14px 16px; border-bottom: 2px solid #e2e8f0; background: transparent;
+    }
+    #stats-history .table td {
+      padding: 12px 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155;
+    }
+    #stats-history .progress { background-color: #e2e8f0; border-radius: 99px; }
+    #stats-history .progress-bar { border-radius: 99px; }
+
+    /* 3. Search Bar */
+    #stats-history .search-input-group {
+      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; transition: all 0.2s;
+    }
+    #stats-history .search-input-group:focus-within {
+      border-color: var(--primary-color, #7CB342); box-shadow: 0 0 0 4px rgba(124, 179, 66, 0.1);
+    }
+    #stats-history .search-input-group input { border: none; box-shadow: none; background: transparent; padding: 8px 12px; }
+    #stats-history .search-input-group .input-group-text { background: transparent; border: none; color: #94a3b8; }
+
+    /* 4. Utilities & Buttons */
+    #stats-history .cursor-pointer { cursor: pointer; }
+    #stats-history .btn-custom-light {
+      background: #ffffff; border: 1px solid #e2e8f0; color: #475569;
+      border-radius: 8px; font-weight: 500; transition: all 0.2s; padding: 6px 14px;
+    }
+    #stats-history .btn-custom-light:hover { background: #f8fafc; border-color: #cbd5e1; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+
+    /* 5. HE THONG Z-INDEX MODALS & OVERLAYS CHUAN HR */
+    #dept-detail-modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.65); z-index: 10000 !important; backdrop-filter: blur(5px);
+      display: none; align-items: center; justify-content: center;
+    }
+    #dept-detail-modal-container {
+      animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      z-index: 10005 !important;
+    }
+    #modalDeptSelectHistory { z-index: 10030 !important; }
+    #modalDeptSelectHistory + .modal-backdrop { z-index: 10025 !important; }
+    .swal2-container { z-index: 10050 !important; }
+
+    @keyframes modalScaleUp { 
+        from { transform: scale(0.95) translateY(20px); opacity: 0; } 
+        to { transform: scale(1) translateY(0); opacity: 1; } 
+    }
+
+    /* Info Grid Detail Cards */
+    #stats-history .detail-grid-card {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;
+    }
+    #stats-history .detail-label {
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;
+      color: #64748b; font-weight: 700; margin-bottom: 4px; display: block;
+    }
+    #stats-history .detail-value { font-size: 0.95rem; font-weight: 600; color: #0f172a; }
+
+    /* Custom Scrollbar */
+    #stats-history .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    #stats-history .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+    #stats-history .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+    #stats-history .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* Animations */
+    #stats-history .animate-fade { animation: fadeInRight 0.3s ease-out; }
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    #stats-history .badge { font-weight: 600; padding: 0.4em 0.8em; letter-spacing: 0.3px; }
+  </style>
+
+  <div class="container-fluid p-0">
+
+    <!-- HEADER ROW: filter left, title right -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div></div>
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+          <button class="btn btn-custom-light btn-sm shadow-sm" style="min-width: 140px; text-align:left; pointer-events: none;">
+             <span id="dept-name-display" class="fw-bold"><i class="spinner-border spinner-border-sm me-2"></i>Loading...</span>
+          </button>
+          <select id="fye-year-filter" class="form-select form-select-sm border-primary shadow-sm text-primary fw-bold" style="width: auto; cursor: pointer; border-radius:8px;" onchange="history_onMainFilterChange()">
+              <option value="ALL" data-i18n="his_opt_all_fye">📅 Tất cả FYE</option>
+          </select>
+          <button class="btn btn-sm shadow-sm fw-medium rounded-3 px-3 d-flex align-items-center" id="dept-btn-reload" onclick="history_loadData()" style="background:#4F46E5; border:none; color:#fff;">
+            <i class="bi bi-arrow-clockwise me-2"></i> <span data-i18n="his_btn_reload">Làm mới</span>
+          </button>
+      </div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="row g-2 mb-2">
+       <div class="col-md-3">
+           <div class="card card-dashboard h-100 rounded-4 p-3 active-card" id="dept-card-total" onclick="history_filterByCard('ALL')">
+               <div class="d-flex align-items-center justify-content-between">
+                   <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="bi bi-files"></i></div>
+                   <div class="text-end">
+                       <div class="text-secondary small fw-bold text-uppercase tracking-wide" data-i18n="his_kpi_total">Tổng yêu cầu</div>
+                       <div class="fs-2 fw-bold text-dark mt-1" id="dept-kpi-total">0</div>
+                   </div>
+               </div>
+           </div>
+       </div>
+       <div class="col-md-3">
+           <div class="card card-dashboard h-100 rounded-4 p-3" id="dept-card-approved" onclick="history_filterByCard('APPROVED')">
+               <div class="d-flex align-items-center justify-content-between">
+                   <div class="icon-box bg-info bg-opacity-10 text-info"><i class="bi bi-check-circle-fill"></i></div>
+                   <div class="text-end">
+                       <div class="text-secondary small fw-bold text-uppercase tracking-wide" data-i18n="his_kpi_approved">Đã ban hành</div>
+                       <div class="fs-2 fw-bold text-info mt-1" id="dept-kpi-approved">0</div>
+                   </div>
+               </div>
+           </div>
+       </div>
+       <div class="col-md-3">
+           <div class="card card-dashboard h-100 rounded-4 p-3" id="dept-card-checking" onclick="history_filterByCard('CHECKING')">
+               <div class="d-flex align-items-center justify-content-between">
+                   <div class="icon-box bg-warning bg-opacity-10 text-warning"><i class="bi bi-hourglass-split"></i></div>
+                   <div class="text-end">
+                       <div class="text-secondary small fw-bold text-uppercase tracking-wide" data-i18n="his_kpi_checking">QA Đang Kiểm Tra</div>
+                       <div class="fs-2 fw-bold text-warning mt-1" id="dept-kpi-checking">0</div>
+                   </div>
+               </div>
+           </div>
+       </div>
+       <div class="col-md-3">
+           <div class="card card-dashboard h-100 rounded-4 p-3" id="dept-card-returned" onclick="history_filterByCard('RETURNED')">
+               <div class="d-flex align-items-center justify-content-between">
+                   <div class="icon-box bg-danger bg-opacity-10 text-danger"><i class="bi bi-arrow-return-left"></i></div>
+                   <div class="text-end">
+                       <div class="text-secondary small fw-bold text-uppercase tracking-wide" data-i18n="his_kpi_returned">Bị trả lại</div>
+                       <div class="fs-2 fw-bold text-danger mt-1" id="dept-kpi-returned">0</div>
+                   </div>
+               </div>
+           </div>
+       </div>
+    </div>
+
+    <!-- CHART SECTION -->
+    <div class="app-card mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h6 class="fw-bold text-dark m-0 text-uppercase d-flex align-items-center">
+                    <i class="bi bi-bar-chart-line-fill text-primary me-2"></i>
+                    <span data-i18n="his_chart_title">Thống kê Yêu cầu Theo Năm Tài Chính (FYE)</span>
+                </h6>
+                <small class="text-secondary" data-i18n="his_chart_subtitle">Số lượng Request No. theo bộ phận (Bấm vào cột biểu đồ để lọc chi tiết bảng)</small>
+            </div>
+            <div id="chart-active-filter-badge" class="d-none align-items-center gap-2 bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill border border-primary border-opacity-25">
+                <small class="fw-bold" id="chart-filter-label">Đang lọc</small>
+                <button class="btn btn-sm btn-link p-0 text-primary border-0" onclick="history_resetChartClickFilter()" title="Hủy lọc">
+                    <i class="bi bi-x-circle-fill"></i>
+                </button>
+            </div>
+        </div>
+        <div style="position: relative; height: 200px; width: 100%;">
+            <canvas id="fyeStackedChart"></canvas>
+        </div>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div class="app-card mb-3 d-flex flex-wrap gap-3 align-items-center">
+        <div class="input-group search-input-group overflow-hidden" style="max-width: 300px;">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="dept-search-reqno" data-i18n-placeholder="his_ph_search_req" placeholder="Search Request No." oninput="_onSearchInput()">
+        </div>
+        <div class="input-group search-input-group overflow-hidden" style="max-width: 260px;">
+            <span class="input-group-text"><i class="bi bi-building"></i></span>
+            <input type="text" class="form-control" id="dept-search-dept" data-i18n-placeholder="his_ph_search_dept" placeholder="Search Department" oninput="_onSearchInput()">
+        </div>
+        <button class="btn btn-light border rounded-3 px-3 fw-medium text-secondary" onclick="history_clearSearch()">
+            <i class="bi bi-x-lg me-1"></i> <span data-i18n="his_btn_clear_filter">Xóa lọc</span>
+        </button>
+    </div>
+
+    <!-- MAIN TABLE CARD -->
+    <div class="app-card mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <h6 class="m-0 fw-bold text-dark text-uppercase d-flex align-items-center">
+                <i class="bi bi-list-task me-2 text-primary"></i><span data-i18n="his_list_title">Danh sách yêu cầu</span>
+            </h6>
+            <div class="d-flex align-items-center justify-content-end flex-grow-1 gap-3">
+                <div id="dept-inline-bulk-actions" class="d-none align-items-center bg-info bg-opacity-10 text-info px-3 py-1 rounded-pill border border-info border-opacity-25 animate-fade">
+                    <div class="d-flex align-items-center me-3 border-end border-info border-opacity-25 pe-3">
+                        <span class="badge bg-info text-dark rounded-circle me-2" id="dept-selected-count">0</span>
+                        <span class="fw-bold small text-dark" data-i18n="his_selected">Đã chọn</span>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-info text-secondary rounded-pill px-3 fw-medium" onclick="history_handleBulkAction('SEND_CHECKER', null, this)">
+                            <i class="bi bi-send me-1"></i> <span class="d-none d-md-inline" data-i18n="his_btn_send_qa">Gửi đến QA</span>
+                        </button>
+                        <button class="btn btn-sm btn-danger text-secondary rounded-pill px-3 fw-medium" onclick="history_handleBulkAction('DELETE', null, this)">
+                            <i class="bi bi-trash me-1"></i> <span class="d-none d-md-inline" data-i18n="his_btn_delete">Xóa</span>
+                        </button>
+                        <button class="btn btn-sm btn-light rounded-circle text-secondary border-0" onclick="history_deselectAll()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                <span class="badge bg-white text-secondary border px-3 py-2 fw-medium shadow-sm" id="dept-table-filter-status-text" data-i18n="his_filter_all">Hiển thị: Tất cả</span>
+            </div>
+        </div>
+
+        <div class="table-responsive custom-scrollbar" style="max-height: calc(100vh - 350px); overflow-y: auto;">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="py-3 ps-4" style="width: 50px;">
+                            <input type="checkbox" class="form-check-input cursor-pointer shadow-none" id="dept-cb-all" onchange="history_toggleAll(this)">
+                        </th>
+                        <th class="py-3" data-i18n="his_th_reqno">Request No.</th>
+                        <th class="py-3" data-i18n="his_th_dept">Bộ phận</th>
+                        <th class="py-3" data-i18n="admin_th_type">Hình thức</th>
+                        <th class="py-3" data-i18n="his_th_date">Ngày Yêu Cầu</th>
+                        <th class="py-3 text-center" style="width: 15%;" data-i18n="his_th_progress">Tiến độ</th>
+                        <th class="py-3 text-center" data-i18n="his_th_status">Trạng thái</th>
+                        <th class="py-3 text-center" data-i18n="his_th_detail">Chi tiết</th>
+                    </tr>
+                </thead>
+                <tbody id="dept-table-body" class="border-top-0 bg-white">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION TOOLBAR -->
+        <div id="deptPaginationToolbar" class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 border-top gap-2 px-3 pb-3">
+          <div class="text-muted small" id="deptPaginationInfo">Hiển thị 0 - 0 / 0 yêu cầu</div>
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-outline-secondary rounded-2" id="deptPrevBtn" onclick="changeDeptPage(-1)">
+              <i class="bi bi-chevron-left me-1"></i> Trang trước
+            </button>
+            <span class="fw-bold small px-2 text-dark" id="deptPageIndicator">1 / 1</span>
+            <button class="btn btn-sm btn-outline-secondary rounded-2" id="deptNextBtn" onclick="changeDeptPage(1)">
+              Trang sau <i class="bi bi-chevron-right ms-1"></i>
+            </button>
+          </div>
+        </div>
+    </div>
+
+    <!-- MODAL CHI TIẾT (DETAIL MODAL) -->
+    <div id="dept-detail-modal-overlay">
+      <div id="dept-detail-modal-container" class="bg-white rounded-4 d-flex flex-column overflow-hidden" style="width: 95%; max-width: 1150px; height: 90vh;">
+          
+          <div class="p-4 border-bottom bg-white d-flex justify-content-between align-items-center flex-shrink-0">
+              <div class="d-flex align-items-center">
+                  <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 48px; height: 48px;">
+                      <i class="bi bi-file-earmark-text fs-4"></i>
+                  </div>
+                  <div>
+                      <h5 class="m-0 fw-bold text-dark"><span data-i18n="his_modal_title">Chi Tiết:</span> <span id="dept-m-req-no" class="text-primary ms-1">---</span></h5>
+                  </div>
+              </div>
+              <button type="button" class="btn-close shadow-none" onclick="history_closeModal()"></button>
+          </div>
+
+          <div class="d-flex flex-column flex-grow-1 p-4 bg-white custom-scrollbar" style="overflow-y: auto;">
+              <div class="mb-4 flex-shrink-0">
+                  <h6 class="fw-bold text-secondary mb-3 d-flex align-items-center"><i class="bi bi-info-circle me-2"></i><span data-i18n="his_modal_info">Thông tin đăng ký</span></h6>
+                  <div class="detail-grid-card">
+                      <div class="row g-4">
+                          <div class="col-6 col-md-3"><label class="detail-label" data-i18n="his_lbl_type">Hình thức</label><span id="dept-m-type" class="detail-value">---</span></div>
+                          <div class="col-6 col-md-3"><label class="detail-label" data-i18n="his_lbl_dept">Bộ phận</label><span id="dept-m-dept" class="detail-value">---</span></div>
+                          <div class="col-6 col-md-3"><label class="detail-label" data-i18n="his_lbl_creator">Người tạo</label><span id="dept-m-charger" class="detail-value">---</span></div>
+                          <div class="col-6 col-md-3"><label class="detail-label" data-i18n="his_lbl_date">Ngày yêu cầu</label><span id="dept-m-req-date" class="detail-value text-primary">---</span></div>
+                          
+                          <div class="col-6 col-md-3"><label class="detail-label" data-i18n="his_lbl_reason">Lý do</label><span id="dept-m-reason" class="detail-value">---</span></div>
+                          <div class="col-6 col-md-3"><label class="detail-label" data-i18n="his_lbl_priority">Độ ưu tiên</label><span id="dept-m-issue-type" class="detail-value">---</span></div>
+                          <div class="col-6 col-md-3"><label class="detail-label" data-i18n="his_lbl_deadline">Deadline</label><span id="dept-m-due-date" class="detail-value text-danger">---</span></div>
+                          <div class="col-6 col-md-3"><label class="detail-label" data-i18n="his_lbl_file_type">Loại file</label><span id="dept-m-folder" class="detail-value">---</span></div>
+                          
+                          <div class="col-6 pt-2 border-top">
+                              <label class="detail-label" data-i18n="his_lbl_link_folder">Link Folder Đính kèm</label>
+                              <a href="#" target="_blank" id="dept-m-link-folder" class="btn btn-sm btn-light border text-primary fw-bold mt-1 px-3">
+                                  <i class="bi bi-link-45deg fs-5 align-middle me-1"></i> <span data-i18n="his_btn_open_link">Mở liên kết</span>
+                              </a>
+                          </div>
+                          <div class="col-6 pt-2 border-top">
+                            <label class="detail-label" data-i18n="his_lbl_link_file">Link File Danh Sách Bản Vẽ</label>
+                            <a href="#" target="_blank" id="dept-m-link-file" class="btn btn-sm btn-light border text-primary fw-bold mt-1 px-3">
+                                <i class="bi bi-link-45deg fs-5 align-middle me-1"></i> <span data-i18n="his_btn_open_link">Mở liên kết</span>
+                            </a>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              
+              <div id="dept-reject_reason" class="d-none mb-4 flex-shrink-0">
+                  <h6 class="fw-bold text-uppercase text-danger mb-3 d-flex align-items-center"><i class="bi bi-exclamation-triangle-fill me-2"></i><span data-i18n="his_modal_error_title">Thông tin phản hồi lỗi</span></h6>
+                  <div class="alert alert-danger border border-danger border-opacity-25 bg-danger bg-opacity-10 rounded-4 p-4 shadow-sm">
+                        <div class="text-danger" id="dept-checker_reject" style="font-size: 0.95rem;"></div>
+                        <hr class="border-danger opacity-25 my-3">
+                        <div class="text-danger" id="dept-approver_reject" style="font-size: 0.95rem;"></div>
+                  </div>
+              </div>
+
+              <div class="d-flex flex-column flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-end mb-3 flex-shrink-0">
+                      <h6 class="fw-bold text-uppercase text-dark m-0 d-flex align-items-center"><i class="bi bi-list-columns-reverse me-2 text-primary"></i><span data-i18n="his_modal_list_dw">Danh sách bản vẽ chi tiết</span></h6>
+                      <div id="dept-modal-bulk-bar" class="d-none align-items-center gap-2 animate-fade">
+                          <span class="badge bg-secondary rounded-pill px-3 py-2"><span id="dept-m-selected-count">0</span> <span data-i18n="his_selected_items">mục đã chọn</span></span>
+                      </div>
+                  </div>
+
+                  <div class="modal-table-container flex-grow-1 custom-scrollbar" style="overflow-y: auto; min-height: 250px;">
+                      <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                          <thead class="bg-light sticky-top shadow-sm" style="z-index: 5;">
+                              <tr>
+                                  <th class="text-center py-3">#</th>
+                                  <th class="py-3" data-i18n="his_th_dw_type">Loại bản vẽ</th>
+                                  <th class="py-3" data-i18n="his_th_dw_no">Số bản vẽ</th>
+                                  <th class="py-3 text-center" data-i18n="his_th_ver">Version</th>
+                                  <th class="py-3" data-i18n="his_th_line">LINE/CUS</th>
+                                  <th class="py-3" data-i18n="his_th_dept_lq">BP Liên quan</th>
+                                  <th class="py-3" data-i18n="his_th_remark">Remark</th>
+                                  <th class="py-3" data-i18n="admin_th_change_type">Loại thay đổi</th>
+                                  <th class="text-center py-3" data-i18n="his_th_link">Link</th>
+                                  <th class="text-center py-3" data-i18n="his_th_status">Trạng thái</th>
+                                  <th class="text-center py-3" data-i18n="his_th_action">Thao tác</th>
+                              </tr>
+                          </thead>
+                          <tbody id="dept-m-dw-list" class="bg-white"></tbody>
+                      </table>
+                  </div>
+              </div>
+          </div>
+
+          <div class="p-4 border-top bg-light flex-shrink-0">
+              <div class="d-flex flex-wrap gap-3 justify-content-end align-items-center" id="dept-bottomActions">
+                  <span class="text-muted small me-auto d-none d-md-inline"><i class="bi bi-info-circle me-1"></i> <span data-i18n="his_footer_note">Các hành động áp dụng cho toàn bộ yêu cầu này</span></span>
+                  <button class="btn btn-outline-danger px-4 fw-medium bg-white rounded-pill shadow-sm" id="dept-btn-delete"><i class="bi bi-trash me-2"></i> <span data-i18n="his_btn_delete_req">Xóa Yêu Cầu</span></button>
+                  <button class="btn btn-primary px-4 fw-medium rounded-pill shadow-sm" id="dept-btn-toQA" style="background:#4F46E5; border:none;"><i class="bi bi-send-fill me-2"></i> <span data-i18n="his_btn_resend_qa">Gửi lại QA</span></button>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div> 
+
+<!-- Sub Modal Chon Bo phan -->
+<div class="modal fade" id="modalDeptSelectHistory" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 rounded-4 shadow-lg">
+      <div class="modal-header bg-light py-3 border-bottom-0 rounded-top-4">
+        <h6 class="modal-title fw-bold text-dark"><i class="bi bi-diagram-3-fill me-2 text-primary"></i><span data-i18n="his_modal_dept_title">Chọn Bộ phận LQ</span></h6>
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 custom-scrollbar" style="max-height: 350px; overflow-y: auto;">
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="EX" id="md-EX"><label class="form-check-label" for="md-EX">EX</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="ST" id="md-ST"><label class="form-check-label" for="md-ST">ST</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="ALBar" id="md-ALBar"><label class="form-check-label" for="md-ALBar">ALBar</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="PC" id="md-PC"><label class="form-check-label" for="md-PC">PC</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="PP" id="md-PP"><label class="form-check-label" for="md-PP">PP</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="MRDC" id="md-MRDC"><label class="form-check-label" for="md-MRDC">MRDC</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="Fab-QCDI" id="md-Fab-QCDI"><label class="form-check-label" for="md-Fab-QCDI">Fab-QCDI</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="Fab-QCFab" id="md-Fab-QCFab"><label class="form-check-label" for="md-Fab-QCFab">Fab-QCFab</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="Fab-NP" id="md-Fab-NP"><label class="form-check-label" for="md-Fab-NP">Fab-NP</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="Fab-MT" id="md-Fab-MT"><label class="form-check-label" for="md-Fab-MT">Fab-MT</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="Fab-PC" id="md-Fab-PC"><label class="form-check-label" for="md-Fab-PC">Fab-PC</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="Fab-DADORI" id="md-Fab-DADORI"><label class="form-check-label" for="md-Fab-DADORI">Fab-DADORI</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="PVC" id="md-PVC"><label class="form-check-label" for="md-PVC">PVC</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="QA" id="md-QA"><label class="form-check-label" for="md-QA">QA</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="Supplier" id="md-Supplier"><label class="form-check-label" for="md-Supplier">Supplier</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="Asean" id="md-Asean"><label class="form-check-label" for="md-Asean">Asean</label></div>
+        <div class="form-check mb-3"><input class="form-check-input dept-chk" type="checkbox" value="MG" id="md-MG"><label class="form-check-label" for="md-MG">MG</label></div>
+      </div>
+      <div class="modal-footer p-2 bg-light rounded-bottom-4 border-top-0">
+          <button type="button" class="btn btn-primary w-100 fw-bold rounded-3 py-2" style="background:#4F46E5; border:none;" onclick="saveDeptSelectionHistory()"><span data-i18n="his_modal_btn_confirm">Xác nhận</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+</div> 
+
+<script>
+    function t(key) {
+        if (typeof translations !== 'undefined') {
+            const lang = localStorage.getItem('app_lang') || 'vi';
+            if (translations[lang] && translations[lang][key]) {
+                return translations[lang][key];
+            }
+        }
+        const fallback = (typeof translations !== 'undefined' && translations['vi']) ? translations['vi'][key] : null;
+        return fallback || key;
+    }
+
+(function() {
+    const COL = {
+        REQ_NO: 8, DEPT: 10, CREATOR: 12, TYPE: 6, TYPEREQUEST: 14,
+        REQ_DATE: 13, DUE_DATE: 15, REASON: 19, FOLDER: 16, LINK_FOLDER: 18,
+        DW_ID: 0, DW_TYPE: 1, LINE_CUS: 2, CODE: 3, DW_NO: 4, VER: 5, PART: 7,
+        LINK_DW: 17, APPROVE_DATE: 20, REJECT_REASON: 29, DEPTLQ: 11, DESIGN_NO: 9,
+        CHARGER_DATE:25, CHECKER_DATE:27, REJECT_REASONNOTE: 30, STATUS:21,
+        DEPT_NOTE_EDIT:33, CHECKER_NOTE_EDIT:34, APPROVER_NOTE_EDIT:35, TRANGTHAIDW:23, REMARK:36, FILE_DS_DW:37,CHANGE_TYPE:39,STAMPED:38
+    };
+   
+    const wrapper = document.getElementById('stats-history');
+    
+    let masterRawData = []; 
+    let deptRawData = [];    
+    
+    let deptFilterState = { 
+        status: 'ALL',
+        chartMonthIdx: null,
+        chartDept: null
+    };
+    
+    let fyeChartInstance = null;
+    var _pendingReloadBtn = null;
+    var _pendingReloadBtnText = '';
+
+    window.history_loadData = function() {
+        if(typeof user !== 'undefined' && user.dept) {
+            document.getElementById('dept-name-display').innerHTML = `<i class="bi bi-person-badge me-2"></i> ${user.dept}`;
+        } else {
+            document.getElementById('dept-name-display').innerHTML = `<i class="bi bi-person-badge me-2"></i> Chưa có BP`;
+        }
+
+        if (typeof AppDataStore !== 'undefined') {
+            // Nếu đã có cache, hiển thị ngay lập tức
+            var cached = AppDataStore.get('releaseData');
+            if (cached && Array.isArray(cached) && cached.length > 0) {
+                handleHistorySuccess(cached);
+            } else {
+                // Chưa có data, hiện spinner trên nút reload để báo đang tải
+                var btn = document.getElementById('dept-btn-reload');
+                if (btn) {
+                    _pendingReloadBtn = btn;
+                    _pendingReloadBtnText = btn.innerHTML;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
+                    btn.disabled = true;
+                }
+            }
+            // Luôn invalidate để refresh ngầm từ server
+            AppDataStore.invalidate('releaseData');
+        }
+    };
+
+    function handleHistorySuccess(data) {
+        if (_pendingReloadBtn) {
+            _pendingReloadBtn.innerHTML = _pendingReloadBtnText;
+            _pendingReloadBtn.disabled = false;
+            _pendingReloadBtn = null;
+            _pendingReloadBtnText = '';
+        }
+
+        if (!data || !Array.isArray(data)) data = [];
+        masterRawData = data;
+
+        if (typeof user !== 'undefined' && user.dept) {
+            const userDept = String(user.dept).trim().toUpperCase();
+            deptRawData = masterRawData.filter(r => {
+                const rowDept = String(r[COL.DEPT]).trim().toUpperCase();
+                return rowDept === userDept;
+            });
+        } else {
+            deptRawData = [];
+        }
+
+        history_initFyeOptions();
+        history_applyAllPageFilters();
+    }
+
+    function history_initFyeOptions() {
+        const fyeSelect = document.getElementById('fye-year-filter');
+        if (!fyeSelect) return;
+
+        const fyeSet = new Set();
+        deptRawData.forEach(row => {
+            const dInfo = parseFyeDate(row[COL.REQ_DATE]);
+            if (dInfo) fyeSet.add(dInfo.fyeStr);
+        });
+
+        const availableFyes = Array.from(fyeSet).sort();
+        const curVal = fyeSelect.value;
+
+        let optionsHtml = `<option value="ALL" data-i18n="his_opt_all_fye">${t('his_opt_all_fye')}</option>`;
+        availableFyes.forEach(fye => {
+            optionsHtml += `<option value="${fye}">${fye}</option>`;
+        });
+        fyeSelect.innerHTML = optionsHtml;
+
+        if (availableFyes.includes(curVal)) {
+            fyeSelect.value = curVal;
+        } else if (availableFyes.length > 0) {
+            fyeSelect.value = availableFyes[availableFyes.length - 1];
+        }
+    }
+
+    window.history_onMainFilterChange = function() {
+        deptFilterState.chartMonthIdx = null;
+        deptFilterState.chartDept = null;
+
+        history_applyAllPageFilters();
+    };
+
+    function history_getFilteredData() {
+        const selectedFye = document.getElementById('fye-year-filter')?.value || 'ALL';
+        let filtered = [...deptRawData];
+
+        if (selectedFye !== 'ALL') {
+            filtered = filtered.filter(r => {
+                const dInfo = parseFyeDate(r[COL.REQ_DATE]);
+                return dInfo && dInfo.fyeStr === selectedFye;
+            });
+        }
+
+        if (deptFilterState.chartMonthIdx !== null) {
+            filtered = filtered.filter(r => {
+                const dInfo = parseFyeDate(r[COL.REQ_DATE]);
+                if (!dInfo) return false;
+                
+                const matchMonth = dInfo.fyeMonthIndex === deptFilterState.chartMonthIdx;
+                const matchDept = deptFilterState.chartDept ? String(r[COL.DEPT]).trim() === deptFilterState.chartDept : true;
+                
+                return matchMonth && matchDept;
+            });
+        }
+
+        return filtered;
+    }
+
+    function history_applyAllPageFilters() {
+        const filteredData = history_getFilteredData();
+
+        history_updateKPIs(filteredData);
+        history_renderChart();
+        history_renderTable(filteredData);
+
+        const badgeElem = document.getElementById('chart-active-filter-badge');
+        const labelElem = document.getElementById('chart-filter-label');
+        if (deptFilterState.chartMonthIdx !== null && badgeElem && labelElem) {
+            const monthNames = [
+                t('his_month_4'), t('his_month_5'), t('his_month_6'), 
+                t('his_month_7'), t('his_month_8'), t('his_month_9'), 
+                t('his_month_10'), t('his_month_11'), t('his_month_12'), 
+                t('his_month_1'), t('his_month_2'), t('his_month_3')
+            ];
+            const monthName = monthNames[deptFilterState.chartMonthIdx];
+            const deptText = deptFilterState.chartDept ? ` - ${deptFilterState.chartDept}` : '';
+            labelElem.innerText = `${t('his_chart_filtering')} ${monthName}${deptText}`;
+            badgeElem.classList.remove('d-none');
+            badgeElem.classList.add('d-inline-flex');
+        } else if (badgeElem) {
+            badgeElem.classList.add('d-none');
+            badgeElem.classList.remove('d-inline-flex');
+        }
+    }
+
+    window.history_resetChartClickFilter = function() {
+        deptFilterState.chartMonthIdx = null;
+        deptFilterState.chartDept = null;
+        history_applyAllPageFilters();
+    };
+
+    /* =========================================================
+       🟢 LOGIC BIỂU ĐỒ CỘT CHỒNG THEO 12 THÁNG NĂM TÀI CHÍNH (FYE)
+       ========================================================= */
+    
+    function parseFyeDate(dateVal) {
+        if (!dateVal) return null;
+        let d = new Date(dateVal);
+        
+        if (isNaN(d.getTime()) && typeof dateVal === 'string' && dateVal.includes('/')) {
+            const parts = dateVal.split('/');
+            if (parts.length === 3) {
+                d = new Date(parts[2], parts[1] - 1, parts[0]);
+            }
+        }
+        
+        if (isNaN(d.getTime())) return null;
+
+        const month = d.getMonth() + 1; 
+        const year = d.getFullYear();   
+
+        const fyeYearNum = month >= 4 ? year + 1 : year;
+        const fyeStr = "FYE" + String(fyeYearNum).slice(-2); 
+
+        const fyeMonthIndex = month >= 4 ? month - 4 : month + 8;
+
+        return {
+            fyeStr: fyeStr,
+            fyeMonthIndex: fyeMonthIndex,
+            year: year,
+            month: month
+        };
+    }
+
+    window.history_renderChart = function() {
+        if (typeof Chart === 'undefined') return;
+
+        const selectedFye = document.getElementById('fye-year-filter')?.value || 'ALL';
+
+        const reqMap = {};
+        deptRawData.forEach(row => {
+            const reqNo = String(row[COL.REQ_NO]).trim();
+            if (!reqNo || reqNo === 'undefined') return;
+            
+            if (!reqMap[reqNo]) {
+                const dateInfo = parseFyeDate(row[COL.REQ_DATE]);
+                reqMap[reqNo] = {
+                    reqNo: reqNo,
+                    dept: String(row[COL.DEPT] || 'Khác').trim(),
+                    dateInfo: dateInfo
+                };
+            }
+        });
+
+        let uniqueRequests = Object.values(reqMap).filter(r => r.dateInfo !== null);
+
+        if (selectedFye !== 'ALL') {
+            uniqueRequests = uniqueRequests.filter(r => r.dateInfo.fyeStr === selectedFye);
+        }
+
+        const depts = [...new Set(uniqueRequests.map(r => r.dept))].sort();
+        const monthLabels = [
+            t('his_month_4'), t('his_month_5'), t('his_month_6'), 
+            t('his_month_7'), t('his_month_8'), t('his_month_9'), 
+            t('his_month_10'), t('his_month_11'), t('his_month_12'), 
+            t('his_month_1'), t('his_month_2'), t('his_month_3')
+        ];
+
+        const colorPalette = [
+            '#4F46E5', '#10B981', '#F59E0B', '#EF4444', 
+            '#06B6D4', '#8B5CF6', '#EC4899', '#3B82F6', 
+            '#64748B', '#14B8A6', '#F97316', '#84CC16'
+        ];
+
+        const datasets = depts.map((deptName, idx) => {
+            const dataCounts = new Array(12).fill(0);
+
+            uniqueRequests.forEach(req => {
+                if (req.dept === deptName) {
+                    const monthIdx = req.dateInfo.fyeMonthIndex;
+                    if (monthIdx >= 0 && monthIdx < 12) {
+                        dataCounts[monthIdx]++;
+                    }
+                }
+            });
+
+            return {
+                label: deptName,
+                data: dataCounts,
+                backgroundColor: colorPalette[idx % colorPalette.length],
+                borderRadius: 4,
+                borderSkipped: false
+            };
+        });
+
+        const ctx = document.getElementById('fyeStackedChart')?.getContext('2d');
+        if (!ctx) return;
+
+        if (fyeChartInstance) {
+            fyeChartInstance.destroy();
+        }
+
+        fyeChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: monthLabels,
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const element = elements[0];
+                        const clickedMonthIdx = element.index;
+                        const datasetIdx = element.datasetIndex;
+                        const clickedDept = fyeChartInstance.data.datasets[datasetIdx].label;
+
+                        if (deptFilterState.chartMonthIdx === clickedMonthIdx && deptFilterState.chartDept === clickedDept) {
+                            deptFilterState.chartMonthIdx = null;
+                            deptFilterState.chartDept = null;
+                        } else {
+                            deptFilterState.chartMonthIdx = clickedMonthIdx;
+                            deptFilterState.chartDept = clickedDept;
+                        }
+
+                        history_applyAllPageFilters();
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8,
+                            font: { family: 'Inter', size: 12, weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            footer: (tooltipItems) => {
+                                let total = 0;
+                                tooltipItems.forEach(item => { total += item.raw; });
+                                return t('his_chart_total_req') + ' ' + total;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', size: 11 } }
+                    },
+                    y: {
+                        stacked: true,
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            precision: 0,
+                            font: { family: 'Inter', size: 11 }
+                        },
+                        grid: { color: '#f1f5f9' }
+                    }
+                }
+            }
+        });
+    };
+
+    function history_updateKPIs(data) {
+        const reqMap = {};
+        data.forEach(row => {
+            const reqNo = row[COL.REQ_NO];
+            if(!reqMap[reqNo]) reqMap[reqNo] = { totalDW: 0, approvedDW: 0, isReturned: false };
+            
+            const checkNote = row[COL.CHECKER_NOTE_EDIT];
+            const appNote = row[COL.APPROVER_NOTE_EDIT];
+            const charNote = row[COL.REJECT_REASON];
+            if ((charNote && String(charNote).trim() !== "") && row[COL.STATUS] ==="NG" && row[COL.TRANGTHAIDW]==="Charger QA phản hồi lỗi") {
+                reqMap[reqNo].isReturned = true;
+            }
+
+            reqMap[reqNo].totalDW++;
+            if(row[COL.TRANGTHAIDW] === "Đã ban hành") {
+                reqMap[reqNo].approvedDW++;
+            }
+        });
+
+        let approvedReqs = 0, checkingReqs = 0, returnedReqs = 0;
+        const totalReqs = Object.keys(reqMap).length;
+
+        Object.values(reqMap).forEach(item => {
+            if(item.isReturned) {
+                returnedReqs++;
+            } else if(item.approvedDW === item.totalDW && item.totalDW > 0) {
+                approvedReqs++;
+            } else {
+                checkingReqs++;
+            }
+        });
+
+        document.getElementById('dept-kpi-total').innerText = totalReqs;
+        document.getElementById('dept-kpi-approved').innerText = approvedReqs;
+        document.getElementById('dept-kpi-checking').innerText = checkingReqs;
+        document.getElementById('dept-kpi-returned').innerText = returnedReqs;
+    }
+
+    let deptCurrentPage = 1;
+    const deptPageSize = 50;
+    var deptSearchDebounce = null;
+
+    window._onSearchInput = function () {
+        if (typeof window.appDebounce === 'function') {
+            if (!deptSearchDebounce) {
+                deptSearchDebounce = window.appDebounce(function () {
+                    deptCurrentPage = 1;
+                    history_renderTable();
+                }, 250);
+            }
+            deptSearchDebounce();
+        } else {
+            deptCurrentPage = 1;
+            history_renderTable();
+        }
+    };
+
+    window.changeDeptPage = function (delta) {
+        deptCurrentPage += delta;
+        history_renderTable();
+    };
+
+    function updateDeptPaginationUI(total, start, end, page, totalPages) {
+        const infoEl = document.getElementById('deptPaginationInfo');
+        const indicatorEl = document.getElementById('deptPageIndicator');
+        const prevBtn = document.getElementById('deptPrevBtn');
+        const nextBtn = document.getElementById('deptNextBtn');
+        const toolbar = document.getElementById('deptPaginationToolbar');
+
+        if (!toolbar) return;
+        if (total === 0) {
+            toolbar.classList.add('d-none');
+            return;
+        }
+        toolbar.classList.remove('d-none');
+        if (infoEl) infoEl.textContent = `Hiển thị ${start + 1} - ${Math.min(end, total)} / Tổng số ${total} yêu cầu`;
+        if (indicatorEl) indicatorEl.textContent = `${page} / ${totalPages}`;
+        if (prevBtn) prevBtn.disabled = page <= 1;
+        if (nextBtn) nextBtn.disabled = page >= totalPages;
+    }
+
+    function history_renderTable(inputData) {
+        const dataToRender = inputData || history_getFilteredData();
+
+        const tbody = document.getElementById('dept-table-body');
+        const labelFilter = document.getElementById('dept-table-filter-status-text');
+        
+        document.getElementById('dept-cb-all').checked = false;
+        history_updateBulkToolbar();
+        tbody.innerHTML = '';
+        
+        const reqMap = {};
+        dataToRender.forEach(row => {
+            const reqNo = row[COL.REQ_NO];
+            if(!reqMap[reqNo]) reqMap[reqNo] = { info: row, dwTotal: 0, dwApproved: 0, isReturned: false ,isApproved : false };
+            
+            reqMap[reqNo].dwTotal++;
+            if(row[COL.CHARGER_DATE]) reqMap[reqNo].dwApproved++;
+
+            const charNote = row[COL.REJECT_REASON];
+            if ((charNote && String(charNote).trim() !== "") && row[COL.STATUS] ==="NG" && row[COL.TRANGTHAIDW]==="Charger QA phản hồi lỗi") {
+                reqMap[reqNo].isReturned = true;
+            }
+
+            if(row[COL.TRANGTHAIDW] === "Đã ban hành") {
+                reqMap[reqNo].isApproved = true;
+            }
+        });
+
+        let reqArray = Object.values(reqMap);
+        let filterKey = "his_filter_all";
+
+        if (deptFilterState.status === 'APPROVED') {
+            reqArray = reqArray.filter(i => i.isApproved);
+            filterKey = "his_filter_completed";
+        } else if (deptFilterState.status === 'CHECKING') {
+            reqArray = reqArray.filter(i => !i.isApproved && !i.isReturned);
+            filterKey = "his_filter_checking";
+        } else if (deptFilterState.status === 'RETURNED') {
+            reqArray = reqArray.filter(i => i.isReturned === true);
+            filterKey = "his_filter_returned";
+        } 
+        
+        labelFilter.setAttribute('data-i18n', filterKey);
+
+        const searchReqNo = (document.getElementById('dept-search-reqno')?.value || "").trim().toLowerCase();
+        const searchDept  = (document.getElementById('dept-search-dept')?.value || "").trim().toLowerCase();
+
+        if (searchReqNo) {
+            reqArray = reqArray.filter(i => String(i.info[COL.REQ_NO]).toLowerCase().includes(searchReqNo));
+        }
+        if (searchDept) {
+            reqArray = reqArray.filter(i => String(i.info[COL.DEPT]).toLowerCase().includes(searchDept));
+        }
+
+        if(reqArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted fst-italic"><span data-i18n="his_no_data">${t('his_no_data')}</span></td></tr>`;
+            if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('app_lang') || 'vi');
+            updateDeptPaginationUI(0, 0, 0, 1, 1);
+            return;
+        }
+
+        // Phân trang
+        const totalItems = reqArray.length;
+        const totalPages = Math.ceil(totalItems / deptPageSize) || 1;
+        if (deptCurrentPage < 1) deptCurrentPage = 1;
+        if (deptCurrentPage > totalPages) deptCurrentPage = totalPages;
+
+        const startIdx = (deptCurrentPage - 1) * deptPageSize;
+        const endIdx = startIdx + deptPageSize;
+        const pageItems = reqArray.slice(startIdx, endIdx);
+
+        pageItems.forEach(item => {
+            let disabled = "disabled";
+            const rowInfo = item.info;
+            const reqNo = rowInfo[COL.REQ_NO];
+            const percent = item.dwTotal > 0 ? Math.round((item.dwApproved / item.dwTotal) * 100) : 0;
+            
+            if (String(rowInfo[COL.REJECT_REASON]).trim() !== "" && rowInfo[COL.STATUS] ==="NG" && rowInfo[COL.DEPT] === user.dept && user.position==="Charger") {
+                disabled = "";
+            }
+            
+            let badge = '';
+            if (item.isReturned) {
+                badge = `<span class="badge bg-danger rounded-pill"><span data-i18n="his_badge_returned">${t('his_badge_returned')}</span></span>`;
+            } else if (item.isApproved) {
+                badge = `<span class="badge bg-info rounded-pill"><span data-i18n="his_badge_released">${t('his_badge_released')}</span></span>`;
+            } else if (item.dwApproved === item.dwTotal && item.dwTotal > 0 && !item.isApproved) {
+                badge = `<span class="badge bg-success rounded-pill"><span data-i18n="his_badge_completed">${t('his_badge_completed')}</span></span>`;
+            } else {
+                badge = `<span class="badge bg-warning text-dark rounded-pill"><span data-i18n="his_badge_pending">${t('his_badge_pending')}</span></span>`;
+            }
+
+            const tr = `
+                <tr style="cursor:pointer" onclick="history_openModal('${reqNo}')" id="dept-tr-${reqNo}">
+                    <td class="ps-3" onclick="event.stopPropagation()">
+                        <input type="checkbox" class="form-check-input dept-req-checkbox cursor-pointer" 
+                               value="${reqNo}" onchange="history_checkRow(this)" ${disabled}>
+                    </td>
+                    <td class="fw-bold text-primary">${reqNo}</td>
+                    <td>${rowInfo[COL.DEPT]}</td>
+                    <td>${rowInfo[COL.TYPE]}</td>
+                    <td>${formatDateVN(rowInfo[COL.REQ_DATE])}</td>
+                    <td>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar bg-info" style="width: ${percent}%"></div>
+                        </div>
+                        <small class="text-muted" style="font-size:0.7rem">${item.dwApproved}/${item.dwTotal}</small>
+                    </td>
+                    <td>${badge}</td>
+                    <td><small class="text-muted"><i class="bi bi-eye"></i></small></td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', tr);
+        });
+
+        updateDeptPaginationUI(totalItems, startIdx, endIdx, deptCurrentPage, totalPages);
+
+        if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('app_lang') || 'vi');
+        if(requestId !== ""){
+             history_openModal(requestId);
+             requestId = "";
+           }
+    }
+
+    window.history_filterByCard = function(status) {
+        deptFilterState.status = status;
+        const cards = document.querySelectorAll('#stats-history .card-dashboard');
+        cards.forEach(card => card.classList.remove('active-card'));
+
+        if (status === 'ALL') {
+            document.getElementById('dept-card-total').classList.add('active-card');
+        } else if (status === 'APPROVED') {
+            document.getElementById('dept-card-approved').classList.add('active-card');
+        } else if (status === 'CHECKING') {
+            document.getElementById('dept-card-checking').classList.add('active-card');
+        } else if (status === 'RETURNED') {
+            document.getElementById('dept-card-returned').classList.add('active-card');
+        }
+        history_renderTable();
+    };
+
+    window.history_toggleAll = function(source) {
+        const checkboxes = wrapper.querySelectorAll('.dept-req-checkbox:not(:disabled)');
+        checkboxes.forEach(cb => {
+            cb.checked = source.checked;
+            const tr = document.getElementById('dept-tr-' + cb.value);
+            if(tr) {
+                if(source.checked) tr.classList.add('table-info');
+                else tr.classList.remove('table-info');
+            }
+        });
+        history_updateBulkToolbar();
+    };
+
+    window.history_checkRow = function(cb) {
+        const tr = document.getElementById('dept-tr-' + cb.value);
+        if(tr) {
+            if(cb.checked) tr.classList.add('table-info');
+            else tr.classList.remove('table-info');
+        }
+        history_updateBulkToolbar();
+    };
+
+    window.history_updateBulkToolbar = function() {
+        const checkedCount = wrapper.querySelectorAll('.dept-req-checkbox:checked').length;
+        const toolbar = document.getElementById('dept-inline-bulk-actions');
+        const countBadge = document.getElementById('dept-selected-count');
+        const filterBadge = document.getElementById('dept-table-filter-status-text');
+        
+        if(countBadge) countBadge.innerText = checkedCount;
+        
+        if (checkedCount > 0) {
+            toolbar.classList.remove('d-none');
+            toolbar.classList.add('d-flex');
+            if(filterBadge) filterBadge.classList.add('d-none');
+        } else {
+            toolbar.classList.add('d-none');
+            toolbar.classList.remove('d-flex');
+            if(filterBadge) filterBadge.classList.remove('d-none');
+        }
+    };
+
+    window.history_deselectAll = function() {
+        document.getElementById('dept-cb-all').checked = false;
+        history_toggleAll({checked: false});
+    };
+
+window.history_handleBulkAction = function(actionType, singleReqNo, sourceBtn) {
+    const checkboxes = wrapper.querySelectorAll('.dept-req-checkbox:checked');
+    let targetIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    if(singleReqNo) targetIds = [singleReqNo];
+
+    if (targetIds.length === 0) {
+        Swal.fire(t('his_alert_warn'), t('his_alert_no_select'), 'warning');
+        return;
+    }
+
+    if (actionType === 'DELETE') {
+        Swal.fire({
+            title: t('his_alert_del_title'),
+            text: t('his_alert_del_text').replace('{count}', targetIds.length),
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            confirmButtonText: t('his_alert_del_confirm'),
+            cancelButtonText: t('his_alert_cancel')
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let originalBtnText = '';
+                if (sourceBtn) {
+                    originalBtnText = sourceBtn.innerHTML;
+                    sourceBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> ${t('his_alert_processing')}`;
+                    sourceBtn.disabled = true;
+                }
+
+                Swal.fire({ title: t('his_alert_processing'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                
+                google.script.run
+                    .withSuccessHandler(() => {
+                        if (sourceBtn) { sourceBtn.innerHTML = originalBtnText; sourceBtn.disabled = false; }
+                        deptRawData = deptRawData.filter(row => !targetIds.includes(String(row[COL.REQ_NO])));
+                        Swal.fire(t('his_alert_del_success'), '', 'success');
+                        history_applyAllPageFilters();
+                        history_deselectAll();
+                        history_closeModal();
+                        if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('releaseData');
+                    })
+                    .withFailureHandler(err => {
+                        if (sourceBtn) { sourceBtn.innerHTML = originalBtnText; sourceBtn.disabled = false; }
+                        Swal.fire(t('his_alert_error'), err.message, 'error');
+                    })
+                    .delOrderNo(targetIds);
+            }
+        });
+    } 
+    else if (actionType === 'SEND_CHECKER') {
+        Swal.fire({
+            title: t('his_alert_send_title'),
+            text: t('his_alert_send_text').replace('{count}', targetIds.length),
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: t('his_alert_send_confirm'),
+            cancelButtonText: t('his_alert_cancel'),
+            confirmButtonColor: '#0dcaf0'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let originalBtnText = '';
+                if (sourceBtn) {
+                    originalBtnText = sourceBtn.innerHTML;
+                    sourceBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> ${t('his_alert_processing')}`;
+                    sourceBtn.disabled = true;
+                }
+
+                Swal.fire({ title: t('his_alert_processing'), allowOutsideClick: false, didOpen: () => Swal.showLoading() });         
+                
+                google.script.run
+                    .withSuccessHandler((idList) => {
+                        if (sourceBtn) { sourceBtn.innerHTML = originalBtnText; sourceBtn.disabled = false; }
+                        
+                        if (idList && idList.length > 0) {
+                            deptRawData.forEach(row => {
+                                if (idList.includes(String(row[COL.DW_ID]))) {
+                                    row[COL.TRANGTHAIDW] = t('his_dw_status_dept_fixed'); 
+                                }
+                            });
+                            Swal.fire(t('his_alert_send_success'), t('his_alert_send_success_text'), 'success');
+                        } else {
+                            Swal.fire(t('his_alert_send_warn'), t('his_alert_send_warn_text'), 'warning');
+                        }
+                        
+                        history_applyAllPageFilters();
+                        history_deselectAll();
+                        history_closeModal();
+                    })
+                    .withFailureHandler(err => {
+                        if (sourceBtn) { sourceBtn.innerHTML = originalBtnText; sourceBtn.disabled = false; }
+                        Swal.fire(t('his_alert_error'), err.message, 'error');
+                    })
+                    .sendToChargeQA(targetIds); 
+            }
+        });
+    }
+};
+
+    window.history_openModal = function(reqNo) {
+        const details = deptRawData.filter(r => r[COL.REQ_NO] === reqNo);
+        if(details.length === 0) return;
+        
+        const info = details[0];
+
+        document.getElementById('dept-m-req-no').innerText = info[COL.REQ_NO];
+        document.getElementById('dept-m-dept').innerText = info[COL.DEPT];
+        document.getElementById('dept-m-type').innerText = info[COL.TYPE];
+        document.getElementById('dept-m-req-date').innerText = formatDateVN(info[COL.REQ_DATE]);
+        document.getElementById('dept-m-charger').innerText = info[COL.CREATOR];
+        document.getElementById('dept-m-reason').innerText = info[COL.REASON];
+        document.getElementById('dept-m-issue-type').innerText = info[COL.TYPEREQUEST];
+        document.getElementById('dept-m-due-date').innerText = formatDateVN(info[COL.DUE_DATE]);
+        document.getElementById('dept-m-folder').innerText = info[COL.FOLDER];
+
+        const linkEl = document.getElementById('dept-m-link-folder');
+        const linkFileDw = document.getElementById('dept-m-link-file'); 
+        
+        const folderLink = String(info[COL.LINK_FOLDER] || '').trim();
+        const fileLink = String(info[COL.FILE_DS_DW] || '').trim();
+
+        if(folderLink && folderLink.includes('http')) {
+            linkEl.href = folderLink;
+            linkEl.classList.remove('disabled', 'text-muted');
+        } else {
+            linkEl.removeAttribute('href');
+            linkEl.classList.add('disabled', 'text-muted');
+        }
+
+        if(fileLink && fileLink.includes('http')) {
+            linkFileDw.href = fileLink;
+            linkFileDw.classList.remove('disabled', 'text-muted');
+        } else {
+            linkFileDw.removeAttribute('href');
+            linkFileDw.classList.add('disabled', 'text-muted');
+        }
+
+        const checkRe = info[COL.CHECKER_NOTE_EDIT] || "";
+        const appRe = info[COL.APPROVER_NOTE_EDIT] || "";
+        const rejectDiv = document.getElementById('dept-reject_reason');
+        
+        if(checkRe.toString().trim() !== "" || appRe.toString().trim() !== "") {
+            rejectDiv.classList.remove('d-none');
+            document.getElementById('dept-checker_reject').innerHTML = checkRe ? `<b>Checker:</b> ${checkRe}` : "";
+            document.getElementById('dept-approver_reject').innerHTML = appRe ? `<b>Approver:</b> ${appRe}` : "";
+        } else {
+             rejectDiv.classList.add('d-none');
+        }
+
+        const btnToQA = document.getElementById('dept-btn-toQA');
+        const btnDelete = document.getElementById('dept-btn-delete');
+        btnToQA.classList.add("d-none");
+        btnDelete.classList.add("d-none");
+        btnToQA.onclick = function() { history_handleBulkAction('SEND_CHECKER', reqNo, this); };
+        btnDelete.onclick = function() { history_handleBulkAction('DELETE', reqNo, this); };
+
+        const tbody = document.getElementById('dept-m-dw-list');
+        tbody.innerHTML = '';
+
+        details.forEach((row, index) => {
+            const dwId = row[COL.DW_ID];
+            const status = row[COL.STATUS];
+            
+            let checkboxHtml = `<span class="text-muted small">${index + 1}</span>`;
+
+            let actionBtnHtml = '';
+            if (status !== 'OK' && row[COL.TRANGTHAIDW]==="Charger QA phản hồi lỗi" && row[COL.DEPT] === user.dept && user.position==="Charger") {
+                btnToQA.classList.remove("d-none");
+                btnDelete.classList.remove("d-none");
+               actionBtnHtml = `
+                <div class="d-flex gap-1 justify-content-center">
+                    <button class="btn btn-sm btn-primary-subtle text-primary border-0 rounded-2" 
+                            title="Sửa" onclick="dept_inlineEdit('${dwId}')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger-subtle text-danger border-0 rounded-2" 
+                            title="Xóa" onclick="history_deleteSingleDW('${dwId}', '${info[COL.REQ_NO]}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>`;
+            } else {
+                actionBtnHtml = `<i class="bi bi-lock-fill text-muted" title="Đã duyệt - Không thể sửa"></i>`;
+            }
+
+            let kqHtml = '';
+            if (status === 'NG') {
+                const reason = row[COL.REJECT_REASON] || "Lỗi nội dung";
+                const deptNote = row[COL.DEPT_NOTE_EDIT] || "";
+                kqHtml = `
+                    <div class="text-start" style="font-size: 0.85rem;">
+                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger rounded-pill mb-1">NG</span>
+                        <div class="fw-bold text-danger small">${reason}</div>
+                        ${deptNote ? `<div class="text-primary x-small">Phản hồi: ${deptNote}</div>` : ''}
+                    </div>`;
+            } else if (status === 'OK') {
+                kqHtml = `<span class="badge bg-success rounded-pill px-3"><i class="bi bi-check-circle me-1"></i> OK</span>`;
+            } else {
+                kqHtml = `<span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary rounded-pill"><span data-i18n="his_badge_pending">${t('his_badge_pending')}</span></span>`;
+            }
+
+            let Cheklinkstamp = "";
+            if (row[COL.TRANGTHAIDW] === "Đã ban hành") {
+                Cheklinkstamp = row[COL.STAMPED];
+            } else {
+                Cheklinkstamp = row[COL.LINK_DW];
+            }
+
+            const tr = `
+                <tr class="${status === 'OK' ? 'table-light' : ''}">
+                    <td class="text-center">${checkboxHtml}</td>
+                    <td>${row[COL.DW_TYPE]}</td>
+                    <td class="fw-bold text-dark">${row[COL.DW_NO]}</td>
+                    <td class="text-center">${row[COL.VER]}</td>
+                    <td>${row[COL.LINE_CUS]}</td>
+                    <td><small>${row[COL.DEPTLQ] || '-'}</small></td>
+                     <td>${row[COL.REMARK]}</td>
+                     <td   class="VoDinhBaoChau ${row[COL.TYPE] === 'Change' ? '' : 'd-none'}">${row[COL.CHANGE_TYPE] || ""}</td>
+                    <td class="text-center">
+                        <a href="${ Cheklinkstamp ? Cheklinkstamp :'#'}" target="_blank" 
+                          class="btn btn-sm btn-light border ${ Cheklinkstamp ? 'text-primary' : 'disabled text-muted'}">
+                            <i class="bi bi-folder2-open"></i>
+                        </a>
+                    </td>
+                    <td class="text-center" style="min-width: 150px;" id="dept-td-action-${dwId}">
+                        ${kqHtml}
+                    </td>
+                    <td class="text-center">${actionBtnHtml}</td>
+                </tr>`;
+            tbody.insertAdjacentHTML('beforeend', tr); 
+        });
+
+        document.getElementById('dept-detail-modal-overlay').style.display = 'flex';
+        if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('app_lang') || 'vi');
+    };
+
+    window.history_closeModal = function() {
+        document.getElementById('dept-detail-modal-overlay').style.display = 'none';
+    };
+
+   // 🟢 FIX Z-INDEX MODAL CHỈNH SỬA BẢN VẼ (dept_inlineEdit)
+   window.dept_inlineEdit = function(dwId) {
+        const rowData = deptRawData.find(r => r[COL.DW_ID] == dwId);
+        if (!rowData) {
+            Swal.fire(t('his_alert_error'), 'Không tìm thấy dữ liệu', 'error');
+            return;
+        }
+
+        const td = document.getElementById(`dept-td-action-${dwId}`);
+        const oldHtml = encodeURIComponent(td.innerHTML).replace(/'/g, "%27"); 
+
+        const valType = rowData[COL.DW_TYPE] || "";
+        const valDrawing = rowData[COL.DW_NO] || "";
+        const valVer = rowData[COL.VER] || "01";
+        const valLineCus = rowData[COL.LINE_CUS] || "";
+        const valRemark = rowData[COL.REMARK] || "";
+        const valDeptLq = rowData[COL.DEPTLQ] || "";
+        const valLink = rowData[COL.LINK_DW] || "";
+        const valNote = rowData[COL.DEPT_NOTE_EDIT] || ""; 
+        const checkIssueType = rowData[COL.CHANGE_TYPE] || "";
+
+        const modalHtml = `
+            <div id="edit-backdrop-${dwId}" style="position: fixed; top:0; left:0; width:100vw; height:100vh; background: rgba(15, 23, 42, 0.6); z-index: 10010; backdrop-filter: blur(4px);"></div>
+            <div class="card shadow-lg border-0 animate-fade" 
+                style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                        width: 95%; max-width: 820px; z-index: 10015; border-radius: 16px; overflow: hidden;">
+                
+                <div class="card-header bg-primary text-secondary py-3 d-flex justify-content-between align-items-center" style="background:#4F46E5 !important;">
+                    <h5 class="m-0 fw-bold"><i class="bi bi-pencil-square me-2"></i><span data-i18n="his_edit_title">${t('his_edit_title')}</span></h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="dept_cancelEdit(null, '${oldHtml}', '${dwId}')"></button>
+                </div>
+
+                <div class="card-body p-4 custom-scrollbar" style="max-height: 72vh; overflow-y: auto;">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-1" data-i18n="his_th_dw_type">${t('his_th_dw_type')}:</label>
+                            <select class="form-select" id="edit-sel-${dwId}">
+                                <option value="INDEX"  ${valType === 'INDEX' ? 'selected' : ''}>INDEX</option>
+                                <option value="CFCPC LIST" ${valType === 'CFCPC LIST' ? 'selected' : ''}>CFCPC LIST</option>
+                                <option value="BUNDLING & PACKING" ${valType === 'BUNDLING & PACKING' ? 'selected' : ''}>BUNDLING & PACKING</option>
+                                <option value="STANDARD LIST" ${valType === 'STANDARD LIST' ? 'selected' : ''}>STANDARD LIST</option>
+                                <option value="CAULKING" ${valType === 'CAULKING' ? 'selected' : ''}>CAULKING</option>
+                                <option value="PITCH LISH" ${valType === 'PITCH LISH' ? 'selected' : ''}>PITCH LISH</option>
+                                <option value="PART SET LIST" ${valType === 'PART SET LIST' ? 'selected' : ''}>PART SET LIST</option>
+                                <option value="PART PLAN" ${valType === 'PART PLAN' ? 'selected' : ''}>PART PLAN</option>
+                                <option value="DIMENTION LIST" ${valType === 'DIMENTION LIST' ? 'selected' : ''}>DIMENTION LIST</option>
+                                <option value="ASSEMBLY DATA" ${valType === 'ASSEMBLY DATA' ? 'selected' : ''}>ASSEMBLY DATA</option>
+                                <option value="SUMMARY OF PRODUCT" ${valType === 'SUMMARY OF PRODUCT' ? 'selected' : ''}>SUMMARY OF PRODUCT</option>
+                                <option value="DESIGN" ${valType === 'DESIGN' ? 'selected' : ''}>DESIGN</option>
+                                <option value="SHAPE PLAN" ${valType === 'SHAPE PLAN' ? 'selected' : ''}>SHAPE PLAN</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-1" data-i18n="his_th_dw_no">${t('his_th_dw_no')}:</label>
+                            <input type="text" class="form-control fw-bold" id="edit-drawing-${dwId}" value="${valDrawing}" placeholder="No..." onchange="req_autoCheckVersionHistory(this)">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="small fw-bold text-muted mb-1" data-i18n="his_th_ver">${t('his_th_ver')}:</label>
+                            <div class="position-relative">
+                                <input type="text" id="edit-ver-${dwId}" class="form-control text-center fw-bold text-primary bg-light" value="${valVer}" readonly>
+                                <div class="ver-loading position-absolute top-50 start-50 translate-middle d-none">
+                                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small fw-bold text-muted mb-1" data-i18n="his_th_line">${t('his_th_line')}:</label>
+                            <input type="text" class="form-control" id="edit-line-cus-${dwId}" value="${valLineCus}" placeholder="...">
+                        </div>
+
+                        <div class="col-md-8">
+                            <label class="small fw-bold text-muted mb-1" data-i18n="his_th_dept_lq">${t('his_th_dept_lq')}:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="edit-deptlq-${dwId}" value="${valDeptLq}" placeholder="..." readonly onclick="openDeptModalHistory(this)" style="background-color: #fff; cursor: pointer;">
+                                <span class="input-group-text"><i class="bi bi-list-check"></i></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4  ${rowData[COL.TYPE] === 'Change' ? '' : 'd-none'}">
+                             <label class="small fw-bold text-muted mb-1" data-i18n="admin_th_change_type">${t('admin_th_change_type')}:</label>
+                            <select class="form-select table-input req-change-type" id="edit-change-type-${dwId}">
+                                <option value="" data-i18n="req_ph_select">${t('req_ph_select')}</option>
+                                <option value="Xóa" ${checkIssueType === 'Xóa' ? 'selected' : ''}>Xóa</option>
+                                <option value="Cập nhật có thay đổi version" ${checkIssueType === 'Cập nhật có thay đổi version' ? 'selected' : ''}>Cập nhật có thay đổi version</option>
+                                <option value="Cập nhật không thay đổi version" ${checkIssueType === 'Cập nhật không thay đổi version' ? 'selected' : ''}>Cập nhật không thay đổi version</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="small fw-bold text-muted mb-1" data-i18n="his_th_remark">${t('his_th_remark')}:</label>
+                            <input type="text" class="form-control" id="edit-shape-${dwId}" value="${valRemark}" placeholder="Remark...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small fw-bold text-muted mb-1" data-i18n="his_th_link">${t('his_th_link')}:</label>
+                            <div class="d-grid">
+                                <input type="hidden" id="edit-link-${dwId}" value="${valLink}">
+                                <button class="btn ${valLink ? 'btn-success' : 'btn-outline-secondary'}" id="edit-btn-link-${dwId}" onclick="req_promptLink_edit('${dwId}')">
+                                    <i class="bi bi-link-45deg"></i> ${valLink ? t('his_edit_btn_link_has') : t('his_edit_btn_link_add')}
+                                </button>
+                            </div>
+                        </div>
+
+
+                        <div class="col-12 mt-2">
+                            <label class="small fw-bold text-danger mb-1"><i class="bi bi-chat-dots me-1"></i><span data-i18n="his_edit_lbl_note">${t('his_edit_lbl_note')}</span></label>
+                            <textarea class="form-control border-danger-subtle" id="edit-note-${dwId}" rows="3" placeholder="${t('his_edit_ph_note')}">${valNote}</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-light p-3 d-flex justify-content-end gap-2">
+                    <button class="btn btn-secondary px-4 rounded-3" onclick="dept_cancelEdit(null, '${oldHtml}', '${dwId}')" data-i18n="his_edit_cancel">${t('his_edit_cancel')}</button>
+                    <button class="btn btn-primary px-4 fw-bold rounded-3" style="background:#4F46E5; border:none;" onclick="dept_saveEdit('${dwId}')">
+                        <i class="bi bi-save me-1"></i> <span data-i18n="his_edit_save">${t('his_edit_save')}</span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+
+        const tempDiv = document.createElement('div');
+        tempDiv.id = `edit-wrapper-${dwId}`;
+        tempDiv.innerHTML = modalHtml;
+        document.body.appendChild(tempDiv);
+    };
+
+    window.req_promptLink_edit = function(dwId) {
+        const hiddenInput = document.getElementById(`edit-link-${dwId}`);
+        const btnLink = document.getElementById(`edit-btn-link-${dwId}`);
+        const currentLink = hiddenInput ? hiddenInput.value : '';
+        
+        Swal.fire({
+            title: t('his_alert_link_title'),
+            input: 'url',
+            inputLabel: t('his_alert_link_label'),
+            inputValue: currentLink,
+            showCancelButton: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                if (hiddenInput) hiddenInput.value = result.value;
+                if(result.value && btnLink) {
+                    btnLink.classList.replace('btn-outline-secondary', 'btn-success');
+                    btnLink.innerHTML = `<i class="bi bi-link-45deg"></i> ${t('his_edit_btn_link_has')}`;
+                }
+                Swal.fire(t('his_alert_link_success'), '', 'success');
+            }
+        });
+    };
+    
+    window.dept_cancelEdit = function(btn, oldHtml, dwId) {
+        const wrapper = document.getElementById(`edit-wrapper-${dwId}`);
+        if (wrapper) wrapper.remove();
+    };
+
+    window.dept_saveEdit = function(dwId) {
+        const payload = {
+            id: dwId,
+            type: document.getElementById(`edit-sel-${dwId}`).value,
+            dwNo: document.getElementById(`edit-drawing-${dwId}`).value.trim(),
+            ver: document.getElementById(`edit-ver-${dwId}`).value,
+            lineCus: document.getElementById(`edit-line-cus-${dwId}`).value.trim(),
+            deptLq: document.getElementById(`edit-deptlq-${dwId}`).value,
+            remark:document.getElementById(`edit-shape-${dwId}`).value,
+            link: document.getElementById(`edit-link-${dwId}`).value,
+            note: document.getElementById(`edit-note-${dwId}`).value.trim(),
+            changeType:document.getElementById(`edit-change-type-${dwId}`).value||"",
+        };
+
+        if (!payload.dwNo) {
+            Swal.fire(t('his_alert_warn'), 'Số bản vẽ không xác định!', 'warning');
+            return;
+        }
+
+        const rowData = deptRawData.find(r => r[COL.DW_ID] == dwId);
+        const reqNo = rowData ? rowData[COL.REQ_NO] : null;
+
+        const tdAction = document.getElementById(`dept-td-action-${dwId}`);
+        if(tdAction) tdAction.innerHTML = '<span class="spinner-border spinner-border-sm text-primary"></span>';
+
+        window.dept_cancelEdit(null, null, dwId);
+
+        if (typeof google !== 'undefined' && google.script) {
+            google.script.run
+                .withSuccessHandler(() => {
+                    if (rowData) {
+                        rowData[COL.DW_TYPE] = payload.type;
+                        rowData[COL.DW_NO] = payload.dwNo;
+                        rowData[COL.VER] = payload.ver;
+                        rowData[COL.LINE_CUS] = payload.lineCus;
+                        rowData[COL.DEPTLQ] = payload.deptLq;
+                        rowData[COL.REMARK] = payload.remark;
+                        rowData[COL.LINK_DW] = payload.link;
+                        rowData[COL.DEPT_NOTE_EDIT] = payload.note;
+                        rowData[COL.CHANGE_TYPE] = payload.changeType;
+                    }
+                    Swal.fire({ icon: 'success', title: t('his_alert_save_success'), showConfirmButton: false, timer: 1500 });
+                    if (reqNo && typeof history_openModal === 'function') history_openModal(reqNo);
+                    if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('releaseData');
+                })
+                .withFailureHandler(err => {
+                    Swal.fire(t('his_alert_sys_error'), err.message, 'error');
+                    if (reqNo) history_openModal(reqNo);
+                })
+                .updateDrawingFull(payload);
+        } else {
+            setTimeout(() => {
+                Swal.fire({ icon: 'success', title: 'Đã lưu (Test)!', timer: 1000 });
+                if (reqNo) history_openModal(reqNo);
+            }, 500);
+        }
+    };
+
+    function formatDateVN(d) {
+        if(!d) return "";
+        const date = new Date(d);
+        return isNaN(date) ? d : date.toLocaleDateString('vi-VN');
+    }
+
+    window.req_autoCheckVersionHistory = function(inputEl) {
+        const dwNo = inputEl.value.trim();
+        if (!dwNo) return;
+
+        const dwId = inputEl.id.split('-').pop();
+
+        const verInput = document.getElementById(`edit-ver-${dwId}`);
+        const loading = document.querySelector(`#edit-wrapper-${dwId} .ver-loading`);
+
+        if (!verInput) return; 
+
+        verInput.value = "--"; 
+        if (loading) loading.classList.remove('d-none');
+        inputEl.disabled = true; 
+
+        if (typeof google !== 'undefined' && google.script) {
+            google.script.run
+                .withSuccessHandler(function(lastVer) {
+                    if (loading) loading.classList.add('d-none');
+                    inputEl.disabled = false;
+
+                    let nextVer = "01"; 
+
+                    if (lastVer !== null && lastVer !== undefined && lastVer !== "") {
+                        let nextNum = parseInt(lastVer) + 1;
+                        nextVer = nextNum.toString().padStart(2, '0');
+                    }
+
+                    verInput.value = nextVer;
+                    
+                    verInput.classList.add('bg-success', 'text-white');
+                    setTimeout(() => {
+                        verInput.classList.remove('bg-success', 'text-white');
+                        verInput.classList.add('bg-light', 'text-primary');
+                    }, 800);
+                })
+                .withFailureHandler(function(err) {
+                    console.error("Lỗi check version:", err);
+                    if (loading) loading.classList.add('d-none');
+                    inputEl.disabled = false;
+                    verInput.value = "01"; 
+                })
+                .getLastVersion(dwNo); 
+        } else {
+            setTimeout(() => {
+                console.log("Mock check version for:", dwNo);
+                if (loading) loading.classList.add('d-none');
+                inputEl.disabled = false;
+                verInput.value = "02"; 
+            }, 1000);
+        }
+    };
+
+    let currentActiveDeptInputHistory = null;
+
+    window.openDeptModalHistory = function(elementInput) {
+        currentActiveDeptInputHistory = elementInput;
+        const currentValues = elementInput.value || "";
+        const selectedDepts = currentValues.split(',').map(item => item.trim());
+
+        const checkboxes = document.querySelectorAll('#modalDeptSelectHistory .dept-chk');
+        checkboxes.forEach(chk => {
+            chk.checked = selectedDepts.includes(chk.value);
+        });
+
+        const modalEl = document.getElementById('modalDeptSelectHistory');
+        document.body.appendChild(modalEl);
+        const myModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+        myModal.show();
+    };
+
+    window.saveDeptSelectionHistory = function() {
+        if (!currentActiveDeptInputHistory) return;
+
+        const checkboxes = document.querySelectorAll('#modalDeptSelectHistory .dept-chk:checked');
+        const selectedValues = Array.from(checkboxes).map(chk => chk.value);
+        
+        currentActiveDeptInputHistory.value = selectedValues.join(', ');
+
+        const modalEl = document.getElementById('modalDeptSelectHistory');
+        const modalInstance = bootstrap.Modal.getInstance(modalEl);
+        if (modalInstance) modalInstance.hide();
+    };  
+
+window.history_deleteSingleDW = function(dwId, reqNo) {
+    Swal.fire({
+        title: t('his_alert_del_title'),
+        text: t('his_alert_del_single_text').replace('{id}', dwId),
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonText: t('his_alert_cancel'),
+        confirmButtonText: t('his_alert_del_confirm'),
+        reverseButtons: true 
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: t('his_alert_processing'),
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            google.script.run
+                .withSuccessHandler((res) => {
+                    deptRawData = deptRawData.filter(row => row[COL.DW_ID] != dwId);
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: t('his_alert_del_success'),
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    
+                    const remainingDrawings = deptRawData.filter(row => row[COL.REQ_NO] === reqNo);
+                    
+                    if (remainingDrawings.length > 0) {
+                        if (typeof history_openModal === "function") history_openModal(reqNo); 
+                    } else {
+                        if (typeof history_closeModal === "function") history_closeModal();
+                    }
+                    
+                    history_applyAllPageFilters();
+                })
+                .withFailureHandler(err => {
+                    Swal.fire(t('his_alert_sys_error'), err.message, 'error');
+                })
+                .delDwNo(dwId); 
+        }
+    });
+};
+
+    history_loadData();
+
+    let _searchTimer = null;
+
+    function _onSearchInput() {
+        clearTimeout(_searchTimer);
+        _searchTimer = setTimeout(() => {
+            history_renderTable();
+        }, 300); 
+    }
+
+    document.getElementById('dept-search-reqno')?.addEventListener('input', _onSearchInput);
+    document.getElementById('dept-search-dept')?.addEventListener('input', _onSearchInput);
+
+    window.history_clearSearch = function() {
+        const inputReq = document.getElementById('dept-search-reqno');
+        const inputDept = document.getElementById('dept-search-dept');
+        if (inputReq) inputReq.value = '';
+        if (inputDept) inputDept.value = '';
+        history_renderTable();
+    };
+
+})();
+</script>
