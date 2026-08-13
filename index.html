@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hệ Thống Quản Lý Bản Vẽ & Sản Xuất</title>
+  
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  
+  
+  <style>
+    /* =========================================================
+       CSS VARIABLES - BẢNG MÀU CHỦ ĐẠO SAAS
+       ========================================================= */
+    :root {
+      --primary-color: #7CB342; 
+      --primary-soft: #f0f7ea; 
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --bg-body: #f4f7f9;
+      --sidebar-width: 280px;
+      --sidebar-mini-width: 84px; /* Kích thước khi thu gọn */
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      background-color: var(--bg-body);
+      color: var(--text-main);
+    }
+
+    /* Tùy chỉnh thanh cuộn cho toàn bộ trang */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    /* =========================================================
+       SIDEBAR & MENU ITEMS
+       ========================================================= */
+    .sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0; /* QUAN TRỌNG: Giữ cho sidebar không bị bẹp dúm */
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1040;
+      background: #ffffff;
+      border-right: 1px solid #e2e8f0 !important;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, #99CC66, #7CB342);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(124, 179, 66, 0.3);
+    }
+
+    /* Nút Menu Chính */
+    .index-nav-item {
+      display: flex !important;
+      align-items: center;
+      color: var(--text-muted);
+      border-radius: 12px !important;
+      padding: 12px 0 !important;
+      transition: all 0.2s ease;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .index-nav-item i {
+      min-width: 52px; /* Căn giữa icon khi thanh sidebar thu gọn */
+      text-align: center;
+      font-size: 1.25rem;
+      transition: color 0.2s;
+    }
+
+    .index-nav-item:hover {
+      background-color: #f8fafc;
+      color: var(--text-main);
+    }
+
+    /* Hiệu ứng Nút Đang Chọn (Active) */
+    .index-nav-item.active {
+      background-color: var(--primary-soft) !important;
+      color: var(--primary-color) !important;
+      font-weight: 600 !important;
+    }
+
+    .index-nav-item.active i {
+      color: var(--primary-color);
+    }
+
+    /* Hiệu ứng xoay mũi tên khi mở Sub-menu */
+    .index-nav-item[data-bs-toggle="collapse"] .fa-chevron-down {
+      transition: transform 0.3s ease;
+    }
+    .index-nav-item[data-bs-toggle="collapse"]:not(.collapsed) .fa-chevron-down {
+      transform: rotate(180deg);
+    }
+
+    /* Menu Con (Sub-menu) */
+    .sub-nav-item {
+      color: var(--text-muted);
+      border-radius: 8px !important;
+      transition: all 0.2s;
+      padding: 10px 12px !important;
+      white-space: nowrap;
+    }
+    .sub-nav-item:hover {
+      background-color: #f1f5f9;
+      color: var(--text-main);
+      transform: translateX(4px);
+    }
+    .sub-nav-item.active-sub {
+      background-color: var(--primary-soft) !important;
+      color: var(--primary-color) !important;
+      font-weight: 600;
+    }
+
+    /* =========================================================
+       HIỆU ỨNG MINI SIDEBAR THÔNG MINH
+       ========================================================= */
+    @media (min-width: 769px) {
+      /* Mặc định thu nhỏ Sidebar */
+      .sidebar {
+        width: var(--sidebar-mini-width) !important; 
+        overflow-x: hidden;
+      }
+      
+      /* Khi trỏ chuột vào thì phình to ra */
+      .sidebar:hover {
+        width: var(--sidebar-width) !important;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.03) !important;
+      }
+
+      /* Giấu phần chữ đi khi thu nhỏ */
+      .sidebar .nav-text, 
+      .sidebar .brand-text {
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease;
+      }
+
+      /* Hiện phần chữ ra khi phình to */
+      .sidebar:hover .nav-text, 
+      .sidebar:hover .brand-text {
+        opacity: 1;
+        visibility: visible;
+        transition-delay: 0.1s;
+      }
+
+      /* Ẩn Submenu và mũi tên khi Sidebar thu nhỏ */
+      .sidebar:not(:hover) .collapse { display: none !important; }
+      .sidebar:not(:hover) .fa-chevron-down { display: none; }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        transform: translateX(-100%);
+        height: 100vh;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+      }
+    }
+
+    /* =========================================================
+       TOPBAR TÙY CHỈNH
+       ========================================================= */
+    .topbar {
+      height: 70px;
+      background: rgba(255, 255, 255, 0.9) !important;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #e2e8f0 !important;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
+    }
+
+    .btn-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: #f8fafc;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .btn-icon:hover {
+      background: #e2e8f0;
+      color: var(--primary-color);
+    }
+    .notify-dot {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border-radius: 50%;
+      border: 2px solid #fff;
+    }
+
+    /* Profile Avatar */
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      color: var(--primary-color);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(124, 179, 66, 0.2);
+    }
+
+    /* =========================================================
+       PAGE VIEWS & LOADING
+       ========================================================= */
+    .index-page-view {
+      display: none;
+      animation: fadeInUp 0.4s ease-out;
+    }
+    .index-page-view.active {
+      display: block;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+  </style>
+
+
+</head>
+
+<script>
+     var user = <?!= JSON.stringify(userFromServer) ?>; 
+     var requestId = "<?= requestId ?>"; 
+     var initialPage = "<?= initialPage ?>";
+     var position = user.position;
+     var signVal = user.signVal; 
+     var signFormula = user.signFormula;
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<body class="overflow-hidden">
+
+<!-- CHÚ Ý: Dùng w-100 thay vì vw-100 để không bị lỗi scroll ngang -->
+<div class="d-flex vh-100 w-100 bg-light">
+
+  <!-- OVERLAY LOADING SAAS STYLE -->
+  <div id="mainLoadingOverlay" class="position-fixed w-100 h-100 top-0 start-0 flex-column align-items-center justify-content-center bg-white bg-opacity-75 d-none" style="z-index: 1060; backdrop-filter: blur(4px);">
+    <div class="spinner-border text-success mb-3" role="status" style="width: 3.5rem; height: 3.5rem; border-width: 4px;">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <div class="fw-bold fs-5 text-secondary" id="mainLoadingText" style="letter-spacing: 0.5px;">Đang tải hệ thống...</div>
+  </div>
+
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar d-flex flex-column" id="mainSidebar">
+    
+    <!-- Sidebar Header -->
+    <div class="d-flex align-items-center py-3 border-bottom" style="padding-left: 21px; height: 70px;">
+      <div class="brand-icon text-white d-flex align-items-center justify-content-center fs-5 flex-shrink-0"><i class="fa fa-box-open"></i></div>
+      <div class="d-flex flex-column brand-text ms-3 text-truncate">
+        <span class="fw-bold text-dark lh-sm" style="font-size: 15px; letter-spacing: -0.3px;">Smart Packing</span>
+        <span class="text-muted" style="font-size: 11px;">Management System</span>
+      </div>
+    </div>
+    
+    <!-- Sidebar Menu -->
+    <nav class="flex-grow-1 py-3 px-3 d-flex flex-column gap-1 overflow-x-hidden overflow-y-auto">
+      
+      <button class="btn text-start w-100 border-0 fw-medium index-nav-item " id="nav-btn-dashboard" onclick="switchTab('dashboard', this)">
+        <i class="fa fa-chart-pie"></i> <span class="nav-text">Tổng quan</span>
+      </button>
+      
+      <!-- CỤM MENU TỔ HỢP -->
+      <div class="w-100">
+        <button class="btn text-start w-100 border-0 fw-medium index-nav-item" data-bs-toggle="collapse" data-bs-target="#dwInfoCollapse" aria-expanded="false" id="nav-btn-dwInformation">
+          <i class="fa fa-layer-group"></i> 
+          <span class="nav-text d-flex justify-content-between align-items-center w-100 pe-3">
+            Thông tin bản vẽ <i class="fa fa-chevron-down text-muted" style="font-size: 0.75rem; min-width: auto;"></i>
+          </span>
+        </button>
+        
+        <!-- Các mục con (Sub-menu) -->
+        <div class="collapse" id="dwInfoCollapse">
+          <div class="d-flex flex-column gap-1 py-1 mb-2" style="padding-left: 3.5rem; padding-right: 0.5rem;">
+            <button class="btn text-start w-100 border-0 sub-nav-item text-secondary" onclick="openDwSubTab('mail', this)">
+              <span class="nav-text"><i class="fa fa-inbox me-2 opacity-75"></i>Nhận dữ liệu Mail</span>
+            </button>
+            <button class="btn text-start w-100 border-0 sub-nav-item text-secondary" onclick="openDwSubTab('manual', this)">
+              <span class="nav-text"><i class="fa fa-database me-2 opacity-75"></i>Quản lý Dữ liệu</span>
+            </button>
+          </div>
+        </div>
+      </div>      
+      
+      <button class="btn text-start w-100 border-0 fw-medium index-nav-item" id="nav-btn-seachDwByAi" onclick="switchTab('seachDwByAi', this)">
+        <i class="fa fa-microchip"></i> <span class="nav-text">Tìm kiếm AI</span>
+      </button>
+      
+      <button class="btn text-start w-100 border-0 fw-medium index-nav-item active" id="nav-btn-dwDesign" onclick="switchTab('dwDesign', this)">
+        <i class="fa fa-pen-nib"></i> <span class="nav-text">Thiết kế bản vẽ</span>
+      </button>
+      
+      <button class="btn text-start w-100 border-0 fw-medium index-nav-item" id="nav-btn-submitDrawingsForApproval" onclick="switchTab('submitDrawingsForApproval', this)">
+        <i class="fa fa-file-signature"></i> <span class="nav-text">Trình ký duyệt</span>
+      </button>
+      
+      <button class="btn text-start w-100 border-0 fw-medium index-nav-item" id="nav-btn-release" onclick="switchTab('release', this)">
+        <i class="fa fa-paper-plane"></i> <span class="nav-text">Ban hành bản vẽ</span>
+      </button>
+
+    </nav>
+  </aside>
+
+  <!-- MAIN CONTENT: Dùng min-width: 0 để không bao giờ bị vỡ Layout khi thu/phóng Sidebar -->
+  <main class="d-flex flex-column flex-grow-1 overflow-hidden" style="min-width: 0;">
+    
+    <!-- TOPBAR -->
+    <header class="topbar d-flex align-items-center justify-content-between px-4 z-1">
+      <div class="d-flex align-items-center">
+        <!-- Nút Menu cho Mobile -->
+        <button class="btn btn-icon d-md-none border-0 me-2" onclick="toggleMainSidebar()" id="menuBtn">
+          <i class="fa fa-bars fs-5"></i>
+        </button>
+        <h5 class="mb-0 fw-bold d-none d-md-block text-secondary">Hệ thống quản lý bản vẽ đóng gói</h5>
+      </div>
+
+      <div class="d-flex align-items-center gap-3">
+        <!-- Nút thông báo -->
+        <button class="btn border-0 btn-icon shadow-sm">
+          <i class="fa fa-bell"></i>
+          <span class="notify-dot"></span>
+        </button>
+        
+        <div style="width: 1px; height: 24px; background-color: #e2e8f0;"></div>
+
+        <!-- Nút Tài khoản cá nhân -->
+        <div class="d-flex align-items-center gap-2" style="cursor: pointer;">
+          <div class="user-avatar shadow-sm">AD</div>
+          <div class="d-none d-sm-block text-end lh-1">
+            <div class="fw-bold text-dark" style="font-size: 13px;">Admin</div>
+            <small class="text-muted" style="font-size: 11px;">Quản trị viên</small>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- VIEWS CONTAINER -->
+    <div class="container-fluid px-3 px-md-4 pt-4 flex-grow-1 overflow-auto index-main-wrapper" style="scroll-behavior: smooth; min-height: 0;">
+      
+      <div id="index-page-dashboard" class="index-page-view ">
+          <?!= include('dashboard') ?>
+      </div>
+
+      <div id="index-page-dwInformation" class="index-page-view">
+          <?!= include('dwInformation') ?>
+      </div>
+      <div id="index-page-seachDwByAi" class="index-page-view">
+          <?!= include('seachDwByAi') ?>
+      </div>
+
+      <div id="index-page-dwDesign" class="index-page-view active">
+          <?!= include('dwDesign') ?>
+      </div>
+       
+      <div id="index-page-submitDrawingsForApproval" class="index-page-view">
+          <?!= include('submitDrawingsForApproval') ?>
+      </div>
+      <div id="index-page-release" class="index-page-view">
+          <?!= include('dwRelease') ?>
+      </div>
+      
+
+    </div>
+  </main>
+
+</div>
+
+<!-- Bootstrap 5 Bundle JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // =========================================================
+  // LOGIC ĐIỀU HƯỚNG & LOADING CHÍNH
+  // =========================================================
+  let loadingRequests = 0;
+  let failsafeTimer = null;
+  let pageData = [];
+
+  //charger:x=790,y=465,w40
+  //checker1:x=735,y=465,w30
+  //checker2:x=715,y=480,w30
+  //approver:x=640,y=465,w40
+  let sign = {
+    chager : [790,465,40],
+    checker1 : [735,465,40],
+    checker2 : [715,480,40],
+    approver : [640,465,40]
+
+  }
+
+  function showFirstLoading(text) {
+        var el = document.getElementById('mainLoadingText');
+    if (el && text) el.textContent = text; 
+    
+    var overlay = document.getElementById('mainLoadingOverlay');
+    if (overlay) {
+      overlay.classList.remove('d-none');
+      overlay.classList.add('d-flex');
+    }
+
+    clearTimeout(failsafeTimer);
+    failsafeTimer = setTimeout(function() { forceHideLoading(); }, 150000); 
+
+  }
+
+  function showLoading(text) {
+    loadingRequests++;  
+    var el = document.getElementById('mainLoadingText');
+    if (el && text) el.textContent = text; 
+    
+    var overlay = document.getElementById('mainLoadingOverlay');
+    if (overlay) {
+      overlay.classList.remove('d-none');
+      overlay.classList.add('d-flex');
+    }
+
+    clearTimeout(failsafeTimer);
+    failsafeTimer = setTimeout(function() { forceHideLoading(); }, 150000); 
+  }
+
+  function hideLoading() {
+    loadingRequests--; 
+    if (loadingRequests <= 0) forceHideLoading();
+  }
+
+  function forceHideLoading() {
+    loadingRequests = 0; 
+    clearTimeout(failsafeTimer);
+    var overlay = document.getElementById('mainLoadingOverlay');
+    if (overlay) {
+      overlay.classList.remove('d-flex');
+      overlay.classList.add('d-none');
+    }
+  }
+
+  // Bật/tắt Sidebar Mobile
+  function toggleMainSidebar() {
+    var sidebar = document.getElementById('mainSidebar');
+    if (sidebar) sidebar.classList.toggle('open');
+  }
+
+  // Chuyển Trang (Views)
+  function switchTab(pageName, element) {
+    forceHideLoading(); 
+
+    const activeEditModals = document.querySelectorAll('[id^="edit-wrapper-"]');
+    activeEditModals.forEach(m => m.remove());
+    
+    var pages = document.querySelectorAll('.index-page-view');
+    pages.forEach(p => p.classList.remove('active'));
+
+    var targetPage = document.getElementById('index-page-' + pageName);
+    if(targetPage) targetPage.classList.add('active');
+
+    // Đặt Active Menu Cha
+    var items = document.querySelectorAll('.index-nav-item');
+    items.forEach(i => i.classList.remove('active'));
+    if(element) element.classList.add('active');
+
+    // Nếu không phải là click vào menu con, hãy xóa active của menu con đi
+    if(pageName !== 'dwInformation') {
+      document.querySelectorAll('.sub-nav-item').forEach(el => {
+        el.classList.remove('active-sub');
+        el.classList.remove('text-primary', 'bg-light', 'fw-bold');
+        el.classList.add('text-secondary');
+      });
+      // Thu gọn menu con nếu bấm ra trang khác
+      var bsCollapse = new bootstrap.Collapse(document.getElementById('dwInfoCollapse'), { toggle: false });
+      bsCollapse.hide();
+    }
+
+    window.scrollTo(0, 0);
+
+    // Dành cho Mobile: Đóng sidebar sau khi chọn menu
+    if (window.innerWidth <= 768) {
+       toggleMainSidebar();
+    }
+  }
+
+  // HÀM XỬ LÝ KHI BẤM VÀO MENU CON CỦA "THÔNG TIN BẢN VẼ"
+  function openDwSubTab(tabType, element) {
+    // 1. Chuyển sang trang cha (Thông tin bản vẽ)
+    var parentBtn = document.getElementById('nav-btn-dwInformation');
+    switchTab('dwInformation', parentBtn);
+
+    // Mở khóa menu xổ xuống nếu đang bị đóng (Xử lý lúc thu gọn)
+    var dwCollapse = document.getElementById('dwInfoCollapse');
+    if(!dwCollapse.classList.contains('show')) {
+      new bootstrap.Collapse(dwCollapse).show();
+    }
+
+    // 2. Đổi màu nút Sub-menu
+    document.querySelectorAll('.sub-nav-item').forEach(el => {
+      el.classList.remove('active-sub', 'text-primary', 'bg-light', 'fw-bold');
+      el.classList.add('text-secondary');
+    });
+    element.classList.remove('text-secondary');
+    element.classList.add('active-sub', 'text-primary', 'bg-light', 'fw-bold');
+
+    // 3. Kích hoạt Bootstrap Tab ngầm ở trang con
+    var tabId = (tabType === 'mail') ? '#mail-tab' : '#manual-tab';
+    var triggerEl = document.querySelector(tabId);
+    if (triggerEl) {
+      var tab = new bootstrap.Tab(triggerEl);
+      tab.show();
+    }
+
+    // 4. Bắt đầu tải dữ liệu tương ứng
+    if (tabType === 'mail') {
+      if(typeof initThongTinBanVe === 'function') initThongTinBanVe();
+    } else {
+      if(typeof initNhapDuLieuBanVe === 'function') initNhapDuLieuBanVe();
+    }
+  }
+
+  // Khởi tạo hệ thống
+  document.addEventListener('DOMContentLoaded', function() {
+    showFirstLoading(); // Bật loading che toàn màn hình
+
+    // Đổi ngôn ngữ
+    const savedLang = localStorage.getItem('app_lang') || 'vi';
+    if(typeof changeLanguage === 'function') changeLanguage(savedLang);
+
+    // Xử lý Tab mặc định
+    var pageToLoad = "<?= initialPage ?>"; 
+    if (!pageToLoad || !document.getElementById('index-page-' + pageToLoad)) {
+        pageToLoad = "dwDesign"; 
+    }
+    var navButton = document.getElementById('nav-btn-' + pageToLoad);
+    if(navButton) switchTab(pageToLoad, navButton);
+
+    // 2. GỌI API VÀ BẮT BUỘC ĐỢI CÓ DATA MỚI RENDER
+    google.script.run
+        .withSuccessHandler(function(statsData) {
+            // Nhận dữ liệu từ server
+            pageData = statsData; 
+            // console.log("Dữ liệu pageData đã tải xong:", pageData);
+
+
+            // 3. CHỈ KHỞI TẠO CÁC BẢNG SAU KHI ĐÃ CÓ PAGEDATA
+            if(typeof initThongTinBanVe === 'function') initThongTinBanVe();
+            if(typeof initNhapDuLieuBanVe === 'function') initNhapDuLieuBanVe();
+            
+            if(typeof initThietKeBanVe === 'function')initThietKeBanVe();
+            
+
+            if(pageToLoad === "submitDrawingsForApproval" && typeof initSubmitApproval === 'function'){
+                initSubmitApproval();
+            }
+
+            // 4. MỌI THỨ VẼ XONG XUÔI MỚI TẮT LOADING
+            forceHideLoading(); 
+        })
+        .withFailureHandler(function(err) {
+            alert("Lỗi tải dữ liệu: " + err.message);
+            forceHideLoading();
+        })
+        .getAllData();
+});
+
+
+
+
+        const translations = {
+    'vi': {
+        'nav_create': 'Tạo yêu cầu',
+        'nav_manage': 'Phê duyệt',
+        'nav_history': 'Lịch sử bộ phận',
+        'lang_name': 'Tiếng Việt',
+
+        /* --- LỊCH SỬ BỘ PHẬN --- */
+        'his_title': 'Quản lý ban hành bản vẽ',
+        'his_subtitle': 'Theo dõi trạng thái bản vẽ',
+        'his_qa_title': 'Phân quyền QA',
+        'his_all_dept': '🌍 Tất cả bộ phận',
+        'his_btn_reload': 'Làm mới',
+        'his_kpi_total': 'Tổng yêu cầu',
+        'his_kpi_approved': 'Đã ban hành',
+        'his_kpi_checking': 'QA Đang Kiểm Tra',
+        'his_kpi_returned': 'Bị trả lại',
+        'his_ph_search_req': 'Tìm theo Request No...',
+        'his_ph_search_dept': 'Tìm theo Bộ phận...',
+        'his_btn_clear_filter': 'Xóa lọc',
+        'his_list_title': 'Danh sách yêu cầu',
+        'his_selected': 'Đã chọn',
+        'his_btn_send_qa': 'Gửi đến QA',
+        'his_btn_delete': 'Xóa',
+        'his_filter_all': 'Hiển thị: Tất cả',
+        'his_filter_completed': 'Hiển thị: Đã ban hành lên QA system',
+        'his_filter_checking': 'Hiển thị: Chờ kiểm tra',
+        'his_filter_returned': 'Hiển thị: Bị trả lại',
+        'his_no_data': 'Không tìm thấy dữ liệu',
+        'his_th_reqno': 'Request No.',
+        'his_th_dept': 'Bộ phận',
+        'his_th_date': 'Ngày Yêu Cầu',
+        'his_th_progress': 'Tiến độ',
+        'his_th_status': 'Trạng thái',
+        'his_th_detail': 'Chi tiết',
+        'his_badge_returned': 'Bị trả lại',
+        'his_badge_completed': 'Đang chờ phê duyệt',
+        'his_badge_released':'Đã ban hành lên QA System',
+        'his_badge_pending': 'QA đang kiểm tra',
+        'his_modal_title': 'Chi Tiết:',
+        'his_modal_info': 'Thông tin đăng ký',
+        'his_lbl_type': 'Hình thức',
+        'his_lbl_dept': 'Bộ phận',
+        'his_lbl_creator': 'Người tạo',
+        'his_lbl_date': 'Ngày yêu cầu',
+        'his_lbl_reason': 'Lý do',
+        'his_lbl_priority': 'Độ ưu tiên',
+        'his_lbl_deadline': 'Deadline',
+        'his_lbl_file_type': 'Loại file',
+        'his_lbl_link_folder': 'Link Folder Đính kèm',
+        'his_lbl_link_file': 'Link File DS Bản vẽ',
+        'his_btn_open_link': 'Mở liên kết',
+        'his_modal_error_title': 'Thông tin phản hồi lỗi',
+        'his_modal_checker_note': 'Checker Note',
+        'his_modal_approver_note': 'Approver Note',
+        'his_modal_list_dw': 'Danh sách bản vẽ chi tiết',
+        'his_selected_items': 'mục đã chọn',
+        'his_th_dw_type': 'Loại bản vẽ',
+        'his_th_dw_no': 'Số bản vẽ',
+        'his_th_ver': 'Version',
+        'his_th_line': 'LINE/CUS',
+        'his_th_dept_lq': 'BP Liên quan',
+        'his_th_remark': 'Remark',
+        'his_th_link': 'Link',
+        'his_th_action': 'Thao tác',
+        'his_footer_note': 'Các hành động áp dụng cho toàn bộ yêu cầu này',
+        'his_btn_delete_req': 'Xóa Yêu Cầu',
+        'his_btn_resend_qa': 'Gửi lại QA',
+        'his_modal_dept_title': 'Chọn Bộ phận LQ',
+        'his_modal_btn_confirm': 'Xác nhận',
+        'his_alert_no_select': 'Vui lòng chọn ít nhất một yêu cầu!',
+        'his_alert_del_title': 'Xác nhận xóa?',
+        'his_alert_del_text': 'Bạn có chắc chắn muốn xóa {count} yêu cầu này không?',
+        'his_alert_del_confirm': 'Xóa ngay',
+        'his_alert_cancel': 'Hủy',
+        'his_alert_processing': 'Đang xử lý...',
+        'his_alert_del_success': 'Đã xóa!',
+        'his_alert_error': 'Lỗi',
+        'his_alert_send_title': 'Gửi đến QA?',
+        'his_alert_send_text': 'Gửi {count} yêu cầu này cho QA kiểm tra lại?',
+        'his_alert_send_confirm': 'Gửi đi',
+        'his_alert_send_success': 'Thành công',
+        'his_alert_send_success_text': 'Đã gửi yêu cầu đến QA',
+        'his_alert_send_warn': 'Chú ý',
+        'his_alert_send_warn_text': 'Không có bản vẽ nào được gửi (cần có ghi chú).',
+        'his_alert_sys_error': 'Lỗi hệ thống',
+        'his_edit_title': 'Chỉnh sửa thông tin bản vẽ',
+        'his_edit_cancel': 'Hủy bỏ',
+        'his_edit_save': 'Lưu thông tin',
+        'his_edit_lbl_note': 'Ghi chú bộ phận phản hồi:',
+        'his_edit_ph_note': 'Nhập lý do thay đổi hoặc ghi chú phản hồi...',
+        'his_edit_btn_link_has': 'Đã có Link',
+        'his_edit_btn_link_add': 'Gắn Link',
+        'his_chart_title': 'Thống kê Yêu cầu Theo Năm Tài Chính (FYE)',
+        'his_chart_subtitle': 'Số lượng Request No. theo bộ phận (Bấm vào cột biểu đồ để lọc chi tiết bảng)',
+        'his_lbl_fye': 'Năm tài chính:',
+        'his_opt_all_fye': '📅 Tất cả FYE',
+        'his_chart_filtering': 'Đang lọc:',
+        'his_chart_total_req': 'Tổng Request:',
+        'his_month_4': 'Tháng 4', 'his_month_5': 'Tháng 5', 'his_month_6': 'Tháng 6',
+        'his_month_7': 'Tháng 7', 'his_month_8': 'Tháng 8', 'his_month_9': 'Tháng 9',
+        'his_month_10': 'Tháng 10', 'his_month_11': 'Tháng 11', 'his_month_12': 'Tháng 12',
+        'his_month_1': 'Tháng 1', 'his_month_2': 'Tháng 2', 'his_month_3': 'Tháng 3',
+        'his_alert_del_single_text': 'Bạn đang xóa bản vẽ có ID: {id}',
+        'his_alert_link_title': 'Gắn link bản vẽ',
+        'his_alert_link_label': 'Dán đường dẫn (Google Drive/Smarteam...)',
+        'his_alert_link_success': 'Đã nhận link!',
+        'his_alert_save_success': 'Đã lưu thông tin!',
+    },
+    'en': {
+        'nav_create': 'Create Request',
+        'nav_manage': 'Approve',
+        'nav_history': 'Dept. History',
+        'lang_name': 'English',
+
+       
+        /* --- DEPT HISTORY --- */
+        'his_title': 'Drawing Release Management',
+        'his_subtitle': 'Track drawing status',
+        'his_qa_title': 'QA Permission',
+        'his_all_dept': '🌍 All Departments',
+        'his_btn_reload': 'Reload',
+        'his_kpi_total': 'Total Requests',
+        'his_kpi_approved': 'Released',
+        'his_kpi_checking': 'QA Checking',
+        'his_kpi_returned': 'Returned',
+        'his_ph_search_req': 'Search Request No...',
+        'his_ph_search_dept': 'Search Department...',
+        'his_btn_clear_filter': 'Clear Filter',
+        'his_list_title': 'Request List',
+        'his_selected': 'Selected',
+        'his_btn_send_qa': 'Send to QA',
+        'his_btn_delete': 'Delete',
+        'his_filter_all': 'Showing: All',
+        'his_filter_completed': 'Display: Released to QA System',
+        'his_filter_checking': 'Showing: Checking',
+        'his_filter_returned': 'Showing: Returned',
+        'his_no_data': 'No data found',
+        'his_th_reqno': 'Request No.',
+        'his_th_dept': 'Department',
+        'his_th_date': 'Date',
+        'his_th_progress': 'Progress',
+        'his_th_status': 'Status',
+        'his_th_detail': 'Detail',
+        'his_badge_returned': 'Returned',
+        'his_badge_completed': 'Under Approval',
+        'his_badge_released':'Released to QA system',
+        'his_badge_pending': 'QA Checking',
+        'his_modal_title': 'Detail:',
+        'his_modal_info': 'Registration Info',
+        'his_lbl_type': 'Type',
+        'his_lbl_dept': 'Dept',
+        'his_lbl_creator': 'Creator',
+        'his_lbl_date': 'Date',
+        'his_lbl_reason': 'Reason',
+        'his_lbl_priority': 'Priority',
+        'his_lbl_deadline': 'Deadline',
+        'his_lbl_file_type': 'File Type',
+        'his_lbl_link_folder': 'Folder Link',
+        'his_lbl_link_file': 'File Link',
+        'his_btn_open_link': 'Open Link',
+        'his_modal_error_title': 'Feedback Info',
+        'his_modal_checker_note': 'Checker Note',
+        'his_modal_approver_note': 'Approver Note',
+        'his_modal_list_dw': 'Detailed Drawing List',
+        'his_selected_items': 'item(s) selected',
+        'his_th_dw_type': 'Type',
+        'his_th_dw_no': 'Drawing No.',
+        'his_th_ver': 'Ver',
+        'his_th_line': 'LINE/CUS',
+        'his_th_dept_lq': 'Related Dept',
+        'his_th_remark': 'Remark',
+        'his_th_link': 'Link',
+        'his_th_action': 'Action',
+        'his_footer_note': 'Actions apply to this entire request',
+        'his_btn_delete_req': 'Delete Request',
+        'his_btn_resend_qa': 'Resend to QA',
+        'his_modal_dept_title': 'Select Related Dept',
+        'his_modal_btn_confirm': 'Confirm',
+        'his_alert_no_select': 'Please select at least one request!',
+        'his_alert_del_title': 'Confirm Deletion?',
+        'his_alert_del_text': 'Are you sure you want to delete {count} request(s)?',
+        'his_alert_del_confirm': 'Delete Now',
+        'his_alert_cancel': 'Cancel',
+        'his_alert_processing': 'Processing...',
+        'his_alert_del_success': 'Deleted!',
+        'his_alert_error': 'Error',
+        'his_alert_send_title': 'Send to QA?',
+        'his_alert_send_text': 'Send {count} request(s) to QA for re-checking?',
+        'his_alert_send_confirm': 'Send',
+        'his_alert_send_success': 'Success',
+        'his_alert_send_success_text': 'Request sent to QA',
+        'his_alert_send_warn': 'Notice',
+        'his_alert_send_warn_text': 'No drawings were sent (notes required).',
+        'his_alert_sys_error': 'System Error',
+        'his_edit_title': 'Edit Drawing Info',
+        'his_edit_cancel': 'Cancel',
+        'his_edit_save': 'Save Info',
+        'his_edit_lbl_note': 'Department Feedback Note:',
+        'his_edit_ph_note': 'Enter reason for change or feedback note...',
+        'his_edit_btn_link_has': 'Link Added',
+        'his_edit_btn_link_add': 'Add Link',
+        'his_chart_title': 'Request Statistics by Fiscal Year (FYE)',
+        'his_chart_subtitle': 'Request No. count by dept (Click chart column to filter detailed table)',
+        'his_lbl_fye': 'Fiscal Year:',
+        'his_opt_all_fye': '📅 All FYE',
+        'his_chart_filtering': 'Filtering:',
+        'his_chart_total_req': 'Total Requests:',
+        'his_month_4': 'Apr', 'his_month_5': 'May', 'his_month_6': 'Jun',
+        'his_month_7': 'Jul', 'his_month_8': 'Aug', 'his_month_9': 'Sep',
+        'his_month_10': 'Oct', 'his_month_11': 'Nov', 'his_month_12': 'Dec',
+        'his_month_1': 'Jan', 'his_month_2': 'Feb', 'his_month_3': 'Mar',
+        'his_alert_del_single_text': 'You are deleting drawing ID: {id}',
+        'his_alert_link_title': 'Attach Drawing Link',
+        'his_alert_link_label': 'Paste URL (Google Drive/Smarteam...)',
+        'his_alert_link_success': 'Link attached!',
+        'his_alert_save_success': 'Saved successfully!',
+    },
+    'ja': {
+        'nav_create': 'リクエスト作成',
+        'nav_manage': '承認',
+        'nav_history': '部門履歴',
+        'lang_name': '日本語',
+
+        /* --- 部門履歴 --- */
+        'his_title': '図面発行管理',
+        'his_subtitle': '図面ステータスを追跡',
+        'his_qa_title': 'QA権限',
+        'his_all_dept': '🌍 全部門',
+        'his_btn_reload': '更新',
+        'his_kpi_total': '総リクエスト',
+        'his_kpi_approved': '発行済み',
+        'his_kpi_checking': 'QA 確認中',
+        'his_kpi_returned': '差戻し',
+        'his_ph_search_req': 'リクエスト番号で検索...',
+        'his_ph_search_dept': '部門で検索...',
+        'his_btn_clear_filter': 'フィルター解除',
+        'his_list_title': 'リクエスト一覧',
+        'his_selected': '選択中',
+        'his_btn_send_qa': 'QAへ送信',
+        'his_btn_delete': '削除',
+        'his_filter_all': '表示: すべて',
+        'his_filter_completed': '表示：QAシステムへ発行済み',
+        'his_filter_checking': '表示: 確認中',
+        'his_filter_returned': '表示: 差戻し',
+        'his_no_data': 'データが見つかりません',
+        'his_th_reqno': 'リクエストNo.',
+        'his_th_dept': '部門',
+        'his_th_date': '日付',
+        'his_th_progress': '進捗',
+        'his_th_status': 'ステータス',
+        'his_th_detail': '詳細',
+        'his_badge_returned': '差戻し',
+        'his_badge_completed': '承認中',
+        'his_badge_released':'QAシステムへ発行済み',
+        'his_badge_pending': 'QAチェック中',
+        'his_modal_title': '詳細:',
+        'his_modal_info': '登録情報',
+        'his_lbl_type': '形式',
+        'his_lbl_dept': '部門',
+        'his_lbl_creator': '作成者',
+        'his_lbl_date': '日付',
+        'his_lbl_reason': '理由',
+        'his_lbl_priority': '優先度',
+        'his_lbl_deadline': '期限',
+        'his_lbl_file_type': 'ファイル種類',
+        'his_lbl_link_folder': 'フォルダリンク',
+        'his_lbl_link_file': 'ファイルリンク',
+        'his_btn_open_link': 'リンクを開く',
+        'his_modal_error_title': 'フィードバック情報',
+        'his_modal_checker_note': 'Checker メモ',
+        'his_modal_approver_note': 'Approver メモ',
+        'his_modal_list_dw': '詳細図面リスト',
+        'his_selected_items': '件選択',
+        'his_th_dw_type': '図面種類',
+        'his_th_dw_no': '図面番号',
+        'his_th_ver': 'Ver',
+        'his_th_line': 'LINE/CUS',
+        'his_th_dept_lq': '関連部門',
+        'his_th_remark': '備考',
+        'his_th_link': 'リンク',
+        'his_th_action': '操作',
+        'his_footer_note': 'このリクエスト全体に適用',
+        'his_btn_delete_req': 'リクエストを削除',
+        'his_btn_resend_qa': 'QAへ再送信',
+        'his_modal_dept_title': '関連部門の選択',
+        'his_modal_btn_confirm': '確認',
+        'his_alert_no_select': '少なくとも1つのリクエストを選択してください！',
+        'his_alert_del_title': '削除の確認',
+        'his_alert_del_text': 'この{count}件のリクエストを削除してもよろしいですか？',
+        'his_alert_del_confirm': '削除する',
+        'his_alert_cancel': 'キャンセル',
+        'his_alert_processing': '処理中...',
+        'his_alert_del_success': '削除されました！',
+        'his_alert_error': 'エラー',
+        'his_alert_send_title': 'QAへ送信？',
+        'his_alert_send_text': '{count}件のリクエストをQAに再確認のため送信しますか？',
+        'his_alert_send_confirm': '送信',
+        'his_alert_send_success': '成功',
+        'his_alert_send_success_text': 'QAへリクエストを送信しました',
+        'his_alert_send_warn': '注意',
+        'his_alert_send_warn_text': '送信された図面はありません（メモが必要です）。',
+        'his_alert_sys_error': 'システムエラー',
+        'his_edit_title': '図面情報の編集',
+        'his_edit_cancel': 'キャンセル',
+        'his_edit_save': '保存',
+        'his_edit_lbl_note': '部門フィードバックメモ:',
+        'his_edit_ph_note': '変更理由またはフィードバックメモを入力...',
+        'his_edit_btn_link_has': 'リンクあり',
+        'his_edit_btn_link_add': 'リンク追加',
+        'his_chart_title': '年度別リクエスト統計 (FYE)',
+        'his_chart_subtitle': '部門別リクエスト数（グラフをクリックして詳細テーブルを絞り込み）',
+        'his_lbl_fye': '年度:',
+        'his_opt_all_fye': '📅 全FYE',
+        'his_chart_filtering': '絞り込み中:',
+        'his_chart_total_req': '合計リクエスト:',
+        'his_month_4': '4月', 'his_month_5': '5月', 'his_month_6': '6月',
+        'his_month_7': '7月', 'his_month_8': '8月', 'his_month_9': '9月',
+        'his_month_10': '10月', 'his_month_11': '11月', 'his_month_12': '12月',
+        'his_month_1': '1月', 'his_month_2': '2月', 'his_month_3': '3月',
+        'his_alert_del_single_text': 'ID: {id} の図面を削除しています',
+        'his_alert_link_title': '図面リンク追加',
+        'his_alert_link_label': 'URLを貼り付け (Google Drive/Smarteam...)',
+        'his_alert_link_success': 'リンクを追加しました！',
+        'his_alert_save_success': '保存しました！',
+    }
+};
+
+
+      function changeLanguage(langCode) {
+          localStorage.setItem('app_lang', langCode);
+
+          // document.getElementById('current-lang-display').innerText = translations[langCode]['lang_name'];
+
+          const elements = document.querySelectorAll('[data-i18n]');
+          elements.forEach(el => {
+              const key = el.getAttribute('data-i18n');
+              if (translations[langCode][key]) {
+                  el.innerText = translations[langCode][key];
+              }
+          });
+      }
+</script>
+</body>
+</html>

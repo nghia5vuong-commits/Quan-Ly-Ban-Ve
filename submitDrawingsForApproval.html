@@ -1,0 +1,349 @@
+<div class="page-submitDrawingsForApproval h-100 pb-5">
+  <style>
+    /* =========================================================
+       CSS SCOPED CHO TRANG TRÌNH KÝ BẢN VẼ
+       ========================================================= */
+    .page-submitDrawingsForApproval {
+      font-family: 'Inter', sans-serif;
+      color: #334155;
+    }
+    
+    .page-submitDrawingsForApproval .glass-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      padding: 24px;
+    }
+
+    /* Bảng dữ liệu */
+    .page-submitDrawingsForApproval .table-custom {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .page-submitDrawingsForApproval .table-custom th {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 700;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 14px 16px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .page-submitDrawingsForApproval .table-custom td {
+      padding: 16px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .page-submitDrawingsForApproval .table-custom tbody tr:hover td {
+      background: #f8fafc;
+    }
+
+    /* Các nút thao tác */
+    .page-submitDrawingsForApproval .btn-action {
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .page-submitDrawingsForApproval .btn-pdf {
+      background: #f1f5f9;
+      color: #3b82f6;
+      border: 1px solid #cbd5e1;
+    }
+    .page-submitDrawingsForApproval .btn-pdf:hover:not(:disabled) {
+      background: #e0e7ff;
+      border-color: #93c5fd;
+    }
+    
+    .page-submitDrawingsForApproval .btn-approve {
+      background: rgba(16, 185, 129, 0.1);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .page-submitDrawingsForApproval .btn-approve:hover {
+      background: #10b981;
+      color: white;
+    }
+
+    .page-submitDrawingsForApproval .btn-reject {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .page-submitDrawingsForApproval .btn-reject:hover {
+      background: #ef4444;
+      color: white;
+    }
+
+    /* Tags & Badges */
+    .page-submitDrawingsForApproval .cust-tag {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .page-submitDrawingsForApproval .prod-tag {
+      font-weight: 600;
+      color: #334155;
+    }
+    .page-submitDrawingsForApproval .empty-state {
+      padding: 60px 20px;
+      text-align: center;
+      color: #94a3b8;
+    }
+  </style>
+
+  <div class="row g-4 h-100">
+    <div class="col-12">
+      <div class="glass-card d-flex flex-column h-100">
+        
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h4 class="fw-bold text-dark mb-1">
+              <i class="bi bi-vector-pen me-2 text-primary"></i>Danh sách bản vẽ chờ Trình ký
+            </h4>
+            <span class="text-muted small">Kiểm tra thông tin PDF và phê duyệt bản vẽ thiết kế mới nhất.</span>
+          </div>
+          <button class="btn btn-light border fw-medium shadow-sm" onclick="initSubmitApproval()">
+            <i class="bi bi-arrow-clockwise me-1"></i> Làm mới
+          </button>
+        </div>
+
+        <!-- Bảng Dữ Liệu -->
+        <div class="table-responsive custom-scrollbar border rounded-3" style="max-height: calc(100vh - 220px); overflow-y: auto;">
+          <table class="table-custom w-100">
+            <thead class="position-sticky top-0 z-1 shadow-sm">
+              <tr>
+                <th class="text-center" width="5%">#</th>
+                <th width="15%">Mã Bản Vẽ</th>
+                <th width="15%">Khách Hàng</th>
+                <th width="20%">Dự án / Request No.</th>
+                <th class="text-center" width="15%">Xem PDF</th>
+                <th class="text-center" width="30%">Thao Tác Phê Duyệt</th>
+              </tr>
+            </thead>
+            <tbody id="approvalTableBody">
+              <!-- Dữ liệu được JS Render vào đây -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /**
+   * Hàm ánh xạ các cột dựa trên mảng data thực tế bạn cung cấp
+   */
+  const COL_MAP = {
+    ID: 0,
+    CUSTOMER: 2,   // Line/Customer
+    DW_NO: 4,      // Drawing no.
+    REQ_NO: 8,     // Request no.
+    STATUS: 23,    // Trạng thái
+    PDF_LINK: 38   // File Stamped PDF
+  };
+
+  /**
+   * Hàm Render danh sách ra bảng (Đọc từ biến pageData toàn cục)
+   */
+  function initSubmitApproval() {
+    const tbody = document.getElementById('approvalTableBody');
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><span class="spinner-border spinner-border-sm text-primary me-2"></span>Đang tải dữ liệu...</td></tr>';
+
+    // Đợi 1 chút để UI kịp render loading, sau đó mới xử lý mảng
+    setTimeout(() => {
+      // 1. Kiểm tra biến pageData có tồn tại không
+      if (typeof pageData === 'undefined' || !pageData || pageData.length <= 1) {
+        renderEmptyState(tbody);
+        return;
+      }
+
+      // 2. Bỏ qua header (row 0), lấy data từ row 1
+      const dataRows = pageData.slice(1);
+      
+      // 3. Lọc ra các bản vẽ cần trình ký (Ví dụ: Có File PDF và chưa Hoàn thành)
+      // Tùy theo logic của bạn, ở đây tôi đang lọc các dòng CÓ mã ID và CÓ link PDF
+      const pendingApprovals = dataRows.filter(row => {
+        const id = row[COL_MAP.ID];
+        const pdfLink = row[COL_MAP.PDF_LINK];
+        const status = row[COL_MAP.STATUS];
+        
+        // Điều kiện hiển thị: Có ID, Có link PDF và Trạng thái KHÔNG PHẢI là "Hoàn thành"
+        return id && pdfLink && String(pdfLink).includes("http") && String(status).trim() !== "Hoàn thành";
+      });
+
+      if (pendingApprovals.length === 0) {
+        renderEmptyState(tbody);
+        return;
+      }
+
+      // 4. Render HTML
+      let html = '';
+      pendingApprovals.forEach((row, index) => {
+        const id = row[COL_MAP.ID];
+        const dwNo = row[COL_MAP.DW_NO] || "Chưa có mã";
+        const customer = row[COL_MAP.CUSTOMER] || "Chưa rõ KH";
+        const requestNo = row[COL_MAP.REQ_NO] || "Không có thông tin";
+        const pdfUrl = row[COL_MAP.PDF_LINK];
+
+        const hasPdf = pdfUrl && String(pdfUrl).includes("http");
+        const btnPdfState = hasPdf ? `onclick="viewApprovalPdf('${pdfUrl}')"` : `disabled title="Chưa có PDF"`;
+        const btnPdfClass = hasPdf ? `btn-pdf` : `btn-light text-muted border`;
+
+        html += `
+          <tr id="approval-row-${id}">
+            <td class="text-center fw-bold text-muted">${index + 1}</td>
+            <td class="fw-bold text-primary">${dwNo}</td>
+            <td><span class="cust-tag"><i class="bi bi-building me-1"></i>${customer}</span></td>
+            <td class="prod-tag">${requestNo}</td>
+            <td class="text-center">
+              <button class="btn btn-action ${btnPdfClass} shadow-sm" ${btnPdfState}>
+                <i class="bi bi-file-earmark-pdf-fill ${hasPdf ? 'text-danger' : ''} me-1"></i> Xem File
+              </button>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center gap-2">
+                <button class="btn btn-action btn-approve shadow-sm" onclick="handleApprove('${id}', '${dwNo}')">
+                  <i class="bi bi-check-circle-fill"></i> Trình ký
+                </button>
+                <button class="btn btn-action btn-reject shadow-sm" onclick="handleReject('${id}', '${dwNo}')">
+                  <i class="bi bi-x-circle-fill"></i> Từ chối
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+
+    }, 300);
+  }
+
+  function renderEmptyState(tbody) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6">
+          <div class="empty-state">
+            <i class="bi bi-check-circle-fill fs-1 d-block mb-3 text-success opacity-50"></i>
+            <h6 class="fw-bold text-dark">Tuyệt vời! Tất cả bản vẽ đã được duyệt.</h6>
+            <small>Hiện không có bản vẽ nào đang chờ Trình ký.</small>
+          </div>
+        </td>
+      </tr>
+    `;
+  }
+
+  // Hàm mở Link PDF
+  function viewApprovalPdf(url) {
+    if(!url || url === "") {
+      Swal.fire('Lỗi', 'Bản vẽ này chưa có link PDF đính kèm!', 'error');
+      return;
+    }
+    window.open(url, '_blank');
+  }
+
+  // Xử lý nút Trình ký (Approve)
+  function handleApprove(rowId, dwNo) {
+    Swal.fire({
+      title: 'Xác nhận trình ký?',
+      html: `Bạn đang phê duyệt bản vẽ: <b class="text-primary">${dwNo}</b>`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#10b981',
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Đồng ý, Trình ký!',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        if(typeof showLoading === 'function') showLoading('Đang xử lý phê duyệt...');
+        
+        // GỌI GOOGLE APPS SCRIPT Ở ĐÂY
+        google.script.run
+          .withSuccessHandler((res) => {
+            if(typeof hideLoading === 'function') hideLoading();
+            Swal.fire('Thành công!', `Bản vẽ ${dwNo} đã được trình ký.`, 'success');
+            
+            // Xóa dòng đó khỏi UI cho nhanh (hoặc gọi lại initSubmitApproval() để tải lại mảng)
+            const rowEl = document.getElementById(`approval-row-${rowId}`);
+            if(rowEl) rowEl.remove();
+          })
+          .withFailureHandler((err) => {
+            if(typeof hideLoading === 'function') hideLoading();
+            Swal.fire('Lỗi', 'Không thể trình ký: ' + err.message, 'error');
+          })
+          .approveDrawingOnServer(rowId); // <--- HÀM BÊN CODE.GS BẠN CẦN VIẾT
+      }
+    });
+  }
+
+  // Xử lý nút Từ chối (Reject) kèm lý do
+  function handleReject(rowId, dwNo) {
+    Swal.fire({
+      title: 'Từ chối bản vẽ',
+      html: `Vui lòng nhập lý do từ chối cho bản vẽ <b class="text-danger">${dwNo}</b>:`,
+      input: 'textarea',
+      inputPlaceholder: 'Nhập lý do sai sót (kích thước, sai form, v.v...)',
+      inputAttributes: {
+        'aria-label': 'Lý do từ chối'
+      },
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Xác nhận Từ chối',
+      cancelButtonText: 'Hủy',
+      preConfirm: (reason) => {
+        if (!reason || reason.trim() === '') {
+          Swal.showValidationMessage('Bạn bắt buộc phải nhập lý do từ chối!');
+        }
+        return reason;
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        const rejectReason = result.value;
+        if(typeof showLoading === 'function') showLoading('Đang gửi phản hồi từ chối...');
+        
+        // GỌI GOOGLE APPS SCRIPT Ở ĐÂY
+        google.script.run
+          .withSuccessHandler((res) => {
+            if(typeof hideLoading === 'function') hideLoading();
+            Swal.fire('Đã từ chối!', `Bản vẽ ${dwNo} đã bị trả lại.<br><br><b>Lý do:</b> <i>"${rejectReason}"</i>`, 'success');
+            
+            // Xóa dòng đó khỏi UI (hoặc tải lại)
+            const rowEl = document.getElementById(`approval-row-${rowId}`);
+            if(rowEl) rowEl.remove();
+          })
+          .withFailureHandler((err) => {
+            if(typeof hideLoading === 'function') hideLoading();
+            Swal.fire('Lỗi', 'Không thể gửi phản hồi: ' + err.message, 'error');
+          })
+          .rejectDrawingOnServer(rowId, rejectReason); // <--- HÀM BÊN CODE.GS BẠN CẦN VIẾT
+      }
+    });
+  }
+
+  // Lắng nghe sự kiện chuyển tab từ index.html để kích hoạt render
+  // Giả sử ở trang index bạn gọi hàm initSubmitApproval() khi click vào menu Trình ký
+  document.addEventListener('DOMContentLoaded', () => {
+    // Nếu biến pageData đã load xong từ index thì gọi luôn
+    setTimeout(() => {
+      initSubmitApproval();
+    }, 800);
+  });
+</script>

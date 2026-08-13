@@ -1,0 +1,738 @@
+<div class="page-dwDesign h-100 pb-5">
+  <style>
+    /* =========================================================
+       CSS SCOPED CHO TRANG THIẾT KẾ
+       ========================================================= */
+    .page-dwDesign {
+      font-family: 'Inter', sans-serif;
+      color: #334155;
+      background: transparent;
+    }
+    .page-dwDesign .glass-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+      padding: 24px;
+    }
+    
+    /* File Upload Zone */
+    .page-dwDesign .upload-zone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .page-dwDesign .upload-zone:hover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+    .page-dwDesign .upload-zone input[type="file"] {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      opacity: 0; cursor: pointer;
+    }
+    
+    /* Danh sách bản vẽ (Tabs & Bảng) */
+    .page-dwDesign .nav-pills .nav-link {
+      color: #64748b;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 8px 20px;
+    }
+    .page-dwDesign .nav-pills .nav-link.active {
+      background-color: #3b82f6;
+      color: #fff;
+    }
+
+    .page-dwDesign .table-custom {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.85rem;
+    }
+    .page-dwDesign .table-custom th {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 12px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .page-dwDesign .table-custom td {
+      padding: 12px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .page-dwDesign .table-custom tbody tr:hover td {
+      background: #f8fafc; /* Màu hover nhẹ mặc định */
+    }
+
+    /* HIỆU ỨNG CHO DÒNG ĐƯỢC CHỌN (TÔ ĐẬM) */
+    .page-dwDesign .table-custom tbody tr.selected-row td {
+      background-color: #e0f2fe !important; /* Xanh nhạt */
+      border-top: 1px solid #bae6fd;
+      border-bottom: 1px solid #bae6fd;
+    }
+    .page-dwDesign .table-custom tbody tr.selected-row td:first-child {
+      border-left: 4px solid #3b82f6; /* Viền xanh đậm bên trái */
+      font-weight: bold;
+    }
+
+    /* SEARCHABLE DROPDOWN (Combo Box cho Mã TO) */
+    .page-dwDesign .search-select-wrapper { position: relative; }
+    .page-dwDesign .search-select-input {
+      display: flex; align-items: center; border: 1px solid #dee2e6;
+      border-radius: 8px; background: #f8fafc; cursor: text; transition: all 0.2s;
+    }
+    .page-dwDesign .search-select-input:focus-within { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2); background: #fff;}
+    .page-dwDesign .search-select-field { border: none; outline: none; width: 100%; padding: 8px 12px; font-size: 14px; background: transparent; color: #1e293b; }
+    .page-dwDesign .search-select-arrow { padding: 0 12px; color: #94a3b8; font-size: 12px; transition: transform 0.2s; cursor: pointer;}
+    .page-dwDesign .search-select-wrapper.open .search-select-arrow { transform: rotate(180deg); }
+    .page-dwDesign .search-select-dropdown {
+      display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+      background: #fff; border: 1px solid #dee2e6; border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.12); max-height: 220px; overflow-y: auto; z-index: 1050;
+    }
+    .page-dwDesign .search-select-wrapper.open .search-select-dropdown { display: block; }
+    .page-dwDesign .search-select-item { padding: 9px 14px; font-size: 13.5px; cursor: pointer; border-bottom: 1px solid #f5f5f5; }
+    .page-dwDesign .search-select-item:hover { background: #eff6ff; color: #3b82f6; font-weight: 600; }
+    .page-dwDesign .search-select-empty { padding: 14px; text-align: center; color: #aaa; font-size: 13px; }
+
+    /* Nút Submit */
+    .page-dwDesign .btn-submit {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      font-weight: 700;
+      border-radius: 10px;
+      padding: 12px;
+      border: none;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s;
+    }
+    .page-dwDesign .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4);
+    }
+  </style>
+
+  <div class="row g-4 h-100 pb-5">
+    
+    <!-- LEFT PANEL: TẢI FILE -->
+    <div class="col-lg-3 col-xl-3">
+      <div class="glass-card position-sticky" style="top: 20px;">
+        <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Tải lên bản vẽ</h5>
+        
+        <form id="designUploadForm" onsubmit="handleDesignUpload(event)">
+          <!-- ẨN ID ĐI NHƯNG VẪN GIỮ TRONG FORM ĐỂ CODE ĐỌC ĐƯỢC -->
+          <input type="hidden" id="uploadDwId" required>
+
+          <div class="row g-3 mb-4">
+            <div class="col-12">
+              <label class="form-label fw-semibold small text-muted">Drawing Code</label>
+              
+              <!-- DROPDOWN TÌM KIẾM MỚI -->
+              <div class="search-select-wrapper" id="toWrapper">
+                <div class="search-select-input" onclick="toggleDropdownTo()">
+                  <input type="text" id="uploadDwTo" class="search-select-field fw-bold text-primary" placeholder="Nhập / Chọn mã Drawing..." autocomplete="off" oninput="filterToList()" onfocus="openDropdownTo()" required>
+                  <i class="bi bi-chevron-down search-select-arrow" onclick="toggleDropdownTo(); event.stopPropagation();"></i>
+                </div>
+                <div class="search-select-dropdown custom-scrollbar" id="toDropdown">
+                  <!-- Dữ liệu render từ JS -->
+                </div>
+              </div>
+
+            </div>
+            <div class="col-12">
+              <label class="form-label fw-semibold small text-muted">Group</label>
+              <input type="text" class="form-control bg-light" id="uploadCategory" placeholder="Tự động điền..." readonly required>
+            </div>
+          </div>
+
+          <!-- Upload PDF (Lưu lên Drive) -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-danger small"><i class="bi bi-file-earmark-pdf-fill me-1"></i> File PDF (Bản vẽ)</label>
+            <div class="upload-zone" id="pdfZone">
+              <i class="bi bi-file-pdf fs-2 text-danger mb-2"></i>
+              <p class="mb-0 fw-medium" id="pdfFileName">Kéo thả hoặc bấm để chọn PDF</p>
+              <input type="file" id="pdfFileInput" accept=".pdf" required onchange="updateFileName('pdfFileInput', 'pdfFileName', 'text-danger')">
+            </div>
+          </div>
+
+          <!-- Upload EXCEL (Lưu lên Local Server) -->
+          <div class="mb-4">
+            <label class="form-label fw-bold text-success small"><i class="bi bi-file-earmark-excel-fill me-1"></i> File EXCEL (Bản vẽ)</label>
+            <div class="upload-zone" id="excelZone">
+              <i class="bi bi-file-excel fs-2 text-success mb-2"></i>
+              <p class="mb-0 fw-medium" id="excelFileName">Kéo thả hoặc bấm để chọn Excel</p>
+              <input type="file" id="excelFileInput" accept=".xlsx, .xls, .xlsm" required onchange="updateFileName('excelFileInput', 'excelFileName', 'text-success')">
+            </div>
+            <small class="text-muted" style="font-size: 11px;">*Hệ thống sẽ tự chèn Link PDF vào file Excel này và lưu trữ.</small>
+          </div>
+
+          <button type="submit" class="btn btn-submit w-100 mt-2" id="btnSubmitDesign">
+            <i class="bi bi-send-fill me-2"></i>XÁC NHẬN TẢI LÊN
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: DANH SÁCH BẢN VẼ -->
+    <div class="col-lg-9 col-xl-9">
+      <div class="glass-card h-100 d-flex flex-column">
+        
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Danh sách bản vẽ chờ thiết kế</h5>
+          
+          <!-- Thanh tìm kiếm TO -->
+          <div class="input-group shadow-sm" style="width: 250px;">
+            <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control border-start-0 ps-0" id="searchToInput" placeholder="Tìm kiếm..." onkeyup="loadDrawingList()">
+          </div>
+        </div>
+
+        <!-- TABS (ĐÃ THÊM ID ĐỂ JS CÓ THỂ TỰ ĐỘNG BẤM) -->
+        <ul class="nav nav-pills mb-3 border-bottom pb-2" id="dwCategoryTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-btn-barsale" data-bs-toggle="pill" type="button" role="tab">Barsale</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-btn-oem" data-bs-toggle="pill" type="button" role="tab">OEM</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-btn-we" data-bs-toggle="pill" type="button" role="tab">WE SASH</button>
+          </li>
+          <li class="nav-item ms-auto">
+             <button class="btn btn-sm btn-light border fw-medium text-secondary mt-1" onclick="initThietKeBanVe()"><i class="bi bi-arrow-clockwise me-1"></i> Làm mới Data</button>
+          </li>
+        </ul>
+
+        <!-- BẢNG DỮ LIỆU (Đã set sẵn chiều rộng các cột) -->
+        <div class="table-responsive custom-scrollbar border rounded-3" style="max-height: calc(100vh - 200px); overflow-y: auto;">
+          <table class="table-custom">
+            <thead class="position-sticky top-0 z-1 shadow-sm">
+              <tr>
+                <th class="text-center" style="width: 3%">#</th>
+                <th class="d-none">ID</th> 
+                <th class="d-none">Group</th>
+                <th style="width: 8%">Type</th>
+                <th style="width: 10%">To</th>
+                <th style="width: 20%">Dw Code</th>
+                <th class="text-center" style="width: 5%">Ver</th>
+                <th style="width: 15%">Project</th>
+                <th style="width: 15%">Customer</th>
+                <th class="text-center" style="width: 8%">Excel Sample</th>
+                <th class="text-center" style="width: 6%">PDF</th>
+                <th class="text-center" style="width: 10%">Action</th>
+              </tr>
+            </thead>
+            <tbody id="dwDesignTableBody">
+              <!-- Nội dung Render từ JS -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentTabDesign = 'BARSALE';
+  let globalToList = []; // Mảng chứa dữ liệu cho ô Dropdown nhập TO
+  let currentlySelectedId = null; // Biến lưu lại ID dòng đang được click chọn
+
+  // Cập nhật tên file khi chọn
+  function updateFileName(inputId, labelId, colorClass) {
+    const input = document.getElementById(inputId);
+    const label = document.getElementById(labelId);
+    if (input.files.length > 0) {
+      label.innerHTML = `<span class="fw-bold ${colorClass}">${input.files[0].name}</span>`;
+    }
+  }
+
+  // ==========================================
+  // XỬ LÝ DROPDOWN TÌM KIẾM MÃ TO
+  // ==========================================
+  function buildToDropdownList() {
+    if (typeof pageData === 'undefined' || pageData.length === 0) return;
+    
+    // Tạo mảng từ pageData
+    globalToList = pageData.map(row => {
+        const id = row[0];
+        const phanLoai = row[3]; // Lấy tạm cột chứa Group
+        const dwNo = row[11];
+        const reqNo = row[8];
+        const display = dwNo || reqNo || id; // Ưu tiên DwNo -> ReqNo -> ID
+        return { id, phanLoai, display };
+    });
+    renderToDropdown(globalToList);
+  }
+
+  function toggleDropdownTo() { document.getElementById('toWrapper').classList.toggle('open'); }
+  function openDropdownTo() { document.getElementById('toWrapper').classList.add('open'); }
+  function closeDropdownTo() { document.getElementById('toWrapper').classList.remove('open'); }
+
+  function renderToDropdown(list) {
+    const dropdown = document.getElementById('toDropdown');
+    if (list.length === 0) {
+        dropdown.innerHTML = '<div class="search-select-empty">Không tìm thấy mã nào!</div>';
+        return;
+    }
+    dropdown.innerHTML = list.map(item => 
+        `<div class="search-select-item" onclick="selectDrawingToUpload('${item.id}', '${item.phanLoai}', '${item.display}')">
+            <strong>${item.display}</strong> <small class="text-muted ms-2">(${item.phanLoai})</small>
+        </div>`
+    ).join('');
+  }
+
+  function filterToList() {
+    const keyword = document.getElementById('uploadDwTo').value.trim().toLowerCase();
+    openDropdownTo();
+    if (!keyword) {
+        renderToDropdown(globalToList);
+        return;
+    }
+    const filtered = globalToList.filter(item => item.display.toLowerCase().includes(keyword));
+    renderToDropdown(filtered);
+  }
+
+  // Đóng dropdown khi click ra ngoài
+  document.addEventListener('click', function(e) {
+    const wrapper = document.getElementById('toWrapper');
+    if (wrapper && !wrapper.contains(e.target)) closeDropdownTo();
+  });
+
+
+  // ==========================================
+  // XỬ LÝ CLICK CHỌN (TỪ BẢNG HOẶC TỪ DROPDOWN)
+  // ==========================================
+  function selectDrawingToUpload(id, category, toVal) {
+    // 1. Điền vào Form bên trái
+    document.getElementById('uploadDwId').value = id; // Gắn ID ngầm
+    document.getElementById('uploadCategory').value = category;
+    document.getElementById('uploadDwTo').value = toVal;
+    
+    closeDropdownTo(); // Tắt dropdown nếu đang mở
+
+    // 2. Tạo hiệu ứng chớp tắt ở Form
+    const formInputs = [document.getElementById('uploadCategory'), document.getElementById('uploadDwTo')];
+    formInputs.forEach(input => {
+      input.classList.add('bg-warning', 'bg-opacity-25');
+      setTimeout(() => input.classList.remove('bg-warning', 'bg-opacity-25'), 1000);
+    });
+
+    // 3. XÁC ĐỊNH XEM CẦN CHUYỂN TAB NÀO DỰA VÀO CATEGORY
+    let targetTab = 'WE SASH';
+    const catUpper = String(category).toUpperCase();
+    if (catUpper.includes('BARSALE')) targetTab = 'BARSALE';
+    else if (catUpper.includes('OEM')) targetTab = 'OEM';
+
+    currentlySelectedId = id; // Lưu ID đang được chọn
+
+    // Kiểm tra nếu Tab của dòng vừa chọn KHÁC với Tab đang mở
+    if (currentTabDesign !== targetTab) {
+        // Tự động bấm sang Tab tương ứng
+        let tabIdToClick = '';
+        if (targetTab === 'BARSALE') tabIdToClick = 'tab-btn-barsale';
+        else if (targetTab === 'OEM') tabIdToClick = 'tab-btn-oem';
+        else tabIdToClick = 'tab-btn-we';
+
+        const tabBtn = document.getElementById(tabIdToClick);
+        if (tabBtn) {
+           const tabInstance = new bootstrap.Tab(tabBtn);
+           tabInstance.show(); // Lệnh này sẽ kích hoạt 'shown.bs.tab' và vẽ lại bảng
+        }
+        
+        // Chờ bảng vẽ xong mới tô đậm và scroll
+        setTimeout(() => {
+           highlightSelectedRow(id);
+        }, 200);
+    } else {
+        // Đang ở đúng Tab rồi thì cứ highlight và scroll tới thôi
+        highlightSelectedRow(id);
+    }
+  }
+
+  // Hàm chuyên xử lý tô màu dòng và tự động cuộn (Scroll) tới dòng đó
+  function highlightSelectedRow(id) {
+    // Xóa màu của tất cả các dòng cũ
+    document.querySelectorAll('.dw-table-row').forEach(row => {
+      row.classList.remove('selected-row');
+    });
+
+    // Tìm dòng mới và tô màu
+    const targetRow = document.getElementById(`row-${id}`);
+    if (targetRow) {
+      targetRow.classList.add('selected-row');
+      // Tự động cuộn màn hình đến vị trí dòng này cho mượt
+      targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+
+  // Logic tính toán màu sắc cho Deadline
+  function getDeadlineStatus(deadlineStr) {
+    if (!deadlineStr || deadlineStr === '') return { html: '-', class: '' };
+    
+    const deadline = new Date(deadlineStr);
+    if (isNaN(deadline)) return { html: deadlineStr, class: 'text-secondary' };
+    
+    const now = new Date();
+    now.setHours(0,0,0,0);
+    deadline.setHours(0,0,0,0);
+
+    const diffTime = deadline - now;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    let statusClass = 'text-success fw-bold'; // Mặc định xanh (Còn hạn)
+    let icon = '<i class="bi bi-clock"></i>';
+
+    if (diffDays < 0) {
+      statusClass = 'text-danger fw-bold'; // Vượt hạn -> Đỏ
+      icon = '<i class="bi bi-exclamation-octagon-fill"></i>';
+    } else if (diffDays <= 1) {
+      statusClass = 'text-warning text-dark fw-bold'; // Gấp (Còn 0-1 ngày) -> Vàng
+      icon = '<i class="bi bi-exclamation-triangle-fill"></i>';
+    }
+    
+    const dateFormatted = deadline.toLocaleDateString('vi-VN');
+    return { html: `<div class="${statusClass} mb-1" style="font-size: 11px;">${icon} ${dateFormatted}</div>` };
+  }
+
+  // Render Danh sách Bản vẽ từ mảng `pageData`
+  function loadDrawingList() {
+    const tbody = document.getElementById('dwDesignTableBody');
+    const searchTo = document.getElementById('searchToInput').value.toLowerCase().trim();
+    
+    if (typeof pageData === 'undefined' || pageData.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-3"></i>Đang chờ tải dữ liệu...</td></tr>';
+      return;
+    }
+    
+    let dataRows = pageData;
+    
+    // Lọc theo Tab (Phân loại - Dùng cột index số 1)
+    dataRows = dataRows.filter(r => {
+      const cat = String(r[1]).toUpperCase();
+      if (currentTabDesign === 'BARSALE' && cat.includes('BARSALE')) return true;
+      if (currentTabDesign === 'OEM' && cat.includes('OEM')) return true;
+      if (currentTabDesign === 'WE SASH') {
+          if (!cat.includes('BARSALE') && !cat.includes('OEM')) return true;
+      }
+      return false;
+    });
+    
+    // Lọc theo Ô tìm kiếm bảng
+    if (searchTo) {
+      dataRows = dataRows.filter(r => {
+         const toVal = String(r[8] || '').toLowerCase() + " " + String(r[4] || '').toLowerCase() + " " + String(r[11] || '').toLowerCase();
+         return toVal.includes(searchTo);
+      });
+    }
+
+    if (dataRows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-muted">Không có bản vẽ nào trong mục này.</td></tr>';
+      return;
+    }
+    
+    let html = '';
+    dataRows.forEach((row, i) => {
+       const id = row[0];
+       const phanLoai = row[3]; // Thay vì row[3] tôi chỉnh lại row[1] cho đúng với data gốc
+       const project = row[9];
+       const to = row[8];   
+       const ver = row[12];
+       const type = row[4];
+       const dwNo = row[11];  
+       const deadlineStr = row[7];
+       const excelThamKhao = row[30]; 
+       const pdfGuiKy = row[31];
+       const customer = row[10];
+       
+       // Nút Xem Tham Khảo
+       const btnExcelTK = (excelThamKhao && String(excelThamKhao).includes('http')) 
+          ? `<a href="${excelThamKhao}" target="_blank" class="btn btn-sm btn-light border py-0 px-2 text-success" title="Xem Excel"><i class="bi bi-file-excel-fill"></i></a>` : '-';
+       
+       // Nút PDF Gửi Ký
+       let btnPdfGuiKy = '';
+       let canSubmit = false;
+       if (pdfGuiKy && String(pdfGuiKy).includes('http')) {
+           btnPdfGuiKy = `<a href="${pdfGuiKy}" target="_blank" class="btn btn-sm btn-primary py-0 px-2"><i class="bi bi-eye"></i> Xem</a>`;
+           canSubmit = true;
+       } else {
+           btnPdfGuiKy = `<span class="badge bg-warning text-dark">Chưa có link</span>`;
+       }
+       
+       // Nút Gửi Ký & Deadline
+       const dStatus = getDeadlineStatus(deadlineStr);
+       const btnGuiKy = canSubmit 
+            ? `<button class="btn btn-sm btn-success w-100 fw-bold" onclick="event.stopPropagation(); guiKyDuyet('${id}', '${pdfGuiKy}')"><i class="bi bi-send"></i> Gửi ký</button>`
+            : `<span class="badge bg-secondary w-100">Đang thực hiện</span>`;
+       
+       // Tự động Add class 'selected-row' nếu dòng này trùng với dòng đang được chọn
+       const isSelected = (id === currentlySelectedId) ? 'selected-row' : '';
+
+       // Tạo HTML dòng
+       html += `
+       <tr id="row-${id}" class="dw-table-row ${isSelected}" onclick="selectDrawingToUpload('${id}', '${phanLoai}', '${dwNo || to}')" title="Nhấp để tải file cho bản vẽ này">
+         <td class="text-center text-muted fw-bold">${i+1}</td>
+         <td class="d-none">${id}</td> 
+         <td class="d-none"><span class="badge bg-secondary bg-opacity-10 text-secondary border">${phanLoai}</span></td>
+         <td>${type}</td>
+         <td>${to}</td>
+         <td class="fw-bold text-dark">${dwNo}</td>
+         <td class="text-center">${ver}</td>
+         <td>${project}</td>
+         <td>${customer}</td>
+         <td class="text-center">${btnExcelTK}</td>
+         <td class="text-center">${btnPdfGuiKy}</td>
+         <td class="text-center px-2">
+            ${dStatus.html}
+            ${btnGuiKy}
+         </td>
+       </tr>
+       `;
+    });
+    tbody.innerHTML = html;
+  }
+
+  // Sự kiện gửi trình ký
+async function guiKyDuyet(id, pdfUrl) {
+    Swal.fire({
+      title: 'Xác nhận Gửi ký?',
+      text: `Hệ thống sẽ tự động đóng dấu và gửi duyệt bản vẽ này.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Đồng ý',
+      cancelButtonText: 'Hủy'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        
+        try {
+          if (typeof showLoading === 'function') showLoading("BƯỚC 1/3: Đang lấy dữ liệu từ Google Drive...");
+
+          // 1. Lấy Base64 của PDF và Chữ ký từ GAS
+          const fileData = await new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)
+              .getFilesFromDrive(pdfUrl, user.mail);
+          });
+
+          if (!fileData || !fileData.success) {
+            throw new Error(fileData ? fileData.message : "Không thể lấy dữ liệu từ Google Drive.");
+          }
+
+          if (typeof showLoading === 'function') showLoading("BƯỚC 2/3: Local API đang đóng dấu bản vẽ...");
+
+          const pdfBlob = await fetch("data:application/pdf;base64," + fileData.pdfBase64).then(res => res.blob());
+          const stampBlob = await fetch("data:image/png;base64," + fileData.stampBase64).then(res => res.blob());
+
+          // ========================================================
+          // 2. XỬ LÝ TỌA ĐỘ CHỮ KÝ THEO CHỨC VỤ CỦA USER
+          // ========================================================
+          // Chuyển chức vụ thành chữ thường, xóa khoảng trắng (Ví dụ: "Checker 1" -> "checker1")
+          let posKey = String(user.position).toLowerCase().replace(/\s+/g, '');
+          
+          // Khắc phục sai chính tả ở object sign (charger thành chager)
+          if (posKey === 'charger') posKey = 'chager'; 
+
+          let coords = sign[posKey]; // Lấy mảng [x, y, width] tương ứng
+          
+          if (!coords) {
+            throw new Error(`Hệ thống chưa được cài đặt tọa độ đóng dấu cho chức vụ: ${user.position}`);
+          }
+
+          const x = coords[0];
+          const y = coords[1];
+          const width = coords[2];
+          // ========================================================
+
+          // 3. Gửi cho Local FastAPI
+          const formData = new FormData();
+          formData.append("pdf_file", pdfBlob, "document.pdf");
+          formData.append("stamp_file", stampBlob, "stamp.png");
+          formData.append("x", x); 
+          formData.append("y", y);
+          formData.append("width", width);
+
+          const localApiUrl = "http://10.156.42.195:8000/signToPDW";
+          const apiResponse = await fetch(localApiUrl, {
+            method: "POST",
+            body: formData
+          });
+
+          if (!apiResponse.ok) throw new Error("Local API trả về lỗi HTTP " + apiResponse.status);
+
+          if (typeof showLoading === 'function') showLoading("BƯỚC 3/3: Đang lưu bản vẽ đã ký lên hệ thống...");
+
+          // 4. Lấy file PDF đã ký về và chuyển sang Base64
+          const signedPdfBlob = await apiResponse.blob();
+          const base64SignedPdf = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              // Cắt bỏ phần "data:application/pdf;base64," chỉ lấy chuỗi mã hóa gốc
+              const base64String = reader.result.split(',')[1]; 
+              resolve(base64String);
+            };
+            reader.readAsDataURL(signedPdfBlob);
+          });
+
+          // 5. Gửi Base64 lên GAS để lưu và chuyển trạng thái
+          const saveRes = await new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)
+              .submitForApproval(id, base64SignedPdf); 
+          });
+
+          // Thành công
+          Swal.fire({
+            title: 'Thành công',
+            html: `Bản vẽ đã được đóng dấu và chuyển sang Chờ Duyệt!<br><br><a href="${saveRes}" target="_blank">👉 Xem bản vẽ đã gửi đi</a>`,
+            icon: 'success'
+          });
+
+          // Tải lại bảng để mất bản vẽ vừa gửi
+          if(typeof loadDrawingList === 'function') loadDrawingList();
+
+        } catch (error) {
+          console.error(error);
+          Swal.fire('Lỗi Ký Duyệt', error.message, 'error');
+        } finally {
+          if(typeof hideLoading === 'function') hideLoading();
+        }
+
+      }
+    });
+  }
+  // Khởi tạo tab event và load data ban đầu
+  function initThietKeBanVe() {
+    buildToDropdownList();
+
+    document.querySelectorAll('#dwCategoryTabs button[data-bs-toggle="pill"]').forEach(btn => {
+      btn.addEventListener('shown.bs.tab', function (e) {
+        currentTabDesign = e.target.innerText.trim().toUpperCase();
+        loadDrawingList();
+      });
+    });
+    
+    loadDrawingList();
+  }
+
+  // ==========================================
+  // XỬ LÝ UPLOAD CHÍNH CỦA FORM BÊN TRÁI
+  // ==========================================
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = error => reject(error);
+    });
+  }
+
+
+  async function handleDesignUpload(event) {
+    event.preventDefault();
+    
+    const id = document.getElementById('uploadDwId').value;
+    const pdfFile = document.getElementById('pdfFileInput').files[0];
+    const excelFile = document.getElementById('excelFileInput').files[0];
+    const btnSubmit = document.getElementById('btnSubmitDesign');
+
+    if (!id || !pdfFile || !excelFile) {
+      return Swal.fire('Cảnh báo', 'Vui lòng chọn Mã TO và tải đủ PDF, Excel!', 'warning');
+    }
+
+    try {
+      btnSubmit.disabled = true;
+      if(typeof showLoading === 'function') showLoading('Đang tải file lên hệ thống...');
+
+      // 1. TỐI ƯU 1: Convert cả 2 file sang Base64 CÙNG LÚC (Song song)
+      const [pdfBase64, excelBase64] = await Promise.all([
+          fileToBase64(pdfFile),
+          fileToBase64(excelFile)
+      ]);
+
+      // 2. Chuẩn bị dữ liệu cho Local Server luôn (Không cần đợi Drive nữa)
+      const formData = new FormData();
+      formData.append('id', id);
+      formData.append('pdf_url', 'Updating...'); // Local server hiện tại chỉ lưu file, không cần dùng URL này nữa
+      formData.append('excel_file', excelFile); 
+      const LOCAL_SERVER_URL = "http://10.156.42.195:8000/upload-design-excel"; 
+
+      // 3. TỐI ƯU 2: Gửi lên Google Drive VÀ Local Server CÙNG 1 LÚC!
+      const [driveLinks, localResponse] = await Promise.all([
+          // Tác vụ 1: Gửi lên Google Apps Script
+          new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)
+              .uploadPdfDesignToDrive(pdfBase64, excelBase64, `${id}.pdf`, `${id}.xlsx`, id);
+          }),
+          
+          // Tác vụ 2: Gửi xuống Local Server
+          fetch(LOCAL_SERVER_URL, {
+            method: 'POST',
+            body: formData
+          })
+      ]);
+
+      // 4. KIỂM TRA LỖI SAU KHI CẢ 2 ĐÃ CHẠY XONG
+      if (!driveLinks || !driveLinks.pdfUrl) throw new Error("Không nhận được Link Drive từ Google Apps Script.");
+      
+      if (!localResponse.ok) throw new Error(`Lỗi máy chủ Local: HTTP ${localResponse.status}`);
+      const localData = await localResponse.json();
+      if (localData.status !== "success") {
+        throw new Error(localData.message || "Lỗi không xác định từ Local Server");
+      }
+
+      // ========================================================
+      // 🚀 CẬP NHẬT GIAO DIỆN (FRONTEND) NGAY LẬP TỨC
+      // ========================================================
+      if (typeof pageData !== 'undefined') {
+        const rowIndex = pageData.findIndex(row => String(row[0]) === String(id));
+        if (rowIndex !== -1) {
+          pageData[rowIndex][30] = driveLinks.excelUrl;
+          pageData[rowIndex][31] = driveLinks.pdfUrl;
+        }
+      }
+      // ========================================================
+
+      Swal.fire({
+        title: 'Thành công!', 
+        html: `Đã lưu PDF lên Drive và Excel vào Local Server.<br><br><b>Link PDF:</b> <a href="${driveLinks.pdfUrl}" target="_blank">Xem ngay</a>`, 
+        icon: 'success'
+      });
+
+      // Reset form
+      document.getElementById('designUploadForm').reset();
+      document.getElementById('uploadDwId').value = '';
+      document.getElementById('uploadCategory').value = '';
+      document.getElementById('uploadDwTo').value = '';
+      document.getElementById('pdfFileName').innerText = "Kéo thả hoặc bấm để chọn PDF";
+      document.getElementById('excelFileName').innerText = "Kéo thả hoặc bấm để chọn Excel";
+      
+      // Bỏ tô đậm ở bảng và Vẽ lại bảng
+      currentlySelectedId = null;
+      loadDrawingList();
+
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Lỗi Tải lên', error.message, 'error');
+    } finally {
+      btnSubmit.disabled = false;
+      if(typeof hideLoading === 'function') hideLoading();
+    }
+}
+</script>
