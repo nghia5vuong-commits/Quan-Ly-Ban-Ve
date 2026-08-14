@@ -8,6 +8,10 @@
       color: var(--text-main, #1e293b);
     }
 
+    .page-dashboard .text-custom-purple {
+        color: #5311a3 !important;
+      }
+
     .page-dashboard .kpi-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -18,6 +22,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      height: 100%; /* Thêm dòng này để ép các card cao bằng nhau */
     }
 
     .page-dashboard .kpi-card:hover {
@@ -219,6 +224,26 @@
     .page-dashboard .table-custom tbody tr:hover td {
       background: #f8fafc;
     }
+
+
+    .page-dashboard .filter-chip {
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .page-dashboard .filter-chip.f-kpi { background: #e0e7ff; color: #4f46e5; border: 1px solid #c7d2fe; }
+    .page-dashboard .filter-chip.f-project { background: #fce7f3; color: #db2777; border: 1px solid #fbcfe8; }
+    .page-dashboard .filter-chip.f-month { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+    .page-dashboard .filter-chip.f-type { background: #d1fae5; color: #0d9488; border: 1px solid #99f6e4; }
+    .page-dashboard .filter-chip i { cursor: pointer; border-radius: 50%; padding: 2px; }
+    .page-dashboard .filter-chip i:hover { background: rgba(0,0,0,0.1); }
   </style>
 
   <!-- BỘ LỌC TỔNG QUAN (FYE & TYPE FILTER BAR) -->
@@ -230,10 +255,10 @@
         </div>
         <div>
           <div class="d-flex align-items-center gap-2">
-            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.2px;">Bộ Lọc Thống Kê Dashboard</h6>
+            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.2px;">Dữ Liệu Bản Vẽ Đóng Gói G2G</h6>
             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0" style="font-size: 0.7rem; font-weight: 600;">Live Data</span>
           </div>
-          <small class="text-muted" style="font-size: 0.78rem;">Lọc chỉ số và 2 biểu đồ cột theo Năm tài chính (FYE) &amp; Phân loại Type</small>
+          <!-- <small class="text-muted" style="font-size: 0.78rem;"></small> -->
         </div>
       </div>
 
@@ -284,15 +309,21 @@
     </div>
   </div>
 
-  <!-- KPI CARDS -->
-  <div class="row g-3 mb-4">
+  <div id="activeFiltersContainer" class="d-flex flex-wrap gap-2 mb-3 d-none align-items-center">
+    <span class="text-muted small fw-semibold me-1"><i class="bi bi-funnel"></i> Đang lọc:</span>
+    <div id="filterChipsArea" class="d-flex flex-wrap gap-2"></div>
+    <button class="btn btn-sm btn-link text-danger text-decoration-none px-2" onclick="clearAllCrossFilters()" style="font-size: 0.75rem; font-weight: 600;">Xóa tất cả</button>
+  </div>
+
+ <!-- KPI CARDS -->
+  <div class="row g-3 mb-4 align-items-stretch">
     <!-- Tổng Số Yêu Cầu -->
     <div class="col-12 col-sm-6 col-xl-3">
-      <div class="kpi-card" id="kpiCard-all" onclick="setKpiFilter('all')" title="Xem tất cả">
+      <div class="kpi-card h-100" id="kpiCard-all" onclick="setKpiFilter('all')" title="Xem tất cả">
         <div>
-          <span class="text-muted fw-semibold small d-block mb-1">Tổng Số Yêu Cầu</span>
+          <span class="text-muted fw-semibold small d-block mb-1">Tổng Số Bản Vẽ</span>
           <h3 class="fw-bold text-dark mb-0" id="dashTotalCount">--</h3>
-          <span class="text-success small fw-medium"><i class="fa fa-arrow-up me-1"></i>Theo bộ lọc</span>
+          <span class="text-success small fw-medium"><i class="fa fa-arrow-up me-1"></i>Bản vẽ đóng gói</span>
         </div>
         <div class="kpi-icon" style="background: #f0f7ea; color: #7CB342;">
           <i class="fa fa-folder-open"></i>
@@ -301,12 +332,12 @@
     </div>
 
     <!-- Chờ Thiết Kế -->
-    <div class="col-12 col-sm-6 col-xl-3">
-      <div class="kpi-card" id="kpiCard-design" onclick="setKpiFilter('design')" title="Xem bản vẽ chờ thiết kế">
+    <div class="col-12 col-sm-6 col-xl-2">
+      <div class="kpi-card h-100" id="kpiCard-design" onclick="setKpiFilter('design')" title="Xem bản vẽ chờ thiết kế">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Chờ Thiết Kế</span>
           <h3 class="fw-bold text-dark mb-0" id="dashDesignCount">--</h3>
-          <span class="text-warning small fw-medium"><i class="fa fa-clock me-1"></i>Cần xử lý</span>
+          <span class="text-warning small fw-medium"><i class="fa fa-clock me-1"></i>Charger</span>
         </div>
         <div class="kpi-icon" style="background: #fffbeb; color: #f59e0b;">
           <i class="fa fa-pen-nib"></i>
@@ -315,47 +346,78 @@
     </div>
 
     <!-- Chờ Ký Duyệt -->
-    <div class="col-12 col-sm-6 col-xl-3">
-      <div class="kpi-card" id="kpiCard-approve" onclick="setKpiFilter('approve')" title="Xem bản vẽ chờ ký duyệt">
+    <div class="col-12 col-sm-6 col-xl-2">
+      <div class="kpi-card h-100" id="kpiCard-approve" onclick="setKpiFilter('approve')" title="Xem bản vẽ chờ ký duyệt">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Chờ Ký Duyệt</span>
           <h3 class="fw-bold text-dark mb-0" id="dashApprovalCount">--</h3>
-          <span class="text-info small fw-medium"><i class="fa fa-file-signature me-1"></i>QA / Quản lý</span>
+          <span class="text-info small fw-medium"><i class="fa fa-file-signature me-1"></i>Checker - Approver</span>
         </div>
         <div class="kpi-icon" style="background: #eff6ff; color: #3b82f6;">
           <i class="fa fa-user-check"></i>
         </div>
       </div>
     </div>
+    
+    <!-- Chờ Ban Hành Lên QA System -->
+    <div class="col-12 col-sm-6 col-xl-2">
+      <!-- Đổi id thành kpiCard-qa để không bị trùng -->
+      <div class="kpi-card h-100" id="kpiCard-qa" onclick="setKpiFilter('release')" title="Xem bản vẽ chờ QA System">
+        <div>
+          <span class="text-muted fw-semibold small d-block mb-1">Chờ Ban Hành</span>
+          <!-- Đổi id thành dashQaCount để không bị trùng -->
+          <h3 class="fw-bold text-dark mb-0" id="dashQaCount">--</h3>
+          <span class="text-custom-purple small fw-medium"><i class="fa fa-check-circle me-1"></i>QA-DW</span>
+        </div>
+        <div class="kpi-icon" style="background: #f3e8ff; color: #5311a3;">
+          <i class="fa fa-paper-plane"></i>
+        </div>
+      </div>
+    </div>
 
     <!-- Đã Ban Hành -->
     <div class="col-12 col-sm-6 col-xl-3">
-      <div class="kpi-card" id="kpiCard-release" onclick="setKpiFilter('release')" title="Xem bản vẽ đã ban hành">
+      <div class="kpi-card h-100" id="kpiCard-release" onclick="setKpiFilter('release')" title="Xem bản vẽ đã ban hành">
         <div>
-          <span class="text-muted fw-semibold small d-block mb-1">Đã Ban Hành</span>
+          <span class="text-muted fw-semibold small d-block mb-1">Đã Ban Hành Lên QA System</span>
           <h3 class="fw-bold text-dark mb-0" id="dashReleasedCount">--</h3>
-          <span class="text-success small fw-medium"><i class="fa fa-check-circle me-1"></i>Hoàn tất</span>
+          <span class="text-success small fw-medium"><i class="fa fa-check-circle me-1"></i>Hoàn thành</span>
         </div>
         <div class="kpi-icon" style="background: #ecfdf5; color: #10b981;">
-          <i class="fa fa-paper-plane"></i>
+          <i class="fa fa-check-double"></i>
         </div>
       </div>
     </div>
   </div>
 
   <!-- HAi BIỂU ĐỒ CỘT THỐNG KÊ (RECEPTION STATUS & NEW VS REVISE) -->
+   <!-- BIỂU ĐỒ TỔNG BẢN VẼ THEO FYE (Chỉ hiện khi chọn Tất cả) -->
+  <div class="row g-4 mb-4" id="rowChartTotalFye">
+    <div class="col-12">
+      <div class="chart-card d-flex flex-column" style="height: 320px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-calendar-data-fill text-warning me-2"></i>Tổng Số Bản Vẽ Theo Từng Năm (FYE)</h6>
+            <small class="text-muted" style="font-size: 0.78rem;">So sánh số lượng thiết kế qua các năm tài chính</small>
+          </div>
+          <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 fw-bold" style="font-size: 0.72rem;">All FYE</span>
+        </div>
+        <div class="flex-grow-1 position-relative">
+          <canvas id="chartTotalByFye"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="row g-4 mb-4">
     <!-- Chart 1: Tiếp Nhận vs Chưa Tiếp Nhận -->
     <div class="col-12 col-lg-6">
       <div class="chart-card h-100 d-flex flex-column">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-success me-2"></i>Thống Kê Tiếp Nhận
-              Bản Vẽ</h6>
-            <small class="text-muted" style="font-size: 0.78rem;">So sánh bản vẽ Đã Tiếp Nhận và Chưa Tiếp Nhận</small>
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-success me-2"></i>Thống Kê Theo Dự Án</h6>
+            <small class="text-muted" style="font-size: 0.78rem;">Phân bổ số lượng bản vẽ theo từng dự án trong 12 tháng</small>
           </div>
-          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold"
-            style="font-size: 0.72rem;">Tiếp Nhận</span>
+          <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold" style="font-size: 0.72rem;">Dự Án</span>
         </div>
         <div class="flex-grow-1 position-relative" style="min-height: 240px; max-height: 270px;">
           <canvas id="chartReceptionStatus"></canvas>
@@ -368,10 +430,8 @@
       <div class="chart-card h-100 d-flex flex-column">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>Phân Loại Bản
-              Vẽ (NEW vs REVISE)</h6>
-            <small class="text-muted" style="font-size: 0.78rem;">Tỷ lệ bản vẽ Thiết Kế Mới và Chỉnh Sửa
-              (Revise)</small>
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-line-fill text-primary me-2"></i>NEW vs REVISE</h6>
+            <small class="text-muted" style="font-size: 0.78rem;">Tỷ lệ bản vẽ Thiết Kế Mới và Chỉnh Sửa</small>
           </div>
           <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-bold"
             style="font-size: 0.72rem;">Quy Cách</span>
@@ -406,12 +466,17 @@
           <table class="table-custom w-100">
             <thead>
               <tr>
-                <th width="18%">Request / ID</th>
-                <th width="24%">Mã Bản Vẽ / TO</th>
-                <th width="16%">Hình thức</th>
-                <th width="14%">Phiên bản</th>
-                <th width="18%">Trạng thái</th>
-                <th width="10%" class="text-center">Thao tác</th>
+                <th class="d-none">ID</th> 
+                <th class="d-none">Group</th>
+                <th class="text-center" style="width: 7%">Type</th>
+                <th class="text-center" style="width: 10%">To</th>
+                <th class="text-center" style="width: 15%">Dw Code</th>
+                <th class="text-center" style="width: 3%">Ver</th>
+                <th class="text-center" style="width: 15%">Project</th>
+                <th class="text-center" style="width: 15%">Customer</th>
+                <th class="text-center" style="width: 15%">Date</th>
+                <th class="text-center" style="width: 8%">DW</th>
+                <th class="text-center" style="width: 22%">Status</th>
               </tr>
             </thead>
             <tbody id="dashRecentTableBody">
@@ -430,98 +495,84 @@
 </div>
 
 <script>
-  var currentDashTypeFilter = 'ALL';
+  // =========================================================
+  // GLOBAL STATE - QUẢN LÝ BỘ LỌC LIÊN KẾT ĐA CHIỀU
+  // =========================================================
+  var globalFilters = {
+    fye: 'ALL',
+    type: 'ALL',
+    kpi: 'all',      // 'all', 'design', 'approve', 'release'
+    project: null,   // Lưu tên dự án khi click biểu đồ
+    month: null,     // Lưu nhãn tháng khi click biểu đồ (vd: 'T5')
+    isNew: null      // Lưu loại thiết kế (true/false) khi click biểu đồ 2
+  };
+
   var dashChart1Instance = null;
   var dashChart2Instance = null;
+  var dashChartTotalFyeInstance = null;
 
+  // Cấu hình con trỏ chuột cho Chart.js để biết là có thể click
+  var chartInteractionOptions = {
+    onHover: (event, chartElement) => {
+      event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default';
+    }
+  };
+
+  // =========================================================
+  // CÁC HÀM CẬP NHẬT BỘ LỌC TỪ UI
+  // =========================================================
   function setDashTypeFilter(typeVal, btnEl) {
-    currentDashTypeFilter = typeVal;
-    var btns = document.querySelectorAll('#dashTypeBtnGroup .btn');
-    btns.forEach(b => b.classList.remove('active'));
+    globalFilters.type = typeVal;
+    document.querySelectorAll('#dashTypeBtnGroup .btn').forEach(b => b.classList.remove('active'));
     if (btnEl) btnEl.classList.add('active');
     updateDashboardStats();
   }
 
+  function setKpiFilter(group) {
+    globalFilters.kpi = group;
+    // Đổi UI KPI
+    ['all', 'design', 'approve', 'release'].forEach(g => {
+      var c = document.getElementById('kpiCard-' + g);
+      if (c) c.className = 'kpi-card h-100';
+    });
+    var activeMap = { all: 'kpi-active', design: 'kpi-active-design', approve: 'kpi-active-approve', release: 'kpi-active-release' };
+    var activeCard = document.getElementById('kpiCard-' + group);
+    if (activeCard) activeCard.classList.add(activeMap[group]);
+    updateDashboardStats();
+  }
+
   function resetDashFilters() {
-    currentDashTypeFilter = 'ALL';
-    var fyeSel = document.getElementById('dashFyeFilter');
-    if (fyeSel) fyeSel.value = 'ALL';
-    var defaultBtn = document.querySelector('#dashTypeBtnGroup .btn');
-    setDashTypeFilter('ALL', defaultBtn);
+    globalFilters = { fye: 'ALL', type: 'ALL', kpi: 'all', project: null, month: null, isNew: null };
+    document.getElementById('dashFyeFilter').value = 'ALL';
+    setDashTypeFilter('ALL', document.querySelector('#dashTypeBtnGroup .btn')); // Sẽ gọi updateDashboardStats()
+    setKpiFilter('all');
   }
 
-  // Danh sách FYE cố định FYE15 -> FYE27 (năm tài chính 2 chữ số, ví dụ: FYE27 = năm 2026)
-  var STATIC_FYE_LIST = [
-    'FYE27', 'FYE26', 'FYE25', 'FYE24', 'FYE23', 'FYE22',
-    'FYE21', 'FYE20', 'FYE19', 'FYE18', 'FYE17', 'FYE16', 'FYE15'
-  ];
-
-  function populateDashFyeOptions(rawData) {
-    var select = document.getElementById('dashFyeFilter');
-    if (!select) return;
-    var currentVal = select.value || 'ALL';
-
-    // Bắt đầu từ danh sách cứng FYE15 → FYE27
-    var fyeSet = new Set(STATIC_FYE_LIST);
-
-    // Merge them FYE tinh tu du lieu (uu tien row[23], fallback tinh tu ngay row[6])
-    rawData.forEach(function(row) {
-      var fyeVal = '';
-      if (Array.isArray(row)) {
-        fyeVal = String(row[23] || '').trim();
-        // Neu row[23] rong, tinh tu ngay tiep nhan
-        if (!fyeVal && row[6]) fyeVal = computeFYE(String(row[6]));
-      } else if (row && typeof row === 'object') {
-        fyeVal = String(row.fye || row.FYE || row[23] || '').trim();
-        if (!fyeVal && (row.date || row[6])) fyeVal = computeFYE(String(row.date || row[6]));
-      }
-      // Chuan hoa: FYE2027 -> FYE27
-      if (fyeVal) {
-        fyeVal = fyeVal.toUpperCase();
-        if (!fyeVal.startsWith('FYE')) fyeVal = 'FYE' + fyeVal;
-        var m = fyeVal.match(/^FYE(20(\d{2}))$/);
-        if (m) fyeVal = 'FYE' + m[2];
-        if (fyeVal !== 'FYE' && fyeVal.length <= 5) fyeSet.add(fyeVal);
-      }
-    });
-
-    var allFye = Array.from(fyeSet).sort(function (a, b) {
-      return parseInt(b.replace('FYE', '')) - parseInt(a.replace('FYE', ''));
-    });
-
-    var optionsHtml = '<option value="ALL">📅 Tất cả FYE</option>';
-    allFye.forEach(f => {
-      optionsHtml += `<option value="${f}">${f}</option>`;
-    });
-
-    select.innerHTML = optionsHtml;
-    if (allFye.includes(currentVal)) {
-      select.value = currentVal;
-    } else {
-      var todayFye = computeFYE(new Date());
-      if (allFye.includes(todayFye)) select.value = todayFye;
-    }
+  function clearAllCrossFilters() {
+    globalFilters.project = null;
+    globalFilters.month = null;
+    globalFilters.isNew = null;
+    updateDashboardStats();
   }
 
-  // ==========================================================
-  // Tinh FYE tu ngay tiep nhan:
-  // Thang 4 -> Thang 3 nam sau = 1 FYE
-  // Vi du: T8/2026 -> FYE27 | T2/2026 -> FYE26 | T4/2025 -> FYE26
-  // ==========================================================
+  // =========================================================
+  // HELPER FUNCTIONS (FYE, Value Extractor)
+  // =========================================================
   function computeFYE(input) {
+    if (!input) return '';
     var month, year;
-    if (input instanceof Date) {
-      month = input.getMonth() + 1;
-      year = input.getFullYear();
-    } else {
-      var parts = String(input || '').split('/');
-      if (parts.length !== 3) return '';
-      month = parseInt(parts[1], 10);
-      year = parseInt(parts[2], 10);
-      if (isNaN(month) || isNaN(year) || year < 2000) return '';
+    if (input instanceof Date) { month = input.getMonth() + 1; year = input.getFullYear(); } 
+    else {
+      var parts = String(input).split('/');
+      if (parts.length >= 3) { month = parseInt(parts[1], 10); year = parseInt(parts[2], 10); } 
+      else {
+        var d = new Date(input);
+        if (!isNaN(d.getTime())) { month = d.getMonth() + 1; year = d.getFullYear(); } else return '';
+      }
     }
+    if (isNaN(month) || isNaN(year) || year < 2000) return '';
     var fyeYear = (month >= 4) ? year + 1 : year;
-    var fyeNum = fyeYear % 100;
+    var fyeNum = fyeYear % 100; 
     return 'FYE' + (fyeNum < 10 ? '0' + fyeNum : String(fyeNum));
   }
 
@@ -535,14 +586,20 @@
         case 'version': return String(row[5] || row[12] || '');
         case 'reqNo': return String(row[8] || row[0] || '');
         case 'dwNo': return String(row[11] || row[8] || '');
-        case 'fye': {
-          var f = String(row[23] || '').trim();
-          if (!f) f = computeFYE(String(row[6] || ''));
-          return f;
-        }
+        case 'project': return String(row[9] || ''); 
+        case 'fye': return String(row[23] || '').trim() || computeFYE(String(row[6] || ''));
         case 'date': return String(row[6] || '');
         case 'note': return String(row[22] || row[13] || '');
         case 'pdfSample': return String(row[31] || '');
+        case 'estimatedCompletionDate':return String(row[7] || '');
+        case 'completionDate':return String(row[16] || '');
+        case 'releaseDate':return String(row[34] || '');
+        case 'ngDamTrach':return String(row[16] || '');
+        case 'checker':return String(row[17] || '');
+        case 'approve':return String(row[19] || '');
+        case 'customer':return String(row[10] || '');
+        case 'to':return String(row[8] || '');
+
         default: return '';
       }
     } else if (row && typeof row === 'object') {
@@ -554,344 +611,443 @@
         case 'version': return String(row.version || row.Ver || row.Version || row[5] || row[12] || '');
         case 'reqNo': return String(row.reqNo || row.requestNo || row[8] || row[0] || '');
         case 'dwNo': return String(row.dwNo || row.drawingNo || row[11] || '');
-        case 'fye': {
-          var f = String(row.fye || row.FYE || row[23] || '').trim();
-          if (!f) f = computeFYE(String(row.date || row.Date || row[6] || ''));
-          return f;
-        }
+        case 'project': return String(row.project || row.Project || row[9] || '');
+        case 'fye': return String(row.fye || row.FYE || row[23] || '').trim() || computeFYE(String(row.date || row.Date || row[6] || ''));
         case 'date': return String(row.date || row.Date || row[6] || '');
         case 'note': return String(row.note || row.Note || row[22] || '');
         case 'pdfSample': return String(row.pdfSample || row[31] || '');
+        case 'estimatedCompletionDate':return String(row.estimatedCompletionDate || row[7] || '');
+        case 'completionDate':return String(row.completionDate || row[16] || '');
+        case 'releaseDate':return String(row.releaseDate || row[34] || '');
+        case 'ngDamTrach':return String(row.ngDamTrach||row[16] || '');
+        case 'checker':return String(row.checker||row[17] || '');
+        case 'approve':return String(row.approve||row[19] || '');
+        case 'customer':return String(row.customer||row[10] || '');
+        case 'to':return String(row.to||row[8] || '');
+
+        
+
+
         default: return '';
       }
     }
     return '';
   }
 
-  // Hàm tự động cập nhật số liệu Dashboard & 2 Biểu đồ cột
+  function populateDashFyeOptions(rawData) {
+    var select = document.getElementById('dashFyeFilter');
+    if (!select) return;
+    var currentVal = globalFilters.fye;
+    var fyeSet = new Set();
+    rawData.forEach(function(row) {
+      var dateVal = (Array.isArray(row)) ? row[6] : (row.date || row.Date || row[6]);
+      if (dateVal) { var f = computeFYE(dateVal); if (f) fyeSet.add(f); }
+    });
+    var allFye = Array.from(fyeSet).sort((a, b) => parseInt(b.replace('FYE', '')) - parseInt(a.replace('FYE', '')));
+    var optionsHtml = '<option value="ALL">📅 Tất cả FYE</option>';
+    allFye.forEach(f => { optionsHtml += `<option value="${f}">${f}</option>`; });
+    select.innerHTML = optionsHtml;
+    select.value = currentVal;
+  }
+
+  // =========================================================
+  // VẼ NHÃN BỘ LỌC (UI CHIPS)
+  // =========================================================
+  function renderFilterChips() {
+    var container = document.getElementById('activeFiltersContainer');
+    var chipsArea = document.getElementById('filterChipsArea');
+    var html = '';
+    var hasSubFilters = false;
+
+    if (globalFilters.kpi !== 'all') {
+      let labels = { design: 'Chờ thiết kế', approve: 'Chờ ký duyệt', release: 'Đã ban hành' };
+      html += `<span class="filter-chip f-kpi">Trạng thái: ${labels[globalFilters.kpi]} <i class="bi bi-x-circle-fill" onclick="setKpiFilter('all')"></i></span>`;
+      hasSubFilters = true;
+    }
+    if (globalFilters.project) {
+      html += `<span class="filter-chip f-project">Dự án: ${globalFilters.project} <i class="bi bi-x-circle-fill" onclick="globalFilters.project=null; updateDashboardStats()"></i></span>`;
+      hasSubFilters = true;
+    }
+    if (globalFilters.month) {
+      html += `<span class="filter-chip f-month">Tháng: ${globalFilters.month} <i class="bi bi-x-circle-fill" onclick="globalFilters.month=null; updateDashboardStats()"></i></span>`;
+      hasSubFilters = true;
+    }
+    if (globalFilters.isNew !== null) {
+      let label = globalFilters.isNew ? 'Thiết kế mới (NEW)' : 'Chỉnh sửa (REVISE)';
+      html += `<span class="filter-chip f-type">Phân loại: ${label} <i class="bi bi-x-circle-fill" onclick="globalFilters.isNew=null; updateDashboardStats()"></i></span>`;
+      hasSubFilters = true;
+    }
+
+    chipsArea.innerHTML = html;
+    if (hasSubFilters) container.classList.remove('d-none');
+    else container.classList.add('d-none');
+  }
+
+
+  // =========================================================
+  // TRÁI TIM HỆ THỐNG: CẬP NHẬT MỌI THỨ THEO BỘ LỌC
+  // =========================================================
   function updateDashboardStats() {
     var rawData = (window.pageData && Array.isArray(window.pageData)) ? window.pageData : [];
     if (!rawData || rawData.length === 0) return;
-
-    // Bỏ dòng tiêu đề nếu có
-    if (rawData.length > 0 && String(getRowValue(rawData[0], 'id')).toLowerCase() === 'id') {
-      rawData = rawData.slice(1);
-    }
-
+    if (rawData.length > 0 && String(getRowValue(rawData[0], 'id')).toLowerCase() === 'id') rawData = rawData.slice(1);
+    
+    // Đồng bộ Dropdown FYE
+    globalFilters.fye = document.getElementById('dashFyeFilter')?.value || 'ALL';
     populateDashFyeOptions(rawData);
+    renderFilterChips();
 
-    var fyeFilter = (document.getElementById('dashFyeFilter')?.value || 'ALL').toUpperCase();
-    var typeFilter = currentDashTypeFilter.toUpperCase();
+    var fyeMonthLabels = ['T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12', 'T1', 'T2', 'T3'];
 
-    // 1. LỌC DỮ LIỆU THEO FYE VÀ TYPE (CỘT D - GROUP: BARSALE, OEM, WE SASH)
-    var filteredData = rawData.filter(function (row) {
-      var itemGroup = (getRowValue(row, 'group') + " " + getRowValue(row, 'type') + " " + String(row[3] || '') + " " + String(row[1] || '')).toUpperCase();
+    // 1. TẦNG 1: LỌC CƠ BẢN (Dành để tính thẻ KPI để số không bị biến mất khi bấm biểu đồ)
+    var baseData = rawData.filter(function (row) {
+      var itemGroup = (getRowValue(row, 'group') + " " + getRowValue(row, 'type')).toUpperCase();
       var itemFye = getRowValue(row, 'fye').toUpperCase();
+      if (globalFilters.type === 'BARSALE' && !itemGroup.includes('BARSALE')) return false;
+      if (globalFilters.type === 'OEM' && !itemGroup.includes('OEM')) return false;
+      if (globalFilters.type === 'WE SASH' && (itemGroup.includes('BARSALE') || itemGroup.includes('OEM'))) return false;
+      if (globalFilters.fye !== 'ALL' && itemFye !== globalFilters.fye) return false;
+      return true;
+    });
 
-      // Lọc theo Type/Group
-      if (typeFilter === 'BARSALE' && !itemGroup.includes('BARSALE')) return false;
-      if (typeFilter === 'OEM' && !itemGroup.includes('OEM')) return false;
-      if (typeFilter === 'WE SASH' && (itemGroup.includes('BARSALE') || itemGroup.includes('OEM'))) return false;
+    // Tính KPI từ Tầng 1
+    var total = baseData.length;
+    var pendingDesign = 0, pendingApprove = 0, released = 0;
+    baseData.forEach(function(row) {
+      var st = getRowValue(row, 'status').toLowerCase();
+      var pdfSample = getRowValue(row, 'pdfSample').trim();
+      if ((!pdfSample || pdfSample === '') && st.includes('đang thực hiện')) pendingDesign++;
+      else if (st.includes('chờ checker') || st.includes('chờ approval')) pendingApprove++;
+      else if (st.includes('đã ban hành') || st.includes('released') || st.includes('hoàn tất')) released++;
+    });
 
-      // Loc theo FYE: so sanh chinh xac (FYE27 === FYE27)
-      if (fyeFilter !== 'ALL' && itemFye !== fyeFilter) return false;
+    document.getElementById('dashTotalCount').textContent = total;
+    document.getElementById('dashDesignCount').textContent = pendingDesign;
+    document.getElementById('dashApprovalCount').textContent = pendingApprove;
+    document.getElementById('dashReleasedCount').textContent = released;
+
+
+    // 2. TẦNG 2: LỌC CHUYÊN SÂU (Cho Biểu Đồ và Bảng)
+    var finalData = baseData.filter(function(row) {
+      var st = getRowValue(row, 'status').toLowerCase();
+      var pdfSample = getRowValue(row, 'pdfSample').trim();
+      var projectVal = getRowValue(row, 'project').trim() || 'Khác';
+      var ver = getRowValue(row, 'version').toLowerCase();
+      var note = getRowValue(row, 'note').toLowerCase();
+      var dateVal = getRowValue(row, 'date');
+
+      // Xác định tính chất row
+      var isNewRow = true;
+      if (ver === '1' || ver === '2' || ver.includes('rev') || ver.includes('sửa') || (parseInt(ver) > 0) && !(ver==='0' || ver==='v0')) isNewRow = false;
+      
+      var monthIdx = -1;
+      if (dateVal) {
+        var d = new Date(dateVal);
+        if (!isNaN(d.getTime())) { monthIdx = (d.getMonth() + 1 >= 4) ? (d.getMonth() - 3) : (d.getMonth() + 9); }
+      }
+      var monthLabel = (monthIdx >= 0 && monthIdx <= 11) ? fyeMonthLabels[monthIdx] : null;
+
+      // Filter theo KPI
+      if (globalFilters.kpi === 'design' && !((!pdfSample || pdfSample === '') && st.includes('đang thực hiện'))) return false;
+      if (globalFilters.kpi === 'approve' && !(st.includes('chờ checker') || st.includes('chờ approval'))) return false;
+      if (globalFilters.kpi === 'release' && !(st.includes('đã ban hành') || st.includes('released') || st.includes('hoàn tất'))) return false;
+
+      // Filter theo biểu đồ
+      if (globalFilters.project && projectVal !== globalFilters.project) return false;
+      if (globalFilters.month && monthLabel !== globalFilters.month) return false;
+      if (globalFilters.isNew !== null && isNewRow !== globalFilters.isNew) return false;
 
       return true;
     });
 
-    // 2. TÍNH TOÁN KPI
-    var total = filteredData.length;
-    var pendingDesign = 0;
-    var pendingApprove = 0;
-    var released = 0;
 
-    var receivedCount = 0;
-    var unreceivedCount = 0;
+    // 3. TẠO DỮ LIỆU VẼ BIỂU ĐỒ (Từ finalData)
+    var newCountsByMonth = new Array(12).fill(0);
+    var reviseCountsByMonth = new Array(12).fill(0);
+    var projectCountsByMonth = {};
+    var fyeDistributionMap = {}; 
 
-    var newCount = 0;
-    var reviseCount = 0;
-
-    filteredData.forEach(function (row) {
-      var st = getRowValue(row, 'status').toLowerCase();
+    finalData.forEach(function (row) {
       var ver = getRowValue(row, 'version').toLowerCase();
-      var note = getRowValue(row, 'note').toLowerCase();
-      var pdfSample = getRowValue(row, 'pdfSample').trim();
+      var dateVal = getRowValue(row, 'date');
+      var projectVal = getRowValue(row, 'project').trim() || 'Khác'; 
+      var currentFye = getRowValue(row, 'fye').toUpperCase();
 
-      // KPI: Chờ Thiết Kế = cột Sample File PDF (row[31]) rỗng
-      if (!pdfSample || pdfSample === '') {
-        pendingDesign++;
-      } else if (st.includes('chờ checker 1') || st.includes('chờ checker 2') || st.includes('chờ approval')) {
-        pendingApprove++;
-      } else if (st.includes('đã ban hành') || st.includes('released') || st.includes('hoàn tất')) {
-        released++;
+      var isNew = true;
+      if (ver === '1' || ver === '2' || ver.includes('rev') || ver.includes('sửa') || (parseInt(ver) > 0) && !(ver==='0' || ver==='v0')) isNew = false;
+
+      // Cho Biểu đồ FYE
+      if (currentFye) {
+        if (!fyeDistributionMap[currentFye]) fyeDistributionMap[currentFye] = { newCount: 0, reviseCount: 0 };
+        if (isNew) fyeDistributionMap[currentFye].newCount++;
+        else fyeDistributionMap[currentFye].reviseCount++;
       }
 
-      // Biểu đồ 1: Tiếp nhận vs Chưa tiếp nhận
-      if (st.includes('chưa tiếp nhận') || st.includes('chưa xử lý') || st.includes('unreceived') || st === '') {
-        unreceivedCount++;
-      } else {
-        receivedCount++;
+      // Cho Biểu đồ 12 tháng
+      var monthIdx = -1;
+      if (dateVal) {
+        var d = new Date(dateVal);
+        if (!isNaN(d.getTime())) { monthIdx = (d.getMonth() + 1 >= 4) ? (d.getMonth() - 3) : (d.getMonth() + 9); }
       }
-
-      // Biểu đồ 2: NEW vs REVISE
-      if (ver === '0' || ver === 'v0' || ver.includes('new') || ver.includes('mới') || note.includes('tạo mới') || note.includes('new project')) {
-        newCount++;
-      } else if (ver === '1' || ver === '2' || ver.includes('rev') || ver.includes('sửa') || note.includes('sửa') || note.includes('revise') || (parseInt(ver) > 0)) {
-        reviseCount++;
-      } else {
-        newCount++; // Mặc định nếu không có thông tin phiên bản
+      
+      if (monthIdx >= 0 && monthIdx <= 11) {
+        if (!projectCountsByMonth[projectVal]) projectCountsByMonth[projectVal] = new Array(12).fill(0);
+        projectCountsByMonth[projectVal][monthIdx]++;
+        if (isNew) newCountsByMonth[monthIdx]++;
+        else reviseCountsByMonth[monthIdx]++;
       }
     });
 
-    var elTotal = document.getElementById('dashTotalCount');
-    var elDesign = document.getElementById('dashDesignCount');
-    var elApprove = document.getElementById('dashApprovalCount');
-    var elRelease = document.getElementById('dashReleasedCount');
-
-    if (elTotal) elTotal.textContent = total;
-    if (elDesign) elDesign.textContent = pendingDesign;
-    if (elApprove) elApprove.textContent = pendingApprove;
-    if (elRelease) elRelease.textContent = released;
-
-    // 3. VẼ VÀ CẬP NHẬT 2 BIỂU ĐỒ CỘT (CHART.JS)
-    renderDashCharts(receivedCount, unreceivedCount, newCount, reviseCount);
-
-    // Lấy số liệu Email Tiếp Nhận / Chưa Tiếp Nhận trực tiếp từ Gmail Server
-    if (typeof google !== 'undefined' && google.script && google.script.run) {
-      google.script.run.withSuccessHandler(function (res) {
-        if (res && res.success) {
-          renderReceptionChart(res.received || receivedCount, res.unreceived || 0);
-        }
-      }).getEmailReceptionStats();
+    // HIỂN THỊ/ẨN BIỂU ĐỒ FYE
+    var rowChartFye = document.getElementById('rowChartTotalFye');
+    if (rowChartFye) {
+      if (globalFilters.fye === 'ALL') {
+        rowChartFye.classList.remove('d-none');
+        renderFyeChart(fyeDistributionMap); 
+      } else {
+        rowChartFye.classList.add('d-none'); 
+      }
     }
 
-    // 4. RENDER BẢNG BẢN VẼ GẦN ĐÂY (lưu data để KPI card filter dùng lại)
-    _lastFilteredData = filteredData;
-    renderDashRecentTable(filteredData, currentKpiFilter);
+    // VẼ 2 BIỂU ĐỒ THÁNG & BẢNG
+    renderDashCharts(projectCountsByMonth, newCountsByMonth, reviseCountsByMonth, fyeMonthLabels);
+    renderDashRecentTable(finalData);
   }
 
-  function renderReceptionChart(recCount, unrecCount) {
+  // ==========================================
+  // VẼ CÁC BIỂU ĐỒ VỚI SỰ KIỆN CLICK (CROSS-FILTER)
+  // ==========================================
+  var commonTooltip = {
+    backgroundColor: '#1e293b', titleFont: { family: 'Inter', size: 13, weight: 'bold' },
+    bodyFont: { family: 'Inter', size: 12 }, footerFont: { family: 'Inter', size: 13, weight: 'bold' },
+    padding: 12, cornerRadius: 8, mode: 'index', intersect: false,
+    callbacks: {
+      footer: function(items) {
+        let t = 0; items.forEach(i => t += i.parsed.y); return 'Tổng: ' + t + ' bản vẽ';
+      }
+    }
+  };
+
+  function renderFyeChart(fyeDataMap) {
     if (typeof Chart === 'undefined') return;
-    var canvas1 = document.getElementById('chartReceptionStatus');
-    if (!canvas1) return;
-    var ctx1 = canvas1.getContext('2d');
+    var ctx = document.getElementById('chartTotalByFye').getContext('2d');
+    if (dashChartTotalFyeInstance) dashChartTotalFyeInstance.destroy();
+
+    var labels = Object.keys(fyeDataMap).sort((a,b) => parseInt(a.replace('FYE','')) - parseInt(b.replace('FYE','')));
+    var newData = labels.map(l => fyeDataMap[l].newCount);
+    var reviseData = labels.map(l => fyeDataMap[l].reviseCount);
+
+    dashChartTotalFyeInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          { label: 'Thiết kế mới (NEW)', data: newData, backgroundColor: '#3b82f6', borderRadius: 4 },
+          { label: 'Chỉnh sửa (REVISE)', data: reviseData, backgroundColor: '#6366f1', borderRadius: 4 }
+        ]
+      },
+      options: {
+        ...chartInteractionOptions,
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' }, tooltip: commonTooltip },
+        scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
+        onClick: function(e, elements, chart) {
+          if (elements.length > 0) {
+            // Khi click vào năm nào, đổi phễu lọc chính sang năm đó
+            globalFilters.fye = chart.data.labels[elements[0].index];
+            document.getElementById('dashFyeFilter').value = globalFilters.fye;
+            updateDashboardStats();
+          }
+        }
+      }
+    });
+  }
+
+  function renderDashCharts(projectCountsByMonth, newCountsByMonth, reviseCountsByMonth, fyeMonthLabels) {
+    if (typeof Chart === 'undefined') return;
+
+    // CHART 1: DỰ ÁN
+    var ctx1 = document.getElementById('chartReceptionStatus').getContext('2d');
     if (dashChart1Instance) dashChart1Instance.destroy();
+
+    var colorPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
+    var projectDatasets = [], colorIdx = 0;
+    for (var p in projectCountsByMonth) {
+      projectDatasets.push({ label: p, data: projectCountsByMonth[p], backgroundColor: colorPalette[colorIdx % colorPalette.length], borderRadius: 4 });
+      colorIdx++;
+    }
 
     dashChart1Instance = new Chart(ctx1, {
       type: 'bar',
+      data: { labels: fyeMonthLabels, datasets: projectDatasets },
+      options: {
+        ...chartInteractionOptions,
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: commonTooltip },
+        scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
+        onClick: function(e, elements, chart) {
+          if(elements.length > 0) {
+            globalFilters.month = chart.data.labels[elements[0].index];
+            globalFilters.project = chart.data.datasets[elements[0].datasetIndex].label;
+            updateDashboardStats(); // Gọi lại để lọc toàn bộ màn hình
+          }
+        }
+      }
+    });
+
+    // CHART 2: NEW VS REVISE
+    var ctx2 = document.getElementById('chartNewVsRevise').getContext('2d');
+    if (dashChart2Instance) dashChart2Instance.destroy();
+
+    dashChart2Instance = new Chart(ctx2, {
+      type: 'bar',
       data: {
-        labels: ['Đã tiếp nhận', 'Chưa tiếp nhận (Email)'],
-        datasets: [{
-          label: 'Số lượng Email / Bản vẽ',
-          data: [recCount, unrecCount],
-          backgroundColor: ['rgba(124, 179, 66, 0.85)', 'rgba(245, 158, 11, 0.85)'],
-          borderColor: ['#689F38', '#D97706'],
-          borderWidth: 1.5,
-          borderRadius: 8,
-          barThickness: 45
-        }]
+        labels: fyeMonthLabels,
+        datasets: [
+          { label: 'Thiết kế mới (NEW)', data: newCountsByMonth, backgroundColor: '#3b82f6', borderRadius: 4 },
+          { label: 'Chỉnh sửa (REVISE)', data: reviseCountsByMonth, backgroundColor: '#6366f1', borderRadius: 4 }
+        ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e293b',
-            titleFont: { family: 'Inter', size: 13, weight: 'bold' },
-            bodyFont: { family: 'Inter', size: 12 },
-            padding: 10,
-            cornerRadius: 8
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: { color: '#f1f5f9' },
-            ticks: { font: { family: 'Inter', size: 11 }, precision: 0 }
-          },
-          x: {
-            grid: { display: false },
-            ticks: { font: { family: 'Inter', size: 12, weight: '600' } }
+        ...chartInteractionOptions,
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: commonTooltip },
+        scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
+        onClick: function(e, elements, chart) {
+          if(elements.length > 0) {
+            globalFilters.month = chart.data.labels[elements[0].index];
+            globalFilters.isNew = (elements[0].datasetIndex === 0); // index 0 là NEW, 1 là REVISE
+            updateDashboardStats();
           }
         }
       }
     });
   }
 
-  function renderDashCharts(receivedCount, unreceivedCount, newCount, reviseCount) {
-    if (typeof Chart === 'undefined') return;
-    renderReceptionChart(receivedCount, unreceivedCount);
-
-
-    // --- CHART 2: NEW VS REVISE ---
-    var canvas2 = document.getElementById('chartNewVsRevise');
-    if (canvas2) {
-      var ctx2 = canvas2.getContext('2d');
-      if (dashChart2Instance) dashChart2Instance.destroy();
-
-      dashChart2Instance = new Chart(ctx2, {
-        type: 'bar',
-        data: {
-          labels: ['Thiết kế mới (NEW)', 'Chỉnh sửa (REVISE)'],
-          datasets: [{
-            label: 'Số lượng bản vẽ',
-            data: [newCount, reviseCount],
-            backgroundColor: ['rgba(59, 130, 246, 0.85)', 'rgba(99, 102, 241, 0.85)'],
-            borderColor: ['#2563EB', '#4F46E5'],
-            borderWidth: 1.5,
-            borderRadius: 8,
-            barThickness: 45
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: '#1e293b',
-              titleFont: { family: 'Inter', size: 13, weight: 'bold' },
-              bodyFont: { family: 'Inter', size: 12 },
-              padding: 10,
-              cornerRadius: 8
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: '#f1f5f9' },
-              ticks: { font: { family: 'Inter', size: 11 }, precision: 0 }
-            },
-            x: {
-              grid: { display: false },
-              ticks: { font: { family: 'Inter', size: 12, weight: '600' } }
-            }
-          }
-        }
-      });
-    }
-  }
-
-  // ===========================================================
-  // KPI FILTER (click vào card để lọc bảng dưới)
-  // ===========================================================
-  var currentKpiFilter = 'all'; // 'all' | 'design' | 'approve' | 'release'
-  var _lastFilteredData = [];
-
-  function setKpiFilter(group) {
-    currentKpiFilter = group;
-
-    // Xóa active củ tất cả card
-    ['all', 'design', 'approve', 'release'].forEach(function(g) {
-      var c = document.getElementById('kpiCard-' + g);
-      if (c) c.className = 'kpi-card';
-    });
-
-    // Gắn active mới
-    var activeCard = document.getElementById('kpiCard-' + group);
-    var activeMap = { all: 'kpi-active', design: 'kpi-active-design', approve: 'kpi-active-approve', release: 'kpi-active-release' };
-    if (activeCard) activeCard.classList.add(activeMap[group] || 'kpi-active');
-
-    // Cập nhật tiêu đề và badge bảng
-    var titleMap = {
-      all: { icon: 'fa-history text-success', label: 'Bản Vẽ / Yêu Cầu Gần Đây', badge: null },
-      design: { icon: 'fa-pen-nib text-warning', label: 'Bản Vẽ Đang Chờ Thiết Kế', badge: '⚠️ Chờ Thiết Kế' },
-      approve: { icon: 'fa-file-signature text-primary', label: 'Bản Vẽ Chờ Ký Duyệt', badge: '🖊️ Chờ Ký Duyệt' },
-      release: { icon: 'fa-check-circle text-success', label: 'Bản Vẽ Đã Ban Hành', badge: '✅ Đã Ban Hành' }
-    };
-    var t = titleMap[group] || titleMap.all;
-    var titleEl = document.getElementById('dashTableTitle');
-    var badgeEl = document.getElementById('dashTableFilterBadge');
-    if (titleEl) titleEl.innerHTML = '<i class="fa ' + t.icon + ' me-2"></i>' + t.label;
-    if (badgeEl) {
-      if (t.badge) { badgeEl.textContent = t.badge; badgeEl.classList.remove('d-none'); }
-      else { badgeEl.classList.add('d-none'); }
-    }
-
-    // Re-render table với data đã lưu
-    renderDashRecentTable(_lastFilteredData, group);
-
-    // Scroll đến bảng
-    var tableEl = document.getElementById('dashRecentTableBody');
-    if (tableEl) tableEl.closest('.chart-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function renderDashRecentTable(dataList, kpiGroup) {
+  // ==========================================
+  // RENDER BẢNG DỮ LIỆU CUỐI CÙNG
+  // ==========================================
+  // ==========================================
+  // RENDER BẢNG DỮ LIỆU CUỐI CÙNG (UI/UX Đã Tối Ưu)
+  // ==========================================
+  // ==========================================
+  // RENDER BẢNG DỮ LIỆU CUỐI CÙNG (Khớp với thead 11 cột)
+  // ==========================================
+  function renderDashRecentTable(dataList) {
     var tbody = document.getElementById('dashRecentTableBody');
     if (!tbody) return;
-    kpiGroup = kpiGroup || currentKpiFilter;
 
-    // Lọc theo nhóm KPI
-    var rows = (dataList || []).filter(function(row) {
-      var pdfSample = getRowValue(row, 'pdfSample').trim();
-      var st = getRowValue(row, 'status').toLowerCase();
-      if (kpiGroup === 'design') return !pdfSample || pdfSample === '';
-      if (kpiGroup === 'approve') return (pdfSample !== '') && (st.includes('chờ checker') || st.includes('chờ approval') || st.includes('trình ký') || st.includes('checking'));
-      if (kpiGroup === 'release') return st.includes('đã ban hành') || st.includes('released') || st.includes('hoàn tất');
-      return true; // 'all'
-    });
-
-    if (rows.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4 small"><i class="bi bi-inbox fs-3 d-block mb-1"></i>Không có dữ liệu trùng khớp.</td></tr>';
+    if (dataList.length === 0) {
+      // Đổi colspan thành 11 cho khớp với thead
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-2 text-black-50"></i>Không có dữ liệu trùng khớp.</td></tr>';
       return;
     }
 
-    var recent = rows.slice(0, 15);
     var html = '';
-    recent.forEach(function(row) {
+    dataList.slice(0, 15).forEach(function(row) {
       var id = getRowValue(row, 'id');
+      var group = getRowValue(row, 'group') || '';
       var reqNo = getRowValue(row, 'reqNo') || id || 'N/A';
-      var dwNo = getRowValue(row, 'dwNo') || 'Chưa có mã';
+      var dwNo = getRowValue(row, 'dwNo') || '<i class="text-muted">Chưa có mã</i>';
       var type = getRowValue(row, 'type') || '—';
       var version = getRowValue(row, 'version') || '0';
       var st = getRowValue(row, 'status') || 'Chưa xác định';
-      var pdfSample = getRowValue(row, 'pdfSample').trim();
+      var to = getRowValue(row, 'to') || '<i class="text-muted">Chưa có mã</i>';
+      var project = getRowValue(row, 'project') || '—';
+      var customer = getRowValue(row, 'customer') || '—';
+      var completionDate = getRowValue(row, 'completionDate') || '—';
+      var date = getRowValue(row, 'date') || '—';
+      var estimatedCompletionDate = getRowValue(row, 'estimatedCompletionDate') || '—';
+      var releaseDate = getRowValue(row, 'releaseDate') || '—';
+      var pdflink = getRowValue(row, 'pdfSample') || '';
+      var ngDamTrach = getRowValue(row, 'ngDamTrach') || '';
+      var checker1 = getRowValue(row, 'checker1') || '';
+      var checker2 = getRowValue(row, 'checker2') || '';
+      var approve = getRowValue(row, 'approve') || '';
 
-      var badgeClass = 'bg-secondary';
+      // 1. CỘT PDF
+      const pdf = (pdflink && String(pdflink).includes('http')) 
+          ? `<a href="${pdflink}" target="_blank" class="btn btn-sm btn-outline-danger border-0 py-1 px-2" title="Xem bản vẽ PDF"><i class="bi bi-file-earmark-pdf-fill fs-5"></i></a>` 
+          : '<span class="text-muted small"><i class="bi bi-dash"></i></span>';
+      
+      // 2. TỐI ƯU CỘT CHỮ KÝ (Nằm chung với Status)
+      let signHtml = `<div class="mt-2 pt-2 border-top border-secondary border-opacity-25 text-start w-100" style="font-size: 0.75rem; line-height: 1.4;">`;
+      if (ngDamTrach) signHtml += `<div class="d-flex justify-content-between"><span class="text-muted">Chg:</span> <span class="fw-medium text-dark">${String(ngDamTrach).replace(/</g, '&lt;')}</span></div>`;
+      if (checker1 || checker2) {
+        let chk = [checker1, checker2].filter(Boolean).join(', ');
+        signHtml += `<div class="d-flex justify-content-between"><span class="text-muted">Chk:</span> <span class="fw-medium text-dark">${String(chk).replace(/</g, '&lt;')}</span></div>`;
+      }
+      if (approve) signHtml += `<div class="d-flex justify-content-between"><span class="text-muted">App:</span> <span class="fw-medium text-primary">${String(approve).replace(/</g, '&lt;')}</span></div>`;
+      signHtml += `</div>`;
+      if (!ngDamTrach && !checker1 && !checker2 && !approve) signHtml = '';
+
+      // 3. TỐI ƯU CỘT THỜI GIAN (Gộp các loại ngày vào 1 khối Timeline để tiết kiệm chiều ngang)
+      let dateHtml = `<div class="text-start d-flex flex-column gap-1 mx-auto" style="font-size: 0.75rem; width: fit-content;">`;
+      dateHtml += `<div title="Ngày tiếp nhận"><i class="bi bi-box-arrow-in-right text-secondary me-1"></i> <span class="fw-medium text-dark">${String(date).replace(/</g, '&lt;')}</span></div>`;
+      
+      let isLate = false;
+      if (estimatedCompletionDate !== '—' && completionDate === '—') {
+         let tmDate = new Date(estimatedCompletionDate);
+         if (!isNaN(tmDate) && tmDate < new Date()) isLate = true;
+      }
+      let tmColor = isLate ? 'text-danger fw-bold' : 'text-primary fw-medium';
+      
+      dateHtml += `<div title="Hạn chót (TM)"><i class="bi bi-stopwatch text-warning me-1"></i> <span class="${tmColor}">${String(estimatedCompletionDate).replace(/</g, '&lt;')}</span></div>`;
+      if (completionDate !== '—') dateHtml += `<div title="Ngày hoàn thành (ACT)"><i class="bi bi-check2-circle text-success me-1"></i> <span class="fw-medium text-success">${String(completionDate).replace(/</g, '&lt;')}</span></div>`;
+      if (releaseDate !== '—') dateHtml += `<div title="Ngày ban hành"><i class="bi bi-send-check text-info me-1"></i> <span class="fw-medium text-info">${String(releaseDate).replace(/</g, '&lt;')}</span></div>`;
+      dateHtml += `</div>`;
+
+      // 4. MÀU SẮC TRẠNG THÁI
+      var badgeClass = 'bg-secondary text-white';
+      let stt = 'Chưa xác định';
       var stLower = st.toLowerCase();
-      if (stLower.includes('ban hành') || stLower.includes('released')) badgeClass = 'bg-success';
-      else if (stLower.includes('chờ') || stLower.includes('checking') || stLower.includes('trình ký')) badgeClass = 'bg-warning text-dark';
-      else if (stLower.includes('trả') || stLower.includes('returned')) badgeClass = 'bg-danger';
-
-      // Action button theo nhóm KPI
-      var actionBtn = '';
-      if (kpiGroup === 'design' || (!pdfSample)) {
-        // Chờ thiết kế → mở trang Design
-        actionBtn = '<button class="btn btn-sm btn-warning rounded-pill px-2 fw-semibold" ' +
-          'onclick="switchTab(\'dwDesign\', document.getElementById(\'nav-btn-dwDesign\'))" title="Mở trang Thiết Kế">'+
-          '<i class="fa fa-pen-nib me-1"></i>Thiết Kế</button>';
-      } else if (kpiGroup === 'approve') {
-        // Chờ ký duyệt → mở Submit Approval
-        actionBtn = '<button class="btn btn-sm btn-primary rounded-pill px-2 fw-semibold" ' +
-          'onclick="switchTab(\'submitDrawingsForApproval\', document.getElementById(\'nav-btn-submitDrawingsForApproval\'))" title="Mở trang Trình Ký">' +
-          '<i class="fa fa-file-signature me-1"></i>Trình Ký</button>';
-      } else if (kpiGroup === 'release') {
-        // Đã ban hành → mở trang Release
-        actionBtn = '<button class="btn btn-sm btn-success rounded-pill px-2 fw-semibold" ' +
-          'onclick="switchTab(\'release\', document.getElementById(\'nav-btn-release\'))" title="Xem Ban Hành">' +
-          '<i class="fa fa-check-circle me-1"></i>Xem</button>';
-      } else {
-        // Tất cả → nút arrow cũ
-        actionBtn = '<button class="btn btn-sm btn-light border rounded-circle shadow-sm" ' +
-          'onclick="switchTab(\'release\', document.getElementById(\'nav-btn-release\'))" title="Xem chi tiết">' +
-          '<i class="fa fa-arrow-right text-muted"></i></button>';
+      var stIcon = 'bi-circle';
+      
+      if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành') || stLower.includes('qa')) {
+         badgeClass = 'bg-info text-dark border border-info'; stt = "Chờ ban hành"; stIcon = 'bi-hourglass-split';
+      } else if(stLower.includes('đã ban hành') || stLower.includes('released')) {
+         badgeClass = 'bg-success text-white'; stt = "Đã ban hành"; stIcon = 'bi-check-circle-fill';
+      } else if (stLower.includes('chờ') || stLower.includes('checking') || stLower.includes('approval')) {
+         badgeClass = 'bg-warning text-dark'; stt = "Đang trình ký" ; stIcon = 'bi-pencil-square';
+      } else if (stLower.includes('trả') || stLower.includes('returned')) {
+         badgeClass = 'bg-danger text-white'; stt = "Bị trả lại"; stIcon = 'bi-exclamation-triangle-fill';
+      } else if (stLower.includes('đang thực hiện') || stLower.includes('design')) {
+         badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25'; 
+         stt = (ngDamTrach ? ngDamTrach.split(' ')[0] : 'Charger') + " đang vẽ"; 
+         stIcon = 'bi-palette-fill';
       }
 
-      html += '<tr>' +
-        '<td class="fw-bold text-success">' + escHtml(reqNo) + '</td>' +
-        '<td class="fw-semibold">' + escHtml(dwNo) + '</td>' +
-        '<td><span class="badge bg-light text-dark border px-2 py-1">' + escHtml(type) + '</span></td>' +
-        '<td class="fw-medium text-secondary">v' + escHtml(version) + '</td>' +
-        '<td><span class="badge ' + badgeClass + ' font-weight-semibold">' + escHtml(st) + '</span></td>' +
-        '<td class="text-center">' + actionBtn + '</td>' +
-        '</tr>';
+      // RENDER HTML TỪNG DÒNG (Đúng 11 thẻ td)
+      html += `
+        <tr class="align-middle border-bottom border-light hover-bg-light transition-all">
+          <td class="d-none">${String(id).replace(/</g, '&lt;')}</td>
+          <td class="d-none">${String(group).replace(/</g, '&lt;')}</td>
+          <td class="text-center">
+            <span class="badge bg-light text-dark border px-2 py-1 shadow-sm">${String(type).replace(/</g, '&lt;')}</span>
+          </td>
+          <td class="text-center fw-medium text-secondary">${String(to).replace(/</g, '&lt;')}</td>
+          <td class="text-center fw-bold text-dark" style="font-size: 0.9rem;">${String(dwNo).replace(/</g, '&lt;')}</td>
+          <td class="text-center text-muted" style="font-size: 0.85rem;">v${String(version).replace(/</g, '&lt;')}</td>
+          <td class="text-center fw-semibold text-dark text-truncate" style="max-width: 120px;" title="${String(project).replace(/</g, '&lt;')}">
+            ${String(project).replace(/</g, '&lt;')}
+          </td>
+          <td class="text-center text-muted text-truncate" style="font-size: 0.85rem; max-width: 120px;" title="${String(customer).replace(/</g, '&lt;')}">
+            <i class="bi bi-person-fill me-1"></i>${String(customer).replace(/</g, '&lt;')}
+          </td>
+          <td class="py-2">${dateHtml}</td>
+          <td class="text-center">${pdf}</td>
+          <td class="text-center">
+            <div class="d-flex flex-column h-100 justify-content-center align-items-center">
+              <span class="badge ${badgeClass} w-100 py-2 shadow-sm mb-1" style="font-size: 0.75rem;">
+                <i class="bi ${stIcon} me-1"></i>${stt}
+              </span>
+              ${signHtml}
+            </div>
+          </td>
+        </tr>`;
     });
+    
     tbody.innerHTML = html;
-  }
-
-  function escHtml(str) {
-    return str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : '';
   }
 
   document.addEventListener('DOMContentLoaded', function () {
