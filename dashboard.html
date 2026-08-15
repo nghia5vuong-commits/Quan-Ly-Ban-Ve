@@ -347,7 +347,7 @@
 
     <!-- Chờ Ký Duyệt -->
     <div class="col-12 col-sm-6 col-xl-2">
-      <div class="kpi-card h-100" id="kpiCard-approve" onclick="setKpiFilter('approve')" title="Xem bản vẽ chờ ký duyệt">
+      <div class="kpi-card h-100" id="kpiCard-sign" onclick="setKpiFilter('sign')" title="Xem bản vẽ chờ ký duyệt">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Chờ Ký Duyệt</span>
           <h3 class="fw-bold text-dark mb-0" id="dashApprovalCount">--</h3>
@@ -362,11 +362,11 @@
     <!-- Chờ Ban Hành Lên QA System -->
     <div class="col-12 col-sm-6 col-xl-2">
       <!-- Đổi id thành kpiCard-qa để không bị trùng -->
-      <div class="kpi-card h-100" id="kpiCard-qa" onclick="setKpiFilter('release')" title="Xem bản vẽ chờ QA System">
+      <div class="kpi-card h-100" id="kpiCard-release" onclick="setKpiFilter('release')" title="Xem bản vẽ chờ QA System">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Chờ Ban Hành</span>
           <!-- Đổi id thành dashQaCount để không bị trùng -->
-          <h3 class="fw-bold text-dark mb-0" id="dashQaCount">--</h3>
+          <h3 class="fw-bold text-dark mb-0" id="dashReleaseCount">--</h3>
           <span class="text-custom-purple small fw-medium"><i class="fa fa-check-circle me-1"></i>QA-DW</span>
         </div>
         <div class="kpi-icon" style="background: #f3e8ff; color: #5311a3;">
@@ -377,7 +377,7 @@
 
     <!-- Đã Ban Hành -->
     <div class="col-12 col-sm-6 col-xl-3">
-      <div class="kpi-card h-100" id="kpiCard-release" onclick="setKpiFilter('release')" title="Xem bản vẽ đã ban hành">
+      <div class="kpi-card h-100" id="kpiCard-released" onclick="setKpiFilter('released')" title="Xem bản vẽ đã ban hành">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Đã Ban Hành Lên QA System</span>
           <h3 class="fw-bold text-dark mb-0" id="dashReleasedCount">--</h3>
@@ -450,16 +450,16 @@
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <div>
             <h6 class="fw-bold text-dark mb-0" id="dashTableTitle">
-              <i class="fa fa-history me-2 text-success"></i>Bản Vẽ / Yêu Cầu Gần Đây
+              <i class="fa fa-history me-2 text-success"></i>Danh sách chi tiết
             </h6>
-            <small class="text-muted" style="font-size: 0.78rem;" id="dashTableSubtitle">Danh sách yêu cầu mới cập nhật nhất theo bộ lọc đang chọn—nhấp KPI để lọc nhanh</small>
+            <small class="text-muted" style="font-size: 0.78rem;" id="dashTableSubtitle">Danh sách bản vẽ đóng gói <em>(Hãy lọc dữ liệu bằng các nút bên trên để khoanh vùng bản vẽ)</em></small>
           </div>
           <div class="d-flex gap-2 align-items-center">
             <span id="dashTableFilterBadge" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold d-none" style="font-size: 0.72rem;"></span>
-            <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold"
+            <!-- <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold"
               onclick="switchTab('release', document.getElementById('nav-btn-release'))">
               Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
-            </button>
+            </button> -->
           </div>
         </div>
         <div class="table-responsive border rounded-3 custom-scrollbar">
@@ -531,11 +531,11 @@
   function setKpiFilter(group) {
     globalFilters.kpi = group;
     // Đổi UI KPI
-    ['all', 'design', 'approve', 'release'].forEach(g => {
+    ['all', 'design', 'sign', 'release','released'].forEach(g => {
       var c = document.getElementById('kpiCard-' + g);
       if (c) c.className = 'kpi-card h-100';
     });
-    var activeMap = { all: 'kpi-active', design: 'kpi-active-design', approve: 'kpi-active-approve', release: 'kpi-active-release' };
+    var activeMap = { all: 'kpi-active', design: 'kpi-active-design', sign: 'kpi-active-sign', release: 'kpi-active-release' ,released: 'kpi-active-released'};
     var activeCard = document.getElementById('kpiCard-' + group);
     if (activeCard) activeCard.classList.add(activeMap[group]);
     updateDashboardStats();
@@ -660,7 +660,7 @@
     var hasSubFilters = false;
 
     if (globalFilters.kpi !== 'all') {
-      let labels = { design: 'Chờ thiết kế', approve: 'Chờ ký duyệt', release: 'Đã ban hành' };
+      let labels = { design: 'Chờ thiết kế', sign: 'Chờ ký duyệt', release: 'Chờ ban hành', released: 'Đã ban hành' };
       html += `<span class="filter-chip f-kpi">Trạng thái: ${labels[globalFilters.kpi]} <i class="bi bi-x-circle-fill" onclick="setKpiFilter('all')"></i></span>`;
       hasSubFilters = true;
     }
@@ -712,18 +712,20 @@
 
     // Tính KPI từ Tầng 1
     var total = baseData.length;
-    var pendingDesign = 0, pendingApprove = 0, released = 0;
+    var pendingDesign = 0, pendingApprove = 0, released = 0,release = 0 ;
     baseData.forEach(function(row) {
       var st = getRowValue(row, 'status').toLowerCase();
       var pdfSample = getRowValue(row, 'pdfSample').trim();
-      if ((!pdfSample || pdfSample === '') && st.includes('đang thực hiện')) pendingDesign++;
+      if (st.includes('đang thực hiện') || st.includes('trả về charger')) pendingDesign++;
       else if (st.includes('chờ checker') || st.includes('chờ approval')) pendingApprove++;
-      else if (st.includes('đã ban hành') || st.includes('released') || st.includes('hoàn tất')) released++;
+      else if (st.includes('đã ban hành') ) released++;
+      else if (st.includes('chờ ban hành') || st.includes('ban hành thất bại') ) release++;
     });
 
     document.getElementById('dashTotalCount').textContent = total;
     document.getElementById('dashDesignCount').textContent = pendingDesign;
     document.getElementById('dashApprovalCount').textContent = pendingApprove;
+     document.getElementById('dashReleaseCount').textContent = release;
     document.getElementById('dashReleasedCount').textContent = released;
 
 
@@ -748,9 +750,10 @@
       var monthLabel = (monthIdx >= 0 && monthIdx <= 11) ? fyeMonthLabels[monthIdx] : null;
 
       // Filter theo KPI
-      if (globalFilters.kpi === 'design' && !((!pdfSample || pdfSample === '') && st.includes('đang thực hiện'))) return false;
-      if (globalFilters.kpi === 'approve' && !(st.includes('chờ checker') || st.includes('chờ approval'))) return false;
-      if (globalFilters.kpi === 'release' && !(st.includes('đã ban hành') || st.includes('released') || st.includes('hoàn tất'))) return false;
+      if (globalFilters.kpi === 'design' && !(st.includes('trả về charger') || st.includes('đang thực hiện'))) return false;
+      if (globalFilters.kpi === 'sign' && !(st.includes('chờ checker') || st.includes('chờ approval'))) return false;
+      if (globalFilters.kpi === 'released' && !(st.includes('đã ban hành'))) return false;
+      if (globalFilters.kpi === 'release' && !(st.includes('chờ ban hành') || st.includes('ban hành thất bại') )) return false;
 
       // Filter theo biểu đồ
       if (globalFilters.project && projectVal !== globalFilters.project) return false;
@@ -961,9 +964,9 @@
       var releaseDate = getRowValue(row, 'releaseDate') || '—';
       var pdflink = getRowValue(row, 'pdfSample') || '';
       var ngDamTrach = getRowValue(row, 'ngDamTrach') || '';
-      var checker1 = getRowValue(row, 'checker1') || '';
-      var checker2 = getRowValue(row, 'checker2') || '';
+      var checker = getRowValue(row, 'checker') || '';
       var approve = getRowValue(row, 'approve') || '';
+      const [checker1, checker2] = checker.split('\n');
 
       // 1. CỘT PDF
       const pdf = (pdflink && String(pdflink).includes('http')) 
@@ -1003,18 +1006,21 @@
       var stLower = st.toLowerCase();
       var stIcon = 'bi-circle';
       
-      if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành') || stLower.includes('qa')) {
-         badgeClass = 'bg-info text-dark border border-info'; stt = "Chờ ban hành"; stIcon = 'bi-hourglass-split';
+      if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành')) {
+         badgeClass = 'bg-info text-dark border border-info'; stt = "DW ban hành"; stIcon = 'bi-hourglass-split';
       } else if(stLower.includes('đã ban hành') || stLower.includes('released')) {
          badgeClass = 'bg-success text-white'; stt = "Đã ban hành"; stIcon = 'bi-check-circle-fill';
-      } else if (stLower.includes('chờ') || stLower.includes('checking') || stLower.includes('approval')) {
+      } else if (stLower.includes('checker') || stLower.includes('approval')) {
          badgeClass = 'bg-warning text-dark'; stt = "Đang trình ký" ; stIcon = 'bi-pencil-square';
-      } else if (stLower.includes('trả') || stLower.includes('returned')) {
+      } else if (stLower.includes('trả về charger') || stLower.includes('returned')) {
          badgeClass = 'bg-danger text-white'; stt = "Bị trả lại"; stIcon = 'bi-exclamation-triangle-fill';
-      } else if (stLower.includes('đang thực hiện') || stLower.includes('design')) {
+      } else if (stLower.includes('đang thực hiện') ) {
          badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25'; 
-         stt = (ngDamTrach ? ngDamTrach.split(' ')[0] : 'Charger') + " đang vẽ"; 
+         stt = (ngDamTrach ? ngDamTrach.split(' ')[0] : 'Charger') + " đang thực hiện"; 
          stIcon = 'bi-palette-fill';
+      }
+      else if (stLower.includes('ban hành thất bại') ) {
+          badgeClass = 'bg-danger text-white'; stt = "Ban hành thất bại"; stIcon = 'bi-exclamation-triangle-fill';
       }
 
       // RENDER HTML TỪNG DÒNG (Đúng 11 thẻ td)
