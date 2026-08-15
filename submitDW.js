@@ -1,6 +1,7 @@
 var SUBMIT_SS_ID = "1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM";
 var SUBMIT_SHEET = "Data";
 var SUBMIT_NOTE = "Note";
+var SUBMIT_USER = "User";
 
 var COL_STATUS = 2;
 var COL_DW_NO = 11;
@@ -39,6 +40,36 @@ function _getNextStep(currentStatus) {
   return null;
 }
 
+function _getUserNameByEmail(email) {
+  if (!email || email === 'System') return 'System';
+  
+  try {
+    var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
+    
+    var userSheetName = (typeof USER_SHEET_NAME !== 'undefined') ? USER_SHEET_NAME : 'User';
+    var userSheet = ss.getSheetByName(userSheetName);
+    
+    if (!userSheet) {
+      Logger.log('Không tìm thấy sheet tên là: ' + userSheetName);
+      return email; 
+    }
+
+    var data = userSheet.getDataRange().getValues();
+    
+    for (var i = 1; i < data.length; i++) {
+      var rowMail = String(data[i][3]).trim().toLowerCase(); // Cột D (Mail) là index 3
+      if (rowMail === email.toLowerCase()) {
+        var rowName = String(data[i][2]).trim(); // Cột C (Name) là index 2
+        return rowName || email;
+      }
+    }
+  } catch (e) {
+    Logger.log('Lỗi dò tên user: ' + e.message);
+  }
+  
+  return email; 
+}
+
 function _findRowByIdInColA(sheet, drawingId) {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) return -1;
@@ -64,7 +95,7 @@ function _writeNote(ss, notiText, userEmail) {
   ]);
 }
 
-function approveDrawingOnServer(drawingId) {
+function approveDrawingOnServer(drawingId, approvedLevel) {
   if (!drawingId) throw new Error('Thieu ID ban ve.');
 
   var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
@@ -77,25 +108,36 @@ function approveDrawingOnServer(drawingId) {
   }
 
   var currentStatus = String(sheet.getRange(sheetRow, COL_STATUS + 1).getValue() || '');
-  var step = _getNextStep(currentStatus);
+  var step = null;
+
+  if (approvedLevel === 'Checker 1') {
+    step = { nextStatus: 'Chờ Checker 2', byCol: COL_CHECKER_BY, dateCol: COL_CHECKER_DATE, level: 'Checker 1', appendMode: true };
+  } else if (approvedLevel === 'Checker 2') {
+    step = { nextStatus: 'Chờ Approval', byCol: COL_CHECKER_BY, dateCol: COL_CHECKER_DATE, level: 'Checker 2', appendMode: true };
+  } else if (approvedLevel === 'Approval' || approvedLevel === 'Approver') {
+    step = { nextStatus: 'Chờ ban hành', byCol: COL_APPROVAL_BY, dateCol: COL_APPROVAL_DATE, level: 'Approval', appendMode: false };
+  } else {
+    step = _getNextStep(currentStatus);
+  }
 
   if (!step) {
     throw new Error('Ban ve dang o trang thai "' + currentStatus + '" - khong xac dinh duoc buoc trinh ky tiep theo.');
   }
 
-  var approverEmail = Session.getActiveUser().getEmail() || 'System';
+  var approverEmail = Session.getActiveUser().getEmail() || 'System'
+  var approverName = _getUserNameByEmail(approverEmail);
   var timezone = Session.getScriptTimeZone();
-  var nowStr = Utilities.formatDate(new Date(), timezone, 'dd/MM/yyyy HH:mm');
+  var nowStr = Utilities.formatDate(new Date(), timezone, 'dd/MM/yyyy');
 
   sheet.getRange(sheetRow, COL_STATUS + 1).setValue(step.nextStatus);
 
   if (step.appendMode) {
     var oldBy = String(sheet.getRange(sheetRow, step.byCol + 1).getValue() || '');
-    sheet.getRange(sheetRow, step.byCol + 1).setValue(oldBy ? oldBy + '\n' + approverEmail : approverEmail);
+    sheet.getRange(sheetRow, step.byCol + 1).setValue(oldBy ? oldBy + '\n' + approverName : approverName);
     var oldDate = String(sheet.getRange(sheetRow, step.dateCol + 1).getValue() || '');
     sheet.getRange(sheetRow, step.dateCol + 1).setValue(oldDate ? oldDate + '\n' + nowStr : nowStr);
   } else {
-    sheet.getRange(sheetRow, step.byCol + 1).setValue(approverEmail);
+    sheet.getRange(sheetRow, step.byCol + 1).setValue(approverName);
     sheet.getRange(sheetRow, step.dateCol + 1).setValue(nowStr);
   }
 
@@ -103,19 +145,19 @@ function approveDrawingOnServer(drawingId) {
   var notiMsg = '[TRÌNH KÝ] Bản vẽ: ' + dwNo +
     ' | Cấp: ' + step.level +
     ' | Trạng thái mới: ' + step.nextStatus +
-    ' | Người ký: ' + approverEmail +
+    ' | Người ký: ' + approverName +
     ' | Lúc: ' + nowStr;
-  _writeNote(ss, notiMsg, approverEmail);
+  _writeNote(ss, notiMsg, approverName);
 
-  Logger.log('[approveDrawingOnServer] ID=' + drawingId + ' | ' + currentStatus + ' -> ' + step.nextStatus + ' | By=' + approverEmail);
+  Logger.log('[approveDrawingOnServer] ID=' + drawingId + ' | ' + currentStatus + ' -> ' + step.nextStatus + ' | By=' + approverName);
 
   return {
     success: true,
     drawingId: drawingId,
     prevStatus: currentStatus,
-    nextStatus: step.nextStatus,
+    nextStatus: step.nextStatus,  
     level: step.level,
-    approvedBy: approverEmail,
+    approvedBy: approverName,
     approvedAt: nowStr
   };
 }

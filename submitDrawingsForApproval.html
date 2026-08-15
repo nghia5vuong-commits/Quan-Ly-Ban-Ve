@@ -460,6 +460,35 @@
     return '<span class="badge bg-light text-muted border px-3 py-1">Chưa tới lượt</span>';
   }
 
+  function normalizeApprovalLevelName(value) {
+    if (!value && value !== 0) return '';
+    return String(value)
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .trim();
+  }
+
+  function canUserApproveLevel(levelName) {
+    const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
+    if (!currentPosition) return false;
+
+    const target = normalizeApprovalLevelName(levelName || '');
+    if (!target) return false;
+
+    const allowedMap = {
+      checker1: ['checker1', 'c1'],
+      checker2: ['checker2', 'c2'],
+      approval: ['approval', 'approver', 'gmqa', 'qa', 'gmqa'],
+      approver: ['approval', 'approver', 'gmqa', 'qa', 'gmqa'],
+      charger: ['charger', 'chager']
+    };
+
+    const allowed = allowedMap[currentPosition] || [];
+    return allowed.includes(target) || currentPosition === target;
+  }
+
   let approvalCurrentPage = 1;
   const approvalPageSize = 50;
   var approvalSearchDebounce = null;
@@ -632,6 +661,7 @@
 
     const mkActions = (state, id, dwNo, level, label) => {
       if (state !== 'waiting') return '';
+      if (!canUserApproveLevel(level)) return '';
       return `
         <div class="level-actions">
           <button class="btn-step-approve shadow-sm"
@@ -850,7 +880,7 @@
           google.script.run
             .withSuccessHandler(resolve)
             .withFailureHandler(reject)
-            .approveDrawingOnServer(rowId);
+            .approveDrawingOnServer(rowId, level);
         });
 
         if (typeof hideLoading === 'function') hideLoading();
