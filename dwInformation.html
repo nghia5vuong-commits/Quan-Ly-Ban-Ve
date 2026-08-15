@@ -277,7 +277,7 @@
       </div>
     </div>
 
-    <!-- TAB 2: QUẢN LÝ DỮ LIỆU BẢN VẼ -->
+    <!-- TAB 2: Thêm bản vẽ new -->
     <div class="tab-pane fade" id="manual-section" role="tabpanel">
       <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
 
@@ -296,6 +296,55 @@
         </div>
 
         <!-- Bảng DataGridView -->
+        <div class="position-relative">
+          <div class="table-responsive border rounded-3 overflow-auto" style="max-height: 480px;">
+            <table class="table table-hover align-middle mb-0" id="drawingDataTable">
+              <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                <tr>
+                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0">Type</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">TO</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Dw Code</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Customer</th>
+                  <th scope="col" class="text-end pe-4 text-muted fw-semibold py-3 border-bottom-0"
+                    style="width: 120px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="drawingTableBody">
+                <!-- Dữ liệu JS sẽ đổ vào đây -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Trạng thái trống (Empty state) -->
+          <div id="emptyTableState" class="position-absolute top-50 start-50 translate-middle text-center w-100 d-none">
+            <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mb-3 mx-auto"
+              style="width: 70px; height: 70px;">
+              <i class="fa fa-folder-open fa-2x text-secondary opacity-50"></i>
+            </div>
+            <h6 class="fw-bold text-secondary">Không có dữ liệu</h6>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Quản lí bản vẽ -->
+    <div class="tab-pane fade" id="manual-section" role="tabpanel">
+      <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+
+        <!-- Thanh công cụ: Tìm kiếm & Thêm mới -->
+        <div
+          class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 pb-3 mb-3 border-bottom">
+          <div class="input-group" style="max-width: 350px;">
+            <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
+            <input type="text" id="searchDrawingInput" class="form-control border-start-0 bg-light shadow-none"
+              placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchDrawingData()">
+          </div>
+
+          <button class="btn btn-primary fw-bold px-4 rounded-pill" onclick="openAddDrawingForm()">
+            <i class="fa fa-plus me-2"></i>Thêm mới
+          </button>
+        </div>
+
         <div class="position-relative">
           <div class="table-responsive border rounded-3 overflow-auto" style="max-height: 480px;">
             <table class="table table-hover align-middle mb-0" id="drawingDataTable">
@@ -436,6 +485,114 @@
             <div class="col-md-6 col-sm-12">
               <label class="form-label fw-semibold">Hình ảnh mặt cắt (File/Link)</label>
               <input type="file" id="formImageFile" class="form-control" accept="image/*" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer bg-light border-top p-3">
+          <button type="submit" class="btn btn-primary px-4 shadow-sm fw-bold"><i class="fa fa-floppy-disk me-2"></i>Lưu
+            Dữ Liệu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<!-- ================== POPUP FORM (MODAL) ================= -->
+<div class="modal fade" id="drawingFormModal" tabindex="-1" aria-labelledby="modalFormTitle" aria-hidden="true"
+  data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <form id="drawingForm" onsubmit="handleDrawingFormSubmit(event)">
+        <div class="modal-header bg-light border-bottom p-4">
+          <div class="d-flex align-items-center">
+            <div
+              class="bg-primary bg-opacity-10 text-primary rounded d-flex justify-content-center align-items-center me-3"
+              style="width: 40px; height: 40px;">
+              <i class="fa fa-file-pen fs-5"></i>
+            </div>
+            <h5 class="modal-title fw-bold text-dark" id="modalFormTitle">Form Nhập Dữ Liệu</h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeDrawingForm()"
+            aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body p-4 bg-white">
+          <div class="row g-3">
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">FYE</label>
+              <input type="text" id="formFYE" class="form-control bg-light" placeholder="FYE27" readonly />
+            </div>
+            <div class="col-md-3 col-sm-12">
+              <label class="form-label fw-semibold">Dự án <span class="text-danger">*</span></label>
+              <input type="text" id="formProject" class="form-control" placeholder="Nhập tên dự án..." required />
+            </div>
+            <div class="col-md-3 col-sm-12">
+              <label class="form-label fw-semibold">Người đảm trách <span class="text-danger">*</span></label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted"><i class="fa fa-user"></i></span>
+                <input type="text" id="formAssignee" class="form-control" placeholder="Tên người phụ trách..."
+                  required />
+              </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Ngày tiếp nhận <span class="text-danger">*</span></label>
+              <input type="date" id="formReceivedDate" class="form-control" required />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Group <span class="text-danger">*</span></label>
+              <select id="formGroup" class="form-select bg-light" required>
+                <option value="Barsale">Barsale</option>
+                <option value="OEM">OEM</option>
+                <option value="WE SASH">WE SASH</option>
+              </select>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
+              <select id="formType" class="form-select bg-light" required>
+                <option value="New">New</option>
+                <option value="Revise">Revise</option>
+              </select>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Customer <span class="text-danger">*</span></label>
+              <input type="text" id="formCustomer" class="form-control" placeholder="Tên khách hàng..." required />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">TO <span class="text-danger">*</span></label>
+              <input type="text" id="formTO" class="form-control" placeholder="Mã TO..." required />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Số SO</label>
+              <input type="text" id="formSO" class="form-control" placeholder="Ví dụ: SO12345" />
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Dw Code <span class="text-danger">*</span></label>
+              <input type="text" id="formDwCode" class="form-control bg-light" required />
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Version <span class="text-danger">*</span></label>
+              <select id="formVersion" class="form-select bg-light" required>
+                <option value="v1.0">v1.0</option>
+                <option value="v1.1">v1.1</option>
+                <option value="v2.0">v2.0</option>
+                <option value="v3.0">v3.0</option>
+              </select>
+            </div>
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Type DW <span class="text-danger">*</span></label>
+              <select id="formTypeDw" class="form-select bg-light" required>
+                <option value="V2">V2</option>
+                <option value="V3">V3</option>
+                <option value="V8">V8</option>
+              </select>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+              <label class="form-label fw-semibold">Ngày ĐT hoàn thành</label>
+              <input type="date" id="formAssigneeDoneDate" class="form-control" />
             </div>
           </div>
         </div>
@@ -1258,6 +1415,36 @@
       rowData.push(null);
       sendDataToGas(rowData);
     }
+  }
+
+  function handleAutoDrawingFormSubmit() {
+    var form = document.getElementById('drawingForm');
+    if (form) {
+      var event = new Event('submit');
+      form.dispatchEvent(event);
+    }
+    var rowData = [
+      getVal('formGroup'),            // 0: Group
+      getVal('formType'),             // 1: Type
+      getVal('formCustomer'),         // 2: Customer
+      getVal('formTO'),               // 3: TO
+      getVal('formProject'),          // 4: Dự án
+      getVal('formSO'),               // 5: Số SO
+      getVal('formDwCode'),           // 6: Dw Code
+      getVal('formVersion'),          // 7: Version
+      getVal('formTypeDw'),           // 8: Type DW
+      getVal('formAssignee'),         // 9: Người đảm trách
+      getVal('formReceivedDate'),     // 12: Ngày tiếp nhận
+      getVal('formAssigneeDoneDate'), // 13: Ngày ĐT hoàn thành
+      getVal('formActualDoneDate'),   // 14: Ngày HT thực tế (An toàn nếu rỗng)
+      getVal('formFYE'),              // 15: FYE
+      getVal('formNote')              // 16: Note
+    ];
+    var form = document.getElementById('drawingForm');
+    var fileInput = form ? form.querySelector('input[type="file"]') : null;
+    var file = (fileInput && fileInput.files.length > 0) ? fileInput.files[0] : null;
+
+    showLoading('Đang xử lý dữ liệu và lưu...');
   }
 
   function sendDataToGas(rowData) {
