@@ -318,7 +318,7 @@
  <!-- KPI CARDS -->
   <div class="row g-3 mb-4 align-items-stretch">
     <!-- Tổng Số Yêu Cầu -->
-    <div class="col-12 col-sm-6 col-xl-3">
+    <div class="col-12 col-sm-6 col-xl-4">
       <div class="kpi-card h-100" id="kpiCard-all" onclick="setKpiFilter('all')" title="Xem tất cả">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Tổng Số Bản Vẽ</span>
@@ -376,7 +376,7 @@
     </div>
 
     <!-- Đã Ban Hành -->
-    <div class="col-12 col-sm-6 col-xl-3">
+    <div class="col-12 col-sm-6 col-xl-2">
       <div class="kpi-card h-100" id="kpiCard-released" onclick="setKpiFilter('released')" title="Xem bản vẽ đã ban hành">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Đã Ban Hành Lên QA System</span>
@@ -594,13 +594,13 @@
         case 'estimatedCompletionDate':return String(row[7] || '');
         case 'completionDate':return String(row[16] || '');
         case 'releaseDate':return String(row[34] || '');
-        case 'ngDamTrach':return String(row[16] || '');
+        case 'ngDamTrach':return String(row[15] || '');
         case 'checker':return String(row[17] || '');
         case 'approve':return String(row[19] || '');
         case 'customer':return String(row[10] || '');
         case 'to':return String(row[8] || '');
 
-        default: return '';
+        default: return ''; 
       }
     } else if (row && typeof row === 'object') {
       switch (key) {

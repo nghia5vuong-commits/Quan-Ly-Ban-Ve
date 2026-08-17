@@ -73,12 +73,12 @@ function processCopyAndSave(payload) {
     const targetFolder = DriveApp.getFolderById(CONFIG.FOLDER_TARGET);
 
     // --- 1. XỬ LÝ LƯU ẢNH ---
-    if (payload.imageBytes) {
-      const decodedBytes = Utilities.base64Decode(payload.imageBytes);
-      const newImageName = `${payload.to}.${payload.extension}`;
-      const blob = Utilities.newBlob(decodedBytes, payload.mimeType, newImageName);
-      targetFolder.createFile(blob);
-    }
+    // if (payload.imageBytes) {
+    //   const decodedBytes = Utilities.base64Decode(payload.imageBytes);
+    //   const newImageName = `${payload.to}.${payload.extension}`;
+    //   const blob = Utilities.newBlob(decodedBytes, payload.mimeType, newImageName);
+    //   targetFolder.createFile(blob);
+    // }
 
     // --- 2. COPY FILE EXCEL ---
     const fileIdMatch = payload.link_xlsx.match(/[-\w]{25,}/);

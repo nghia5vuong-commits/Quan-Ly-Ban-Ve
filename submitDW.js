@@ -201,3 +201,157 @@ function rejectDrawingOnServer(drawingId, reason) {
   return { success: true };
 }
 
+
+
+
+
+
+
+
+function  requestReleaseDW(arr) {
+  const ss = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE");
+  const sheet = ss.getSheetByName("data");
+
+  const sheetSoure = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM").getSheetByName("Data");
+  
+  const lastrow = sheet.getLastRow();
+  const lastcol = sheet.getLastColumn();
+  let data = [];
+  
+  if (lastrow > 1) {
+    data = sheet.getRange(2, 1, lastrow - 1, lastcol).getValues();
+  }
+
+  const existingIds = new Set();
+  data.forEach(row => {
+    if(row[0]) existingIds.add(String(row[0]));
+  });
+
+  const inputDate = new Date(arr[4]); 
+  const currentMonth = inputDate.getMonth() + 1; 
+  const currentFullYear = inputDate.getFullYear();
+
+  const strMonth = currentMonth < 10 ? "0" + currentMonth : currentMonth;
+  const strYear = currentFullYear.toString().slice(-2); 
+  const orderCheck = "WI-DW-" + strMonth + strYear + "-";
+
+  let check = [];
+  data.forEach(row => {
+    if (row[8]) { 
+      const idStr = String(row[8]); 
+      if (idStr.startsWith(orderCheck)) {
+        let numberPart = parseInt(idStr.slice(-3), 10);
+        if (!isNaN(numberPart)) {
+             check.push(numberPart);
+        }
+      }
+    }
+  });
+
+  let maxNum = 0;
+  if (check.length > 0) {
+    maxNum = Math.max(...check);
+  }
+
+  const newCount = maxNum + 1;
+  const strCount = newCount.toString().padStart(3, '0');
+  const orderNo = "WI-DW-" + strMonth + strYear + "-" + strCount;
+  let mailValue = [];
+
+  const list = arr[9]; 
+  let output = [];
+  let ids = [];
+  list.forEach(row => {
+    let newID;
+    do {
+      newID = generateRandomString(6);
+    } while (existingIds.has(newID)); // Nếu trùng thì quay lại tạo cái khác
+    ids.push(row[0]);
+
+    
+    // Thêm ID vừa tạo vào danh sách để các dòng tiếp theo trong cùng vòng lặp không bị trùng
+    existingIds.add(newID);
+     mailValue.push({
+              requestId: orderNo,
+              dw: row[1],        
+              status:"Yêu Cầu Ban Hàng Bản Vẽ Mới",
+              dept: arr[0],   
+              name: arr[1],   
+            });
+
+    output.push([
+      newID,         // ID vừa tạo (cột 1)
+      "BUNDLING & PACKING",    
+      row[3], //cus
+      "",
+      row[1],//dwno
+      row[2],//version
+      arr[2],//type
+      "",  
+      orderNo,   
+      "",     
+      "QA-G2G",   
+      row[4],//bộ phận liên quan 
+      arr[1],//charger
+      arr[4],  // ngày gửi
+      "Normal",    //
+      arr[5], // ngày yêu cầu hoàn thành
+      "", // ds file đính kèm     
+      row[5], // pdf
+      "", //  link foder
+      arr[3],  // lý lo New Issue || Add Issue
+      "",
+      "",
+      "",
+      "Đã tạo",
+    ]);
+  });
+  
+  if (output.length > 0) {
+    sheet.getRange(lastrow + 1, 1, output.length, output[0].length).setValues(output);
+    sendMailFromDeptToCharge( mailValue,arr[0]);
+  }
+  if(ids.length>0){
+    updateBulkStatusByIds(ids,"Đang ban hành")
+  }
+  
+  return "Đã tạo thành công: " + orderNo; 
+}
+
+
+
+
+function updateBulkStatusByIds(targetIds, stt) {
+  // Đảm bảo targetIds là một mảng. Ví dụ: ["ID001", "ID002", "ID003"]
+  if (!Array.isArray(targetIds) || targetIds.length === 0) return;
+
+  const sheet = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM").getSheetByName("Data");
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 1) return; // Thoát nếu sheet trống
+
+  // 1. ĐỌC 1 LẦN: Chỉ lấy dữ liệu Cột A (ID) và Cột C (Status)
+  // Lấy riêng biệt để tránh ghi đè làm mất công thức ở cột B (nếu có)
+  const idValues = sheet.getRange(1, 1, lastRow, 1).getValues(); // Đọc toàn bộ cột A
+  const statusRange = sheet.getRange(1, 3, lastRow, 1); 
+  const statusValues = statusRange.getValues(); // Đọc toàn bộ cột C
+  
+  // Chuyển mảng targetIds thành Set để tìm kiếm với tốc độ siêu tốc (O(1))
+  const idSet = new Set(targetIds); 
+  let hasChanges = false;
+
+  // 2. XỬ LÝ TRONG RAM: Vòng lặp này chạy bằng tốc độ của CPU/RAM, gần như tức thời
+  for (let i = 0; i < idValues.length; i++) {
+    const currentId = idValues[i][0];
+    
+    // Nếu ID ở dòng hiện tại nằm trong mảng cần thay đổi
+    if (idSet.has(currentId)) {
+      statusValues[i][0] = stt; // Cập nhật trạng thái mới vào mảng
+      hasChanges = true;
+    }
+  }
+
+  // 3. GHI 1 LẦN: Đổ ngược mảng đã cập nhật vào lại cột C
+  if (hasChanges) {
+    statusRange.setValues(statusValues);
+  }
+}

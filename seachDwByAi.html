@@ -1291,7 +1291,7 @@
       var w = document.getElementById('formW').value;
       var link_xlsx = document.getElementById('hiddenLinkXlsx').value;
       var dwVal = document.getElementById('dwSelectValue').value;
-      var fileInput = document.getElementById('imageInput');
+      // var fileInput = document.getElementById('imageInput');
       if (!h || !w || !dwVal) { alert('Vui long nhap day du thong tin!'); return; }
       var parts = dwVal.split('|');
       var btnSave = document.querySelector('#useLinkModal .btn-primary');
@@ -1310,11 +1310,13 @@
           })
           .processCopyAndSave(fp);
       }
-      if (fileInput.files && fileInput.files.length > 0) {
-        var fr = new FileReader(); var f = fileInput.files[0];
-        fr.onload = function (e) { payload.imageBytes = e.target.result.split(',')[1]; payload.mimeType = f.type; payload.extension = f.name.split('.').pop(); send(payload); };
-        fr.readAsDataURL(f);
-      } else { send(payload); }
+      // if (fileInput.files && fileInput.files.length > 0) {
+      //   var fr = new FileReader(); var f = fileInput.files[0];
+      //   fr.onload = function (e) { payload.imageBytes = e.target.result.split(',')[1]; payload.mimeType = f.type; payload.extension = f.name.split('.').pop(); send(payload); };
+      //   fr.readAsDataURL(f);
+      // } else { send(payload); }
+
+      send(payload)
     }
 
     function openLink(url) { if (url && url !== '---') window.open(url, '_blank'); else alert(t('no_link')); }
