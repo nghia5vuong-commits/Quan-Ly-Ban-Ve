@@ -1,8 +1,58 @@
 var MAIL_CONFIG = {
   SUBJECT_FILTERS: ['MANUFACTURING ORDER', 'NEW PROJECT', 'THÔNG BÁO TỰ ĐỘNG'],
-  MAX_THREADS: 50,
+  MAX_THREADS: 100,
   TIMEZONE: 'Asia/Ho_Chi_Minh'
 };
+
+function toSafeString(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+  if (value instanceof Date) return Utilities.formatDate(value, MAIL_CONFIG.TIMEZONE, 'dd/MM/yyyy');
+
+  try {
+    if (typeof value.toString === 'function') {
+      var text = String(value.toString());
+      if (text && text !== '[object Object]' && text !== '[object CellImage]') return text.trim();
+    }
+  } catch (err) {
+    Logger.log('toSafeString error: ' + err.toString());
+  }
+
+  return '';
+}
+
+function normalizeImageSource(value) {
+  if (value === null || value === undefined || value === '') return '';
+
+  if (typeof value === 'string') return value.trim();
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+
+  if (typeof value === 'object') {
+    try {
+      if (typeof value.getContentUrl === 'function') {
+        var contentUrl = value.getContentUrl();
+        if (contentUrl) return String(contentUrl).trim();
+      }
+      if (typeof value.getUrl === 'function') {
+        var imgUrl = value.getUrl();
+        if (imgUrl) return String(imgUrl).trim();
+      }
+      if (typeof value.toString === 'function') {
+        var strVal = String(value.toString());
+        if (strVal && strVal !== '[object Object]' && strVal !== '[object CellImage]') {
+          if (/^(https?:\/\/|data:|\/|drive\.google|googleusercontent)/i.test(strVal)) {
+            return strVal.trim();
+          }
+        }
+      }
+    } catch (err) {
+      Logger.log('normalizeImageSource error: ' + err.toString());
+    }
+  }
+
+  return '';
+}
 
 function buildQuery(keyword) {
   var query = 'subject:("MANUFACTURING ORDER" OR "NEW PROJECT" OR "THÔNG BÁO TỰ ĐỘNG")';
@@ -424,12 +474,12 @@ function getPendingLogData() {
       for (var d = 0; d < dataVals.length; d++) {
         var r = dataVals[d];
         var soCode = "";
-        if (r[33]) soCode = r[33].toString().trim();
-        else if (r[5]) soCode = r[5].toString().trim();
+        if (r && r[33]) soCode = toSafeString(r[33]);
+        else if (r && r[5]) soCode = toSafeString(r[5]);
 
-        if (!soCode) {
+        if (!soCode && r) {
           for (var c = 0; c < r.length; c++) {
-            var cellStr = String(r[c] || "").trim();
+            var cellStr = toSafeString(r[c]);
             if (/^SO\d+/i.test(cellStr)) {
               soCode = cellStr;
               break;
@@ -442,14 +492,7 @@ function getPendingLogData() {
           var digitsSo = cleanSo.replace(/[^0-9]/g, "");
 
           var imgVal = r[32] || "";
-          var imgUrl = "";
-          if (imgVal) {
-            if (typeof imgVal === 'object' && imgVal.getContentUrl) {
-              imgUrl = imgVal.getContentUrl();
-            } else if (typeof imgVal === 'string') {
-              imgUrl = imgVal;
-            }
-          }
+          var imgUrl = normalizeImageSource(imgVal);
 
           existingSoMap[cleanSo] = imgUrl || true;
           if (digitsSo) existingSoMap[digitsSo] = imgUrl || true;
@@ -472,11 +515,11 @@ function getPendingLogData() {
 
         logs.push({
           rowIdx: i + 1,
-          date: data[i][0],
-          threadId: data[i][1],
-          subject: data[i][2],
-          customer: data[i][3],
-          to: data[i][4],
+          date: String(data[i][0] || ''),
+          threadId: String(data[i][1] || ''),
+          subject: String(data[i][2] || ''),
+          customer: String(data[i][3] || ''),
+          to: String(data[i][4] || ''),
           so: rawSo,
           existsInData: existsInData,
           imageUrl: imageUrl
@@ -565,7 +608,7 @@ function getCurrentUserEmail() {
 function saveDataToTestSheet(subject, matrixData, rowIdx) {
   try {
     var ss = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM");
-    var sheetData = ss.getSheetByName("Data") || ss.getSheets()[0];
+    var sheetData = ss.getSheetByName("Data") || ss.getSheetByName("data") || ss.insertSheet("Data");
     var sheetSO = ss.getSheetByName("SO");
     var sheetCustomer = ss.getSheetByName("Customer");
 
@@ -573,14 +616,19 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
       return { success: false, error: "Dữ liệu gửi lên rỗng!" };
     }
 
+    // Kiểm tra xem có phải là chế độ cập nhật (upgrade) hay không
+    var isUpgradeMode = rowIdx && typeof rowIdx === 'number' && rowIdx >= 2;
+
     var formRow = matrixData[0];
     var imageObj = formRow.pop();
     var cellImage = null;
+    var imageSourceUrl = '';
 
     if (imageObj && imageObj.base64) {
       try {
+        imageSourceUrl = "data:" + imageObj.mimeType + ";base64," + imageObj.base64;
         cellImage = SpreadsheetApp.newCellImage()
-          .setSourceUrl("data:" + imageObj.mimeType + ";base64," + imageObj.base64)
+          .setSourceUrl(imageSourceUrl)
           .build();
       } catch (imgErr) {
         Logger.log("Lỗi tạo CellImage: " + imgErr.toString());
@@ -608,9 +656,20 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
     // ========================================================================
     // KIỂM TRA: TO + Customer đã tồn tại trong sheet "Data" chưa?
+    // Chỉ bỏ qua ghi Data khi cùng TO + Customer đã tồn tại, không phân biệt "TO-123" / "123" hay chữ hoa/thường.
     // ========================================================================
-    var toCodeNormalized = (toCode || "").trim().toUpperCase();
-    var customerNameNormalized = (customerName || "").trim().toUpperCase();
+    function normalizeToValue(value) {
+      if (value === null || value === undefined) return "";
+      return String(value).replace(/^TO-?/i, "").replace(/\s+/g, "").trim().toUpperCase();
+    }
+
+    function normalizeCustomerValue(value) {
+      if (value === null || value === undefined) return "";
+      return String(value).replace(/\s+/g, " ").trim().toUpperCase();
+    }
+
+    var toCodeNormalized = normalizeToValue(toCode);
+    var customerNameNormalized = normalizeCustomerValue(customerName);
     var toCustomerExists = false;
 
     if (toCodeNormalized && customerNameNormalized && sheetData && sheetData.getLastRow() > 1) {
@@ -618,9 +677,9 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
         var existingData = sheetData.getRange(2, 1, sheetData.getLastRow() - 1, sheetData.getLastColumn()).getValues();
         for (var checkIdx = 0; checkIdx < existingData.length; checkIdx++) {
           var checkRow = existingData[checkIdx];
-          var existingTO = (checkRow[8] || "").toString().trim().toUpperCase();      // Column I (index 8): TO
-          var existingCustomer = (checkRow[10] || "").toString().trim().toUpperCase(); // Column K (index 10): Customer
-          
+          var existingTO = normalizeToValue(checkRow[8]);      // Column I (index 8): TO
+          var existingCustomer = normalizeCustomerValue(checkRow[10]); // Column K (index 10): Customer
+
           if (existingTO === toCodeNormalized && existingCustomer === customerNameNormalized) {
             toCustomerExists = true;
             Logger.log("⚠️ TO [" + toCodeNormalized + "] & Customer [" + customerNameNormalized + "] đã tồn tại. Chỉ lưu vào SO.");
@@ -633,15 +692,16 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     }
 
     // Luôn luôn tạo một dòng MỚI ở cuối sheet "Data" khi lưu dữ liệu (NẾU chưa tồn tại)
-    var targetRow = sheetData.getLastRow() + 1;
-    var autoId = generateUniqueId();
+    // TRƯỜNG HỢP UPGRADE: cập nhật dòng hiện có thay vì tạo dòng mới
+    var targetRow = isUpgradeMode ? rowIdx : (sheetData.getLastRow() + 1);
+    var autoId = isUpgradeMode ? sheetData.getRange(rowIdx, 1).getValue() : generateUniqueId();
     var userEmail = getCurrentUserEmail();
 
-    // 2. Ghi dữ liệu vào sheet "Data" (33 cột từ A -> AG) - NẾU chưa tồn tại
+    // 2. Ghi dữ liệu vào sheet "Data" (33 cột từ A -> AG)
     var mappedRowData = new Array(33).fill("");
     mappedRowData[0] = autoId;             // A: ID
     mappedRowData[1] = userEmail;          // B: Mail ID
-    mappedRowData[2] = "Đang thực hiện";           // C: Status
+    mappedRowData[2] = "Đang thực hiện";           // C: Status (không thay đổi nếu upgrade)
     mappedRowData[3] = group;              // D: Group
     mappedRowData[4] = type;               // E: Type
     mappedRowData[5] = version;                   // F: Drawing Revise
@@ -671,18 +731,66 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     mappedRowData[29] = heightVal;          // AD: H
     mappedRowData[30] = "";                 // AE: Sample File Excel
     mappedRowData[31] = "";                 // AF: Sample File PDF
-    mappedRowData[32] = "";                 // AG: Hình ảnh mặt cắt
+    mappedRowData[32] = "";                  // AG: Hình ảnh mặt cắt (để trống, ảnh được chèn bởi CellImage riêng)
     mappedRowData[33] = soNo;              // AH: Mã SO
 
-    // Chỉ lưu vào sheet "Data" nếu TO + Customer chưa tồn tại
-    if (!toCustomerExists) {
+    // Chỉ kiểm tra TO+Customer trong chế độ INSERT (không upgrade)
+    if (isUpgradeMode) {
+      // Chế độ UPDATE: luôn ghi lại dữ liệu vào hàng hiện có
       sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
       if (cellImage) {
         sheetData.getRange(targetRow, 33).setValue(cellImage);
       }
-      Logger.log("✅ Lưu TO [" + toCodeNormalized + "] & Customer [" + customerNameNormalized + "] vào sheet Data.");
+      Logger.log("✅ Nâng cấp bản vẽ tại hàng " + targetRow + " - DW Code: " + dwCode);
     } else {
-      Logger.log("⏭️ Bỏ qua lưu Data - chỉ lưu vào SO.");
+      // Chế độ INSERT: kiểm tra TO+Customer trước khi ghi
+      // ========================================================================
+      // KIỂM TRA: TO + Customer đã tồn tại trong sheet "Data" chưa?
+      // Chỉ bỏ qua ghi Data khi cùng TO + Customer đã tồn tại, không phân biệt "TO-123" / "123" hay chữ hoa/thường.
+      // ========================================================================
+      function normalizeToValue(value) {
+        if (value === null || value === undefined) return "";
+        return String(value).replace(/^TO-?/i, "").replace(/\s+/g, "").trim().toUpperCase();
+      }
+
+      function normalizeCustomerValue(value) {
+        if (value === null || value === undefined) return "";
+        return String(value).replace(/\s+/g, " ").trim().toUpperCase();
+      }
+
+      var toCodeNormalized = normalizeToValue(toCode);
+      var customerNameNormalized = normalizeCustomerValue(customerName);
+      var toCustomerExists = false;
+
+      if (toCodeNormalized && customerNameNormalized && sheetData && sheetData.getLastRow() > 1) {
+        try {
+          var existingData = sheetData.getRange(2, 1, sheetData.getLastRow() - 1, sheetData.getLastColumn()).getValues();
+          for (var checkIdx = 0; checkIdx < existingData.length; checkIdx++) {
+            var checkRow = existingData[checkIdx];
+            var existingTO = normalizeToValue(checkRow[8]);      // Column I (index 8): TO
+            var existingCustomer = normalizeCustomerValue(checkRow[10]); // Column K (index 10): Customer
+
+            if (existingTO === toCodeNormalized && existingCustomer === customerNameNormalized) {
+              toCustomerExists = true;
+              Logger.log("⚠️ TO [" + toCodeNormalized + "] & Customer [" + customerNameNormalized + "] đã tồn tại. Chỉ lưu vào SO.");
+              break;
+            }
+          }
+        } catch (checkErr) {
+          Logger.log("Lỗi kiểm tra TO+Customer: " + checkErr.toString());
+        }
+      }
+
+      // Chỉ lưu vào sheet "Data" nếu TO + Customer chưa tồn tại
+      if (!toCustomerExists) {
+        sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
+        if (cellImage) {
+          sheetData.getRange(targetRow, 33).setValue(cellImage);
+        }
+        Logger.log("✅ Lưu TO [" + toCodeNormalized + "] & Customer [" + customerNameNormalized + "] vào sheet Data.");
+      } else {
+        Logger.log("⏭️ Bỏ qua lưu Data - chỉ lưu vào SO.");
+      }
     }
 
     // Luôn luôn lưu vào sheet "SO" (dù TO+Customer đã tồn tại hay chưa)
@@ -862,14 +970,28 @@ function getManagedDrawings() {
     for (var i = 0; i < data.length; i++) {
       var row = data[i] || [];
 
-      var width = row[28];
-      var height = row[29];
+      // Kiểm tra nếu có dữ liệu đủ (AC hoặc AG không rỗng)
+      var acValue = row[28];  // AC: Width
+      var agValue = row[32];  // AG: Hình mặt cắt
 
-      if (width !== '' && width !== null && width !== undefined && height !== '' && height !== null && height !== undefined) {
+      // Chuyển sang string an toàn để tránh CellImage object
+      var acStr = acValue ? String(acValue).trim() : '';
+      var agStr = normalizeImageSource(agValue);
+
+      if ((acStr !== '') || (agStr !== '')) {
+        var typeVal = row[3] || 'New';        // D: Type
+        var toVal = row[8] || 'N/A';          // I: TO
+        var dwCodeVal = row[11] || '';        // L: DW Code
+        var customerVal = row[10] || 'Unknown'; // K: Customer
 
         managed.push({
-          width: width,
-          height: height,
+          type: String(typeVal),
+          to: String(toVal),
+          dwCode: String(dwCodeVal),
+          customer: String(customerVal),
+          cutDrawing: agStr,    // Already converted to string
+          so: String(row[33] || ''),
+          rowIdx: i + 2                 // Row index (1-based)
         });
       }
     }
@@ -911,7 +1033,67 @@ function getDrawingsWithoutImage() {
   try {
     var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
     var ss = SpreadsheetApp.openById(sheetId);
+    var logSheet = ss.getSheetByName('Log');
     var dataSheet = ss.getSheetByName('Data');
+
+    var existingSoMap = {};
+    if (dataSheet && dataSheet.getLastRow() > 1) {
+      var dataVals = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn()).getValues();
+      for (var d = 0; d < dataVals.length; d++) {
+        var r = dataVals[d] || [];
+        var soCode = '';
+        if (r[33]) soCode = toSafeString(r[33]);
+        else if (r[5]) soCode = toSafeString(r[5]);
+
+        if (!soCode) {
+          for (var c = 0; c < r.length; c++) {
+            var cellStr = toSafeString(r[c]);
+            if (/^SO\d+/i.test(cellStr)) {
+              soCode = cellStr;
+              break;
+            }
+          }
+        }
+
+        if (soCode) {
+          var cleanSo = soCode.toUpperCase().replace(/\s+/g, "");
+          var digitsSo = cleanSo.replace(/[^0-9]/g, "");
+          existingSoMap[cleanSo] = true;
+          if (digitsSo) existingSoMap[digitsSo] = true;
+        }
+      }
+    }
+
+    if (logSheet && logSheet.getLastRow() > 1) {
+      var logValues = logSheet.getDataRange().getValues();
+      var pending = [];
+
+      for (var i = 1; i < logValues.length; i++) {
+        if (String(logValues[i][6] || '').trim() !== 'Đã tiếp nhận') continue;
+
+        var rawSo = String(logValues[i][5] || '').trim();
+        var cleanSo = rawSo.toUpperCase().replace(/\s+/g, "");
+        var digitsSo = cleanSo.replace(/[^0-9]/g, "");
+
+        if ((rawSo && existingSoMap[cleanSo]) || (digitsSo && existingSoMap[digitsSo])) {
+          continue;
+        }
+
+        pending.push({
+          rowIdx: i + 1,
+          type: 'New',
+          to: String(logValues[i][4] || 'N/A'),
+          dwCode: '',
+          customer: String(logValues[i][3] || 'Unknown'),
+          subject: String(logValues[i][2] || ''),
+          so: rawSo,
+          existsInData: false,
+          imageUrl: ''
+        });
+      }
+
+      return { success: true, data: pending.reverse() };
+    }
 
     if (!dataSheet || dataSheet.getLastRow() <= 1) {
       return { success: true, data: [] };
@@ -922,11 +1104,17 @@ function getDrawingsWithoutImage() {
 
     for (var i = 0; i < data.length; i++) {
       var row = data[i] || [];
-
       var width = row[28];
       var height = row[29];
+      var widthStr = width ? String(width).trim() : '';
+      var heightStr = height ? String(height).trim() : '';
 
-      if ((width === '' || width === null || width === undefined) && (height === '' || height === null || height === undefined)) {
+      if ((widthStr === '') && (heightStr === '')) {
+        var type = row[3] || 'New';
+        var to = row[8] || 'N/A';
+        var dwCode = row[11] || '';
+        var customer = row[10] || 'Unknown';
+
         pending.push({
           rowIdx: i + 2,
           type: String(type),

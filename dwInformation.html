@@ -473,7 +473,7 @@
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">TO</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Dw Code</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Customer</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">W × H</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Hình mặt cắt</th>
                   <th scope="col" class="text-end pe-4 text-muted fw-semibold py-3 border-bottom-0"
                     style="width: 140px;">Action</th>
                 </tr>
@@ -628,118 +628,19 @@
 </div>
 
 
-<!-- ================== POPUP FORM (MODAL) ================= -->
-<div class="modal fade" id="drawingFormModal" tabindex="-1" aria-labelledby="modalFormTitle" aria-hidden="true"
-  data-bs-backdrop="static">
-  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content rounded-4 border-0 shadow-lg">
-      <form id="drawingForm" onsubmit="handleDrawingFormSubmit(event)">
-        <div class="modal-header bg-light border-bottom p-4">
-          <div class="d-flex align-items-center">
-            <div
-              class="bg-primary bg-opacity-10 text-primary rounded d-flex justify-content-center align-items-center me-3"
-              style="width: 40px; height: 40px;">
-              <i class="fa fa-file-pen fs-5"></i>
-            </div>
-            <h5 class="modal-title fw-bold text-dark" id="modalFormTitle">Form Nhập Dữ Liệu</h5>
-          </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeDrawingForm()"
-            aria-label="Close"></button>
-        </div>
-
-        <div class="modal-body p-4 bg-white">
-          <div class="row g-3">
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">FYE</label>
-              <input type="text" id="formFYE" class="form-control bg-light" placeholder="FYE27" readonly />
-            </div>
-            <div class="col-md-3 col-sm-12">
-              <label class="form-label fw-semibold">Dự án <span class="text-danger">*</span></label>
-              <input type="text" id="formProject" class="form-control" placeholder="Nhập tên dự án..." required />
-            </div>
-            <div class="col-md-3 col-sm-12">
-              <label class="form-label fw-semibold">Người đảm trách <span class="text-danger">*</span></label>
-              <div class="input-group">
-                <span class="input-group-text bg-light text-muted"><i class="fa fa-user"></i></span>
-                <input type="text" id="formAssignee" class="form-control" placeholder="Tên người phụ trách..."
-                  required />
-              </div>
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Ngày tiếp nhận <span class="text-danger">*</span></label>
-              <input type="date" id="formReceivedDate" class="form-control" required />
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Group <span class="text-danger">*</span></label>
-              <select id="formGroup" class="form-select bg-light" required>
-                <option value="Barsale">Barsale</option>
-                <option value="OEM">OEM</option>
-                <option value="WE SASH">WE SASH</option>
-              </select>
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Type <span class="text-danger">*</span></label>
-              <select id="formType" class="form-select bg-light" required>
-                <option value="New">New</option>
-                <option value="Revise">Revise</option>
-              </select>
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Customer <span class="text-danger">*</span></label>
-              <input type="text" id="formCustomer" class="form-control" placeholder="Tên khách hàng..." required />
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">TO <span class="text-danger">*</span></label>
-              <input type="text" id="formTO" class="form-control" placeholder="Mã TO..." required />
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Số SO</label>
-              <input type="text" id="formSO" class="form-control" placeholder="Ví dụ: SO12345" />
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Dw Code <span class="text-danger">*</span></label>
-              <input type="text" id="formDwCode" class="form-control bg-light" required />
-            </div>
-
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Version <span class="text-danger">*</span></label>
-              <select id="formVersion" class="form-select bg-light" required>
-                <option value="v1.0">v1.0</option>
-                <option value="v1.1">v1.1</option>
-                <option value="v2.0">v2.0</option>
-                <option value="v3.0">v3.0</option>
-              </select>
-            </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Type DW <span class="text-danger">*</span></label>
-              <select id="formTypeDw" class="form-select bg-light" required>
-                <option value="V2">V2</option>
-                <option value="V3">V3</option>
-                <option value="V8">V8</option>
-              </select>
-            </div>
-
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Ngày ĐT hoàn thành</label>
-              <input type="date" id="formAssigneeDoneDate" class="form-control" />
-            </div>
-          </div>
-        </div>
-
-        <div class="modal-footer bg-light border-top p-3">
-          <button type="submit" class="btn btn-primary px-4 shadow-sm fw-bold"><i class="fa fa-floppy-disk me-2"></i>Lưu
-            Dữ Liệu</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
 <script>
   /* ==========================================================================
      HÀM TIỆN ÍCH
      ========================================================================== */
-  function escHtml(str) { return str ? String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
+  function escHtml(str) {
+    if (!str && str !== 0) return '';
+    try {
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    } catch (e) {
+      console.error('escHtml error:', e, 'value:', str);
+      return '';
+    }
+  }
   function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val !== undefined ? val : '–'; }
 
   function showToast(message, type) {
@@ -866,10 +767,10 @@
         '<div class="email-item position-relative' + isActive + isUnread + statusClass + '" onclick="openEmail(\'' + email.id + '\'); return false;">' +
         dot +
         '<div class="d-flex justify-content-between align-items-center mb-1">' +
-        '<span class="email-sender text-truncate pe-2" style="font-size:0.9rem;">' + escHtml(email.senderName || email.senderEmail) + '</span>' +
-        '<small class="text-muted text-nowrap" style="font-size:0.75rem;">' + escHtml(email.date) + '</small>' +
+        '<span class="email-sender text-truncate pe-2" style="font-size:0.9rem;">' + escHtml(String(email.senderName || email.senderEmail)) + '</span>' +
+        '<small class="text-muted text-nowrap" style="font-size:0.75rem;">' + escHtml(String(email.date)) + '</small>' +
         '</div>' +
-        '<div class="email-subject text-secondary text-truncate" style="font-size:0.85rem;">' + escHtml(email.subject) + '</div>' +
+        '<div class="email-subject text-secondary text-truncate" style="font-size:0.85rem;">' + escHtml(String(email.subject)) + '</div>' +
         '</div>'
       );
     }
@@ -878,7 +779,7 @@
 
   function renderPagination(data) {
     var pag = document.getElementById('pagination'); if (!pag) return;
-    if (data.total <= 50) { pag.classList.replace('d-flex', 'd-none'); return; }
+    if (data.total <= 100) { pag.classList.replace('d-flex', 'd-none'); return; }
     pag.classList.replace('d-none', 'd-flex');
     document.getElementById('prevBtn').disabled = state.currentPage === 0;
     document.getElementById('nextBtn').disabled = !data.hasMore;
@@ -961,15 +862,15 @@
       (firstMsg.senderName[0] || '?').toUpperCase() +
       '</div>' +
       '<div>' +
-      '<div class="fw-bold text-dark fs-6">' + escHtml(firstMsg.senderName) + ' <span class="text-muted fw-normal" style="font-size:0.85rem;">&lt;' + escHtml(firstMsg.senderEmail) + '&gt;</span></div>' +
-      '<small class="text-muted"><i class="fa fa-calendar-alt me-1"></i> ' + escHtml(firstMsg.date) + '</small>' +
+      '<div class="fw-bold text-dark fs-6">' + escHtml(String(firstMsg.senderName)) + ' <span class="text-muted fw-normal" style="font-size:0.85rem;">&lt;' + escHtml(String(firstMsg.senderEmail)) + '&gt;</span></div>' +
+      '<small class="text-muted"><i class="fa fa-calendar-alt me-1"></i> ' + escHtml(String(firstMsg.date)) + '</small>' +
       '</div>' +
       '</div>';
 
     document.getElementById('detailHeader').innerHTML = headerHtml;
 
     var bodyHtml = data.messages.map(function (msg, idx) {
-      var safeBody = escHtml(msg.plainBody || '');
+      var safeBody = escHtml(String(msg.plainBody || ''));
 
       var urlRegex = /((?:https?:\/\/|www\.)[^\s]+)/ig;
       var links = [];
@@ -1007,7 +908,7 @@
           '<div class="d-flex flex-wrap gap-2">';
         for (var j = 0; j < msg.attachments.length; j++) {
           var att = msg.attachments[j];
-          var attName = escHtml(att.name || 'Tập tin không tên');
+          var attName = escHtml(String(att.name || 'Tập tin không tên'));
           var iconClass = att.isSheet ? 'fa-file-excel text-success' : 'fa-file text-secondary';
           attachmentsFooterHtml += '<button type="button" onclick="viewAttachment(\'' + data.threadId + '\', ' + idx + ', ' + j + ', \'' + attName.replace(/'/g, "\\'") + '\')" class="btn btn-sm btn-light border p-2 px-3 d-flex align-items-center shadow-sm rounded-pill text-dark hover-card" style="font-size:0.85rem; transition: all 0.2s;" title="Nhấn để xem"><i class="fa ' + iconClass + ' me-2 fs-6"></i>' + attName + '</button>';
         }
@@ -1016,8 +917,8 @@
 
       return '<div class="card mb-4 border-0 shadow-sm rounded-4 overflow-hidden">' +
         '<div class="card-header bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between">' +
-        '<span class="fw-bold text-secondary"><i class="fa fa-reply fa-rotate-180 me-2 text-primary"></i>' + escHtml(msg.senderName) + '</span>' +
-        '<small class="text-muted">' + escHtml(msg.date) + '</small>' +
+        '<span class="fw-bold text-secondary"><i class="fa fa-reply fa-rotate-180 me-2 text-primary"></i>' + escHtml(String(msg.senderName)) + '</span>' +
+        '<small class="text-muted">' + escHtml(String(msg.date)) + '</small>' +
         '</div>' +
         '<div class="card-body pt-2 text-dark" style="font-size:14px;white-space:pre-wrap;line-height:1.6;">' +
         formattedBody + linksFooterHtml + attachmentsFooterHtml +
@@ -1183,7 +1084,7 @@
   /* ==========================================================================
      MODULE 1.2: NHẬP DỮ LIỆU BẢN VẼ
      ========================================================================== */
-  var pendingState = { selectedLogIdx: null, subject: '' };
+  var pendingState = { selectedLogIdx: null, subject: '', isUpgradeMode: false };
   var drawingDataList = [];
   var drawingModalInstance = null; // Quản lý instance của Modal
 
@@ -1269,13 +1170,13 @@
     } else {
       emptyState.classList.add('d-none');
       var html = data.map(function (item) {
-        var type = escHtml(item.type || 'New');
-        var to = escHtml(item.to || 'N/A');
-        var dwCode = escHtml(item.dwCode || 'DW-V2-01V');
-        var customer = escHtml(item.customer || 'Unknown');
+        var type = escHtml(String(item.type || 'New'));
+        var to = escHtml(String(item.to || 'N/A'));
+        var dwCode = escHtml(String(item.dwCode || 'DW-V2-01V'));
+        var customer = escHtml(String(item.customer || 'Unknown'));
         var id = item.rowIdx;
-        var subject = escHtml(item.subject || '').replace(/'/g, "\\'");
-        var soRaw = item.so || '';
+        var subject = escHtml(String(item.subject || '')).replace(/'/g, "\\'");
+        var soRaw = String(item.so || '');
 
         // Kiểm tra xem Mã SO đã tồn tại trong sheet Data hay chưa
         var exists = !!item.existsInData;
@@ -1298,7 +1199,7 @@
         var actionHtml = '';
         if (exists) {
           // Đã tồn tại trong Data -> Ẩn nút Sửa/Xóa, Hiện nút Tìm kiếm bản vẽ đóng gói
-          var imgUrl = escHtml(item.imageUrl || '');
+          var imgUrl = escHtml(String(item.imageUrl || ''));
           var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
           actionHtml = '<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
             '<i class="fa fa-search me-1"></i>Tìm kiếm</button>';
@@ -1417,6 +1318,9 @@
     pendingState.subject = 'Bản vẽ mới (Nhập thủ công)';
     document.getElementById('modalFormTitle').textContent = 'Thêm Mới Bản Vẽ';
 
+    setToFieldVisibility(true);
+    hideSingleEditFields();
+
     var form = document.getElementById('drawingForm');
     if (!form) return;
 
@@ -1449,6 +1353,17 @@
   }
 
   function closeDrawingForm() {
+    setToFieldVisibility(true);
+    
+    // Re-enable tất cả field khi đóng form
+    var allFields = ['formGroup', 'formType', 'formCustomer', 'formTO', 'formProject', 'formSO', 'formDwCode', 
+                     'formVersion', 'formTypeDw', 'formAssignee', 'formWidth', 'formHeight', 'formReceivedDate', 
+                     'formAssigneeDoneDate', 'formActualDoneDate', 'formFYE', 'formNote', 'formImageFile'];
+    allFields.forEach(function(fieldId) {
+      var field = document.getElementById(fieldId);
+      if (field) field.disabled = false;
+    });
+    
     var modalEl = document.getElementById('drawingFormModal');
     if (modalEl) {
       var modalInstance = bootstrap.Modal.getInstance(modalEl);
@@ -1464,6 +1379,7 @@
     var form = document.getElementById('drawingForm');
     if (form) form.reset();
     pendingState.selectedLogIdx = null;
+    pendingState.isUpgradeMode = false;
   }
 
   // Chức năng Xóa với thông báo mới
@@ -1498,24 +1414,6 @@
     });
   }
 
-  function closeDrawingForm() {
-    if (!pendingState.selectedLogIdx) return;
-    var container = document.getElementById('form-container-' + pendingState.selectedLogIdx);
-    var templateWrapper = document.getElementById('formTemplateWrapper');
-    var form = document.getElementById('drawingForm');
-    var btn = document.getElementById('btn-toggle-' + pendingState.selectedLogIdx);
-
-    if (container) container.classList.add('d-none');
-    if (btn) {
-      btn.innerHTML = '<i class="fa fa-pen me-2"></i>Nhập dữ liệu';
-      btn.classList.replace('btn-primary', 'btn-outline-primary');
-      btn.classList.remove('text-white');
-    }
-    if (templateWrapper && form) templateWrapper.appendChild(form);
-
-    pendingState.selectedLogIdx = null;
-  }
-
   function calculateFYE() {
     var actualDate = document.getElementById('formActualDoneDate');
     var fye = document.getElementById('formFYE');
@@ -1539,12 +1437,20 @@
       return el ? el.value : "";
     };
 
+    var toValue = getVal('formTO');
+    if (!toValue && pendingState && pendingState.selectedLogIdx && typeof pendingState.selectedLogIdx === 'number') {
+      var currentRow = drawingDataList.find(function (item) {
+        return Number(item.rowIdx) === Number(pendingState.selectedLogIdx);
+      });
+      if (currentRow && currentRow.to) toValue = String(currentRow.to);
+    }
+
     // Mảng 17 trường theo đúng thứ tự Form mới
     var rowData = [
       getVal('formGroup'),            // 0: Group
       getVal('formType'),             // 1: Type
       getVal('formCustomer'),         // 2: Customer
-      getVal('formTO'),               // 3: TO
+      toValue,                        // 3: TO
       getVal('formProject'),          // 4: Dự án
       getVal('formSO'),               // 5: Số SO
       getVal('formDwCode'),           // 6: Dw Code
@@ -1623,7 +1529,25 @@
         if (res.success) {
           showToast('Đã lưu thành công!', 'success');
           closeDrawingForm();
-          initNhapDuLieuBanVe();
+          
+          // Nếu là chế độ upgrade (nâng cấp bản vẽ) thì nhảy sang tab manage
+          if (pendingState.isUpgradeMode) {
+            pendingState.isUpgradeMode = false;  // Reset flag
+            setTimeout(function () {
+              // Reload dữ liệu manage drawings
+              loadManagedDrawings();
+              // Nhảy sang tab 3 (Quản lí bản vẽ)
+              var manageTabBtn = document.getElementById('manage-tab');
+              if (manageTabBtn) {
+                var manageTab = new bootstrap.Tab(manageTabBtn);
+                manageTab.show();
+              }
+            }, 500);
+          } else {
+            // Chế độ bình thường: reload tab 2
+            initNhapDuLieuBanVe();
+          }
+          
           if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
         }
         else showToast('Lỗi lưu sheet: ' + res.error, 'error');
@@ -1696,9 +1620,97 @@
     if (fields) fields.style.display = 'block';
   }
 
+  function setToFieldVisibility(visible) {
+    var toInput = document.getElementById('formTO');
+    if (toInput) {
+      toInput.required = visible;
+      if (!visible) {
+        toInput.value = '';
+      }
+
+      var parentCol = toInput.closest('.col-md-3, .col-sm-6, .col-12');
+      if (parentCol) {
+        parentCol.style.display = visible ? '' : 'none';
+      }
+    }
+  }
+
   function hideSingleEditFields() {
     var fields = document.getElementById('singleEditFields');
     if (fields) fields.style.display = 'none';
+  }
+
+  // ========== OPEN UPGRADE DRAWING FORM (TAB 3) ==========
+  function openUpgradeDrawingForm(drawingItem) {
+    if (!drawingItem) {
+      showToast('Không tìm thấy dữ liệu bản vẽ', 'warning');
+      return;
+    }
+
+    pendingState.selectedLogIdx = drawingItem.rowIdx;
+    pendingState.subject = 'Nâng cấp bản vẽ - ' + drawingItem.dwCode;
+    pendingState.isUpgradeMode = true;  // Đánh dấu chế độ upgrade
+    document.getElementById('modalFormTitle').textContent = 'Nâng Cấp Bản Vẽ';
+
+    setToFieldVisibility(true);
+    showSingleEditFields();
+
+    var form = document.getElementById('drawingForm');
+    if (!form) return;
+
+    form.reset();
+    
+    // Pre-fill thông tin bản vẽ hiện tại (read-only để xem)
+    if (document.getElementById('formType')) {
+      document.getElementById('formType').value = drawingItem.type || 'New';
+      document.getElementById('formType').disabled = true;
+    }
+    if (document.getElementById('formTO')) {
+      document.getElementById('formTO').value = drawingItem.to || '';
+      document.getElementById('formTO').disabled = true;
+    }
+    if (document.getElementById('formCustomer')) {
+      document.getElementById('formCustomer').value = drawingItem.customer || '';
+      document.getElementById('formCustomer').disabled = true;
+    }
+    if (document.getElementById('formDwCode')) {
+      document.getElementById('formDwCode').value = drawingItem.dwCode || '';
+      document.getElementById('formDwCode').disabled = true;
+    }
+    if (document.getElementById('formSO')) {
+      document.getElementById('formSO').value = drawingItem.so || '';
+      document.getElementById('formSO').disabled = true;
+    }
+    
+    // Disable các trường khác
+    var fieldsToDisable = ['formGroup', 'formProject', 'formVersion', 'formTypeDw', 'formAssignee', 'formReceivedDate', 'formAssigneeDoneDate'];
+    fieldsToDisable.forEach(function(fieldId) {
+      var field = document.getElementById(fieldId);
+      if (field) {
+        field.value = '';
+        field.disabled = true;
+      }
+    });
+    
+    // Enable chỉ 3 trường cần sửa
+    if (document.getElementById('formWidth')) {
+      document.getElementById('formWidth').value = '';
+      document.getElementById('formWidth').disabled = false;
+    }
+    if (document.getElementById('formHeight')) {
+      document.getElementById('formHeight').value = '';
+      document.getElementById('formHeight').disabled = false;
+    }
+    if (document.getElementById('formImageFile')) {
+      document.getElementById('formImageFile').value = '';
+      document.getElementById('formImageFile').disabled = false;
+    }
+    if (document.getElementById('formImagePreview')) {
+      document.getElementById('formImagePreview').style.display = 'none';
+      document.getElementById('formImagePreview').src = '';
+    }
+
+    getDrawingModal().show();
   }
 
   // ========== OPEN BULK EDIT FORM ==========
@@ -1712,6 +1724,7 @@
     pendingState.subject = 'Sửa hàng loạt (' + bulkState.selectedRows.size + ' mục)';
     document.getElementById('modalFormTitle').textContent = 'Sửa Hàng Loạt - ' + bulkState.selectedRows.size + ' Bản Vẽ';
 
+    setToFieldVisibility(false);
     hideSingleEditFields();
 
     var form = document.getElementById('drawingForm');
@@ -1728,6 +1741,7 @@
     pendingState.subject = subject;
     document.getElementById('modalFormTitle').textContent = 'Chỉnh Sửa Dữ Liệu Bản Vẽ';
 
+    setToFieldVisibility(true);
     showSingleEditFields();
 
     var form = document.getElementById('drawingForm');
@@ -1760,13 +1774,13 @@
     } else {
       emptyState.classList.add('d-none');
       var html = data.map(function (item) {
-        var type = escHtml(item.type || 'New');
-        var to = escHtml(item.to || 'N/A');
-        var dwCode = escHtml(item.dwCode || 'DW-V2-01V');
-        var customer = escHtml(item.customer || 'Unknown');
+        var type = escHtml(String(item.type || 'New'));
+        var to = escHtml(String(item.to || 'N/A'));
+        var dwCode = escHtml(String(item.dwCode || 'DW-V2-01V'));
+        var customer = escHtml(String(item.customer || 'Unknown'));
         var id = item.rowIdx;
-        var subject = escHtml(item.subject || '').replace(/'/g, "\\'");
-        var soRaw = item.so || '';
+        var subject = escHtml(String(item.subject || '')).replace(/'/g, "\\'");
+        var soRaw = String(item.so || '');
 
         var exists = !!item.existsInData;
         if (!exists && soRaw) {
@@ -1787,7 +1801,7 @@
 
         var actionHtml = '';
         if (exists) {
-          var imgUrl = escHtml(item.imageUrl || '');
+          var imgUrl = escHtml(String(item.imageUrl || ''));
           var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
           actionHtml = '<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
             '<i class="fa fa-search me-1"></i>Tìm kiếm</button>';
@@ -1846,29 +1860,50 @@
     } else {
       emptyState.classList.add('d-none');
       var html = data.map(function (item) {
-        var type = escHtml(item.type || 'New');
-        var to = escHtml(item.to || 'N/A');
-        var dwCode = escHtml(item.dwCode || '');
-        var customer = escHtml(item.customer || 'Unknown');
-        var width = item.width || '–';
-        var height = item.height || '–';
-        var id = item.rowIdx;
+        // Convert tất cả dữ liệu sang string ngay từ đầu
+        var type = escHtml(String(item.type || 'New'));
+        var to = escHtml(String(item.to || 'N/A'));
+        var dwCode = escHtml(String(item.dwCode || ''));
+        var customer = escHtml(String(item.customer || 'Unknown'));
+        var cutDrawing = String(item.cutDrawing || '').trim();
+        var so = String(item.so || '').trim();
+        var id = parseInt(item.rowIdx) || 0;
+        var safeCutDrawing = escHtml(cutDrawing).replace(/'/g, "\\'");
+        var safeSo = escHtml(so).replace(/'/g, "\\'");
+
+        // Hiển thị ảnh trực tiếp nếu có URL hợp lệ; không cần click vào nút để xem.
+        var cutDrawingHtml = '<span class="text-muted">–</span>';
+        if (cutDrawing && (cutDrawing.indexOf('http') !== -1 || cutDrawing.indexOf('data:image') !== -1 || cutDrawing.indexOf('drive.google') !== -1)) {
+          cutDrawingHtml = '<img src="' + escHtml(cutDrawing) + '" alt="Cut drawing" style="max-width: 84px; max-height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0; background: #f8fafc; box-shadow: 0 3px 10px rgba(15,23,42,0.08); display: block; margin: 0 auto;" />';
+        } else if (cutDrawing) {
+          cutDrawingHtml = '<small class="text-muted">' + escHtml(cutDrawing) + '</small>';
+        }
 
         var actionHtml = '<div class="btn-group shadow-sm">' +
-          '<button class="btn btn-sm btn-light border text-primary" onclick="viewManagedDrawing(' + id + ')" title="Xem chi tiết"><i class="fa fa-eye me-1"></i>Xem</button>' +
-          '<button class="btn btn-sm btn-light border text-danger" onclick="removeManagedDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash me-1"></i>Xóa</button>' +
+          '<button class="btn btn-sm btn-light border text-primary upgrade-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Nâng cấp bản vẽ"><i class="fa fa-arrow-up-right-dots me-1"></i>Nâng cấp</button>' +
+          '<button class="btn btn-sm btn-light border text-danger" onclick="event.stopPropagation(); removeManagedDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash me-1"></i>Xóa</button>' +
           '</div>';
 
-        return '<tr class="bg-white">' +
+        return '<tr class="bg-white" style="cursor:pointer;" onclick="handleSearchPackagingDrawing(\'' + safeCutDrawing + '\', \'' + safeSo + '\');">' +
           '<td class="ps-4 fw-bold text-dark">' + type + '</td>' +
           '<td><span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-2 py-1">' + to + '</span></td>' +
           '<td><code class="text-info bg-light px-2 py-1 rounded fw-bold border">' + dwCode + '</code></td>' +
           '<td class="text-secondary fw-medium">' + customer + '</td>' +
-          '<td class="text-center">' + width + ' × ' + height + '</td>' +
+          '<td class="text-center">' + cutDrawingHtml + '</td>' +
           '<td class="text-end pe-4">' + actionHtml + '</td>' +
           '</tr>';
       }).join('');
       tbody.innerHTML = html;
+
+      // Event delegation cho nút upgrade
+      tbody.querySelectorAll('.upgrade-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+          var itemData = JSON.parse(this.dataset.item);
+          openUpgradeDrawingForm(itemData);
+        });
+      });
     }
   }
 
@@ -1892,8 +1927,14 @@
   }
 
   function viewManagedDrawing(rowId) {
-    showToast('Chi tiết bản vẽ: ' + rowId, 'info');
-    // TODO: Mở modal để xem chi tiết
+    var item = managedDrawingList.find(function (entry) {
+      return parseInt(entry.rowIdx) === parseInt(rowId);
+    });
+    if (item) {
+      handleSearchPackagingDrawing(String(item.cutDrawing || ''), String(item.so || ''));
+    } else {
+      showToast('Không tìm thấy dữ liệu bản vẽ để nâng cấp', 'warning');
+    }
   }
 
   function removeManagedDrawing(rowId) {
@@ -1929,23 +1970,40 @@
   }
 
   // ========== ĐIỀU CHỈNH LUỒNG INIT ==========
+  window.__dwInfoInitialLoadGuard = window.__dwInfoInitialLoadGuard || {};
+
   var originalInitThongTinBanVe = window.initThongTinBanVe;
   window.initThongTinBanVe = function() {
     if (typeof originalInitThongTinBanVe === 'function') {
       originalInitThongTinBanVe();
     }
-    // Load managed drawings khi tab được mở
+
+    // Load tab 2 (manual) và tab 3 (manage) ngay từ lúc khởi tạo
+    // để tránh loading khi người dùng bấm vào tab
     setTimeout(function() {
-      if (document.getElementById('manage-section').classList.contains('show') || 
-          document.getElementById('manage-section').classList.contains('active')) {
+      if (!window.__dwInfoInitialLoadGuard.manual) {
+        window.__dwInfoInitialLoadGuard.manual = true;
+        initNhapDuLieuBanVe();
+      }
+      if (!window.__dwInfoInitialLoadGuard.manage) {
+        window.__dwInfoInitialLoadGuard.manage = true;
         loadManagedDrawings();
       }
     }, 200);
   };
 
-  // Load managed drawings khi người dùng chuyển sang tab 3
+  // Chỉ load 1 lần duy nhất khi tab được bật lần đầu
   document.addEventListener('shown.bs.tab', function (e) {
-    if (e.target.id === 'manage-tab') {
+    var targetId = e && e.target ? e.target.id : '';
+
+    if (targetId === 'manual-tab' && !window.__dwInfoInitialLoadGuard.manual) {
+      window.__dwInfoInitialLoadGuard.manual = true;
+      initNhapDuLieuBanVe();
+      return;
+    }
+
+    if (targetId === 'manage-tab' && !window.__dwInfoInitialLoadGuard.manage) {
+      window.__dwInfoInitialLoadGuard.manage = true;
       loadManagedDrawings();
     }
   });

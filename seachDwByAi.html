@@ -1370,13 +1370,17 @@
       tbody.innerHTML = '<tr><td colspan="28" class="std-loading-state"><div class="spinner-border" role="status"></div><p class="mt-3 mb-0 text-muted">' + t('std_loading') + '</p></td></tr>';
       titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
       subtitleEl.textContent = t('retrieving_for') + ' ' + customerName + '...';
-      new bootstrap.Modal(document.getElementById('standardModal')).show();
+      var standardModal = new bootstrap.Modal(document.getElementById('standardModal'));
+      standardModal.show();
+      
       google.script.run
         .withSuccessHandler(function (rows) {
           if (!rows || rows.length === 0) {
             titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
             subtitleEl.textContent = customerName;
             tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-inbox"></i><p class="mb-1 fw-bold" style="color:#64748b;">' + t('std_empty') + '</p><small>' + t('std_empty_desc') + ' <strong>' + customerName + '</strong></small></td></tr>';
+            // Auto-close modal khi không có dữ liệu sau 2 giây
+            setTimeout(function () { standardModal.hide(); }, 2000);
             return;
           }
           titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
@@ -1386,11 +1390,14 @@
             html += '<tr><td class="text-center fw-bold">' + (i + 1) + '</td><td><strong>' + (r[0] || '') + '</strong></td><td>' + badge('gray', r[1]) + '</td><td class="text-center">' + (r[2] || '-') + '</td><td style="color:#2563eb;font-weight:500;">' + (r[3] || '-') + '</td><td>' + (r[4] || '-') + '</td><td>' + (r[5] || '-') + '</td><td>' + (r[6] || '-') + '</td><td class="text-center">' + (r[7] || '-') + '</td><td>' + (r[8] || '-') + '</td><td>' + (r[9] || '-') + '</td><td>' + palletBadge(r[10]) + '</td><td class="text-center" style="font-family:monospace;">' + (r[11] || '-') + '</td><td class="text-center">' + (r[12] || '-') + '</td><td class="text-start">' + (r[13] || '-') + '</td><td class="text-start">' + (r[14] || '-') + '</td><td class="text-center">' + (r[15] || '-') + '</td><td class="text-center">' + (r[16] || '-') + '</td><td>' + badge('gray', r[17]) + '</td><td class="text-start text-muted">' + (r[18] || '-') + '</td><td class="text-center">' + (r[19] || '-') + '</td><td>' + changeBox(r[20]) + '</td><td class="text-start">' + (r[21] || '-') + '</td><td class="text-center">' + (r[22] || '-') + '</td><td class="text-center" style="font-family:monospace;">' + (r[23] || '-') + '</td><td class="text-center">' + kgBold(r[24]) + '</td><td class="text-center">' + (r[25] || '-') + '</td><td class="text-center">' + (r[26] || '-') + '</td></tr>';
           });
           tbody.innerHTML = html;
+          // Modal vẫn giữ mở để người dùng xem dữ liệu
         })
         .withFailureHandler(function (err) {
           titleEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + t('std_error');
           subtitleEl.textContent = '';
           tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-exclamation-circle text-danger"></i><p class="text-danger fw-bold">' + err.message + '</p></td></tr>';
+          // Auto-close modal khi có lỗi sau 3 giây
+          setTimeout(function () { standardModal.hide(); }, 3000);
         })
         .getCustomerStandard(customerName);
     }
