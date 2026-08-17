@@ -1,10 +1,15 @@
-<div class="page-dwIf p-3 p-md-4 custom-scroll" style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+<div class="page-dwIf p-3 p-md-4 custom-scroll" style="height: 100%; min-height: 100%; overflow-y: auto; background-color: #f8fafc; display: flex; flex-direction: column;">
 
   <!-- ================= CUSTOM CSS ĐÃ ĐÓNG GÓI (.page-dwIf) ================= -->
   <style>
     /* Global Layout & Soft Styling */
     .page-dwIf {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #0f172a;
+      background: #f8fafc;
+      min-height: 100%;
+      visibility: visible;
+      opacity: 1;
     }
 
     /* Tabs */
@@ -15,6 +20,7 @@
       display: inline-flex;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
       border: 1px solid #e2e8f0;
+      margin-bottom: 20px;
     }
 
     .page-dwIf .custom-tabs .nav-link {
@@ -24,11 +30,30 @@
       padding: 10px 24px;
       transition: all 0.2s ease;
       border: none;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .page-dwIf .custom-tabs .nav-link::after {
+      content: '→';
+      font-size: 1.05rem;
+      line-height: 1;
+      opacity: 0.55;
+      transform: translateX(0);
+      transition: all 0.2s ease;
     }
 
     .page-dwIf .custom-tabs .nav-link:hover {
       color: var(--primary-color, #7CB342);
       background: #f1f5f9;
+    }
+
+    .page-dwIf .custom-tabs .nav-link:hover::after,
+    .page-dwIf .custom-tabs .nav-link.active::after {
+      opacity: 1;
+      transform: translateX(2px);
     }
 
     .page-dwIf .custom-tabs .nav-link.active {
@@ -45,6 +70,7 @@
       box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
       border: 1px solid #e2e8f0;
       overflow: hidden;
+      position: relative;
     }
 
     /* Danh sách Email */
@@ -91,6 +117,8 @@
     .page-dwIf .custom-table {
       border-collapse: separate;
       border-spacing: 0;
+      width: 100%;
+      min-width: 800px;
     }
 
     .page-dwIf .custom-table thead th {
@@ -198,12 +226,84 @@
     .page-dwIf .custom-scroll::-webkit-scrollbar-thumb:hover {
       background: #94a3b8;
     }
+
+    /* Tab Pane Visibility - giữ tương thích với Bootstrap, hiện đúng tab đang active */
+    .page-dwIf .tab-pane {
+      display: none;
+    }
+
+    .page-dwIf .tab-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 16px;
+    }
+
+    .page-dwIf .tab-pane.show,
+    .page-dwIf .tab-pane.active {
+      display: block;
+      animation: fadeInTab 0.3s ease-in-out forwards;
+    }
+
+    .page-dwIf .tab-content {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      overflow: hidden;
+      min-height: 500px;
+      padding: 24px;
+      position: relative;
+    }
+
+    .page-dwIf .card {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #0f172a;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+    }
+
+    .page-dwIf #manual-section,
+    .page-dwIf #manage-section {
+      min-height: 620px;
+    }
+
+    .page-dwIf .manual-panel {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      min-height: 620px;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .page-dwIf .manual-table-wrap {
+      position: relative;
+      min-height: 520px;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .page-dwIf .manual-empty-state {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: min(100%, 320px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      text-align: center;
+      z-index: 1;
+      pointer-events: none;
+    }
+
   </style>
 
-
-
   <!-- ================= TABS NAVIGATION ================= -->
-  <div class="d-flex justify-content-center mb-4 d-none">
+  <div class="d-flex justify-content-center mb-4">
     <ul class="nav nav-pills custom-tabs gap-2" id="dwIfTabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="mail-tab" data-bs-toggle="pill" data-bs-target="#mail-section" type="button"
@@ -214,23 +314,24 @@
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="manual-tab" data-bs-toggle="pill" data-bs-target="#manual-section" type="button"
           role="tab">
-          <i class="fa fa-file-signature me-2"></i> Nhập dữ liệu bản vẽ
+          <i class="fa fa-file-signature me-2"></i> Thêm bản vẽ
         </button>
       </li>
 
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="manage-tab" data-bs-toggle="pill" data-bs-target="#manage-section" type="button"
           role="tab">
-          <i class="fa fa-gear me-2"></i> Quản lý bản vẽ
+          <i class="fa fa-gear me-2"></i> Quản lí bản vẽ
         </button>
+      </li>
     </ul>
   </div>
 
   <!-- ================= TABS CONTENT ================= -->
-  <div class="tab-content glass-panel" id="dwIfTabContent" style="min-height: 500px;">
+  <div class="tab-content glass-panel" id="dwIfTabContent" style="min-height: 500px; flex: 1 1 auto; width: 100%;">
 
     <!-- TAB 1: NHẬN THÔNG TIN MAIL -->
-    <div class="tab-pane fade show active h-100" id="mail-section" role="tabpanel">
+    <div class="tab-pane fade show active h-100" id="mail-section" role="tabpanel" style="min-height: 620px;">
       <div class="row g-0 h-100">
 
         <!-- SIDEBAR EMAIL LIST -->
@@ -283,13 +384,23 @@
       </div>
     </div>
 
-    <!-- TAB 2: Thêm bản vẽ new -->
-    <div class="tab-pane fade" id="manual-section" role="tabpanel">
-      <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+    <!-- TAB 2: Thêm bản vẽ -->
+    <div class="tab-pane fade" id="manual-section" role="tabpanel" style="min-height: 620px;">
+      <div class="manual-panel p-3" style="min-height: 620px;">
 
-        <!-- Thanh công cụ: Tìm kiếm & Thêm mới -->
+        <!-- Thanh công cụ: Tìm kiếm & Thêm mới + Chọn lộc -->
         <div
-          class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 pb-3 mb-3 border-bottom">
+          class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 mb-3 border-bottom">
+          <div class="d-flex align-items-center gap-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="selectAllDrawings" onchange="toggleSelectAll()">
+              <label class="form-check-label" for="selectAllDrawings" style="font-size: 0.9rem; margin: 0;">Chọn tất cả</label>
+            </div>
+            <button id="bulkEditBtn" class="btn btn-warning btn-sm fw-bold" onclick="openBulkEditForm()" style="display: none;">
+              <i class="fa fa-edit me-1"></i>Sửa hàng loạt
+            </button>
+          </div>
+
           <div class="input-group" style="max-width: 350px;">
             <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
             <input type="text" id="searchDrawingInput" class="form-control border-start-0 bg-light shadow-none"
@@ -302,12 +413,17 @@
         </div>
 
         <!-- Bảng DataGridView -->
-        <div class="position-relative">
-          <div class="table-responsive border rounded-3 overflow-auto" style="max-height: 480px;">
+        <div class="manual-table-wrap" style="background: transparent; border: none;">
+          <div class="table-responsive border rounded-3 overflow-auto" style="max-height: 480px; background: #fff;">
             <table class="table table-hover align-middle mb-0" id="drawingDataTable">
               <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
                 <tr>
-                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0">Type</th>
+                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0" style="width: 40px;">
+                    <div class="form-check">
+                      <input class="form-check-input" type="checkbox" id="tableSelectAll" onchange="toggleTableSelectAll()">
+                    </div>
+                  </th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Type</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">TO</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Dw Code</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Customer</th>
@@ -322,61 +438,60 @@
           </div>
 
           <!-- Trạng thái trống (Empty state) -->
-          <div id="emptyTableState" class="position-absolute top-50 start-50 translate-middle text-center w-100 d-none">
-            <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mb-3 mx-auto"
+          <div id="emptyTableState" class="manual-empty-state d-none">
+            <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mx-auto"
               style="width: 70px; height: 70px;">
               <i class="fa fa-folder-open fa-2x text-secondary opacity-50"></i>
             </div>
-            <h6 class="fw-bold text-secondary">Không có dữ liệu</h6>
+            <h6 class="fw-bold text-secondary mb-0">Không có dữ liệu</h6>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Tab 3: Quản lí bản vẽ -->
-    <div class="tab-pane fade" id="manual-section" role="tabpanel">
-      <div class="card border-0 shadow-sm rounded-4 bg-white p-3">
+    <!-- TAB 3: Quản lí bản vẽ -->
+    <div class="tab-pane fade" id="manage-section" role="tabpanel" style="min-height: 620px;">
+      <div class="manual-panel p-3" style="min-height: 620px;">
 
-        <!-- Thanh công cụ: Tìm kiếm & Thêm mới -->
+        <!-- Thanh công cụ: Tìm kiếm -->
         <div
           class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 pb-3 mb-3 border-bottom">
           <div class="input-group" style="max-width: 350px;">
             <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
-            <input type="text" id="searchDrawingInput" class="form-control border-start-0 bg-light shadow-none"
-              placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchDrawingData()">
+            <input type="text" id="searchManagedDrawingInput" class="form-control border-start-0 bg-light shadow-none"
+              placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchManagedDrawingData()">
           </div>
-
-          <button class="btn btn-primary fw-bold px-4 rounded-pill" onclick="openAddDrawingForm()">
-            <i class="fa fa-plus me-2"></i>Thêm mới
-          </button>
         </div>
 
-        <div class="position-relative">
-          <div class="table-responsive border rounded-3 overflow-auto" style="max-height: 480px;">
-            <table class="table table-hover align-middle mb-0" id="drawingDataTable">
+        <!-- Bảng Quản lí bản vẽ (Chỉ những bản vẽ đủ dữ liệu) -->
+        <div class="manual-table-wrap" style="background: transparent; border: none;">
+          <div class="table-responsive border rounded-3 overflow-auto" style="max-height: 480px; background: #fff;">
+            <table class="table table-hover align-middle mb-0" id="managedDrawingTable">
               <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
                 <tr>
                   <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0">Type</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">TO</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Dw Code</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Customer</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">W × H</th>
                   <th scope="col" class="text-end pe-4 text-muted fw-semibold py-3 border-bottom-0"
-                    style="width: 120px;">Action</th>
+                    style="width: 140px;">Action</th>
                 </tr>
               </thead>
-              <tbody id="drawingTableBody">
+              <tbody id="managedDrawingTableBody">
                 <!-- Dữ liệu JS sẽ đổ vào đây -->
               </tbody>
             </table>
           </div>
 
           <!-- Trạng thái trống (Empty state) -->
-          <div id="emptyTableState" class="position-absolute top-50 start-50 translate-middle text-center w-100 d-none">
-            <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mb-3 mx-auto"
+          <div id="emptyManagedState" class="position-absolute start-50 text-center d-none"
+            style="top: 44%; left: 50%; transform: translate(-50%, -50%); width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px;">
+            <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mx-auto"
               style="width: 70px; height: 70px;">
               <i class="fa fa-folder-open fa-2x text-secondary opacity-50"></i>
             </div>
-            <h6 class="fw-bold text-secondary">Không có dữ liệu</h6>
+            <h6 class="fw-bold text-secondary mb-0">Không có bản vẽ đủ dữ liệu</h6>
           </div>
         </div>
       </div>
@@ -476,21 +591,29 @@
               </select>
             </div>
 
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Width (mm)</label>
-              <input type="number" id="formWidth" class="form-control" placeholder="0" />
+            <!-- Fields riêng cho Single Edit -->
+            <div id="singleEditFields" class="col-12">
+              <div class="row g-3">
+                <div class="col-md-3 col-sm-6">
+                  <label class="form-label fw-semibold">Width (mm)</label>
+                  <input type="number" id="formWidth" class="form-control" placeholder="0" />
+                </div>
+                <div class="col-md-3 col-sm-6">
+                  <label class="form-label fw-semibold">Height (mm)</label>
+                  <input type="number" id="formHeight" class="form-control" placeholder="0" />
+                </div>
+                <div class="col-md-6 col-sm-12">
+                  <label class="form-label fw-semibold">Hình ảnh mặt cắt (File/Link)</label>
+                  <input type="file" id="formImageFile" class="form-control" accept="image/*" />
+                  <small class="text-muted d-block mt-2">Preview:</small>
+                  <img id="formImagePreview" src="" alt="Preview" class="img-thumbnail mt-2" style="display: none; max-height: 200px;" />
+                </div>
+              </div>
             </div>
-            <div class="col-md-3 col-sm-6">
-              <label class="form-label fw-semibold">Height (mm)</label>
-              <input type="number" id="formHeight" class="form-control" placeholder="0" />
-            </div>
+
             <div class="col-md-3 col-sm-6">
               <label class="form-label fw-semibold">Ngày ĐT hoàn thành</label>
               <input type="date" id="formAssigneeDoneDate" class="form-control" />
-            </div>
-            <div class="col-md-6 col-sm-12">
-              <label class="form-label fw-semibold">Hình ảnh mặt cắt (File/Link)</label>
-              <input type="file" id="formImageFile" class="form-control" accept="image/*" />
             </div>
           </div>
         </div>
@@ -1076,17 +1199,56 @@
     closeDrawingForm();
     try {
       const res = await new Promise((resolve, reject) => {
-        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getPendingLogData();
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          .getDrawingsWithoutImage();
       });
 
       hideLoading(); // <--- TẮT LOADING
-      if (!res) return showToast('Lỗi phản hồi rỗng', 'error');
-      if (res.success) renderPendingList(res.data);
-      else showToast('Lỗi tải danh sách: ' + res.error, 'error');
+      console.log('[initNhapDuLieuBanVe] Response:', res);
+      
+      if (!res) {
+        console.warn('Response rỗng từ getDrawingsWithoutImage, fallback sang getPendingLogData');
+        // Fallback nếu hàm mới chưa deploy
+        return initPendingDataFallback();
+      }
+      
+      if (res.success) {
+        console.log('✅ Dữ liệu thành công, total:', res.data?.length || 0);
+        renderPendingList(res.data);
+      } else {
+        console.error('❌ Error từ backend:', res.error);
+        showToast('Lỗi tải danh sách: ' + res.error, 'error');
+        // Fallback
+        return initPendingDataFallback();
+      }
     } catch (err) {
       hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
+      console.error('[initNhapDuLieuBanVe] Lỗi:', err.message);
       showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
+      // Fallback
+      return initPendingDataFallback();
     }
+  }
+
+  // Fallback - gọi hàm cũ nếu getDrawingsWithoutImage không sẵn dùng
+  function initPendingDataFallback() {
+    console.log('[Fallback] Đang gọi getPendingLogData thay vì getDrawingsWithoutImage...');
+    google.script.run
+      .withSuccessHandler(function (res) {
+        hideLoading();
+        console.log('[Fallback] Response:', res);
+        if (res && res.success) {
+          renderPendingList(res.data);
+        }
+      })
+      .withFailureHandler(function (err) {
+        hideLoading();
+        console.error('[Fallback] Error:', err.message);
+        showToast('Lỗi tải dữ liệu: ' + err.message, 'error');
+      })
+      .getPendingLogData();
   }
 
   function renderPendingList(logs) {
@@ -1472,5 +1634,358 @@
       })
       .saveDataToTestSheet(pendingState.subject, [rowData], pendingState.selectedLogIdx);
   }
+
+  // ========== HỆ THỐNG CHECKBOX & BULK EDIT ==========
+  var bulkState = { selectedRows: new Set() };
+
+  function toggleSelectAll() {
+    var checkbox = document.getElementById('selectAllDrawings');
+    if (checkbox.checked) {
+      // Chọn tất cả
+      document.querySelectorAll('.drawing-checkbox').forEach(cb => {
+        cb.checked = true;
+        var rowId = cb.getAttribute('data-row-id');
+        if (rowId) bulkState.selectedRows.add(rowId);
+      });
+    } else {
+      // Bỏ chọn tất cả
+      document.querySelectorAll('.drawing-checkbox').forEach(cb => cb.checked = false);
+      bulkState.selectedRows.clear();
+    }
+    updateBulkEditButtonVisibility();
+  }
+
+  function toggleTableSelectAll() {
+    var checkbox = document.getElementById('tableSelectAll');
+    if (checkbox.checked) {
+      document.querySelectorAll('.drawing-checkbox').forEach(cb => {
+        cb.checked = true;
+        var rowId = cb.getAttribute('data-row-id');
+        if (rowId) bulkState.selectedRows.add(rowId);
+      });
+    } else {
+      document.querySelectorAll('.drawing-checkbox').forEach(cb => cb.checked = false);
+      bulkState.selectedRows.clear();
+    }
+    updateBulkEditButtonVisibility();
+  }
+
+  function toggleDrawingCheckbox(rowId) {
+    var checkbox = document.getElementById('checkbox-' + rowId);
+    if (checkbox && checkbox.checked) {
+      bulkState.selectedRows.add(rowId);
+    } else {
+      bulkState.selectedRows.delete(rowId);
+    }
+    updateBulkEditButtonVisibility();
+  }
+
+  function updateBulkEditButtonVisibility() {
+    var btn = document.getElementById('bulkEditBtn');
+    if (bulkState.selectedRows.size > 0) {
+      btn.style.display = 'inline-block';
+      btn.innerHTML = '<i class="fa fa-edit me-1"></i>Sửa ' + bulkState.selectedRows.size + ' mục';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
+  // ========== HỦY ẨN/HIỆN FIELDS SINGLE EDIT ==========
+  function showSingleEditFields() {
+    var fields = document.getElementById('singleEditFields');
+    if (fields) fields.style.display = 'block';
+  }
+
+  function hideSingleEditFields() {
+    var fields = document.getElementById('singleEditFields');
+    if (fields) fields.style.display = 'none';
+  }
+
+  // ========== OPEN BULK EDIT FORM ==========
+  function openBulkEditForm() {
+    if (bulkState.selectedRows.size === 0) {
+      showToast('Vui lòng chọn ít nhất 1 bản vẽ', 'warning');
+      return;
+    }
+
+    pendingState.selectedLogIdx = 'BULK_' + Array.from(bulkState.selectedRows).join('_');
+    pendingState.subject = 'Sửa hàng loạt (' + bulkState.selectedRows.size + ' mục)';
+    document.getElementById('modalFormTitle').textContent = 'Sửa Hàng Loạt - ' + bulkState.selectedRows.size + ' Bản Vẽ';
+
+    hideSingleEditFields();
+
+    var form = document.getElementById('drawingForm');
+    if (!form) return;
+    form.reset();
+
+    getDrawingModal().show();
+  }
+
+  // Sửa hàm openEditDrawingForm để hiển thị single edit fields
+  var originalOpenEditDrawingForm = window.openEditDrawingForm;
+  window.openEditDrawingForm = function(rowIdx, subject, customer, to, so) {
+    pendingState.selectedLogIdx = rowIdx;
+    pendingState.subject = subject;
+    document.getElementById('modalFormTitle').textContent = 'Chỉnh Sửa Dữ Liệu Bản Vẽ';
+
+    showSingleEditFields();
+
+    var form = document.getElementById('drawingForm');
+    if (!form) return;
+
+    form.reset();
+    var rDate = document.getElementById('formReceivedDate');
+    if (rDate) rDate.value = new Date().toISOString().split('T')[0];
+    if (document.getElementById('formCustomer')) document.getElementById('formCustomer').value = customer || '';
+    if (document.getElementById('formTO')) document.getElementById('formTO').value = to || '';
+    if (document.getElementById('formSO')) document.getElementById('formSO').value = so || '';
+    generateDwCode();
+
+    getDrawingModal().show();
+  };
+
+  // ========== RENDER DRAWING TABLE VỚI CHECKBOX ==========
+  var originalRenderDrawingTable = window.renderDrawingTable;
+  window.renderDrawingTable = function(data) {
+    pendingState.selectedLogIdx = null;
+    bulkState.selectedRows.clear();
+
+    var tbody = document.getElementById('drawingTableBody');
+    var emptyState = document.getElementById('emptyTableState');
+    if (!tbody || !emptyState) return;
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '';
+      emptyState.classList.remove('d-none');
+    } else {
+      emptyState.classList.add('d-none');
+      var html = data.map(function (item) {
+        var type = escHtml(item.type || 'New');
+        var to = escHtml(item.to || 'N/A');
+        var dwCode = escHtml(item.dwCode || 'DW-V2-01V');
+        var customer = escHtml(item.customer || 'Unknown');
+        var id = item.rowIdx;
+        var subject = escHtml(item.subject || '').replace(/'/g, "\\'");
+        var soRaw = item.so || '';
+
+        var exists = !!item.existsInData;
+        if (!exists && soRaw) {
+          var cleanSo = String(soRaw).trim().toUpperCase().replace(/\s+/g, "");
+          var digitsSo = cleanSo.replace(/[^0-9]/g, "");
+          if (window.pageDataSoSet && window.pageDataSoSet.size > 0) {
+            exists = (cleanSo && window.pageDataSoSet.has(cleanSo)) || (digitsSo && window.pageDataSoSet.has(digitsSo));
+          } else if (window.pageData && Array.isArray(window.pageData)) {
+            exists = window.pageData.some(function (r) {
+              if (!Array.isArray(r)) return false;
+              var rSo8 = String(r[8] || '').trim().toUpperCase().replace(/\s+/g, "");
+              var rSo4 = String(r[4] || '').trim().toUpperCase().replace(/\s+/g, "");
+              return (cleanSo && (rSo8.indexOf(cleanSo) !== -1 || rSo4.indexOf(cleanSo) !== -1)) || 
+                     (digitsSo && (rSo8.indexOf(digitsSo) !== -1 || rSo4.indexOf(digitsSo) !== -1));
+            });
+          }
+        }
+
+        var actionHtml = '';
+        if (exists) {
+          var imgUrl = escHtml(item.imageUrl || '');
+          var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
+          actionHtml = '<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
+            '<i class="fa fa-search me-1"></i>Tìm kiếm</button>';
+        } else {
+          actionHtml = '<div class="btn-group shadow-sm">' +
+            '<button class="btn btn-sm btn-light border text-primary" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen me-1"></i>Sửa</button>' +
+            '<button class="btn btn-sm btn-light border text-danger" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash me-1"></i>Xóa</button>' +
+            '</div>';
+        }
+
+        return '<tr class="bg-white" style="transition: all 0.2s;">' +
+          '<td class="ps-4"><div class="form-check"><input class="form-check-input drawing-checkbox" type="checkbox" id="checkbox-' + id + '" data-row-id="' + id + '" onchange="toggleDrawingCheckbox(' + id + ')"></div></td>' +
+          '<td class="fw-bold text-dark">' + type + '</td>' +
+          '<td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1">' + to + '</span></td>' +
+          '<td><code class="text-danger bg-light px-2 py-1 rounded fw-bold border">' + dwCode + '</code></td>' +
+          '<td class="text-secondary fw-medium">' + customer + '</td>' +
+          '<td class="text-end pe-4">' + actionHtml + '</td>' +
+          '</tr>';
+      }).join('');
+      tbody.innerHTML = html;
+    }
+  };
+
+  // ========== QUẢN LÍ BẢN VẼ - LOAD & SEARCH ==========
+  var managedDrawingList = [];
+
+  function loadManagedDrawings() {
+    showLoading('Đang tải bản vẽ đủ dữ liệu...');
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        hideLoading();
+        if (!res) return showToast('Lỗi phản hồi rỗng', 'error');
+        if (res.success) {
+          managedDrawingList = res.data || [];
+          renderManagedDrawingTable(managedDrawingList);
+        } else {
+          showToast('Lỗi tải danh sách: ' + res.error, 'error');
+        }
+      })
+      .withFailureHandler(function (err) {
+        hideLoading();
+        showToast('Lỗi kết nối: ' + err.message, 'error');
+      })
+      .getManagedDrawings();
+  }
+
+  function renderManagedDrawingTable(data) {
+    var tbody = document.getElementById('managedDrawingTableBody');
+    var emptyState = document.getElementById('emptyManagedState');
+    if (!tbody || !emptyState) return;
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '';
+      emptyState.classList.remove('d-none');
+    } else {
+      emptyState.classList.add('d-none');
+      var html = data.map(function (item) {
+        var type = escHtml(item.type || 'New');
+        var to = escHtml(item.to || 'N/A');
+        var dwCode = escHtml(item.dwCode || '');
+        var customer = escHtml(item.customer || 'Unknown');
+        var width = item.width || '–';
+        var height = item.height || '–';
+        var id = item.rowIdx;
+
+        var actionHtml = '<div class="btn-group shadow-sm">' +
+          '<button class="btn btn-sm btn-light border text-primary" onclick="viewManagedDrawing(' + id + ')" title="Xem chi tiết"><i class="fa fa-eye me-1"></i>Xem</button>' +
+          '<button class="btn btn-sm btn-light border text-danger" onclick="removeManagedDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash me-1"></i>Xóa</button>' +
+          '</div>';
+
+        return '<tr class="bg-white">' +
+          '<td class="ps-4 fw-bold text-dark">' + type + '</td>' +
+          '<td><span class="badge bg-success bg-opacity-10 text-success border border-success-subtle px-2 py-1">' + to + '</span></td>' +
+          '<td><code class="text-info bg-light px-2 py-1 rounded fw-bold border">' + dwCode + '</code></td>' +
+          '<td class="text-secondary fw-medium">' + customer + '</td>' +
+          '<td class="text-center">' + width + ' × ' + height + '</td>' +
+          '<td class="text-end pe-4">' + actionHtml + '</td>' +
+          '</tr>';
+      }).join('');
+      tbody.innerHTML = html;
+    }
+  }
+
+  function searchManagedDrawingData() {
+    var keyword = document.getElementById('searchManagedDrawingInput').value.trim().toLowerCase();
+    if (!keyword) {
+      renderManagedDrawingTable(managedDrawingList);
+      return;
+    }
+
+    var filtered = managedDrawingList.filter(function (item) {
+      var type = String(item.type || '').toLowerCase();
+      var to = String(item.to || '').toLowerCase();
+      var dwCode = String(item.dwCode || '').toLowerCase();
+      var customer = String(item.customer || '').toLowerCase();
+      return type.indexOf(keyword) !== -1 || to.indexOf(keyword) !== -1 || 
+             dwCode.indexOf(keyword) !== -1 || customer.indexOf(keyword) !== -1;
+    });
+
+    renderManagedDrawingTable(filtered);
+  }
+
+  function viewManagedDrawing(rowId) {
+    showToast('Chi tiết bản vẽ: ' + rowId, 'info');
+    // TODO: Mở modal để xem chi tiết
+  }
+
+  function removeManagedDrawing(rowId) {
+    Swal.fire({
+      title: 'Xóa khỏi danh sách bản vẽ?',
+      text: 'Bản vẽ sẽ được chuyển lại tab "Thêm bản vẽ"',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Đồng ý xóa',
+      cancelButtonText: 'Hủy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        showLoading('Đang xử lý...');
+        google.script.run
+          .withSuccessHandler(function (res) {
+            hideLoading();
+            if (res && res.success) {
+              showToast('Xóa thành công!', 'success');
+              loadManagedDrawings();
+            } else {
+              showToast('Lỗi: ' + (res ? res.error : 'Không rõ'), 'error');
+            }
+          })
+          .withFailureHandler(function (err) {
+            hideLoading();
+            showToast('Lỗi kết nối: ' + err.message, 'error');
+          })
+          .removeManagedDrawing(rowId);
+      }
+    });
+  }
+
+  // ========== ĐIỀU CHỈNH LUỒNG INIT ==========
+  var originalInitThongTinBanVe = window.initThongTinBanVe;
+  window.initThongTinBanVe = function() {
+    if (typeof originalInitThongTinBanVe === 'function') {
+      originalInitThongTinBanVe();
+    }
+    // Load managed drawings khi tab được mở
+    setTimeout(function() {
+      if (document.getElementById('manage-section').classList.contains('show') || 
+          document.getElementById('manage-section').classList.contains('active')) {
+        loadManagedDrawings();
+      }
+    }, 200);
+  };
+
+  // Load managed drawings khi người dùng chuyển sang tab 3
+  document.addEventListener('shown.bs.tab', function (e) {
+    if (e.target.id === 'manage-tab') {
+      loadManagedDrawings();
+    }
+  });
+
+  // ========== XỬ LÝ PREVIEW HÌNH ẢNH ==========
+  var formImageInput = document.getElementById('formImageFile');
+  if (formImageInput) {
+    formImageInput.addEventListener('change', function (e) {
+      var file = e.target.files[0];
+      var preview = document.getElementById('formImagePreview');
+      if (file && preview) {
+        var reader = new FileReader();
+        reader.onload = function (event) {
+          preview.src = event.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // ========== SEARCH DRAWING DATA (CẦN UPDATE) ==========
+  function searchDrawingData() {
+    var keyword = document.getElementById('searchDrawingInput').value.trim().toLowerCase();
+    if (!keyword) {
+      renderDrawingTable(drawingDataList);
+      return;
+    }
+
+    var filtered = drawingDataList.filter(function (item) {
+      var type = String(item.type || '').toLowerCase();
+      var to = String(item.to || '').toLowerCase();
+      var dwCode = String(item.dwCode || '').toLowerCase();
+      var customer = String(item.customer || '').toLowerCase();
+      return type.indexOf(keyword) !== -1 || to.indexOf(keyword) !== -1 || 
+             dwCode.indexOf(keyword) !== -1 || customer.indexOf(keyword) !== -1;
+    });
+
+    renderDrawingTable(filtered);
+  }
+
 </script>
 </div>

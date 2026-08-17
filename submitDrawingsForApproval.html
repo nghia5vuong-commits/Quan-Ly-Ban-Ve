@@ -294,9 +294,11 @@
 
     <!-- HEADER & KHU VỰC LỌC TÌM KIẾM -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
-      <h5 class="fw-bold mb-0 text-dark">
-        <i class="bi bi-file-earmark-check-fill me-2 text-primary"></i>Danh sách Trình ký Phê duyệt
-      </h5>
+      <div class="d-flex align-items-center gap-3">
+        <h5 class="fw-bold mb-0 text-dark">
+          <i class="bi bi-file-earmark-check-fill me-2 text-primary"></i>Danh sách Trình ký Phê duyệt
+        </h5>
+      </div>
 
       <!-- Thanh tìm kiếm -->
       <div class="input-group shadow-sm" style="width: 280px;">
@@ -320,8 +322,14 @@
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-approval-we" type="button" onclick="switchApprovalTab('WE SASH')">WE SASH</button>
       </li>
-      <li class="nav-item ms-auto">
-        <button class="btn btn-sm btn-light border fw-medium text-secondary mt-1" onclick="initSubmitApproval()">
+      <li class="nav-item ms-auto d-flex align-items-center gap-2">
+        <button id="bulkApproveBtn" class="btn btn-success btn-sm fw-bold shadow-sm" onclick="openBulkApproveForm()" style="display: none;">
+          <i class="fa fa-pen-square me-1"></i>Ký hàng loạt
+        </button>
+        <button id="bulkReleaseBtn" class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="openBulkReleaseForm()" style="display: none;">
+          <i class="fa fa-rocket me-1"></i>Ban hành hàng loạt
+        </button>
+        <button class="btn btn-sm btn-light border fw-medium text-secondary" onclick="initSubmitApproval()">
           <i class="bi bi-arrow-clockwise me-1"></i> Làm mới Data
         </button>
       </li>
@@ -332,6 +340,9 @@
       <table class="table-custom">
         <thead class="position-sticky top-0 z-1 shadow-sm">
           <tr>
+            <th class="text-center" style="width: 4%;">
+              <input type="checkbox" class="form-check-input" id="headerApprovalCheckbox" onchange="toggleSelectAllApprovals()" style="cursor: pointer;">
+            </th>
             <th class="text-center" style="width: 3%">#</th>
             <th style="width: 9%">Type</th>
             <th style="width: 10%">To</th>
@@ -345,7 +356,7 @@
         </thead>
         <tbody id="approvalTableBody">
           <tr>
-            <td colspan="9" class="text-center py-5 text-muted">
+            <td colspan="10" class="text-center py-5 text-muted">
               <span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...
             </td>
           </tr>
@@ -437,7 +448,11 @@
     VERSION: 12,     // Cột M: Phiên bản
     STATUS: 2,       // Cột C: Trạng thái
     PDF_LINK_O: 14,  // Cột O (15): File Drawing (PDF)
-    PDF_LINK_AF: 31  // Cột AF (32): File Stamped PDF
+    PDF_LINK_AF: 31, // Cột AF (32): File Stamped PDF
+    CHECKER_BY: 17,  // Cột R: Người ký Checker
+    CHECKER_DATE: 18, // Cột S: Ngày ký Checker
+    APPROVAL_BY: 19, // Cột T: Người ký Approval
+    APPROVAL_DATE: 20 // Cột U: Ngày ký Approval
   };
 
   function getLevelStates(status) {
@@ -448,6 +463,8 @@
     if (st.includes('cho checker 2') || st.includes('checker 2')) return ['done', 'waiting', 'pending'];
     // 'Chờ Approval' = Checker 2 đã ký xong
     if (st.includes('cho approval') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')) return ['done', 'done', 'waiting'];
+    // 'Chờ ban hành' = Approval đã ký xong, chờ ban hành lên hệ thống
+    if (st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')) return ['done', 'done', 'done'];
     // 'Hoàn thành' = Approval đã ký xong
     if (st.includes('hoan thanh') || st.includes('done') || st.includes('released')) return ['done', 'done', 'done'];
     // Mặc định: Checker 1 chờ
@@ -547,7 +564,7 @@
   function initSubmitApproval() {
     const tbody = document.getElementById('approvalTableBody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="9" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...</td></tr>';
     approvalCurrentPage = 1;
 
     setTimeout(() => {
@@ -559,19 +576,58 @@
         rows = rows.slice(1);
       }
 
+      // ========================================================================
+      // LỌC DỮ LIỆU THEO POSITION CỦA USER
+      // ========================================================================
+      const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
+      console.log('[initSubmitApproval] Người dùng position:', currentPosition);
+
       approvalRowsData = rows.filter(row => {
         const id = row[COL_MAP.ID];
         if (!id || String(id).trim() === '') return false;
-        const st = cleanStr(String(row[COL_MAP.STATUS] || ''));
+        
+        const statusRaw = String(row[COL_MAP.STATUS] || '');
+        const st = cleanStr(statusRaw);
         const pdf = row[COL_MAP.PDF_LINK_AF] || row[COL_MAP.PDF_LINK_O] || '';
         const hasPdf = pdf && String(pdf).includes('http');
-        // Lọc đúng theo các status mới: Chờ Duyệt / Chờ Checker 2 / Chờ Approval
-        const isTarget = st.includes('cho duyet') || st.includes('cho checker') || st.includes('cho approval')
-          || st.includes('checker') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')
-          || st.includes('checking') || st.includes('pending');
-        return isTarget || (hasPdf && !st.includes('hoan thanh') && !st.includes('done') && !st.includes('released'));
+
+        // Charger xem được tất cả (hoặc chager, hoặc không có position)
+        if (currentPosition.includes('charg') || !currentPosition) {
+          const isTarget = st.includes('cho duyet') || st.includes('cho checker') || st.includes('cho approval')
+            || st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')
+            || st.includes('checker') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')
+            || st.includes('checking') || st.includes('pending');
+          return isTarget || (hasPdf && !st.includes('hoan thanh') && !st.includes('done') && !st.includes('released'));
+        }
+
+        // Checker 1: Chỉ xem bản vẽ chờ Checker 1 (Chờ Duyệt)
+        if (currentPosition.includes('checker1') || currentPosition.includes('c1')) {
+          const isChecker1Waiting = st.includes('cho duyet') || st.includes('cho checker 1') || st.includes('checker1');
+          console.log(`[Filter Checker1] ID: ${id}, Status: "${statusRaw}" → ${isChecker1Waiting ? 'SHOW' : 'HIDE'}`);
+          return isChecker1Waiting;
+        }
+
+        // Checker 2: Chỉ xem bản vẽ chờ Checker 2
+        if (currentPosition.includes('checker2') || currentPosition.includes('c2')) {
+          const isChecker2Waiting = st.includes('cho checker 2') || st.includes('checker 2') || st.includes('checker2');
+          console.log(`[Filter Checker2] ID: ${id}, Status: "${statusRaw}" → ${isChecker2Waiting ? 'SHOW' : 'HIDE'}`);
+          return isChecker2Waiting;
+        }
+
+        // Approval (GM QA): Chỉ xem bản vẽ chờ Approval
+        if (currentPosition.includes('approval') || currentPosition.includes('approver') || currentPosition.includes('gmqa')) {
+          const isApprovalWaiting = st.includes('cho approval') || st.includes('approval') || st.includes('gmqa')
+            || st.includes('trinh ky');
+          console.log(`[Filter Approval] ID: ${id}, Status: "${statusRaw}" → ${isApprovalWaiting ? 'SHOW' : 'HIDE'}`);
+          return isApprovalWaiting;
+        }
+
+        // Mặc định: không hiển thị
+        console.log(`[Filter Default] ID: ${id}, Position: "${currentPosition}" → HIDE`);
+        return false;
       });
 
+      console.log(`[initSubmitApproval] Tổng dữ liệu sau lọc: ${approvalRowsData.length}`);
       renderApprovalTable();
     }, 200);
   }
@@ -605,7 +661,7 @@
     });
 
     if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="9" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>Không có bản vẽ nào trùng khớp.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-2 d-block mb-2"></i>Không có bản vẽ nào trùng khớp.</td></tr>';
       updateApprovalPaginationUI(0, 0, 0, 1, 1);
       return;
     }
@@ -627,6 +683,7 @@
     tbody.innerHTML = html;
 
     updateApprovalPaginationUI(totalItems, startIdx, endIdx, approvalCurrentPage, totalPages);
+    updateBulkApproveButtonVisibility();
   }
 
   // Lưu trữ PDF URL cho mỗi bản vẽ để tránh nhúng URL phức tạp vào onclick HTML
@@ -642,24 +699,47 @@
     const customer = row[COL_MAP.CUSTOMER] || 'Chưa rõ KH';
     const statusRaw = String(row[COL_MAP.STATUS] || 'Chờ Duyệt').trim();
     const pdfUrl = String(row[COL_MAP.PDF_LINK_AF] || row[COL_MAP.PDF_LINK_O] || '');
-    // Lưu PDF URL vào map toàn cục để tránh break URL trong onclick HTML
     if (id) window._approvalPdfMap[id] = pdfUrl;
 
     const [c1, c2, c3] = getLevelStates(statusRaw);
     const hasPdf = pdfUrl.includes('http');
-
     const st = cleanStr(statusRaw);
-    // Badge color theo status mới
-    let bb = '#dbeafe', bc = '#1e40af'; // mặc định xanh = Chờ Duyệt (Checker 1)
-    if (st.includes('cho checker 2') || st.includes('checker 2')) { bb = '#ede9fe'; bc = '#6d28d9'; }       // tím
-    else if (st.includes('cho approval') || st.includes('approval') || st.includes('duyet')) { bb = '#d1fae5'; bc = '#065f46'; } // xanh lá
+
+    let bb = '#dbeafe', bc = '#1e40af';
+    if (st.includes('cho checker 2') || st.includes('checker 2')) { bb = '#ede9fe'; bc = '#6d28d9'; }
+    else if (st.includes('cho approval') || st.includes('approval') || st.includes('duyet')) { bb = '#d1fae5'; bc = '#065f46'; }
+    else if (st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')) { bb = '#e0f2fe'; bc = '#0369a1'; }
     else if (st.includes('hoan thanh') || st.includes('done') || st.includes('released')) { bb = '#f0fdf4'; bc = '#15803d'; }
+
+    const isReleaseStatus = st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh');
 
     const pdfBtn = hasPdf
       ? `<button class="btn-view-pdf shadow-sm" onclick="event.stopPropagation();viewApprovalPdf('${pdfUrl}')"><i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF</button>`
       : `<button class="btn-view-pdf" disabled><i class="bi bi-file-earmark-pdf"></i> N/A</button>`;
 
+    const rowActionHtml = isReleaseStatus
+      ? `<button class="btn-step-approve shadow-sm" data-row-id="${id}" data-dw-no="${dwNo}" onclick="event.stopPropagation(); openBulkReleaseFormForRow('${id}', '${dwNo}')">
+          <i class="fa fa-rocket me-1"></i> Gửi ban hành
+        </button>`
+      : `<div class="d-flex align-items-center justify-content-center gap-1">
+          ${pdfBtn}
+          <button class="btn-toggle-detail" onclick="toggleRowDetail('${id}')" id="btn-toggle-${id}">
+            <i class="bi bi-chevron-down me-1"></i> Chi tiết
+          </button>
+        </div>`;
+
     const mkActions = (state, id, dwNo, level, label) => {
+      if (isReleaseStatus) {
+        if (level !== 'Approval') return '';
+        return `
+          <div class="level-actions">
+            <button class="btn-step-approve shadow-sm" data-row-id="${id}" data-dw-no="${dwNo}" onclick="openBulkReleaseFormForRow('${id}', '${dwNo}')">
+              <i class="fa fa-rocket me-1"></i> Gửi ban hành
+            </button>
+          </div>`;
+      }
+
+      if (state === 'done') return '';
       if (state !== 'waiting') return '';
       if (!canUserApproveLevel(level)) return '';
       return `
@@ -676,7 +756,10 @@
     };
 
     return `
-    <tr class="dw-row" id="dw-card-${id}" onclick="toggleRowDetail('${id}')">
+    <tr class="dw-row" onclick="toggleRowDetail('${id}')">
+      <td class="text-center" onclick="event.stopPropagation();">
+        <input type="checkbox" class="form-check-input approval-row-checkbox" data-row-id="${id}" onchange="updateBulkApproveButtonVisibility(); updateBulkReleaseButtonVisibility();" style="cursor: pointer;">
+      </td>
       <td class="text-center fw-bold text-secondary">${idx + 1}</td>
       <td><span class="badge bg-light text-dark border px-2 py-1">${type}</span></td>
       <td><span class="fw-semibold text-dark">${reqNo}</span></td>
@@ -699,21 +782,13 @@
         </div>
       </td>
       <td class="text-center" onclick="event.stopPropagation();">
-        <div class="d-flex align-items-center justify-content-center gap-1">
-          ${pdfBtn}
-          <button class="btn-toggle-detail" onclick="toggleRowDetail('${id}')" id="btn-toggle-${id}">
-            <i class="bi bi-chevron-down me-1"></i> Chi tiết
-          </button>
-        </div>
+        ${rowActionHtml}
       </td>
     </tr>
-    <!-- Dòng mở rộng Chi tiết Trình ký 3 cấp -->
     <tr id="detail-row-${id}" style="display: none;">
-      <td colspan="9" class="p-0 border-0">
+      <td colspan="10" class="p-0 border-0">
         <div class="detail-expand-container shadow-inner">
           <div class="level-card-group">
-
-            <!-- Card Cấp 1 -->
             <div class="card-level ${c1}">
               <div class="card-level-header">
                 <div class="level-title"><i class="bi bi-1-circle-fill text-primary fs-5"></i> Duyệt cấp 1 — Checker 1</div>
@@ -723,7 +798,6 @@
               ${mkActions(c1, id, dwNo, 'Checker 1', 'Duyệt')}
             </div>
 
-            <!-- Card Cấp 2 -->
             <div class="card-level ${c2}">
               <div class="card-level-header">
                 <div class="level-title"><i class="bi bi-2-circle-fill text-indigo fs-5" style="color:#6366f1;"></i>Duyệt cấp 2 — Checker 2</div>
@@ -733,7 +807,6 @@
               ${mkActions(c2, id, dwNo, 'Checker 2', 'Duyệt')}
             </div>
 
-            <!-- Card Cấp 3 -->
             <div class="card-level ${c3}">
               <div class="card-level-header">
                 <div class="level-title"><i class="bi bi-3-circle-fill text-success fs-5"></i>Duyệt cấp 3 — GM QA</div>
@@ -742,7 +815,6 @@
               <div class="level-desc">Phê duyệt cuối cùng — Trưởng phòng QA xác nhận phát hành bản vẽ.</div>
               ${mkActions(c3, id, dwNo, 'Approval', 'Duyệt')}
             </div>
-
           </div>
         </div>
       </td>
@@ -752,12 +824,13 @@
   function renderEmptyTable(tbody) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="9" class="text-center py-5">
+        <td colspan="10" class="text-center py-5">
           <i class="bi bi-check2-circle text-success" style="font-size:3.5rem;display:block;margin-bottom:12px;"></i>
           <h5 class="fw-bold text-dark mb-1">Tuyệt vời! Tất cả bản vẽ đã được duyệt.</h5>
           <small class="text-muted">Hiện không có bản vẽ nào ở trạng thái chờ duyệt.</small>
         </td>
       </tr>`;
+    updateBulkApproveButtonVisibility();
   }
 
   function toggleRowDetail(id) {
@@ -968,6 +1041,398 @@
   document.getElementById('rejectModal').addEventListener('click', function (e) {
     if (e.target === this) closeRejectModal();
   });
+
+  // ========================================================================
+  // BULK APPROVE LOGIC - Ký hàng loạt
+  // ========================================================================
+  var approvalBulkState = { selectedRows: new Set() };
+
+  function toggleSelectAllApprovals() {
+    const checkbox = document.getElementById('selectAllApprovals') || document.getElementById('headerApprovalCheckbox');
+    const allCheckboxes = document.querySelectorAll('.approval-row-checkbox');
+    
+    approvalBulkState.selectedRows.clear();
+    if (checkbox && checkbox.checked) {
+      allCheckboxes.forEach(cb => {
+        cb.checked = true;
+        const rowId = cb.getAttribute('data-row-id');
+        if (rowId) approvalBulkState.selectedRows.add(rowId);
+      });
+    } else {
+      allCheckboxes.forEach(cb => cb.checked = false);
+    }
+    updateBulkApproveButtonVisibility();
+  }
+
+  function updateBulkApproveButtonVisibility() {
+    const allCheckboxes = document.querySelectorAll('.approval-row-checkbox');
+    approvalBulkState.selectedRows.clear();
+    
+    allCheckboxes.forEach(cb => {
+      if (cb.checked) {
+        const rowId = cb.getAttribute('data-row-id');
+        if (rowId) approvalBulkState.selectedRows.add(rowId);
+      }
+    });
+
+    const bulkBtn = document.getElementById('bulkApproveBtn');
+    const headerCheckbox = document.getElementById('headerApprovalCheckbox');
+    
+    if (bulkBtn) {
+      bulkBtn.style.display = approvalBulkState.selectedRows.size > 0 ? 'inline-flex' : 'none';
+    }
+    
+    const totalCheckboxes = allCheckboxes.length;
+    const checkedCount = approvalBulkState.selectedRows.size;
+    
+    if (headerCheckbox) {
+      if (checkedCount === 0) {
+        headerCheckbox.checked = false;
+        headerCheckbox.indeterminate = false;
+      } else if (checkedCount === totalCheckboxes) {
+        headerCheckbox.checked = true;
+        headerCheckbox.indeterminate = false;
+      } else {
+        headerCheckbox.indeterminate = true;
+      }
+    }
+
+    updateBulkReleaseButtonVisibility();
+  }
+
+  function updateBulkReleaseButtonVisibility() {
+    const allCheckboxes = document.querySelectorAll('.approval-row-checkbox');
+    let releaseCount = 0;
+    allCheckboxes.forEach(cb => {
+      if (!cb.checked) return;
+      const rowId = cb.getAttribute('data-row-id');
+      if (!rowId) return;
+      const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
+      if (!row) return;
+      const status = String(row[COL_MAP.STATUS] || '');
+      const st = cleanStr(status);
+      if (st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')) {
+        releaseCount += 1;
+      }
+    });
+
+    const btn = document.getElementById('bulkReleaseBtn');
+    if (btn) btn.style.display = releaseCount > 0 ? 'inline-flex' : 'none';
+  }
+
+  function openBulkApproveForm() {
+    if (approvalBulkState.selectedRows.size === 0) {
+      if (typeof Swal !== 'undefined') {
+        Swal.fire('Thông báo', 'Vui lòng chọn ít nhất 1 bản vẽ để ký', 'warning');
+      }
+      return;
+    }
+
+    const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
+    let availableLevels = [];
+
+    if (currentPosition.includes('checker1') || currentPosition.includes('c1')) {
+      availableLevels = ['Checker 1'];
+    } else if (currentPosition.includes('checker2') || currentPosition.includes('c2')) {
+      availableLevels = ['Checker 2'];
+    } else if (currentPosition.includes('approval') || currentPosition.includes('approver') || currentPosition.includes('gmqa')) {
+      availableLevels = ['Approval'];
+    } else {
+      availableLevels = ['Checker 1', 'Checker 2', 'Approval'];
+    }
+
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: `Ký hàng loạt (${approvalBulkState.selectedRows.size} bản vẽ)`,
+        html: `
+          <p style="margin-bottom: 15px; text-align: left;">Chọn cấp ký cho <strong>${approvalBulkState.selectedRows.size}</strong> bản vẽ:</p>
+          <select id="bulkApproveLevel" class="form-select" style="font-size: 0.95rem;">
+            ${availableLevels.map(l => `<option value="${l}">${l}</option>`).join('')}
+          </select>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'Ký tất cả!',
+        cancelButtonText: 'Hủy'
+      }).then(result => {
+        if (result.isConfirmed) {
+          const selectedLevel = document.getElementById('bulkApproveLevel').value;
+          handleBulkApprove(selectedLevel);
+        }
+      });
+    }
+  }
+
+  function openBulkReleaseFormForRow(rowId, dwNo) {
+    const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
+    if (!row) return;
+
+    const selectedRows = [{
+      rowId: String(rowId),
+      dwNo: String(dwNo || row[COL_MAP.DW_NO] || ''),
+      type: String(row[COL_MAP.TYPE] || row[COL_MAP.GROUP] || ''),
+      customer: String(row[COL_MAP.CUSTOMER] || ''),
+      version: String(row[COL_MAP.VERSION] || ''),
+      reqNo: String(row[COL_MAP.REQ_NO] || ''),
+      project: String(row[COL_MAP.PROJECT] || ''),
+      status: String(row[COL_MAP.STATUS] || '')
+    }];
+
+    openBulkReleaseForm(selectedRows);
+  }
+
+  function openBulkReleaseForm(selectedRowsOverride) {
+    const selectedRowIds = selectedRowsOverride ? selectedRowsOverride.map(r => r.rowId) : Array.from(approvalBulkState.selectedRows);
+    const rowsToRelease = selectedRowsOverride || Array.from(approvalBulkState.selectedRows)
+      .map(id => {
+        const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(id));
+        if (!row) return null;
+        const st = cleanStr(String(row[COL_MAP.STATUS] || ''));
+        if (!(st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh'))) return null;
+        return {
+          rowId: String(id),
+          dwNo: String(row[COL_MAP.DW_NO] || ''),
+          type: String(row[COL_MAP.TYPE] || row[COL_MAP.GROUP] || ''),
+          customer: String(row[COL_MAP.CUSTOMER] || ''),
+          version: String(row[COL_MAP.VERSION] || ''),
+          reqNo: String(row[COL_MAP.REQ_NO] || ''),
+          project: String(row[COL_MAP.PROJECT] || ''),
+          status: String(row[COL_MAP.STATUS] || '')
+        };
+      })
+      .filter(Boolean);
+
+    if (!rowsToRelease || rowsToRelease.length === 0) {
+      if (typeof Swal !== 'undefined') Swal.fire('Thông báo', 'Không có bản vẽ nào ở trạng thái Chờ ban hành để ban hành.', 'warning');
+      return;
+    }
+
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: `Ban hành hàng loạt (${rowsToRelease.length} bản vẽ)`,
+        html: `
+          <div style="text-align:left;">
+            <p class="mb-3">Bạn đang ban hành các bản vẽ đã được Approval ký duyệt.</p>
+            <div class="mb-3">
+              <label class="form-label fw-semibold mb-1">Loại yêu cầu</label>
+              <select id="releaseRequestType" class="form-select">
+                <option value="Normal">Normal</option>
+                <option value="Urgent">Urgent</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold mb-1">Ngày gửi yêu cầu</label>
+              <input id="releaseRequestDate" type="date" class="form-control" value="${new Date().toISOString().split('T')[0]}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold mb-1">Ngày yêu cầu hoàn thành</label>
+              <input id="releaseDueDate" type="date" class="form-control" value="${new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]}">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold mb-1">Lý do ban hành</label>
+              <input id="releaseReason" type="text" class="form-control" value="New Issue" placeholder="New Issue">
+            </div>
+          </div>
+        `,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#2563eb',
+        cancelButtonColor: '#94a3b8',
+        confirmButtonText: 'Xác nhận ban hành',
+        cancelButtonText: 'Hủy'
+      }).then(result => {
+        if (result.isConfirmed) {
+          const selectedType = document.getElementById('releaseRequestType').value;
+          const requestDate = document.getElementById('releaseRequestDate').value;
+          const dueDate = document.getElementById('releaseDueDate').value;
+          const releaseReason = document.getElementById('releaseReason').value || 'New Issue';
+          handleBulkRelease(rowsToRelease, selectedType, requestDate, dueDate, releaseReason);
+        }
+      });
+    }
+  }
+
+  function handleBulkRelease(rowsToRelease, requestType, requestDate, dueDate, releaseReason) {
+    if (!rowsToRelease || rowsToRelease.length === 0) return;
+
+    const payload = [
+      '',
+      (typeof user !== 'undefined' && user && user.name) ? user.name : 'System',
+      '',
+      releaseReason || 'New Issue',
+      requestDate || new Date().toISOString().split('T')[0],
+      dueDate || new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
+      '',
+      '',
+      '',
+      rowsToRelease.map(row => [
+        row.rowId,
+        row.dwNo,
+        row.version,
+        row.type,
+        row.customer,
+        row.reqNo,
+        row.project
+      ])
+    ];
+
+    if (typeof showLoading === 'function') showLoading(`Đang ban hành ${rowsToRelease.length} bản vẽ...`);
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (typeof hideLoading === 'function') hideLoading();
+        const msg = res || 'Đã thực hiện ban hành thành công.';
+        if (typeof Swal !== 'undefined') Swal.fire('Thành công', msg, 'success');
+        approvalBulkState.selectedRows.clear();
+        updateBulkApproveButtonVisibility();
+        initSubmitApproval();
+      })
+      .withFailureHandler(function (err) {
+        if (typeof hideLoading === 'function') hideLoading();
+        if (typeof Swal !== 'undefined') Swal.fire('Lỗi ban hành', err && err.message ? err.message : 'Không thể ban hành danh mục đã chọn.', 'error');
+      })
+      .requestReleaseDW(payload);
+  }
+
+  async function handleBulkApprove(level) {
+    const selectedRowIds = Array.from(approvalBulkState.selectedRows);
+    if (selectedRowIds.length === 0) return;
+
+    if (typeof showLoading === 'function') showLoading(`Đang ký hàng loạt ${selectedRowIds.length} bản vẽ (Cấp ${level})...`);
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const rowId of selectedRowIds) {
+      try {
+        const targetRow = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
+        if (!targetRow) {
+          failCount++;
+          continue;
+        }
+
+        const dwNo = targetRow[COL_MAP.DW_NO] || 'Unknown';
+        const pdfUrl = String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '');
+
+        // Gọi handleApprove nhưng bỏ Swal confirm
+        await new Promise(resolve => {
+          handleApproveInternal(rowId, dwNo, level, pdfUrl, () => {
+            successCount++;
+            resolve();
+          }, () => {
+            failCount++;
+            resolve();
+          });
+        });
+      } catch (err) {
+        console.error(`Lỗi ký bản vẽ ${rowId}:`, err);
+        failCount++;
+      }
+    }
+
+    if (typeof hideLoading === 'function') hideLoading();
+    
+    if (typeof Swal !== 'undefined') {
+      Swal.fire('Hoàn thành!', `Đã ký thành công: ${successCount}/${selectedRowIds.length} bản vẽ.${failCount > 0 ? `\nLỗi: ${failCount}` : ''}`, 'success');
+    }
+
+    // Clear selection
+    approvalBulkState.selectedRows.clear();
+    updateBulkApproveButtonVisibility();
+  }
+
+  // Wrapper để gọi handleApprove mà không có Swal confirm
+  async function handleApproveInternal(rowId, dwNo, level, passedPdfUrl, onSuccess, onError) {
+    let posKey = String(level || '').toLowerCase().replace(/\s+/g, '');
+    if (posKey.indexOf('checker1') !== -1 || posKey.indexOf('c1') !== -1) posKey = 'checker1';
+    else if (posKey.indexOf('checker2') !== -1 || posKey.indexOf('c2') !== -1) posKey = 'checker2';
+    else if (posKey.indexOf('approval') !== -1 || posKey.indexOf('approver') !== -1) posKey = 'approver';
+
+    const signObj = window.sign || {
+      chager: [790, 465, 40],
+      checker1: [735, 465, 40],
+      checker2: [715, 480, 40],
+      approver: [640, 465, 40]
+    };
+
+    const coords = signObj[posKey] || signObj['checker1'];
+    const [x, y, width] = coords;
+
+    const targetRow = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
+    const pdfUrl = (passedPdfUrl && passedPdfUrl.includes('http')) ? passedPdfUrl : (targetRow ? String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '') : '');
+
+    try {
+      if (!pdfUrl || !pdfUrl.includes('http')) {
+        throw new Error("Bản vẽ này chưa có đường dẫn file PDF!");
+      }
+
+      const userMail = (typeof user !== 'undefined' && user.mail) ? user.mail : 'System';
+
+      // 1. Lấy Base64 của PDF và Chữ ký
+      const fileData = await new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          .getFilesFromDrive(pdfUrl, userMail);
+      });
+
+      if (!fileData || !fileData.success) {
+        throw new Error(fileData ? (fileData.message || 'Lỗi lấy dữ liệu PDF') : 'Không thể lấy dữ liệu');
+      }
+
+      const pdfBlob = await fetch("data:application/pdf;base64," + fileData.pdfBase64).then(res => res.blob());
+      const stampBlob = await fetch("data:image/png;base64," + fileData.stampBase64).then(res => res.blob());
+
+      const formData = new FormData();
+      formData.append("pdf_file", pdfBlob, "document.pdf");
+      formData.append("stamp_file", stampBlob, "stamp.png");
+      formData.append("x", x);
+      formData.append("y", y);
+      formData.append("width", width);
+
+      const localApiUrl = "http://10.156.42.195:8000/signToPDW";
+      const apiResponse = await fetch(localApiUrl, { method: "POST", body: formData });
+
+      if (!apiResponse.ok) {
+        throw new Error(`Local API lỗi HTTP ${apiResponse.status}`);
+      }
+
+      const signedPdfBlob = await apiResponse.blob();
+      const base64SignedPdf = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(signedPdfBlob);
+      });
+
+      // Lưu file và cập nhật status
+      await new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          .submitForApproval(rowId, base64SignedPdf);
+      });
+
+      await new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          .approveDrawingOnServer(rowId, level);
+      });
+
+      // Xóa hàng khỏi table
+      const el = document.getElementById('dw-card-' + rowId);
+      const detailEl = document.getElementById('detail-row-' + rowId);
+      if (el) el.remove();
+      if (detailEl) detailEl.remove();
+
+      onSuccess();
+    } catch (err) {
+      console.error('[Bulk Approve Error]', err);
+      onError();
+    }
+  }
 
   window.initSubmitApproval = initSubmitApproval;
   document.addEventListener('DOMContentLoaded', () => {

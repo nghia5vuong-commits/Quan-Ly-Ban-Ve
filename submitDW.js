@@ -1,4 +1,5 @@
 var SUBMIT_SS_ID = "1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM";
+var SUBMIT_SS_BH = "1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE";
 var SUBMIT_SHEET = "Data";
 var SUBMIT_NOTE = "Note";
 var SUBMIT_USER = "User";
@@ -19,6 +20,135 @@ function _cleanStr(s) {
     .trim();
 }
 
+function generateRandomString(length) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+function sendMailFromDeptToCharge(dataToNotify, deptName) {
+  const sheetUser = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE").getSheetByName("User");
+  const userLastRow = sheetUser.getLastRow();
+  if (userLastRow < 2) return;
+
+  const dataUser = sheetUser.getRange(2, 1, userLastRow - 1, 5).getValues();
+
+  const targetUsers = dataUser.filter(u =>
+    String(u[1]).trim().toUpperCase() === "QA" &&
+    String(u[4]).trim().toUpperCase() === "CHARGER"
+  );
+
+  if (targetUsers.length === 0) {
+    console.log("Không tìm thấy Charger nào thuộc bộ phận QA để gửi mail.");
+    return;
+  }
+
+  const emailList = targetUsers.map(u => String(u[3]).trim()).join(",");
+  const requests = {};
+
+  dataToNotify.forEach(item => {
+    if (!requests[item.requestId]) {
+      requests[item.requestId] = {
+        dept: item.dept || "Không rõ",
+        name: item.name || "Không rõ",
+        dwList: []
+      };
+    }
+    if (!requests[item.requestId].dwList.includes(item.dw)) {
+      requests[item.requestId].dwList.push(item.dw);
+    }
+  });
+
+  let body = "Xin chào,\n\n";
+  body += "Có yêu cầu phát hành bản vẽ mới từ bộ phận " + deptName + ".\n\n";
+
+  Object.keys(requests).forEach(reqId => {
+    const reqInfo = requests[reqId];
+    const dwString = reqInfo.dwList.join(", ");
+    body += "Mã yêu cầu: " + reqId + "\n";
+    body += "Người gửi: " + reqInfo.name + " (Bộ phận: " + reqInfo.dept + ")\n";
+    body += "Danh sách bản vẽ: " + dwString + "\n";
+    body += "Trạng thái: Chờ ban hành\n\n";
+  });
+
+  body += "Vui lòng truy cập hệ thống để xử lý yêu cầu.\n\n";
+  body += "Trân trọng,\n";
+  body += "Hệ thống quản lý bản vẽ";
+
+  const rowsHtml = Object.keys(requests).map(reqId => {
+    const reqInfo = requests[reqId];
+    const dwString = reqInfo.dwList.join(", ");
+    return `
+      <tr>
+        <td style="padding: 12px 14px; border: 1px solid #e5e7eb; font-size: 13px; color: #374151;">${reqId}</td>
+        <td style="padding: 12px 14px; border: 1px solid #e5e7eb; font-size: 13px; color: #374151;">${reqInfo.name}</td>
+        <td style="padding: 12px 14px; border: 1px solid #e5e7eb; font-size: 13px; color: #374151;">${reqInfo.dept}</td>
+        <td style="padding: 12px 14px; border: 1px solid #e5e7eb; font-size: 13px; color: #374151;">${dwString}</td>
+      </tr>`;
+  }).join("");
+
+  const htmlBody = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fb; padding: 24px;">
+      <div style="max-width: 760px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08); border: 1px solid #e5e7eb;">
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 28px 24px; text-align: center; color: #ffffff;">
+          <div style="font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; opacity: 0.8; margin-bottom: 8px;">Hệ thống quản lý bản vẽ</div>
+          <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Yêu cầu phát hành bản vẽ mới</h2>
+          <div style="margin-top: 10px; font-size: 13px; color: #dbeafe;">Bộ phận: <strong style="color: #facc15;">${deptName}</strong></div>
+        </div>
+
+        <div style="padding: 24px;">
+          <p style="margin: 0 0 18px; font-size: 15px; line-height: 1.7; color: #374151;">
+            Xin chào,<br><br>
+            Có <strong>yêu cầu phát hành bản vẽ mới</strong> cần bạn xử lý trong hệ thống QA.
+          </p>
+
+          <div style="background: #f8fafc; border-left: 4px solid #2563eb; padding: 14px 16px; border-radius: 8px; margin-bottom: 18px;">
+            <strong style="color: #1d4ed8; font-size: 14px;">Thông tin chi tiết</strong>
+          </div>
+
+          <table style="width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
+            <thead>
+              <tr style="background: #eff6ff;">
+                <th style="padding: 12px 14px; text-align: left; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #1e3a8a;">Mã yêu cầu</th>
+                <th style="padding: 12px 14px; text-align: left; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #1e3a8a;">Người gửi</th>
+                <th style="padding: 12px 14px; text-align: left; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #1e3a8a;">Bộ phận</th>
+                <th style="padding: 12px 14px; text-align: left; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #1e3a8a;">Danh sách bản vẽ</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+            </tbody>
+          </table>
+
+          <div style="margin-top: 22px; text-align: center;">
+            <a href="https://script.google.com/a/macros/listing.com/s/AKfycbw2MPLHbLNrNn3PhvU0Zr7V8D1-ouzWVTQDxW/usercache" style="display: inline-block; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
+              → Vào hệ thống xử lý
+            </a>
+          </div>
+
+          <div style="margin-top: 22px; border-top: 1px solid #e5e7eb; padding-top: 18px; font-size: 13px; color: #6b7280; line-height: 1.8;">
+            Trạng thái: <strong style="color: #0f172a;">Chờ ban hành</strong><br>
+            Vui lòng truy cập hệ thống để xác nhận và xử lý yêu cầu.<br><br>
+            Trân trọng,<br>
+            <strong>Hệ thống quản lý bản vẽ</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  GmailApp.sendEmail(
+    emailList,
+    "[THÔNG BÁO] Có Yêu Cầu Phát Hành Bản Vẽ Lên QA System",
+    body,
+    { htmlBody: htmlBody }
+  );
+}
+
+
+
 function _getNextStep(currentStatus) {
   var st = _cleanStr(currentStatus);
 
@@ -32,9 +162,15 @@ function _getNextStep(currentStatus) {
     return { nextStatus: 'Chờ Approval', byCol: COL_CHECKER_BY, dateCol: COL_CHECKER_DATE, level: 'Checker 2', appendMode: true };
   }
 
+  if (st.indexOf('cho ban hanh') !== -1 || st.indexOf('ban hanh') !== -1 ||
+    st.indexOf('dang ban hanh') !== -1 || st.indexOf('released') !== -1 ||
+    st.indexOf('hoan thanh') !== -1) {
+    return { nextStatus: 'Hoàn thành', byCol: COL_APPROVAL_BY, dateCol: COL_APPROVAL_DATE, level: 'Approval' };
+  }
+
   if (st.indexOf('approval') !== -1 || st.indexOf('duyet') !== -1 ||
     st.indexOf('trinh ky') !== -1 || st.indexOf('pending') !== -1) {
-    return { nextStatus: 'Hoàn thành', byCol: COL_APPROVAL_BY, dateCol: COL_APPROVAL_DATE, level: 'Approval' };
+    return { nextStatus: 'Chờ ban hành', byCol: COL_APPROVAL_BY, dateCol: COL_APPROVAL_DATE, level: 'Approval' };
   }
 
   return null;
@@ -69,6 +205,155 @@ function _getUserNameByEmail(email) {
   
   return email; 
 }
+
+function _normalizeRoleName(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase();
+}
+
+function _getUserEmailByRole(roleNames) {
+  if (!roleNames) return '';
+
+  var roles = Array.isArray(roleNames) ? roleNames : [roleNames];
+  var normalizedRoles = [];
+  for (var i = 0; i < roles.length; i++) {
+    normalizedRoles.push(_normalizeRoleName(roles[i]));
+  }
+
+  try {
+    var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
+    var userSheet = ss.getSheetByName(SUBMIT_USER || 'User');
+    if (!userSheet) return '';
+
+    var data = userSheet.getDataRange().getValues();
+    for (var r = 1; r < data.length; r++) {
+      var mail = String(data[r][3] || '').trim();
+      if (!mail) continue;
+
+      var positionValue = String(data[r][4] || '');
+      var normalizedPosition = _normalizeRoleName(positionValue);
+      if (normalizedRoles.indexOf(normalizedPosition) !== -1) {
+        return mail;
+      }
+    }
+  } catch (e) {
+    Logger.log('Lỗi dò email theo role: ' + e.message);
+  }
+
+  return '';
+}
+
+function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus, actorName) {
+  if (!targetEmail) {
+    Logger.log('[ApprovalEmail] Không có email đích cho level: ' + currentLevel);
+    return false;
+  }
+
+  var subject = '[TRÌNH KÝ] Yêu cầu xác nhận bản vẽ ' + dwNo + ' - ' + nextStatus;
+  var bodyText = '';
+  var titleText = '';
+
+  if (currentLevel === 'Checker 1') {
+    bodyText = 'Bản vẽ ' + dwNo + ' vừa được ' + actorName + ' ký duyệt ở cấp Checker 1.\n'
+      + 'Hiện tại cần bạn xác nhận ở cấp Checker 2 để tiếp tục quy trình.';
+    titleText = 'Xác Nhận Bản Vẽ - Cấp Checker 2';
+  } else if (currentLevel === 'Checker 2') {
+    bodyText = 'Bản vẽ ' + dwNo + ' đã được ' + actorName + ' xác nhận ở cấp Checker 2.\n'
+      + 'Hiện tại cần bạn ký duyệt ở cấp Approval để tiếp tục quy trình.';
+    titleText = 'Phê Duyệt Bản Vẽ - Cấp Approval';
+  } else if (currentLevel === 'Approval') {
+    bodyText = 'Bản vẽ ' + dwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Approval.\n'
+      + 'Đã chuyển sang trạng thái Chờ ban hành và đang chờ Charge xử lý ban hành.';
+    titleText = 'Bản Vẽ Đã Phê Duyệt - Chờ Ban Hành';
+  } else {
+    bodyText = 'Bản vẽ ' + dwNo + ' đã cập nhật trạng thái: ' + nextStatus;
+    titleText = 'Cập Nhật Trạng Thái Bản Vẽ';
+  }
+
+  var htmlBody = `
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; max-width: 700px; margin: 0 auto; color: #333;">
+      <!-- HEADER -->
+      <div style="background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%); border-radius: 12px 12px 0 0; padding: 30px 25px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 12px; opacity: 0.9; text-transform: uppercase;">Hệ thống quản lý bản vẽ</div>
+        <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px;">${titleText}</h1>
+        <div style="font-size: 13px; font-weight: 500; color: #b0d0f0; margin-top: 8px;">Bản vẽ: <span style="color: #ffc107; font-weight: 700;">${dwNo}</span></div>
+      </div>
+
+      <!-- MAIN CONTENT -->
+      <div style="background: white; padding: 32px 25px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+        <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #555;">
+          <strong>Xin chào,</strong>
+        </p>
+
+        <!-- STATUS INFO BOX -->
+        <div style="background: #f0f7ff; border-left: 4px solid #0d6efd; padding: 18px; border-radius: 6px; margin-bottom: 24px;">
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #0d6efd;">
+            <strong>ℹ Thông tin cần xử lý:</strong><br>
+            ${bodyText.split('\n').join('<br>')}
+          </p>
+        </div>
+
+        <!-- INFO TABLE -->
+        <table style="width: 100%; border-collapse: collapse; background: #f8f9fa; margin-bottom: 24px;">
+          <tbody>
+            <tr>
+              <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; width: 35%; border-bottom: 1px solid #ddd; border-right: 1px solid #ddd;">Mã bản vẽ</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong style="color: #0d6efd; font-size: 15px;">${dwNo}</strong></td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Cấp xét duyệt</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong>${currentLevel}</strong></td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Trạng thái tiếp theo</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;">
+                <span style="display: inline-block; background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px;">${nextStatus}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Người xử lý</td>
+              <td style="padding: 12px 15px;"><strong>${actorName}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- CALL TO ACTION -->
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="https://script.google.com/a/macros/listing.com/s/AKfycbw2MPLHbLNrNn3PhvU0Zr7V8D1-ouzWVTQDxW/usercache" style="display: inline-block; background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%); color: white; padding: 12px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 8px rgba(13,110,253,0.3); transition: all 0.3s;">
+            → Vào hệ thống xử lý
+          </a>
+        </div>
+
+        <!-- FOOTER -->
+        <div style="border-top: 1px solid #e0e0e0; margin-top: 32px; padding-top: 20px; text-align: center;">
+          <p style="margin: 0 0 8px 0; font-size: 13px; color: #999; line-height: 1.5;">
+            <strong>Trân trọng,</strong><br>
+            <span style="color: #0d6efd; font-weight: 600;">Hệ thống Web App Quản Lý Bản Vẽ</span>
+          </p>
+          <p style="margin: 12px 0 0 0; font-size: 11px; color: #bbb;">
+            Email này được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.
+          </p>
+        </div>
+      </div>
+
+      <!-- SPACING -->
+      <div style="height: 20px;"></div>
+    </div>
+  `;
+
+  try {
+    GmailApp.sendEmail(targetEmail, subject, "", { htmlBody: htmlBody });
+    Logger.log('[ApprovalEmail] Gửi email thành công tới ' + targetEmail + ' cho bản vẽ ' + dwNo);
+    return true;
+  } catch (e) {
+    Logger.log('[ApprovalEmail] Lỗi gửi email tới ' + targetEmail + ': ' + e.message);
+    return false;
+  }
+}
+
 
 function _findRowByIdInColA(sheet, drawingId) {
   var lastRow = sheet.getLastRow();
@@ -148,6 +433,22 @@ function approveDrawingOnServer(drawingId, approvedLevel) {
     ' | Người ký: ' + approverName +
     ' | Lúc: ' + nowStr;
   _writeNote(ss, notiMsg, approverName);
+
+  // Gửi email thông báo theo luồng ký duyệt
+  var notifyEmail = '';
+  if (step.level === 'Checker 1') {
+    notifyEmail = _getUserEmailByRole(['Checker 2', 'checker2']);
+  } else if (step.level === 'Checker 2') {
+    notifyEmail = _getUserEmailByRole(['Approval', 'Approver', 'GMQA', 'QA', 'Approval QA']);
+  } else if (step.level === 'Approval') {
+    notifyEmail = _getUserEmailByRole(['Charger', 'Charge', 'QA Charge', 'Charge QA']);
+  }
+
+  if (notifyEmail) {
+    _sendApprovalWorkflowEmail(notifyEmail, dwNo, step.level, step.nextStatus, approverName);
+  } else {
+    Logger.log('[approveDrawingOnServer] Không tìm thấy email đích để thông báo: level=' + step.level + ', dw=' + dwNo);
+  }
 
   Logger.log('[approveDrawingOnServer] ID=' + drawingId + ' | ' + currentStatus + ' -> ' + step.nextStatus + ' | By=' + approverName);
 

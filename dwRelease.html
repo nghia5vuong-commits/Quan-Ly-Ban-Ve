@@ -475,7 +475,7 @@
 
     window.history_loadData = function() {
         if(typeof user !== 'undefined' && user.dept) {
-            document.getElementById('dept-name-display').innerHTML = `<i class="bi bi-person-badge me-2"></i> ${user.dept}`;
+            document.getElementById('dept-name-display').innerHTML = `<i class="bi bi-person-badge me-2"></i> QA-G2G`;
         } else {
             document.getElementById('dept-name-display').innerHTML = `<i class="bi bi-person-badge me-2"></i> Chưa có BP`;
         }
@@ -515,7 +515,7 @@
             const userDept = String(user.dept).trim().toUpperCase();
             deptRawData = masterRawData.filter(r => {
                 const rowDept = String(r[COL.DEPT]).trim().toUpperCase();
-                return rowDept === userDept;
+                return rowDept === "QA-G2G";
             });
         } else {
             deptRawData = [];
