@@ -378,7 +378,7 @@
                                   <th class="py-3" data-i18n="his_th_line">LINE/CUS</th>
                                   <th class="py-3" data-i18n="his_th_dept_lq">BP Liên quan</th>
                                   <th class="py-3" data-i18n="his_th_remark">Remark</th>
-                                  <th class="py-3" data-i18n="admin_th_change_type">Loại thay đổi</th>
+                                  <th class="py-3 " id ="id_th_change_type" data-i18n="admin_th_change_type">Loại thay đổi</th>
                                   <th class="text-center py-3" data-i18n="his_th_link">Link</th>
                                   <th class="text-center py-3" data-i18n="his_th_status">Trạng thái</th>
                                   <th class="text-center py-3" data-i18n="his_th_action">Thao tác</th>
@@ -1175,6 +1175,12 @@ window.history_handleBulkAction = function(actionType, singleReqNo, sourceBtn) {
 
         const linkEl = document.getElementById('dept-m-link-folder');
         const linkFileDw = document.getElementById('dept-m-link-file'); 
+        const change_type = document.getElementById('id_th_change_type');
+        if(info[COL.TYPE]==="New"){
+            change_type.classList.add('d-none')
+        }else{
+             change_type.classList.remove('d-none')
+        }
         
         const folderLink = String(info[COL.LINK_FOLDER] || '').trim();
         const fileLink = String(info[COL.FILE_DS_DW] || '').trim();

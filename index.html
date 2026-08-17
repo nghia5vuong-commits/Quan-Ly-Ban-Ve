@@ -893,8 +893,7 @@
         <button class="btn text-start w-100 border-0 fw-medium index-nav-item" onclick="switchTab('dwInformation', this)" id="nav-btn-dwInformation">
             <i class="fa fa-layer-group"></i>
             <span class="nav-text d-flex justify-content-between align-items-center w-100 pe-3">
-              Thông tin bản vẽ <i class="fa fa-chevron-right text-muted"
-                style="font-size: 0.75rem; min-width: auto;"></i>
+              Thông tin bản vẽ 
             </span>
           </button>
           
@@ -1383,7 +1382,7 @@
         if (typeof initNhapDuLieuBanVe === 'function') initNhapDuLieuBanVe();
       }
     }
-
+ 
     // Khởi tạo hệ thống
     document.addEventListener('DOMContentLoaded', function () {
       showFirstLoading("LIXIL BEHAVIORS");
@@ -1403,8 +1402,18 @@
         if (profile) {
           var nameEl = document.getElementById('uiUserName');
           var posEl = document.getElementById('uiUserPosition');
+          let posElValue = "";
+          if(profile.position==="Charger"){
+            posElValue = "ST";
+          }else if(profile.position==="Checker 1"){
+            posElValue = "Leader";
+          }else if(profile.position==="Checker 2"){
+            posElValue = "MGR";
+          }else if(profile.position==="Approval"){
+            posElValue = "GM";
+          }
           if (nameEl) nameEl.textContent = profile.name;
-          if (posEl) posEl.textContent = profile.position;
+          if (posEl) posEl.textContent = posElValue;
           var avatarEl = document.getElementById('uiUserAvatar');
           if (avatarEl) {
             var avatarSrc = profile.avatarUrl || ('https://unavatar.io/' + encodeURIComponent(profile.email || '') + '?fallback=' + encodeURIComponent('https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.name || 'U') + '&background=7CB342&color=ffffff&bold=true&size=128'));
