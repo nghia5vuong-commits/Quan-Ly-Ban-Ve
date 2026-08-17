@@ -28,6 +28,81 @@ function generateRandomString(length) {
   }
   return result;
 }
+
+function _toDateKey(dateValue) {
+  var d = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  if (isNaN(d.getTime())) return '';
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + day;
+}
+
+function _loadCalendarRows() {
+  try {
+    var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
+    var calSheet = ss.getSheetByName('Cal');
+    if (!calSheet) return [];
+    var values = calSheet.getDataRange().getValues();
+    return values.slice(1);
+  } catch (e) {
+    Logger.log('[Cal] Lỗi đọc sheet Cal: ' + e.message);
+    return [];
+  }
+}
+
+function _isCalendarOffDate(dateKey) {
+  if (!dateKey) return false;
+
+  var calendarRows = _loadCalendarRows();
+  for (var i = 0; i < calendarRows.length; i++) {
+    var row = calendarRows[i];
+    var rowDate = String(row[0] || '').trim();
+    if (!rowDate) continue;
+
+    if (String(rowDate).slice(0, 10) === dateKey) {
+      var status = String(row[2] || '').toLowerCase();
+      var desc = String(row[3] || '').toLowerCase();
+      var text = status + ' ' + desc;
+      if (text.indexOf('weekend') !== -1 || text.indexOf('holiday') !== -1 || text.indexOf('nghi') !== -1 || text.indexOf('off') !== -1 || text.indexOf('rest') !== -1 || text.indexOf('sunday') !== -1 || text.indexOf('saturday') !== -1) {
+        return true;
+      }
+      return false;
+    }
+  }
+
+  var d = new Date(dateKey + 'T00:00:00');
+  if (isNaN(d.getTime())) return false;
+  var dayNum = d.getDay();
+  return dayNum === 0 || dayNum === 6;
+}
+
+function getReleaseDueDate(requestDate, requestType) {
+  var type = String(requestType || 'Normal').toLowerCase();
+  var businessDays = (type === 'urgent') ? 3 : 7;
+  var startDate = requestDate ? new Date(requestDate + 'T00:00:00') : new Date();
+  if (isNaN(startDate.getTime())) {
+    startDate = new Date();
+  }
+
+  var workingDays = 0;
+  var cursor = new Date(startDate.getTime());
+  var maxLoops = 366;
+
+  while (workingDays < businessDays && maxLoops > 0) {
+    cursor.setDate(cursor.getDate() + 1);
+    var key = _toDateKey(cursor);
+    if (_isCalendarOffDate(key)) {
+      maxLoops--;
+      continue;
+    }
+    workingDays++;
+    maxLoops--;
+  }
+
+  return _toDateKey(cursor);
+}
+
 function sendMailFromDeptToCharge(dataToNotify, deptName) {
   const sheetUser = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE").getSheetByName("User");
   const userLastRow = sheetUser.getLastRow();
@@ -514,11 +589,11 @@ function  requestReleaseDW(arr) {
   const sheet = ss.getSheetByName("data");
 
   const sheetSoure = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM").getSheetByName("Data");
-  
+
   const lastrow = sheet.getLastRow();
   const lastcol = sheet.getLastColumn();
   let data = [];
-  
+
   if (lastrow > 1) {
     data = sheet.getRange(2, 1, lastrow - 1, lastcol).getValues();
   }
@@ -528,18 +603,24 @@ function  requestReleaseDW(arr) {
     if(row[0]) existingIds.add(String(row[0]));
   });
 
-  const inputDate = new Date(arr[4]); 
-  const currentMonth = inputDate.getMonth() + 1; 
+  const requestType = String((arr && arr[2]) || 'Normal');
+  const requestDateRaw = String((arr && arr[4]) || new Date().toISOString().slice(0, 10));
+  const computedDueDate = getReleaseDueDate(requestDateRaw, requestType);
+  const finalDueDate = String((arr && arr[5]) || computedDueDate);
+  const releaseReason = String((arr && arr[3]) || 'New Issue');
+
+  const inputDate = new Date(requestDateRaw);
+  const currentMonth = inputDate.getMonth() + 1;
   const currentFullYear = inputDate.getFullYear();
 
   const strMonth = currentMonth < 10 ? "0" + currentMonth : currentMonth;
-  const strYear = currentFullYear.toString().slice(-2); 
+  const strYear = currentFullYear.toString().slice(-2);
   const orderCheck = "WI-DW-" + strMonth + strYear + "-";
 
   let check = [];
   data.forEach(row => {
-    if (row[8]) { 
-      const idStr = String(row[8]); 
+    if (row[8]) {
+      const idStr = String(row[8]);
       if (idStr.startsWith(orderCheck)) {
         let numberPart = parseInt(idStr.slice(-3), 10);
         if (!isNaN(numberPart)) {
@@ -559,64 +640,62 @@ function  requestReleaseDW(arr) {
   const orderNo = "WI-DW-" + strMonth + strYear + "-" + strCount;
   let mailValue = [];
 
-  const list = arr[9]; 
+  const list = arr[9];
   let output = [];
   let ids = [];
   list.forEach(row => {
     let newID;
     do {
       newID = generateRandomString(6);
-    } while (existingIds.has(newID)); // Nếu trùng thì quay lại tạo cái khác
+    } while (existingIds.has(newID));
     ids.push(row[0]);
 
-    
-    // Thêm ID vừa tạo vào danh sách để các dòng tiếp theo trong cùng vòng lặp không bị trùng
     existingIds.add(newID);
      mailValue.push({
               requestId: orderNo,
-              dw: row[1],        
+              dw: row[1],
               status:"Yêu Cầu Ban Hàng Bản Vẽ Mới",
-              dept: arr[0],   
-              name: arr[1],   
+              dept: arr[0],
+              name: arr[1],
             });
 
     output.push([
-      newID,         // ID vừa tạo (cột 1)
-      "BUNDLING & PACKING",    
-      row[3], //cus
+      newID,
+      "BUNDLING & PACKING",
+      row[4],
       "",
-      row[1],//dwno
-      row[2],//version
-      arr[2],//type
-      "",  
-      orderNo,   
-      "",     
-      "QA-G2G",   
-      row[4],//bộ phận liên quan 
-      arr[1],//charger
-      arr[4],  // ngày gửi
-      "Normal",    //
-      arr[5], // ngày yêu cầu hoàn thành
-      "", // ds file đính kèm     
-      row[5], // pdf
-      "", //  link foder
-      arr[3],  // lý lo New Issue || Add Issue
+      row[1],
+      row[2],
+      row[3],
+      "",
+      orderNo,
+      "",
+      "QA-G2G",
+      "",
+      arr[1],
+      requestDateRaw,
+      requestType === 'Urgent' ? 'Urgent' : 'Normal',
+      finalDueDate,
+      "",
+      row[5],
+      "",
+      requestType === 'Urgent' ? '' : releaseReason,
       "",
       "",
       "",
       "Đã tạo",
     ]);
   });
-  
+
   if (output.length > 0) {
     sheet.getRange(lastrow + 1, 1, output.length, output[0].length).setValues(output);
-    sendMailFromDeptToCharge( mailValue,arr[0]);
+    sendMailFromDeptToCharge(mailValue, arr[0]);
   }
   if(ids.length>0){
     updateBulkStatusByIds(ids,"Đang ban hành")
   }
-  
-  return "Đã tạo thành công: " + orderNo; 
+
+  return "Đã tạo thành công: " + orderNo + " | Hạn hoàn thành: " + finalDueDate;
 }
 
 

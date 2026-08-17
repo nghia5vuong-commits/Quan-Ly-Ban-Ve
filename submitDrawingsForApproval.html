@@ -1224,15 +1224,11 @@
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold mb-1">Ngày gửi yêu cầu</label>
-              <input id="releaseRequestDate" type="date" class="form-control" value="${new Date().toISOString().split('T')[0]}">
+              <input id="releaseRequestDate" type="date" class="form-control" value="${new Date().toISOString().split('T')[0]}" readonly>
             </div>
             <div class="mb-3">
               <label class="form-label fw-semibold mb-1">Ngày yêu cầu hoàn thành</label>
-              <input id="releaseDueDate" type="date" class="form-control" value="${new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]}">
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold mb-1">Lý do ban hành</label>
-              <input id="releaseReason" type="text" class="form-control" value="New Issue" placeholder="New Issue">
+              <input id="releaseDueDate" type="date" class="form-control" readonly>
             </div>
           </div>
         `,
@@ -1245,23 +1241,46 @@
       }).then(result => {
         if (result.isConfirmed) {
           const selectedType = document.getElementById('releaseRequestType').value;
-          const requestDate = document.getElementById('releaseRequestDate').value;
+          const requestDate = document.getElementById('releaseRequestDate').value || new Date().toISOString().split('T')[0];
           const dueDate = document.getElementById('releaseDueDate').value;
-          const releaseReason = document.getElementById('releaseReason').value || 'New Issue';
-          handleBulkRelease(rowsToRelease, selectedType, requestDate, dueDate, releaseReason);
+          handleBulkRelease(rowsToRelease, selectedType, requestDate, dueDate);
         }
       });
+
+      setTimeout(() => {
+        const requestTypeInput = document.getElementById('releaseRequestType');
+        const requestDateInput = document.getElementById('releaseRequestDate');
+        const dueDateInput = document.getElementById('releaseDueDate');
+
+        const syncReleaseDates = () => {
+          const selectedType = requestTypeInput.value;
+          const requestDate = requestDateInput.value || new Date().toISOString().split('T')[0];
+          requestDateInput.value = requestDate;
+
+          if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run.withSuccessHandler(function (calcDate) {
+              dueDateInput.value = calcDate || requestDate;
+            }).getReleaseDueDate(requestDate, selectedType);
+          } else {
+            dueDateInput.value = requestDate;
+          }
+        };
+
+        requestTypeInput.addEventListener('change', syncReleaseDates);
+        requestDateInput.addEventListener('change', syncReleaseDates);
+        syncReleaseDates();
+      }, 0);
     }
   }
 
-  function handleBulkRelease(rowsToRelease, requestType, requestDate, dueDate, releaseReason) {
+  function handleBulkRelease(rowsToRelease, requestType, requestDate, dueDate) {
     if (!rowsToRelease || rowsToRelease.length === 0) return;
 
     const payload = [
       '',
       (typeof user !== 'undefined' && user && user.name) ? user.name : 'System',
+      requestType || 'Normal',
       '',
-      releaseReason || 'New Issue',
       requestDate || new Date().toISOString().split('T')[0],
       dueDate || new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0],
       '',
