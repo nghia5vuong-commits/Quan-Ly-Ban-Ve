@@ -221,6 +221,7 @@
     }
   }
 
+<<<<<<< HEAD
   /* Tables & Rows */
   .page-dashboard .table-custom thead th {
     background: rgba(240, 253, 244, 0.75) !important;
@@ -240,6 +241,50 @@
     background: rgba(209, 250, 229, 0.75) !important;
     transform: translateY(-1px);
   }
+=======
+    .page-dashboard .table-custom td {
+      padding: 12px 16px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f5f9;
+      color: #1e293b;
+      font-size: 0.85rem;
+    }
+
+    .page-dashboard .table-custom tbody tr:hover td {
+      background: #f8fafc;
+    }
+
+
+    .page-dashboard .filter-chip {
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .page-dashboard .filter-chip.f-kpi { background: #e0e7ff; color: #4f46e5; border: 1px solid #c7d2fe; }
+    .page-dashboard .filter-chip.f-project { background: #fce7f3; color: #db2777; border: 1px solid #fbcfe8; }
+    .page-dashboard .filter-chip.f-month { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
+    .page-dashboard .filter-chip.f-type { background: #d1fae5; color: #0d9488; border: 1px solid #99f6e4; }
+    .page-dashboard .filter-chip i { cursor: pointer; border-radius: 50%; padding: 2px; }
+    .page-dashboard .filter-chip i:hover { background: rgba(0,0,0,0.1); }
+
+    /* CSS TỰ THIẾT KẾ: TÔ ĐỎ DÒNG TRỄ HẠN */
+    .page-dashboard .table-custom tbody tr.late-row td {
+      background-color: #fef2f2 !important; /* Nền đỏ nhạt */
+      border-top: 1px solid #fecaca;
+      border-bottom: 1px solid #fecaca;
+    }
+    .page-dashboard .table-custom tbody tr.late-row:hover td {
+      background-color: #fee2e2 !important; /* Đậm hơn 1 chút khi hover chuột */
+    }
+  </style>
+>>>>>>> 9bc7433d99a2711db9b15354f7e483b5890cda31
 
   /* Filter Chips & Badges */
   .page-dashboard .badge,
@@ -1156,12 +1201,6 @@
   // ==========================================
   // RENDER BẢNG DỮ LIỆU CUỐI CÙNG
   // ==========================================
-  // ==========================================
-  // RENDER BẢNG DỮ LIỆU CUỐI CÙNG (UI/UX Đã Tối Ưu)
-  // ==========================================
-  // ==========================================
-  // RENDER BẢNG DỮ LIỆU CUỐI CÙNG (Khớp với thead 11 cột)
-  // ==========================================
   function renderDashRecentTable(dataList) {
     var tbody = document.getElementById('dashRecentTableBody');
     if (!tbody) return;
@@ -1190,8 +1229,9 @@
       var releaseDate = getRowValue(row, 'releaseDate') || '—';
       var pdflink = getRowValue(row, 'pdfSample') || '';
       var ngDamTrach = getRowValue(row, 'ngDamTrach') || '';
-      var checker = getRowValue(row, 'checker') || '';
+      var checkerRaw = getRowValue(row, 'checker') || '';
       var approve = getRowValue(row, 'approve') || '';
+<<<<<<< HEAD
       var checkerParts = checker.split('\n');
       var checker1 = checkerParts[0] || '';
       var checker2 = checkerParts[1] || '';
@@ -1202,6 +1242,24 @@
 
       var signHtml = '<div class="mt-2 pt-2 border-top border-secondary border-opacity-25 text-start w-100" style="font-size: 0.75rem; line-height: 1.4;">';
       if (ngDamTrach) signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">Chg:</span> <span class="fw-medium text-dark">' + String(ngDamTrach).replace(/</g, '&lt;') + '</span></div>';
+=======
+      
+      // Tách checker an toàn
+      var checkerList = checkerRaw ? checkerRaw.split('\n') : [];
+      var checker1 = checkerList[0] || '';
+      var checker2 = checkerList[1] || '';
+
+      var stLower = st.toLowerCase();
+
+      // 1. CỘT PDF
+      const pdf = (pdflink && String(pdflink).includes('http')) 
+          ? `<a href="${pdflink}" target="_blank" class="btn btn-sm btn-outline-danger border-0 py-1 px-2" title="Xem bản vẽ PDF"><i class="bi bi-file-earmark-pdf-fill fs-5"></i></a>` 
+          : '<span class="text-muted small"><i class="bi bi-dash"></i></span>';
+      
+      // 2. TỐI ƯU CỘT CHỮ KÝ
+      let signHtml = `<div class="mt-2 pt-2 border-top border-secondary border-opacity-25 text-start w-100" style="font-size: 0.75rem; line-height: 1.4;">`;
+      if (ngDamTrach) signHtml += `<div class="d-flex justify-content-between"><span class="text-muted">Chg:</span> <span class="fw-medium text-dark">${String(ngDamTrach).replace(/</g, '&lt;')}</span></div>`;
+>>>>>>> 9bc7433d99a2711db9b15354f7e483b5890cda31
       if (checker1 || checker2) {
         var chkValue = [checker1, checker2].filter(Boolean).join(', ');
         signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">Chk:</span> <span class="fw-medium text-dark">' + String(chkValue).replace(/</g, '&lt;') + '</span></div>';
@@ -1210,6 +1268,7 @@
       signHtml += '</div>';
       if (!ngDamTrach && !checker1 && !checker2 && !approve) signHtml = '';
 
+<<<<<<< HEAD
       var dateHtml = '<div class="text-start d-flex flex-column gap-1 mx-auto" style="font-size: 0.75rem; width: fit-content;">';
       dateHtml += '<div title="Ngày tiếp nhận"><i class="bi bi-box-arrow-in-right text-secondary me-1"></i> <span class="fw-medium text-dark">' + String(date).replace(/</g, '&lt;') + '</span></div>';
 
@@ -1224,8 +1283,55 @@
       if (completionDate !== '—') dateHtml += '<div title="Ngày hoàn thành (ACT)"><i class="bi bi-check2-circle text-success me-1"></i> <span class="fw-medium text-success">' + String(completionDate).replace(/</g, '&lt;') + '</span></div>';
       if (releaseDate !== '—') dateHtml += '<div title="Ngày ban hành"><i class="bi bi-send-check text-info me-1"></i> <span class="fw-medium text-info">' + String(releaseDate).replace(/</g, '&lt;') + '</span></div>';
       dateHtml += '</div>';
+=======
+      // 3. TỐI ƯU THỜI GIAN VÀ CẢNH BÁO TRỄ HẠN MẠNH MẼ HƠN
+      let dateHtml = `<div class="text-start d-flex flex-column gap-1 mx-auto" style="font-size: 0.75rem; width: fit-content;">`;
+      dateHtml += `<div title="Ngày tiếp nhận"><i class="bi bi-box-arrow-in-right text-secondary me-1"></i> <span class="fw-medium text-dark">${String(date).replace(/</g, '&lt;')}</span></div>`;
+      
+      let isLate = false;
+      if (estimatedCompletionDate !== '—' && completionDate === '—') {
+         // Chống lỗi khoảng trắng và ngắt chuỗi an toàn
+         let tmStr = String(estimatedCompletionDate).trim();
+         let tmDate = null;
+         
+         if (tmStr.includes('/')) {
+             let parts = tmStr.split('/');
+             if (parts.length >= 3) {
+                 // Đề phòng trường hợp có giờ đi kèm (vd: 15/08/2026 14:00)
+                 let year = parts[2].split(' ')[0]; 
+                 tmDate = new Date(year, parts[1] - 1, parts[0]);
+             }
+         } else {
+             tmDate = new Date(tmStr);
+         }
+         
+         let today = new Date();
+         today.setHours(0, 0, 0, 0); // Reset giờ phút giây của hôm nay về 0
+
+         // Kiểm tra nếu tmDate là 1 ngày hợp lệ VÀ bé hơn ngày hôm nay
+         if (tmDate && !isNaN(tmDate) && tmDate < today) {
+             isLate = true;
+         }
+      }
+      
+      // KIỂM TRA ĐIỀU KIỆN TÔ ĐỎ NGUYÊN DÒNG 
+      let trClass = "align-middle border-bottom border-light transition-all";
+      if (isLate && (stLower.includes('đang thực hiện') || stLower.includes('trả về charger') || stLower.includes('returned') || stLower.includes('bị trả lại'))) {
+          trClass += " late-row"; // Dùng class CSS mới tạo ở bước 1
+      } else {
+          trClass += " hover-bg-light";
+      }
+
+      let tmColor = isLate ? 'text-danger fw-bold' : 'text-primary fw-medium';
+      
+      dateHtml += `<div title="Hạn chót (TM)"><i class="bi bi-stopwatch text-warning me-1"></i> <span class="${tmColor}">${String(estimatedCompletionDate).replace(/</g, '&lt;')}</span></div>`;
+      if (completionDate !== '—') dateHtml += `<div title="Ngày hoàn thành (ACT)"><i class="bi bi-check2-circle text-success me-1"></i> <span class="fw-medium text-success">${String(completionDate).replace(/</g, '&lt;')}</span></div>`;
+      if (releaseDate !== '—') dateHtml += `<div title="Ngày ban hành"><i class="bi bi-send-check text-info me-1"></i> <span class="fw-medium text-info">${String(releaseDate).replace(/</g, '&lt;')}</span></div>`;
+      dateHtml += `</div>`;
+>>>>>>> 9bc7433d99a2711db9b15354f7e483b5890cda31
 
       var badgeClass = 'bg-secondary text-white';
+<<<<<<< HEAD
       var stt = 'Chưa xác định';
       var stLower = st.toLowerCase();
       var stIcon = 'bi-circle';
@@ -1273,12 +1379,60 @@
       ].join('');
 
       fragment.appendChild(tr);
+=======
+      let stt = 'Chưa xác định';
+      var stIcon = 'bi-circle';
+      
+      if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành')) {
+         badgeClass = 'bg-info text-dark border border-info'; stt = "DW ban hành"; stIcon = 'bi-hourglass-split';
+      } else if(stLower.includes('đã ban hành') || stLower.includes('released')) {
+         badgeClass = 'bg-success text-white'; stt = "Đã ban hành"; stIcon = 'bi-check-circle-fill';
+      } else if (stLower.includes('checker') || stLower.includes('approval')) {
+         badgeClass = 'bg-warning text-dark'; stt = "Đang trình ký" ; stIcon = 'bi-pencil-square';
+      } else if (stLower.includes('trả về charger') || stLower.includes('returned') || stLower.includes('bị trả lại')) {
+         badgeClass = 'bg-danger text-white'; stt = "Bị trả lại"; stIcon = 'bi-exclamation-triangle-fill';
+      } else if (stLower.includes('đang thực hiện') ) {
+         badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25'; 
+         stt = (ngDamTrach ? ngDamTrach.split(' ')[0] : 'Charger') + " đang thực hiện"; 
+         stIcon = 'bi-palette-fill';
+      } else if (stLower.includes('ban hành thất bại') ) {
+          badgeClass = 'bg-danger text-white'; stt = "Ban hành thất bại"; stIcon = 'bi-exclamation-triangle-fill';
+      }
+        
+      // RENDER HTML TỪNG DÒNG (Đúng 11 thẻ td)
+      html += `
+        <tr class="${trClass}">
+          <td class="d-none">${String(id).replace(/</g, '&lt;')}</td>
+          <td class="d-none">${String(group).replace(/</g, '&lt;')}</td>
+          <td class="text-center">
+            <span class="badge bg-light text-dark border px-2 py-1 shadow-sm">${String(type).replace(/</g, '&lt;')}</span>
+          </td>
+          <td class="text-center fw-medium text-secondary">${String(to).replace(/</g, '&lt;')}</td>
+          <td class="text-center fw-bold text-dark" style="font-size: 0.9rem;">${String(dwNo).replace(/</g, '&lt;')}</td>
+          <td class="text-center text-muted" style="font-size: 0.85rem;">v${String(version).replace(/</g, '&lt;')}</td>
+          <td class="text-center fw-semibold text-dark text-truncate" style="max-width: 120px;" title="${String(project).replace(/</g, '&lt;')}">
+            ${String(project).replace(/</g, '&lt;')}
+          </td>
+          <td class="text-center text-muted text-truncate" style="font-size: 0.85rem; max-width: 120px;" title="${String(customer).replace(/</g, '&lt;')}">
+            <i class="bi bi-person-fill me-1"></i>${String(customer).replace(/</g, '&lt;')}
+          </td>
+          <td class="py-2">${dateHtml}</td>
+          <td class="text-center">${pdf}</td>
+          <td class="text-center">
+            <div class="d-flex flex-column h-100 justify-content-center align-items-center">
+              <span class="badge ${badgeClass} w-100 py-2 shadow-sm mb-1" style="font-size: 0.75rem;">
+                <i class="bi ${stIcon} me-1"></i>${stt}
+              </span>
+              ${signHtml}
+            </div>
+          </td>
+        </tr>`;
+>>>>>>> 9bc7433d99a2711db9b15354f7e483b5890cda31
     });
 
     tbody.innerHTML = '';
     tbody.appendChild(fragment);
   }
-
   document.addEventListener('DOMContentLoaded', function () {
     setTimeout(updateDashboardStats, 500);
   });
