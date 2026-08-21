@@ -59,23 +59,29 @@
   /* Tables & Rows */
   .page-submitDrawingsForApproval .table-custom th {
     background: rgba(240, 253, 244, 0.75) !important;
-    backdrop-filter: var(--liquid-blur-subtle);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     color: var(--liquid-text-muted);
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.06em;
   }
   .page-submitDrawingsForApproval .table-custom tbody tr.dw-row td {
-    transition: var(--liquid-spring-fast);
+    transition: none;
   }
   .page-submitDrawingsForApproval .table-custom tbody tr.dw-row:hover td {
-    background: rgba(209, 250, 229, 0.75) !important;
-    transform: translateY(-1px);
+    background: rgba(209, 250, 229, 0.55) !important;
+    transform: none;
+  }
+  .page-submitDrawingsForApproval .table-responsive {
+    contain: content;
+  }
+  .page-submitDrawingsForApproval .table-custom tbody tr {
+    contain: layout paint;
   }
 
   /* Action Buttons */
-  .page-submitDrawingsForApproval .btn-view-pdf,
-  .page-submitDrawingsForApproval .btn-toggle-detail {
+  .page-submitDrawingsForApproval .btn-view-pdf {
     border: var(--liquid-border);
     color: var(--liquid-primary-dark);
     background: var(--liquid-glass-elevated);
@@ -92,9 +98,8 @@
     box-shadow: var(--liquid-shadow-sm);
     transition: var(--liquid-spring);
   }
-  .page-submitDrawingsForApproval .btn-view-pdf:hover,
-  .page-submitDrawingsForApproval .btn-toggle-detail:hover {
-    transform: translateY(-2px) scale(1.04);
+  .page-submitDrawingsForApproval .btn-view-pdf:hover {
+    transform: none;
     background: #ffffff;
     box-shadow: var(--liquid-shadow-md);
     color: var(--liquid-primary);
@@ -202,8 +207,7 @@
   }
 
   /* Compact Buttons */
-  .page-submitDrawingsForApproval .btn-view-pdf,
-  .page-submitDrawingsForApproval .btn-toggle-detail {
+  .page-submitDrawingsForApproval .btn-view-pdf {
     padding: 3px 8px !important;
     font-size: 0.68rem !important;
     gap: 4px !important;
@@ -732,12 +736,7 @@
       ? `<button class="btn-step-approve shadow-sm" data-row-id="${id}" data-dw-no="${dwNo}" onclick="event.stopPropagation(); openBulkReleaseFormForRow('${id}', '${dwNo}')">
           <i class="fa fa-rocket me-1"></i> Gửi ban hành
         </button>`
-      : `<div class="d-flex align-items-center justify-content-center gap-1">
-          ${pdfBtn}
-          <button class="btn-toggle-detail" onclick="toggleRowDetail('${id}')" id="btn-toggle-${id}">
-            <i class="bi bi-chevron-down me-1"></i> Chi tiết
-          </button>
-        </div>`;
+      : pdfBtn;
 
     const mkActions = (state, id, dwNo, level, label) => {
       if (isReleaseStatus) {
@@ -847,13 +846,11 @@
   function toggleRowDetail(id) {
     const row = document.getElementById('dw-card-' + id);
     const detailRow = document.getElementById('detail-row-' + id);
-    const btn = document.getElementById('btn-toggle-' + id);
     if (!detailRow) return;
 
     const isOpen = detailRow.style.display !== 'none';
     detailRow.style.display = isOpen ? 'none' : 'table-row';
     if (row) row.classList.toggle('open-row', !isOpen);
-    if (btn) btn.innerHTML = isOpen ? '<i class="bi bi-chevron-down me-1"></i> Chi tiết' : '<i class="bi bi-chevron-up me-1"></i> Đóng';
   }
 
   function viewApprovalPdf(url) {

@@ -56,7 +56,9 @@ const getAllData = () => getMainData();
 const getMainData = () => getSheetDataByConfig(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName);
 
 const getReleaseData = () => {
-  const sheet = getSheetByIdAndName(sheetConfig.releaseSpreadsheetId, sheetConfig.releaseSheetName);
+  const spreadsheet = SpreadsheetApp.openById(sheetConfig.releaseSpreadsheetId);
+  const expectedSheetName = String(sheetConfig.releaseSheetName).trim().toLowerCase();
+  const sheet = spreadsheet.getSheets().find((candidate) => String(candidate.getName()).trim().toLowerCase() === expectedSheetName);
   if (!sheet) {
     throw new Error(`Không tìm thấy sheet "${sheetConfig.releaseSheetName}" trong file dữ liệu ban hành.`);
   }

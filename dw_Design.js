@@ -58,70 +58,34 @@ const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelNa
 
 const submitForApproval = (dataId, base64Data, stt) => {
   try {
-<<<<<<< HEAD
+    if (!dataId || !base64Data) {
+      throw new Error("Thiếu mã dữ liệu hoặc file PDF.");
+    }
+
     const sheet = getDesignSheet();
-    if (!dataId || !sheet) {
-      return null;
-=======
-    var sheet = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM").getSheetByName("Data");
-
-    if (dataId && sheet) {
-      // 1. Tạo file mới trên Drive từ dữ liệu Local Server trả về
-      var decodedData = Utilities.base64Decode(base64Data);
-      var fileName = dataId + ".pdf";
-      var blob = Utilities.newBlob(decodedData, 'application/pdf', fileName);
-
-      var folder = DriveApp.getFolderById(targetFolderId);
-      var newFile = folder.createFile(blob);
-
-      // Cấp quyền xem cho file 
-      try {
-        newFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-      } catch (e) {
-        newFile.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW); 
-      }
-
-      var fileUrl = newFile.getUrl();
-
-      // 2. Tìm ID bằng TextFinder (Nhanh gấp 10 lần vòng lặp For)
-      var foundCell = sheet.getRange("A:A").createTextFinder(dataId).matchEntireCell(true).findNext();
-
-      if (foundCell) {
-        var targetRowIndex = foundCell.getRow();
-
-        // Cập nhật Cột 3 (Trạng thái) và Cột 32 (AF - Link File PDF Ký)
-        sheet.getRange(targetRowIndex, 3).setValue("Chờ Checker 1");
-        sheet.getRange(targetRowIndex, 32).setValue(fileUrl);
-
-        return fileUrl; // Trả link về cho giao diện Swal.fire hiện lên
-      } else {
-        throw new Error("Không tìm thấy ID '" + dataId + "' trong sheet để ghi link.");
-      }
->>>>>>> 9bc7433d99a2711db9b15354f7e483b5890cda31
+    if (!sheet) {
+      throw new Error("Không tìm thấy sheet dữ liệu thiết kế.");
     }
 
     const folder = DriveApp.getFolderById(designSheetConfig.approvalFolderId);
     const decodedData = Utilities.base64Decode(base64Data);
-    const fileName = `${dataId}.pdf`;
-    const pdfBlob = Utilities.newBlob(decodedData, "application/pdf", fileName);
+    const pdfBlob = Utilities.newBlob(decodedData, "application/pdf", `${dataId}.pdf`);
     const newFile = folder.createFile(pdfBlob);
 
     try {
       newFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    } catch (error) {
+    } catch (sharingError) {
       newFile.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
     }
 
     const fileUrl = newFile.getUrl();
     const targetRowIndex = findRowIndexById(sheet, dataId);
-
     if (targetRowIndex <= 0) {
       throw new Error(`Không tìm thấy ID '${dataId}' trong sheet để ghi link.`);
     }
 
     sheet.getRange(targetRowIndex, 3).setValue("Chờ Checker 1");
     sheet.getRange(targetRowIndex, 32).setValue(fileUrl);
-
     return fileUrl;
   } catch (error) {
     throw new Error(`Lỗi khi lưu trữ data: ${error.message}`);
@@ -213,4 +177,4 @@ const getSignBlob = (userMail) => {
     Logger.log(`Lỗi lấy chữ ký người dùng: ${error.toString()}`);
     return null;
   }
-};
+}

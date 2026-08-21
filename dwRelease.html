@@ -90,7 +90,8 @@
   /* Tables & Rows compact */
   #stats-history .table th {
     background: rgba(240, 253, 244, 0.85) !important;
-    backdrop-filter: var(--liquid-blur-subtle);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
     color: var(--liquid-text-muted);
     font-size: 0.68rem !important;
     font-weight: 700;
@@ -104,10 +105,10 @@
     padding: 7px 10px !important;
     vertical-align: middle;
         height: 48px;
-    transition: var(--liquid-spring-fast);
+    transition: none;
   }
   #stats-history .table tbody tr:hover td {
-    background: rgba(209, 250, 229, 0.65) !important;
+        background: rgba(209, 250, 229, 0.5) !important;
         transform: none;
   }
 
@@ -116,6 +117,10 @@
     max-height: calc(100vh - 320px) !important;
     overflow-y: auto !important;
     border-radius: 12px;
+        contain: content;
+    }
+    #stats-history .table tbody tr {
+        contain: layout paint;
   }
 
   /* Buttons */
@@ -169,7 +174,8 @@
     border-radius: var(--liquid-radius-sm);
     border: 1px solid rgba(203, 213, 225, 0.85);
     background: rgba(255, 255, 255, 0.8);
-    backdrop-filter: var(--liquid-blur-subtle);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
     transition: var(--liquid-spring-fast);
   }
   #stats-history .search-input-group:focus-within {
@@ -558,6 +564,8 @@
                 handleHistorySuccess(cached);
                 return;
             }
+            AppDataStore.ensure('releaseData');
+            return;
         }
 
         // 2. Gọi trực tiếp backend getReleaseData
@@ -570,19 +578,7 @@
                     handleHistorySuccess(data);
                 })
                 .withFailureHandler(function (err) {
-                    historyLoadActive = false;
-                    if (_pendingReloadBtn) {
-                        _pendingReloadBtn.innerHTML = _pendingReloadBtnText;
-                        _pendingReloadBtn.disabled = false;
-                        _pendingReloadBtn = null;
-                        _pendingReloadBtnText = '';
-                    }
-                    const message = err && err.message ? err.message : 'Không thể tải dữ liệu QA-G2G.';
-                    const tbody = document.getElementById('dept-table-body');
-                    if (tbody) {
-                        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger">${message}</td></tr>`;
-                    }
-                    console.error('Lỗi tải dữ liệu releaseData:', err);
+                    handleHistoryFailure(err);
                 })
                 .getReleaseData();
         } else {
@@ -617,6 +613,23 @@
         history_initFyeOptions();
         history_applyAllPageFilters();
     }
+
+    window.handleHistoryFailure = function (error) {
+        historyLoadActive = false;
+        if (_pendingReloadBtn) {
+            _pendingReloadBtn.innerHTML = _pendingReloadBtnText;
+            _pendingReloadBtn.disabled = false;
+            _pendingReloadBtn = null;
+            _pendingReloadBtnText = '';
+        }
+
+        const message = error && error.message ? error.message : 'Không thể tải dữ liệu QA-G2G.';
+        const tbody = document.getElementById('dept-table-body');
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger">${message}</td></tr>`;
+        }
+        console.error('Lỗi tải dữ liệu releaseData:', error);
+    };
 
     function history_initFyeOptions() {
         const fyeSelect = document.getElementById('fye-year-filter');

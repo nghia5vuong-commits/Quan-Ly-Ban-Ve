@@ -371,8 +371,8 @@
       cursor: pointer;
       position: relative;
       transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-      backdrop-filter: var(--liquid-blur-subtle);
-      -webkit-backdrop-filter: var(--liquid-blur-subtle);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
     }
     .index-nav-item i {
       width: 32px;
@@ -441,11 +441,16 @@
       padding-right: 10px !important;
     }
     .sidebar-compact .index-nav-item {
-      justify-content: center;
+      display: grid !important;
+      grid-template-columns: 32px;
+      place-items: center;
       padding-left: 0;
       padding-right: 0;
       height: 46px;
       min-width: 56px;
+      width: 56px;
+      margin-left: auto;
+      margin-right: auto;
     }
     .sidebar-compact .index-nav-item i {
       width: 32px;
@@ -1033,10 +1038,13 @@
             }
             _notify(key);
           })
-          .withFailureHandler(function () {
+          .withFailureHandler(function (error) {
             _cache[key].loading = false;
             _inFlight[key] = false;
             _lastRequestedAt[key] = 0;
+            if (key === 'releaseData' && typeof handleHistoryFailure === 'function') {
+              handleHistoryFailure(error);
+            }
           })
           [fnName]();
       }
