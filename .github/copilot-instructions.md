@@ -1,0 +1,9 @@
+- Luôn đặt tên biến dạng camelCase.
+- JavaScript bắt buộc dùng Arrow Function.
+- Viết comment tiếng Việt 100%.
+- Luôn ưu tiên áp dụng skill dev-master-python-gas-html cho mọi task liên quan đến JavaScript, Google Apps Script, HTML, Python hoặc xử lý dự án.
+- Không bỏ qua quy trình skill dù task nhỏ: phản chiếu ý đồ, kiểm tra điểm mơ hồ, hỏi ngược A/B/C nếu thiếu thông tin, rồi mới viết code.
+- Mọi code phải tuân thủ nguyên tắc của skill: an toàn dữ liệu, đọc ngữ cảnh workspace, không tự đoán mò, và giữ đúng kiến trúc dự án.
+- Bất kỳ task nào trong repo này đều phải được xử lý theo đúng workflow của skill, kể cả sửa text, thay tên biến, chỉnh giao diện, hoặc xử lý logic nhỏ.
+- Nếu thông tin không đủ, phải hỏi A/B/C trước khi sửa code; không được tiến hành theo suy đoán chủ quan.
+- Không được dùng "task nhỏ" như lý do để bypass skill hoặc bỏ qua kiểm tra edge case.

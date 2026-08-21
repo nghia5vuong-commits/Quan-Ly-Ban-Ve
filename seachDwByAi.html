@@ -1,743 +1,497 @@
-<div id="page-seachDwByAI" class="p-3 p-md-4 custom-scroll"
-  style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+<div id="page-seachDwByAI" class="custom-scroll"
+  style="width: 100%; height: 100%; overflow: hidden; background-color: transparent; margin: 0 !important;">
 
   <style>
-    /* SIDE PANEL - CỐ ĐỊNH CHUẨN */
-    #page-seachDwByAI .custom-sticky {
-      position: -webkit-sticky;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      max-height: calc(100vh - 130px);
-      overflow-y: auto;
-      scrollbar-width: thin;
-    }
-
-    #page-seachDwByAI .custom-sticky::-webkit-scrollbar {
-      display: none;
-      /* Ẩn thanh cuộn trên Chrome/Safari */
-    }
-
-    #page-seachDwByAI .glass-card,
-    #page-seachDwByAI .app-card {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-      border: 1px solid #e2e8f0;
-      min-height: calc(100vh - 110px);
-    }
-
-    #page-seachDwByAI .upload-title {
-      font-weight: bold;
-      margin-bottom: 8px;
-      display: block;
-      font-size: 12px;
-      color: #666;
-      text-transform: uppercase;
-    }
-
-    /* PREVIEW */
-    #page-seachDwByAI #previewContainer {
-      border: 2px dashed #ddd;
-      border-radius: 12px;
-      padding: 10px;
-      background: #fafafa;
-      min-height: 120px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 15px;
-      position: relative;
-    }
-
-    #page-seachDwByAI #previewImage {
-      max-width: 100%;
-      max-height: 180px;
-      border-radius: 8px;
-      display: none;
-    }
-
-    #page-seachDwByAI #previewContainer::after {
-      content: "Chưa chọn ảnh";
-      color: #bbb;
-      font-size: 13px;
-    }
-
-    #page-seachDwByAI #previewContainer.has-image::after {
-      display: none;
-    }
-
-    #page-seachDwByAI #previewContainer.has-image #previewImage {
-      display: block;
-    }
-
-    #page-seachDwByAI .btn-search {
-      background-color: #ffffff;
-      color: #1e293b;
-      font-weight: bold;
-      padding: 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 10px;
-      transition: 0.3s;
-    }
-
-    #page-seachDwByAI .btn-search:hover {
-      background-color: #f8fafc;
-      transform: translateY(-2px);
-      color: #1e293b;
-    }
-
-    /* AI LOADER */
-    #page-seachDwByAI .ai-loader {
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      padding: 40px;
-      background: white;
-      border-radius: 20px;
-      margin-bottom: 20px;
-    }
-
-    #page-seachDwByAI .comparison-scene {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      position: relative;
-    }
-
-    #page-seachDwByAI .scan-box {
-      position: relative;
-      width: 120px;
-      height: 120px;
-      border: 2px solid #eee;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #fff;
-    }
-
-    #page-seachDwByAI .drawing-pic {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      padding: 8px;
-    }
-
-    #page-seachDwByAI .scan-line {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: var(--primary-color);
-      box-shadow: 0 0 12px var(--primary-color);
-      animation: scanMove 2s infinite ease-in-out;
-      z-index: 2;
-    }
-
-    @keyframes scanMove {
-      0% {
-        top: 0%;
-      }
-
-      50% {
-        top: 100%;
-      }
-
-      100% {
-        top: 0%;
-      }
-    }
-
-    #page-seachDwByAI .robot-icon {
-      font-size: 50px;
-      z-index: 3;
-      animation: robotFloat 1.5s infinite ease-in-out;
-    }
-
-    @keyframes robotFloat {
-
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-8px);
-      }
-    }
-
-    /* RESULT CARDS */
-    #page-seachDwByAI .result-card {
-      background: white;
-      border-radius: 12px;
-      padding: 15px;
-      height: 100%;
-      border: 1px solid #eee;
-      transition: 0.3s;
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
-    }
-
-    #page-seachDwByAI .result-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-      border-color: var(--primary-color);
-    }
-
-    #page-seachDwByAI .result-card img {
-      width: 100%;
-      height: 180px;
-      object-fit: contain;
-      margin-bottom: 12px;
-      border-radius: 8px;
-      background: #fafafa;
-    }
-
-    #page-seachDwByAI .result-card.best-match {
-      border: 2px solid var(--accent-color);
-      background: #fffdf2;
-      position: relative;
-    }
-
-    #page-seachDwByAI .result-card.best-match::before {
-      content: "🌟 BEST MATCH";
-      position: absolute;
-      top: -1px;
-      left: -1px;
-      background: var(--accent-color);
-      font-size: 10px;
-      font-weight: bold;
-      padding: 4px 10px;
-      border-radius: 10px 0 10px 0;
-      z-index: 5;
-    }
-
-    #page-seachDwByAI .result-info-box {
-      width: 100%;
-      margin-top: auto;
-      padding-top: 12px;
-      border-top: 1px dashed #ddd;
-    }
-
-    #page-seachDwByAI .info-item {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 4px;
-      font-size: 13px;
-    }
-
-    #page-seachDwByAI .info-label {
-      color: #777;
-    }
-
-    #page-seachDwByAI .info-value {
-      font-weight: 700;
-      color: #333;
-    }
-
-    #page-seachDwByAI .filename-tag {
-      background: #f1f1f1;
-      padding: 3px 8px;
-      border-radius: 5px;
-      font-family: monospace;
-      font-size: 12px;
-      color: #555;
-      display: inline-block;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* MODAL AI */
-    #page-seachDwByAI .modal-header-ai {
-      background: #ffffff;
-      border-bottom: 1px solid #e2e8f0;
-      color: #1e293b;
-    }
-
-    #page-seachDwByAI .ai-insight-box {
-      border-left: 5px solid var(--primary-color);
-      background: #f9fff0;
-      padding: 20px;
-      border-radius: 5px;
-      font-size: 15px;
-    }
-
-    #page-seachDwByAI .dots::after {
-      content: '';
-      animation: dotsAnim 1.5s infinite;
-    }
-
-    @keyframes dotsAnim {
-      0% {
-        content: '';
-      }
-
-      33% {
-        content: '.';
-      }
-
-      66% {
-        content: '..';
-      }
-
-      100% {
-        content: '...';
-      }
-    }
-
-    /* SEARCHABLE DROPDOWN */
-    #page-seachDwByAI .search-select-wrapper {
-      position: relative;
-    }
-
-    #page-seachDwByAI .search-select-input {
-      display: flex;
-      align-items: center;
-      border: 1px solid #dee2e6;
-      border-radius: 8px;
-      background: #fff;
-      cursor: pointer;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    #page-seachDwByAI .search-select-input:focus-within {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 3px rgba(153, 204, 102, 0.2);
-    }
-
-    #page-seachDwByAI .search-select-field {
-      border: none;
-      outline: none;
-      width: 100%;
-      padding: 8px 12px;
-      font-size: 14px;
-      background: transparent;
-      color: var(--text-color);
-    }
-
-    #page-seachDwByAI .search-select-field::placeholder {
-      color: #aaa;
-    }
-
-    #page-seachDwByAI .search-select-field:disabled {
-      cursor: wait;
-    }
-
-    #page-seachDwByAI .search-select-arrow {
-      padding: 0 12px;
-      color: #888;
-      font-size: 12px;
-      transition: transform 0.2s;
-    }
-
-    #page-seachDwByAI .search-select-wrapper.open .search-select-arrow {
-      transform: rotate(180deg);
-    }
-
-    #page-seachDwByAI .search-select-dropdown {
-      display: none;
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 0;
-      right: 0;
-      background: #fff;
-      border: 1px solid #dee2e6;
-      border-radius: 10px;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-      max-height: 220px;
-      overflow-y: auto;
-      z-index: 1050;
-    }
-
-    #page-seachDwByAI .search-select-wrapper.open .search-select-dropdown {
-      display: block;
-      animation: dropIn 0.15s ease-out;
-    }
-
-    @keyframes dropIn {
-      from {
-        opacity: 0;
-        transform: translateY(-6px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    #page-seachDwByAI .search-select-item {
-      padding: 9px 14px;
-      font-size: 13.5px;
-      cursor: pointer;
-      transition: background 0.15s;
-      border-bottom: 1px solid #f5f5f5;
-    }
-
-    #page-seachDwByAI .search-select-item:last-child {
-      border-bottom: none;
-    }
-
-    #page-seachDwByAI .search-select-item:hover,
-    #page-seachDwByAI .search-select-item.active {
-      background: #f0f9e8;
-      color: var(--primary-color);
-      font-weight: 600;
-    }
-
-    #page-seachDwByAI .search-select-item.all-option {
-      color: #888;
-      font-style: italic;
-    }
-
-    #page-seachDwByAI .search-select-item .highlight {
-      background: #fff3cd;
-      border-radius: 2px;
-      padding: 0 1px;
-      font-weight: 700;
-    }
-
-    #page-seachDwByAI .search-select-empty {
-      padding: 14px;
-      text-align: center;
-      color: #aaa;
-      font-size: 13px;
-    }
-
-    #page-seachDwByAI .search-select-dropdown::-webkit-scrollbar {
-      width: 5px;
-    }
-
-    #page-seachDwByAI .search-select-dropdown::-webkit-scrollbar-thumb {
-      background: #ccc;
-      border-radius: 5px;
-    }
-
-    /* ============================================
-       MODAL TIÊU CHUẨN ĐÓNG GÓI — PREMIUM UI
-       ============================================ */
-
-    /* --- Modal Shell --- */
-    #page-seachDwByAI .std-modal {
-      border-radius: 16px;
-      overflow: hidden;
-    }
-
-    #page-seachDwByAI .std-modal-header {
-      background: #ffffff;
-      border-bottom: 1px solid #e2e8f0;
-      color: #1e293b;
-      padding: 18px 24px;
-    }
-
-    #page-seachDwByAI .std-modal-header .modal-title {
-      font-size: 18px;
-      letter-spacing: 0.3px;
-    }
-
-    #page-seachDwByAI .std-modal-subtitle {
-      display: block;
-      opacity: 0.8;
-      font-size: 12px;
-      margin-top: 2px;
-    }
-
-    #page-seachDwByAI .std-modal-footer {
-      background: #f8fafc;
-      border-top: 1px solid #e2e8f0;
-      padding: 10px 20px;
-    }
-
-    /* --- Table Wrapper --- */
-    #page-seachDwByAI .std-table-wrap {
-      width: 100%;
-      overflow-x: auto;
-      overflow-y: auto;
-      max-height: 70vh;
-    }
-
-    /* Custom Scrollbar */
-    #page-seachDwByAI .std-table-wrap::-webkit-scrollbar {
-      height: 8px;
-      width: 8px;
-    }
-
-    #page-seachDwByAI .std-table-wrap::-webkit-scrollbar-track {
-      background: #f1f5f9;
-    }
-
-    #page-seachDwByAI .std-table-wrap::-webkit-scrollbar-thumb {
-      background: linear-gradient(135deg, #c5e1a5, #7CB342);
-      border-radius: 10px;
-    }
-
-    #page-seachDwByAI .std-table-wrap::-webkit-scrollbar-thumb:hover {
-      background: #689F38;
-    }
-
-    /* --- Table Base --- */
-    #page-seachDwByAI .std-table {
-      border-collapse: separate;
-      border-spacing: 0;
-      width: max-content;
-      min-width: 100%;
-      font-size: 13px;
-      font-family: 'Segoe UI', system-ui, sans-serif;
-    }
-
-    /* --- THEAD: Sticky + Styled --- */
-    #page-seachDwByAI .std-table thead {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    /* Group Headers */
-    #page-seachDwByAI .std-group {
-      padding: 12px 16px !important;
-      font-weight: 700;
-      font-size: 13px;
-      text-align: center;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      border-bottom: 2px solid rgba(0, 0, 0, 0.08) !important;
-    }
-
-    #page-seachDwByAI .std-group i {
-      margin-right: 6px;
-      font-size: 14px;
-    }
-
-    #page-seachDwByAI .std-group-info {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      color: #92400e;
-    }
-
-    #page-seachDwByAI .std-group-pack {
-      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-      color: #1e40af;
-    }
-
-    #page-seachDwByAI .std-group-history {
-      background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
-      color: #9d174d;
-    }
-
-    /* Sub Headers */
-    #page-seachDwByAI .std-sub-header th {
-      background: #f8fafc;
-      color: #475569;
-      font-weight: 600;
-      font-size: 11.5px;
-      text-transform: uppercase;
-      padding: 10px 14px !important;
-      border-bottom: 2px solid #e2e8f0 !important;
-      border-right: 1px solid #f1f5f9 !important;
-      white-space: nowrap;
-    }
-
-    /* --- TBODY --- */
-    #page-seachDwByAI .std-table td {
-      padding: 12px 14px;
-      border-bottom: 1px solid #f1f5f9;
-      border-right: 1px solid #f8fafc;
-      vertical-align: middle;
-      color: #334155;
-      line-height: 1.5;
-    }
-
-    /* Alternating Rows */
-    #page-seachDwByAI .std-table tbody tr:nth-child(even) {
-      background-color: #f8fafc;
-    }
-
-    #page-seachDwByAI .std-table tbody tr:nth-child(odd) {
-      background-color: #ffffff;
-    }
-
-    /* Row Hover */
-    #page-seachDwByAI .std-table tbody tr {
-      transition: all 0.15s ease;
-    }
-
-    #page-seachDwByAI .std-table tbody tr:hover {
-      background-color: var(--primary-soft, #f0f7ea) !important;
-      box-shadow: inset 3px 0 0 var(--primary-color, #7CB342);
-    }
-
-    /* Section Dividers — mỗi section có border-left màu khác */
-    #page-seachDwByAI .std-table tbody td:nth-child(1) {
-      border-left: 3px solid #f59e0b;
-    }
-
-    #page-seachDwByAI .std-table tbody td:nth-child(12) {
-      border-left: 3px solid var(--primary-color, #7CB342);
-    }
-
-    #page-seachDwByAI .std-table tbody td:nth-child(21) {
-      border-left: 3px solid #ec4899;
-    }
-
-    /* STT Column */
-    #page-seachDwByAI .std-table tbody td:first-child {
-      font-weight: 700;
-      text-align: center;
-      color: var(--primary-color, #7CB342);
-      font-size: 14px;
-      min-width: 45px;
-    }
-
-    /* --- Badges Nâng Cấp --- */
-    #page-seachDwByAI .badge-blue {
-      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-      color: #1d4ed8;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 12px;
-      display: inline-block;
-      border: 1px solid #93c5fd;
-    }
-
-    #page-seachDwByAI .badge-red {
-      background: linear-gradient(135deg, #fee2e2, #fecaca);
-      color: #b91c1c;
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 12px;
-      display: inline-block;
-      border: 1px solid #fca5a5;
-    }
-
-    #page-seachDwByAI .badge-gray {
-      background: #f1f5f9;
-      color: #64748b;
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-weight: 500;
-      font-size: 12px;
-      display: inline-block;
-      border: 1px solid #e2e8f0;
-    }
-
-    /* Change Box */
-    #page-seachDwByAI .change-box {
-      background: linear-gradient(135deg, #fffbeb, #fef3c7);
-      border-left: 4px solid #f59e0b;
-      padding: 10px 14px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      color: #78350f;
-      text-align: left;
-      line-height: 1.6;
-    }
-
-    /* Material List */
-    #page-seachDwByAI .std-table .list-unstyled {
-      list-style: none;
-      padding-left: 0;
-      margin-bottom: 0;
-    }
-
-    #page-seachDwByAI .std-table .list-unstyled li {
-      position: relative;
-      padding-left: 14px;
-      margin-bottom: 3px;
-      text-align: left;
-      font-size: 12.5px;
-    }
-
-    #page-seachDwByAI .std-table .list-unstyled li::before {
-      content: "●";
-      position: absolute;
-      left: 0;
-      color: #94a3b8;
-      font-size: 8px;
-      top: 3px;
-    }
-
-    /* Monospace for sizes */
-    #page-seachDwByAI .std-table td[style*="monospace"] {
-      letter-spacing: 0.5px;
-    }
-
-    /* --- Loading & Empty State --- */
-    #page-seachDwByAI .std-loading-state {
-      padding: 60px 20px;
-      text-align: center;
-    }
-
-    #page-seachDwByAI .std-loading-state .spinner-border {
-      width: 2.5rem;
-      height: 2.5rem;
-      border-width: 3px;
-      color: var(--primary-color, #7CB342);
-    }
-
-    #page-seachDwByAI .std-empty-state {
-      padding: 60px 20px;
-      text-align: center;
-      color: #94a3b8;
-    }
-
-    #page-seachDwByAI .std-empty-state i {
-      font-size: 48px;
-      display: block;
-      margin-bottom: 12px;
-      opacity: 0.5;
-    }
-
-    /* --- Responsive --- */
-    @media (max-width: 1000px) {
-      #page-seachDwByAI .std-modal-header {
-        padding: 14px 16px;
-      }
-
-      #page-seachDwByAI .std-modal-header .modal-title {
-        font-size: 15px;
-      }
-
-      #page-seachDwByAI .std-table {
-        font-size: 12px;
-      }
-
-      #page-seachDwByAI .std-table td,
-      #page-seachDwByAI .std-sub-header th {
-        padding: 8px 10px !important;
-      }
-    }
-
-    /* --- FIX: Modal hiện TRÊN header --- */
-    #page-seachDwByAI .modal-backdrop {
-      z-index: 1200 !important;
-    }
-
-    #page-seachDwByAI .modal {
-      z-index: 1210 !important;
-    }
-
-    #page-seachDwByAI #standardModal .modal-dialog {
-      max-width: 98vw;
-      margin: 10px auto;
-    }
-  </style>
-
-  <main class="container-fluid p-0">
-
-    <div class="row g-4">
+  /* ==========================================================================
+     PAGE SEARCH DW BY AI - LIGHT LIQUID GLASS (iOS 27 Fluid Glassmorphism)
+     ========================================================================== */
+  #page-seachDwByAI {
+    position: relative;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+
+  /* Cards & Glass Panels */
+  #page-seachDwByAI .glass-card, 
+  #page-seachDwByAI .app-card {
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-lg);
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    transition: var(--liquid-spring);
+  }
+  #page-seachDwByAI .glass-card:hover {
+    box-shadow: var(--liquid-shadow-lg);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  /* Upload & Preview Container */
+  #page-seachDwByAI #previewContainer {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    padding: 12px;
+    border: 2px dashed rgba(16, 185, 129, 0.35);
+    border-radius: var(--liquid-radius-md);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(209, 250, 229, 0.45) 100%);
+    backdrop-filter: var(--liquid-blur-subtle);
+    -webkit-backdrop-filter: var(--liquid-blur-subtle);
+    color: var(--liquid-text-soft);
+    text-align: center;
+    transition: var(--liquid-spring);
+    cursor: pointer;
+    overflow: hidden;
+  }
+  #page-seachDwByAI #previewContainer:hover {
+    border-color: var(--liquid-primary);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(209, 250, 229, 0.8) 100%);
+    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.15);
+  }
+  #page-seachDwByAI #previewContainer #previewImage {
+    display: none;
+    max-width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+    border-radius: var(--liquid-radius-sm);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  #page-seachDwByAI #previewContainer.has-image #previewImage {
+    display: block;
+  }
+  #page-seachDwByAI #previewContainer.has-image #previewPlaceholder {
+    display: none;
+  }
+
+  /* Search Select Dropdown Liquid Glass */
+  #page-seachDwByAI .search-select-wrapper { position: relative; }
+  #page-seachDwByAI .search-select-input {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid rgba(203, 213, 225, 0.85);
+    border-radius: var(--liquid-radius-sm);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: var(--liquid-blur-subtle);
+    -webkit-backdrop-filter: var(--liquid-blur-subtle);
+    overflow: hidden;
+    transition: var(--liquid-spring-fast);
+  }
+  #page-seachDwByAI .search-select-input:focus-within {
+    border-color: var(--liquid-primary);
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
+    background: #ffffff;
+  }
+  #page-seachDwByAI .search-select-field {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: var(--liquid-text);
+    font-size: 0.88rem;
+    padding: 8px 14px;
+    outline: none;
+  }
+  #page-seachDwByAI .search-select-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    display: none;
+    max-height: 240px;
+    overflow-y: auto;
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-md);
+    box-shadow: var(--liquid-shadow-lg);
+    padding: 6px;
+  }
+  #page-seachDwByAI .search-select-wrapper.open .search-select-dropdown {
+    display: block;
+    animation: liquidFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  #page-seachDwByAI .search-select-item {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border-radius: var(--liquid-radius-xs);
+    transition: var(--liquid-spring-fast);
+  }
+  #page-seachDwByAI .search-select-item:hover,
+  #page-seachDwByAI .search-select-item.active {
+    background: rgba(209, 250, 229, 0.85);
+    color: var(--liquid-primary-dark);
+    font-weight: 700;
+  }
+
+  /* Result Cards Liquid Glass */
+  #page-seachDwByAI .result-card {
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    border-radius: var(--liquid-radius-md);
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    box-shadow: var(--liquid-shadow-sm);
+    transition: var(--liquid-spring);
+  }
+  #page-seachDwByAI .result-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow);
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+  #page-seachDwByAI .result-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: contain;
+    border-radius: var(--liquid-radius-sm);
+    background: rgba(255, 255, 255, 0.8);
+    margin-bottom: 12px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  #page-seachDwByAI .result-card.best-match {
+    border-color: rgba(16, 185, 129, 0.5);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(209, 250, 229, 0.85));
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
+  }
+
+  /* ==========================================================================
+     AI HOLOGRAM SCANNER SUITE - FUTURISTIC LIQUID GLASS
+     ========================================================================== */
+  #page-seachDwByAI .ai-loader-container {
+    width: 100%;
+    max-width: 680px;
+    margin: auto;
+    animation: liquidFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Scanner Badge */
+  #page-seachDwByAI .ai-scanner-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: var(--liquid-radius-pill);
+    background: rgba(209, 250, 229, 0.9);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.18);
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: var(--liquid-primary-dark);
+    letter-spacing: 0.06em;
+  }
+  #page-seachDwByAI .pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    animation: pulseRing 1.5s infinite;
+  }
+  @keyframes pulseRing {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 16px #10b981; }
+    100% { transform: scale(0.9); opacity: 0.8; }
+  }
+
+  /* Hologram Scene Layout */
+  #page-seachDwByAI .ai-hologram-scene {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+    perspective: 1000px;
+  }
+
+  /* Scan Card */
+  #page-seachDwByAI .ai-scan-card {
+    flex: 1;
+    max-width: 230px;
+    border-radius: var(--liquid-radius-lg);
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08), 0 0 20px rgba(16, 185, 129, 0.12);
+    overflow: hidden;
+    transition: var(--liquid-spring);
+  }
+  #page-seachDwByAI .scan-card-header {
+    padding: 8px 12px;
+    background: rgba(240, 253, 244, 0.85);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+    text-align: center;
+  }
+  #page-seachDwByAI .scan-chip {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--liquid-primary-dark);
+  }
+  #page-seachDwByAI .scan-viewport {
+    position: relative;
+    width: 100%;
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.95) 0%, rgba(240, 253, 244, 0.65) 100%);
+    overflow: hidden;
+    padding: 12px;
+  }
+  #page-seachDwByAI .scan-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.08));
+    z-index: 2;
+  }
+  #page-seachDwByAI .db-matrix-icon {
+    font-size: 3.5rem;
+    color: var(--liquid-primary);
+    opacity: 0.85;
+    animation: rotate3d 6s linear infinite;
+    z-index: 2;
+  }
+  @keyframes rotate3d {
+    0% { transform: scale(0.95) rotate(0deg); }
+    50% { transform: scale(1.08) rotate(180deg); }
+    100% { transform: scale(0.95) rotate(360deg); }
+  }
+
+  /* Grid Overlay */
+  #page-seachDwByAI .scan-grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-size: 16px 16px;
+    background-image: 
+      linear-gradient(to right, rgba(16, 185, 129, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(16, 185, 129, 0.08) 1px, transparent 1px);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Laser Beam */
+  #page-seachDwByAI .scan-laser {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent 0%, #34d399 20%, #10b981 50%, #34d399 80%, transparent 100%);
+    box-shadow: 0 0 16px #10b981, 0 0 28px rgba(16, 185, 129, 0.7);
+    z-index: 5;
+    animation: laserScan 2s ease-in-out infinite alternate;
+  }
+  #page-seachDwByAI .laser-db {
+    animation-delay: -1s;
+    background: linear-gradient(90deg, transparent 0%, #38bdf8 20%, #0ea5e9 50%, #38bdf8 80%, transparent 100%);
+    box-shadow: 0 0 16px #0ea5e9, 0 0 28px rgba(14, 165, 233, 0.7);
+  }
+  @keyframes laserScan {
+    0% { top: 8%; opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { top: 90%; opacity: 0.6; }
+  }
+
+  /* Neural Bridge & Core */
+  #page-seachDwByAI .ai-neural-bridge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 80px;
+    flex-shrink: 0;
+  }
+  #page-seachDwByAI .stream-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(16, 185, 129, 0.3), #10b981);
+    position: relative;
+  }
+  #page-seachDwByAI .stream-line::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: streamFlow 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  @keyframes streamFlow {
+    0% { left: 0%; opacity: 0; }
+    50% { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+  }
+  #page-seachDwByAI .ai-neural-core {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #0ea5e9 100%);
+    color: #ffffff;
+    font-size: 1.25rem;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+    z-index: 10;
+  }
+  #page-seachDwByAI .core-rings {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    animation: corePulse 2s ease-out infinite;
+  }
+  #page-seachDwByAI .ring-2 {
+    inset: -12px;
+    border-color: rgba(14, 165, 233, 0.2);
+    animation-delay: -1s;
+  }
+  @keyframes corePulse {
+    0% { transform: scale(0.9); opacity: 0.8; }
+    100% { transform: scale(1.3); opacity: 0; }
+  }
+
+  /* Status Wrapper & Progress */
+  #page-seachDwByAI .ai-status-wrapper {
+    width: 100%;
+    max-width: 460px;
+  }
+  #page-seachDwByAI .ai-status-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--liquid-text);
+  }
+  #page-seachDwByAI .ai-progress-track {
+    width: 100%;
+    height: 6px;
+    background: rgba(16, 185, 129, 0.12);
+    border-radius: var(--liquid-radius-pill);
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+  #page-seachDwByAI .ai-progress-bar {
+    width: 40%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #0ea5e9 100%);
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.7);
+    animation: progressBarLoop 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  @keyframes progressBarLoop {
+    0% { transform: translateX(-100%); width: 30%; }
+    50% { width: 60%; }
+    100% { transform: translateX(350%); width: 30%; }
+  }
+
+  /* Badges */
+  #page-seachDwByAI .badge-blue, 
+  #page-seachDwByAI .badge-red, 
+  #page-seachDwByAI .badge-gray {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: var(--liquid-radius-pill);
+    font-size: 0.72rem;
+    font-weight: 700;
+    box-shadow: var(--liquid-shadow-sm);
+  }
+  #page-seachDwByAI .badge-blue { background: rgba(224, 242, 254, 0.9); color: #0284c7; border: 1px solid rgba(14, 165, 233, 0.25); }
+  #page-seachDwByAI .badge-red { background: rgba(254, 226, 226, 0.9); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.25); }
+  #page-seachDwByAI .badge-gray { background: rgba(241, 245, 249, 0.9); color: var(--liquid-text-soft); }
+
+  /* Submit Search Button */
+  #page-seachDwByAI .btn-search {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    padding: 12px 20px;
+    font-weight: 700;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 10px 24px rgba(16, 185, 129, 0.35) !important;
+    border-radius: var(--liquid-radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--liquid-spring);
+  }
+  #page-seachDwByAI .btn-search:hover {
+    background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 14px 28px rgba(16, 185, 129, 0.45) !important;
+  }
+  /* Compact result cards */
+  #page-seachDwByAI .result-card {
+    padding: 10px 12px;
+    border-radius: var(--liquid-radius-md);
+    font-size: 0.76rem !important;
+  }
+  #page-seachDwByAI .result-card img {
+    height: 130px;
+    margin-bottom: 8px;
+  }
+
+  /* Compact badges */
+  #page-seachDwByAI .badge-blue,
+  #page-seachDwByAI .badge-red,
+  #page-seachDwByAI .badge-gray {
+    padding: 2px 8px !important;
+    font-size: 0.65rem !important;
+  }
+
+  /* Compact search button */
+  #page-seachDwByAI .btn-search {
+    padding: 9px 16px;
+    font-size: 0.82rem;
+  }
+
+  /* Scrollable results area */
+  #page-seachDwByAI .results-panel {
+    max-height: calc(100vh - 180px) !important;
+    overflow-y: auto !important;
+  }
+
+  /* Compact form */
+  #page-seachDwByAI .form-label {
+    font-size: 0.7rem !important;
+    margin-bottom: 3px !important;
+    font-weight: 700;
+  }
+  #page-seachDwByAI .form-control,
+  #page-seachDwByAI .form-select { font-size: 0.8rem !important; padding: 6px 10px !important; }
+</style>
+
+  <main class="container-fluid p-0" style="height: 100%; overflow: hidden;">
+
+    <div class="row g-0" style="height: 100%;">
       <div class="col-lg-4 col-md-5">
         <div class="custom-sticky">
           <div class="glass-card">
             <label class="upload-title"><i class="bi bi-image"></i> <span data-i18n="upload_title">Hình ảnh đầu
                 vào</span></label>
-            <input type="file" class="form-control mb-3" id="imageInput" accept="image/*"
+            <input type="file" class="form-control mb-3 custom-file-input" id="imageInput" accept="image/*"
               onchange="previewSelectedImage(event)">
 
-            <div id="previewContainer">
+            <div id="previewContainer" class="mb-3" onclick="document.getElementById('imageInput').click()">
+              <div id="previewPlaceholder" class="text-center p-2">
+                <i class="bi bi-cloud-arrow-up fs-2 text-primary d-block mb-1"></i>
+                <span class="small text-muted fw-semibold">Chọn hoặc kéo thả ảnh bản vẽ vào đây</span>
+              </div>
               <img id="previewImage" src="" alt="Xem trước">
             </div>
 
@@ -756,8 +510,8 @@
                 hàng</span></label>
             <div class="search-select-wrapper mb-4" id="customerWrapper">
               <div class="search-select-input" onclick="toggleDropdown()">
-                <input type="text" id="customerSearch" class="search-select-field" placeholder="⏳ Đang tải..."
-                  autocomplete="off" oninput="filterCustomerList()" onfocus="openDropdown()" disabled>
+                <input type="text" id="customerSearch" class="search-select-field" placeholder="Gõ để tìm khách hàng..."
+                  autocomplete="off" oninput="filterCustomerList()" onfocus="openDropdown()">
                 <i class="bi bi-chevron-down search-select-arrow"></i>
               </div>
               <div class="search-select-dropdown" id="customerDropdown"></div>
@@ -784,23 +538,70 @@
       <div class="col-lg-8 col-md-7">
         <div class="glass-card d-flex flex-column" style="min-height: calc(100vh - 110px);">
 
-          <div id="aiLoader" class="ai-loader text-center my-auto py-5" style="display:none;">
-            <div class="comparison-scene">
-              <div class="scan-box">
-                <img id="loaderOriginalImg" class="drawing-pic" src="" alt="Gốc">
-                <div class="scan-line"></div>
+          <!-- AI Scanning Loader Suite -->
+          <div id="aiLoader" class="ai-loader-container flex-column align-items-center justify-content-center p-4 my-auto" style="display: none;">
+            
+            <!-- AI Header Badge -->
+            <div class="ai-scanner-badge mb-4">
+              <span class="pulse-dot"></span>
+              <span class="badge-text"><i class="bi bi-cpu me-1"></i> SMARTVISION AI SCANNER</span>
+            </div>
+
+            <!-- Comparison Hologram Scene -->
+            <div class="ai-hologram-scene">
+              
+              <!-- Card 1: Input Drawing -->
+              <div class="ai-scan-card">
+                <div class="scan-card-header">
+                  <span class="scan-chip"><i class="bi bi-image me-1"></i> Bản vẽ tải lên</span>
+                </div>
+                <div class="scan-viewport">
+                  <img id="loaderOriginalImg" class="scan-image" src="" alt="Bản vẽ tải lên">
+                  <div class="scan-laser"></div>
+                  <div class="scan-grid-overlay"></div>
+                </div>
               </div>
-              <div class="ai-core">
-                <div class="robot-icon">🤖</div>
+
+              <!-- Center Neural Core Bridge -->
+              <div class="ai-neural-bridge">
+                <div class="stream-line"></div>
+                <div class="ai-neural-core">
+                  <div class="core-rings ring-1"></div>
+                  <div class="core-rings ring-2"></div>
+                  <i class="bi bi-cpu-fill"></i>
+                </div>
+                <div class="stream-line"></div>
               </div>
-              <div class="scan-box">
-                <img class="drawing-pic searching-db"
-                  src="https://img.icons8.com/?size=100&id=Wy3XKG1CjyKf&format=png&color=000000" alt="Quét">
-                <div class="scan-line"></div>
+
+              <!-- Card 2: Database Matrix -->
+              <div class="ai-scan-card">
+                <div class="scan-card-header">
+                  <span class="scan-chip"><i class="bi bi-database-fill-check me-1"></i> Kho dữ liệu bản vẽ</span>
+                </div>
+                <div class="scan-viewport">
+                  <div class="db-matrix-icon">
+                    <i class="bi bi-diagram-3-fill"></i>
+                  </div>
+                  <div class="scan-laser laser-db"></div>
+                  <div class="scan-grid-overlay"></div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- AI Status Text & Progress Bar -->
+            <div class="ai-status-wrapper mt-4 text-center">
+              <h5 class="ai-status-title mb-2">
+                <span data-i18n="ai_loading">AI đang truy xuất &amp; phân tích mặt cắt</span>
+                <span class="dots"></span>
+              </h5>
+              <p class="text-muted small mb-3">Đang đối chiếu vectơ hình học và xếp hạng độ tương đồng theo tỷ lệ Vector...</p>
+              
+              <div class="ai-progress-track">
+                <div class="ai-progress-bar"></div>
               </div>
             </div>
-            <p class="mt-4 fw-bold text-success fs-5"><span data-i18n="ai_loading">AI đang truy xuất dữ liệu mặt
-                cắt</span><span class="dots"></span></p>
+
           </div>
 
           <!-- Welcome Card: hiện khi chưa search -->
@@ -1057,7 +858,7 @@
           }
           var fd = new FormData();
           fd.append('file', blob, 'image.jpg');
-          fetch('http://10.156.42.195:8000/search-image', { method: 'POST', body: fd })
+          fetch('http://10.156.42.195:8000/quan-ly-ban-ve/search-image', { method: 'POST', body: fd })
             .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
             .then(function (data) {
               if (data.status !== 'success') throw new Error(data.message || 'Loi tu AI Server');
@@ -1076,7 +877,7 @@
               var drivePromise = new Promise(function (res, rej) {
                 google.script.run.withSuccessHandler(res).withFailureHandler(rej).fetchImagesFromDrive(ids);
               });
-              var analyzePromise = fetch('http://10.156.42.195:8000/analyze-results', {
+              var analyzePromise = fetch('http://10.156.42.195:8000/quan-ly-ban-ve/analyze-results', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ image_names: ids, scores: scores })
               }).then(function (r) { return r.json(); }).catch(function () { return null; });
@@ -1224,6 +1025,7 @@
       if (!grid) return;
       grid.innerHTML = '';
       if (!results || results.length === 0) { grid.innerHTML = '<div class="col-12 text-center p-5">' + t('no_data') + '</div>'; return; }
+      var resultFragment = document.createDocumentFragment();
       results.forEach(function (item, index) {
         var col = document.createElement('div'); col.className = 'col';
         var cleanName = item.name ? (item.name.split('.').slice(0, -1).join('.') || item.name) : 'N/A';
@@ -1239,8 +1041,9 @@
           '<button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm rounded-pill" onclick="event.stopPropagation();openform(\'' + (item.link_xlsx || '') + '\')">' +
           '<i class="bi bi-file-earmark-check"></i> ' + t('action_to_link') +
           '</button></div>';
-        grid.appendChild(col);
+        resultFragment.appendChild(col);
       });
+      grid.appendChild(resultFragment);
     }
 
     function openform(link_xlsx) {
@@ -1275,9 +1078,12 @@
 
     function filterDwList() {
       var kw = document.getElementById('dwNoSearch').value.trim().toLowerCase();
-      if (!kw) { renderDwDropdown(globalDwList); return; }
-      renderDwDropdown(globalDwList.filter(function (i) { return i.dwno.toLowerCase().indexOf(kw) !== -1 || i.version.toLowerCase().indexOf(kw) !== -1; }), kw);
       openDropdownDw();
+      clearTimeout(window.aiDwFilterTimer);
+      window.aiDwFilterTimer = setTimeout(function () {
+        if (!kw) { renderDwDropdown(globalDwList); return; }
+        renderDwDropdown(globalDwList.filter(function (i) { return i.dwno.toLowerCase().indexOf(kw) !== -1 || i.version.toLowerCase().indexOf(kw) !== -1; }).slice(0, 100), kw);
+      }, 160);
     }
 
     function selectDw(value, label) {
@@ -1338,9 +1144,12 @@
 
     function filterCustomerList() {
       var kw = document.getElementById('customerSearch').value.trim().toLowerCase();
-      if (!kw) { renderDropdownItems(allCustomers); return; }
-      renderDropdownItems(allCustomers.filter(function (n) { return n.toLowerCase().indexOf(kw) !== -1; }), kw);
       openDropdown();
+      clearTimeout(window.aiCustomerFilterTimer);
+      window.aiCustomerFilterTimer = setTimeout(function () {
+        if (!kw) { renderDropdownItems(allCustomers); return; }
+        renderDropdownItems(allCustomers.filter(function (n) { return n.toLowerCase().indexOf(kw) !== -1; }).slice(0, 100), kw);
+      }, 160);
     }
 
     function selectCustomer(value, label) {
@@ -1402,12 +1211,99 @@
         .getCustomerStandard(customerName);
     }
 
+    var currentLang = localStorage.getItem('app_lang') || 'vi';
     var i18n = {
-      vi: { upload_title: 'Hinh anh dau vao', dim_title: 'Thong so kich thuoc', h_placeholder: 'Chieu cao', w_placeholder: 'Chieu rong', cust_title: 'Doi tuong khach hang', btn_standard: 'Xem tieu chuan', btn_search: 'PHAN TICH & TIM KIEM', btn_ai: 'DANH GIA TU AI', filter_title: 'Bo loc nhanh:', filter_dim: 'Theo HxW', filter_cust: 'Theo khach', filter_reset: 'Lam moi', all_customers: '-- Tat ca khach hang --', search_placeholder: 'Go de tim khach hang...', loading_data: 'Dang tai...', no_data: 'Khong co du lieu phu hop.', match_rate: 'Khop', size_label: 'Kich thuoc:', cust_label: 'Khach hang:', general_cust: 'Chung', found_results: 'Da tim thay {0} ket qua.', error_msg: 'Loi: ', no_link: 'Chua co link ban ve!', no_image: 'Vui long chon anh!', ai_loading: 'AI dang phan tich', view_standard_for: 'Xem tieu chuan cua', std_modal_title: 'Tieu Chuan Dong Goi', std_loading: 'Dang tai...', std_empty: 'Chua co du lieu', std_empty_desc: 'Khong tim thay tieu chuan cho', std_error: 'Loi', std_info_group: 'Thong tin khach hang', std_pack_group: 'Tieu chuan dong goi', std_history_group: 'Lich su thay doi', ai_modal_title: 'Ket qua SmartVision AI', close_btn: 'Dong', scroll_hint: 'Cuon ngang de xem day du', retrieving_for: 'Dang truy xuat cho', records: 'ban ghi', not_found: 'Khong tim thay', no_excel_data: 'Khong co du lieu', action_to_link: 'Su dung' },
-      en: { upload_title: 'Input Image', dim_title: 'Dimensions', h_placeholder: 'Height', w_placeholder: 'Width', cust_title: 'Target Customer', btn_standard: 'View Standard', btn_search: 'ANALYZE & SEARCH', btn_ai: 'AI EVALUATION', filter_title: 'Quick filter:', filter_dim: 'By HxW', filter_cust: 'By Customer', filter_reset: 'Reset', all_customers: '-- All Customers --', search_placeholder: 'Search customer...', loading_data: 'Loading...', no_data: 'No matching data.', match_rate: 'Match', size_label: 'Dimensions:', cust_label: 'Customer:', general_cust: 'General', found_results: 'Found {0} results.', error_msg: 'Error: ', no_link: 'No drawing link!', no_image: 'Please select an image!', ai_loading: 'AI is analyzing', view_standard_for: 'View standard for', std_modal_title: 'Packaging Standard', std_loading: 'Loading...', std_empty: 'No data', std_empty_desc: 'No standard for', std_error: 'Error', std_info_group: 'Customer Info', std_pack_group: 'Packaging Standard', std_history_group: 'Change History', ai_modal_title: 'SmartVision AI Results', close_btn: 'Close', scroll_hint: 'Scroll to see full table', retrieving_for: 'Retrieving for', records: 'records', not_found: 'Not found', no_excel_data: 'No data', action_to_link: 'Use' }
+      vi: {
+        upload_title: 'Hình ảnh đầu vào',
+        dim_title: 'Thông số kích thước',
+        h_placeholder: 'Chiều cao',
+        w_placeholder: 'Chiều rộng',
+        cust_title: 'Đối tượng khách hàng',
+        btn_standard: 'Xem tiêu chuẩn',
+        btn_search: 'PHÂN TÍCH & TÌM KIẾM',
+        btn_ai: 'ĐÁNH GIÁ TỪ AI',
+        filter_title: 'Bộ lọc nhanh:',
+        filter_dim: 'Theo HxW',
+        filter_cust: 'Theo khách',
+        filter_reset: 'Làm mới',
+        all_customers: '-- Tất cả khách hàng --',
+        search_placeholder: 'Gõ để tìm khách hàng...',
+        loading_data: 'Đang tải...',
+        no_data: 'Không có dữ liệu phù hợp.',
+        match_rate: 'Khớp',
+        size_label: 'Kích thước:',
+        cust_label: 'Khách hàng:',
+        general_cust: 'Chung',
+        found_results: 'Đã tìm thấy {0} kết quả.',
+        error_msg: 'Lỗi: ',
+        no_link: 'Chưa có link bản vẽ!',
+        no_image: 'Vui lòng chọn ảnh!',
+        ai_loading: 'AI đang phân tích',
+        view_standard_for: 'Xem tiêu chuẩn của',
+        std_modal_title: 'Tiêu Chuẩn Đóng Gói',
+        std_loading: 'Đang tải...',
+        std_empty: 'Chưa có dữ liệu',
+        std_empty_desc: 'Không tìm thấy tiêu chuẩn cho',
+        std_error: 'Lỗi',
+        std_info_group: 'Thông tin khách hàng',
+        std_pack_group: 'Tiêu chuẩn đóng gói',
+        std_history_group: 'Lịch sử thay đổi',
+        ai_modal_title: 'Kết quả SmartVision AI',
+        close_btn: 'Đóng',
+        scroll_hint: 'Cuộn ngang để xem đầy đủ',
+        retrieving_for: 'Đang truy xuất cho',
+        records: 'bản ghi',
+        not_found: 'Không tìm thấy',
+        no_excel_data: 'Không có dữ liệu',
+        action_to_link: 'Sử dụng'
+      },
+      en: {
+        upload_title: 'Input Image',
+        dim_title: 'Dimensions',
+        h_placeholder: 'Height',
+        w_placeholder: 'Width',
+        cust_title: 'Target Customer',
+        btn_standard: 'View Standard',
+        btn_search: 'ANALYZE & SEARCH',
+        btn_ai: 'AI EVALUATION',
+        filter_title: 'Quick filter:',
+        filter_dim: 'By HxW',
+        filter_cust: 'By Customer',
+        filter_reset: 'Reset',
+        all_customers: '-- All Customers --',
+        search_placeholder: 'Search customer...',
+        loading_data: 'Loading...',
+        no_data: 'No matching data.',
+        match_rate: 'Match',
+        size_label: 'Dimensions:',
+        cust_label: 'Customer:',
+        general_cust: 'General',
+        found_results: 'Found {0} results.',
+        error_msg: 'Error: ',
+        no_link: 'No drawing link!',
+        no_image: 'Please select an image!',
+        ai_loading: 'AI is analyzing',
+        view_standard_for: 'View standard for',
+        std_modal_title: 'Packaging Standard',
+        std_loading: 'Loading...',
+        std_empty: 'No data',
+        std_empty_desc: 'No standard for',
+        std_error: 'Error',
+        std_info_group: 'Customer Info',
+        std_pack_group: 'Packaging Standard',
+        std_history_group: 'Change History',
+        ai_modal_title: 'SmartVision AI Results',
+        close_btn: 'Close',
+        scroll_hint: 'Scroll to see full table',
+        retrieving_for: 'Retrieving for',
+        records: 'records',
+        not_found: 'Not found',
+        no_excel_data: 'No data',
+        action_to_link: 'Use'
+      }
     };
 
-    function t(key) { var l = i18n[currentLang]; return (l && l[key]) ? l[key] : key; }
+    function t(key) { var l = i18n[currentLang] || i18n['vi']; return (l && l[key]) ? l[key] : key; }
 
     function changeLang(lang, btnEl) {
       currentLang = lang;
@@ -1416,25 +1312,38 @@
       if (btnEl) btnEl.classList.add('active');
       var els = document.querySelectorAll('[data-i18n]');
       for (var j = 0; j < els.length; j++) { var k = els[j].getAttribute('data-i18n'); if (i18n[lang] && i18n[lang][k]) els[j].innerHTML = i18n[lang][k]; }
-      var cs = document.getElementById('customerSearch'); if (cs) cs.placeholder = t('search_placeholder');
+      var cs = document.getElementById('customerSearch');
+      if (cs) {
+        var ph = t('search_placeholder');
+        cs.placeholder = (ph && ph !== 'search_placeholder') ? ph : 'Gõ để tìm khách hàng...';
+      }
       filterCustomerList();
     }
 
-    document.addEventListener('click', function (e) {
+    document.getElementById('page-seachDwByAI').addEventListener('click', function (e) {
       var cw = document.getElementById('customerWrapper'); if (cw && !cw.contains(e.target)) closeDropdown();
       var dw = document.getElementById('dwWrapper'); if (dw && !dw.contains(e.target)) closeDropdownDw();
     });
 
-    (function loadInitialData() {
+    var aiInitialDataLoaded = false;
+    function loadInitialData() {
+      if (aiInitialDataLoaded) return;
+      aiInitialDataLoaded = true;
       google.script.run.withSuccessHandler(function (response) {
         globalDataMap = response.dataMap || {};
         allCustomers = response.customers || [];
         globalDwList = response.dwList || [];
         var input = document.getElementById('customerSearch');
-        if (input) { input.placeholder = t('search_placeholder'); input.disabled = false; }
+        if (input) {
+          var ph = t('search_placeholder');
+          input.placeholder = (ph && ph !== 'search_placeholder') ? ph : 'Gõ để tìm khách hàng...';
+          input.disabled = false;
+        }
         renderDropdownItems(allCustomers);
+      }).withFailureHandler(function () {
+        aiInitialDataLoaded = false;
       }).getInitialData();
-    })();
+    }
 
     // Export all to window scope
     window.hideWelcomeCard = hideWelcomeCard;
@@ -1460,6 +1369,7 @@
     window.submitUseForm = submitUseForm;
     window.getcustomerSTD = getcustomerSTD;
     window.changeLang = changeLang;
+    window.initSeachDwByAi = loadInitialData;
 
     // Attach searchBtn
     (function () { var btn = document.getElementById('searchBtn'); if (btn) btn.onclick = uploadAndSearch; })();

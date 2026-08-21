@@ -1,299 +1,292 @@
-<div class="page-submitDrawingsForApproval p-3 p-md-4 custom-scroll"
-  style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+<div class="page-submitDrawingsForApproval custom-scroll"
+  style="width: 100%; height: 100%; overflow: hidden; background-color: transparent; margin: 0 !important;">
 
   <style>
-    /* =========================================================
-       CSS SCOPED CHO TRANG TRÌNH KÝ PHÊ DUYỆT (REDESIGN TABLE & TABS)
-       ========================================================= */
-    .page-submitDrawingsForApproval {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #334155;
-    }
+  /* ==========================================================================
+     PAGE SUBMIT DRAWINGS FOR APPROVAL - LIGHT LIQUID GLASS (iOS 27 Fluid)
+     ========================================================================== */
+  .page-submitDrawingsForApproval {
+    position: relative;
+    background: transparent !important;
+    padding: 0 !important;
+  }
 
-    .page-submitDrawingsForApproval .app-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-      padding: 20px;
-      min-height: calc(100vh - 110px);
-    }
+  /* Main Container Card */
+  .page-submitDrawingsForApproval .app-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-lg);
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    padding: 16px 20px;
+    transition: var(--liquid-spring);
+  }
 
-    /* Tabs Styling giống dwDesign.html */
-    .page-submitDrawingsForApproval .nav-pills .nav-link {
-      color: #64748b;
-      font-weight: 600;
-      border-radius: 8px;
-      padding: 8px 20px;
-      border: 1px solid transparent;
-    }
+  /* Detail Expand Container & Approval Levels */
+  .page-submitDrawingsForApproval .detail-expand-container {
+    background: rgba(240, 253, 244, 0.75);
+    backdrop-filter: var(--liquid-blur-subtle);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 16px;
+    border-radius: var(--liquid-radius-md);
+    margin: 8px 0;
+  }
+  .page-submitDrawingsForApproval .card-level {
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur-subtle);
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-md);
+    padding: 12px 14px;
+    box-shadow: var(--liquid-shadow-sm);
+    transition: var(--liquid-spring);
+  }
+  .page-submitDrawingsForApproval .card-level:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--liquid-shadow-md);
+  }
+  .page-submitDrawingsForApproval .card-level.waiting {
+    border-color: rgba(14, 165, 233, 0.4);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(224, 242, 254, 0.8));
+  }
+  .page-submitDrawingsForApproval .card-level.done {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(209, 250, 229, 0.8));
+  }
 
-    .page-submitDrawingsForApproval .nav-pills .nav-link.active {
-      background-color: #ffffff;
-      border: 1px solid #cbd5e1;
-      color: #1e40af;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-    }
+  /* Tables & Rows */
+  .page-submitDrawingsForApproval .table-custom th {
+    background: rgba(240, 253, 244, 0.75) !important;
+    backdrop-filter: var(--liquid-blur-subtle);
+    color: var(--liquid-text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .page-submitDrawingsForApproval .table-custom tbody tr.dw-row td {
+    transition: var(--liquid-spring-fast);
+  }
+  .page-submitDrawingsForApproval .table-custom tbody tr.dw-row:hover td {
+    background: rgba(209, 250, 229, 0.75) !important;
+    transform: translateY(-1px);
+  }
 
-    /* Table Styling */
-    .page-submitDrawingsForApproval .table-custom {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      font-size: 0.85rem;
-    }
+  /* Action Buttons */
+  .page-submitDrawingsForApproval .btn-view-pdf,
+  .page-submitDrawingsForApproval .btn-toggle-detail {
+    border: var(--liquid-border);
+    color: var(--liquid-primary-dark);
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur-subtle);
+    padding: 6px 12px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    border-radius: var(--liquid-radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: var(--liquid-shadow-sm);
+    transition: var(--liquid-spring);
+  }
+  .page-submitDrawingsForApproval .btn-view-pdf:hover,
+  .page-submitDrawingsForApproval .btn-toggle-detail:hover {
+    transform: translateY(-2px) scale(1.04);
+    background: #ffffff;
+    box-shadow: var(--liquid-shadow-md);
+    color: var(--liquid-primary);
+  }
+  
+  .page-submitDrawingsForApproval .btn-step-approve {
+    padding: 7px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(16, 185, 129, 0.35);
+    border-radius: var(--liquid-radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 700;
+    transition: var(--liquid-spring);
+  }
+  .page-submitDrawingsForApproval .btn-step-approve:hover {
+    background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 12px 24px rgba(16, 185, 129, 0.45);
+  }
 
-    .page-submitDrawingsForApproval .table-custom th {
-      background: #f8fafc;
-      color: #64748b;
-      font-weight: 700;
-      text-transform: uppercase;
-      padding: 12px;
-      border-bottom: 2px solid #e2e8f0;
-      white-space: nowrap;
-    }
+  .page-submitDrawingsForApproval .btn-step-reject {
+    padding: 7px 16px;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(254, 226, 226, 0.85));
+    color: #dc2626;
+    border-radius: var(--liquid-radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 700;
+    box-shadow: var(--liquid-shadow-sm);
+    transition: var(--liquid-spring);
+  }
+  .page-submitDrawingsForApproval .btn-step-reject:hover {
+    transform: translateY(-2px) scale(1.03);
+    background: #dc2626;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35);
+  }
 
-    .page-submitDrawingsForApproval .table-custom td {
-      padding: 12px;
-      vertical-align: middle;
-      border-bottom: 1px solid #f1f5f9;
-      color: #1e293b;
-      transition: background 0.2s;
-    }
+  /* Status Badges & Dots */
+  .page-submitDrawingsForApproval .status-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: var(--liquid-radius-pill);
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: rgba(209, 250, 229, 0.85);
+    color: var(--liquid-primary-dark);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    box-shadow: var(--liquid-shadow-sm);
+    white-space: nowrap;
+  }
+  .page-submitDrawingsForApproval .pipeline-dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border-radius: var(--liquid-radius-pill);
+    background: var(--liquid-glass-elevated);
+    border: 1px solid rgba(203, 213, 225, 0.8);
+    box-shadow: var(--liquid-shadow-sm);
+  }
+  .page-submitDrawingsForApproval .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, 0.8);
+  }
+  .page-submitDrawingsForApproval .dot[data-state="done"] {
+    background: #10b981;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  }
+  .page-submitDrawingsForApproval .dot[data-state="waiting"] {
+    background: #f59e0b;
+    box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+  }
 
-    .page-submitDrawingsForApproval .table-custom tbody tr.dw-row:hover td {
-      background: #f8fafc;
-      cursor: pointer;
-    }
+  /* ==========================================================================
+     COMPACT TABLE & ROW STYLING
+     ========================================================================== */
+  .page-submitDrawingsForApproval .table-custom {
+    font-size: 0.74rem !important;
+  }
+  .page-submitDrawingsForApproval .table-custom th {
+    padding: 7px 8px !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    white-space: nowrap !important;
+  }
+  .page-submitDrawingsForApproval .table-custom td {
+    padding: 5px 8px !important;
+    font-size: 0.74rem !important;
+    vertical-align: middle !important;
+    line-height: 1.3 !important;
+  }
 
-    .page-submitDrawingsForApproval .table-custom tbody tr.dw-row.open-row td {
-      background: #eff6ff;
-    }
+  /* Compact Buttons */
+  .page-submitDrawingsForApproval .btn-view-pdf,
+  .page-submitDrawingsForApproval .btn-toggle-detail {
+    padding: 3px 8px !important;
+    font-size: 0.68rem !important;
+    gap: 4px !important;
+    border-radius: 6px !important;
+  }
+  .page-submitDrawingsForApproval .btn-step-approve,
+  .page-submitDrawingsForApproval .btn-step-reject {
+    padding: 4px 10px !important;
+    font-size: 0.7rem !important;
+    gap: 4px !important;
+    font-weight: 700 !important;
+  }
+  .page-submitDrawingsForApproval .status-badge,
+  .page-submitDrawingsForApproval .chip-cust,
+  .page-submitDrawingsForApproval .pipeline-dots {
+    font-size: 0.66rem !important;
+    padding: 2px 7px !important;
+  }
 
-    /* Badge & Pipeline Dots */
-    .page-submitDrawingsForApproval .status-badge {
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.76rem;
-      font-weight: 700;
-      white-space: nowrap;
-      display: inline-block;
-    }
+  /* Nav Pills compact */
+  .page-submitDrawingsForApproval .nav-pills .nav-link {
+    border-radius: var(--liquid-radius-pill);
+    padding: 5px 12px !important;
+    font-size: 0.73rem !important;
+    font-weight: 600;
+    color: var(--liquid-text-soft);
+    border: 1px solid transparent;
+    transition: var(--liquid-spring);
+  }
+  .page-submitDrawingsForApproval .nav-pills .nav-link.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border-color: rgba(255, 255, 255, 0.3);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  }
 
-    .page-submitDrawingsForApproval .pipeline-dots {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      padding: 4px 10px;
-      border-radius: 20px;
-    }
+  /* Compact Viewport Optimization - scrollable main card */
+  .page-submitDrawingsForApproval > .app-card {
+    min-height: auto !important;
+    height: auto !important;
+    margin: 4px !important;
+    padding: 10px 14px !important;
+    border-radius: var(--liquid-radius-lg);
+    overflow: visible !important;
+  }
+  .page-submitDrawingsForApproval > .app-card > .table-responsive {
+    max-height: calc(100vh - 215px) !important;
+    overflow-y: auto !important;
+    border-radius: 10px;
+  }
+  .page-submitDrawingsForApproval .level-card-group {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .page-submitDrawingsForApproval .card-level {
+    padding: 9px 11px !important;
+    border-radius: 9px !important;
+  }
+  .page-submitDrawingsForApproval .level-title { font-size: 0.72rem; }
+  .page-submitDrawingsForApproval .level-desc { font-size: 0.67rem; margin-top: 3px; }
 
-    .page-submitDrawingsForApproval .dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      transition: transform 0.15s;
-    }
+  /* Pagination Compact */
+  .page-submitDrawingsForApproval #approvalPaginationToolbar {
+    gap: 5px !important;
+    padding: 5px 0 !important;
+    font-size: 0.68rem !important;
+  }
+  .page-submitDrawingsForApproval #approvalPaginationToolbar .btn {
+    padding: 3px 8px !important;
+    font-size: 0.68rem !important;
+  }
 
-    .page-submitDrawingsForApproval .dot[data-state="done"] {
-      background: #10b981;
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
-    }
+  @media (max-width: 768px) {
+    .page-submitDrawingsForApproval .level-card-group { grid-template-columns: 1fr; }
+    .page-submitDrawingsForApproval > .app-card > .table-responsive { max-height: calc(100vh - 260px) !important; }
+  }
+</style>
 
-    .page-submitDrawingsForApproval .dot[data-state="waiting"] {
-      background: #f59e0b;
-      box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25);
-    }
-
-    .page-submitDrawingsForApproval .dot[data-state="pending"] {
-      background: #cbd5e1;
-    }
-
-    .page-submitDrawingsForApproval .dot-connector {
-      width: 10px;
-      height: 2px;
-      background: #cbd5e1;
-    }
-
-    /* Nút Xem PDF & Actions */
-    .page-submitDrawingsForApproval .btn-view-pdf {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 5px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      border: 1px solid #c5e1a5;
-      background: #f0f7ea;
-      color: #3f6212;
-      cursor: pointer;
-      transition: all 0.18s;
-      text-decoration: none;
-    }
-
-    .page-submitDrawingsForApproval .btn-view-pdf:hover:not(:disabled) {
-      background: #7CB342;
-      color: #ffffff;
-      border-color: #7CB342;
-    }
-
-    .page-submitDrawingsForApproval .btn-view-pdf:disabled {
-      background: #f1f5f9;
-      color: #94a3b8;
-      border-color: #e2e8f0;
-      cursor: not-allowed;
-    }
-
-    .page-submitDrawingsForApproval .btn-toggle-detail {
-      padding: 5px 12px;
-      border-radius: 6px;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      color: #334155;
-      font-weight: 600;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.18s;
-    }
-
-    .page-submitDrawingsForApproval .btn-toggle-detail:hover {
-      background: #f1f5f9;
-      color: #1e40af;
-    }
-
-    /* Expandable Detail Section (Card Group 3 Cấp Duyệt) */
-    .page-submitDrawingsForApproval .detail-expand-container {
-      padding: 16px 20px;
-      background: #f8fafc;
-      border-bottom: 2px solid #e2e8f0;
-    }
-
-    .page-submitDrawingsForApproval .level-card-group {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      width: 100%;
-    }
-
-    .page-submitDrawingsForApproval .card-level {
-      background: #ffffff;
-      border-radius: 10px;
-      padding: 14px 18px;
-      border: 1.5px solid #e2e8f0;
-      transition: all 0.2s ease;
-    }
-
-    .page-submitDrawingsForApproval .card-level.waiting {
-      border-color: #3b82f6;
-      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.08);
-    }
-
-    .page-submitDrawingsForApproval .card-level.done {
-      border-color: #bbf7d0;
-      background: #f0fdf4;
-    }
-
-    .page-submitDrawingsForApproval .card-level.pending {
-      border-color: #e2e8f0;
-      opacity: 0.75;
-    }
-
-    .page-submitDrawingsForApproval .card-level-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-      margin-bottom: 4px;
-    }
-
-    .page-submitDrawingsForApproval .level-title {
-      font-weight: 700;
-      font-size: 0.9rem;
-      color: #0f172a;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .page-submitDrawingsForApproval .level-desc {
-      font-size: 0.81rem;
-      color: #64748b;
-    }
-
-    .page-submitDrawingsForApproval .level-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px dashed #e2e8f0;
-    }
-
-    .page-submitDrawingsForApproval .btn-step-approve {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 16px;
-      border-radius: 8px;
-      font-size: 0.83rem;
-      font-weight: 700;
-      background: #10b981;
-      color: #ffffff;
-      border: none;
-      cursor: pointer;
-      transition: all 0.18s;
-      box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
-    }
-
-    .page-submitDrawingsForApproval .btn-step-approve:hover {
-      background: #059669;
-    }
-
-    .page-submitDrawingsForApproval .btn-step-reject {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 16px;
-      border-radius: 8px;
-      font-size: 0.83rem;
-      font-weight: 700;
-      background: #fee2e2;
-      color: #dc2626;
-      border: 1px solid #fca5a5;
-      cursor: pointer;
-      transition: all 0.18s;
-    }
-
-    .page-submitDrawingsForApproval .btn-step-reject:hover {
-      background: #ef4444;
-      color: #ffffff;
-    }
-
-    .page-submitDrawingsForApproval .empty-state {
-      padding: 60px 20px;
-      text-align: center;
-      color: #94a3b8;
-    }
-
-    .page-submitDrawingsForApproval .chip-cust {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      background: #fef3c7;
-      color: #92400e;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-  </style>
-
-  <div class="app-card">
+  <div class="app-card" style="margin: 0;">
 
     <!-- HEADER & KHU VỰC LỌC TÌM KIẾM -->
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2" style="margin: 0;">
       <div class="d-flex align-items-center gap-3">
         <h5 class="fw-bold mb-0 text-dark">
           <i class="bi bi-file-earmark-check-fill me-2 text-primary"></i>Danh sách Trình ký Phê duyệt
@@ -311,25 +304,25 @@
     <!-- TABS PHÂN LOẠI (BARSALE, OEM, WE SASH, TẤT CẢ) -->
     <ul class="nav nav-pills mb-3 border-bottom pb-2" id="approvalCategoryTabs" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="tab-approval-all" type="button" onclick="switchApprovalTab('ALL')">Tất cả</button>
+        <button class="nav-link active" id="tab-approval-all" type="button" data-approval-tab="ALL">Tất cả</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-approval-barsale" type="button" onclick="switchApprovalTab('BARSALE')">Barsale</button>
+        <button class="nav-link" id="tab-approval-barsale" type="button" data-approval-tab="BARSALE">Barsale</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-approval-oem" type="button" onclick="switchApprovalTab('OEM')">OEM</button>
+        <button class="nav-link" id="tab-approval-oem" type="button" data-approval-tab="OEM">OEM</button>
       </li>
       <li class="nav-item" role="presentation">
-        <button class="nav-link" id="tab-approval-we" type="button" onclick="switchApprovalTab('WE SASH')">WE SASH</button>
+        <button class="nav-link" id="tab-approval-we" type="button" data-approval-tab="WE SASH">WE SASH</button>
       </li>
       <li class="nav-item ms-auto d-flex align-items-center gap-2">
-        <button id="bulkApproveBtn" class="btn btn-success btn-sm fw-bold shadow-sm" onclick="openBulkApproveForm()" style="display: none;">
+        <button id="bulkApproveBtn" class="btn btn-success btn-sm fw-bold shadow-sm" data-bulk-approve="true" style="display: none;">
           <i class="fa fa-pen-square me-1"></i>Ký hàng loạt
         </button>
-        <button id="bulkReleaseBtn" class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="openBulkReleaseForm()" style="display: none;">
+        <button id="bulkReleaseBtn" class="btn btn-primary btn-sm fw-bold shadow-sm" data-bulk-release="true" style="display: none;">
           <i class="fa fa-rocket me-1"></i>Ban hành hàng loạt
         </button>
-        <button class="btn btn-sm btn-light border fw-medium text-secondary" onclick="initSubmitApproval()">
+        <button class="btn btn-sm btn-light border fw-medium text-secondary" data-refresh-approval="true">
           <i class="bi bi-arrow-clockwise me-1"></i> Làm mới Data
         </button>
       </li>
@@ -385,12 +378,6 @@
     style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); align-items:center; justify-content:center;">
     <div
       style="background:#ffffff; border-radius:16px; padding:28px; width:450px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:rmPopIn .2s ease;">
-      <style>
-        @keyframes rmPopIn {
-          from { transform: scale(0.92); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-      </style>
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
         <div style="width:42px; height:42px; border-radius:50%; background:#fee2e2; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
           <i class="bi bi-x-circle-fill text-danger fs-5"></i>
@@ -431,6 +418,31 @@
 <script>
   let currentApprovalTab = 'ALL';
   let approvalRowsData = [];
+
+  document.querySelector('.page-submitDrawingsForApproval').addEventListener('click', function (event) {
+    var tabButton = event.target.closest('[data-approval-tab]');
+    if (tabButton) {
+      switchApprovalTab(tabButton.dataset.approvalTab);
+      return;
+    }
+
+    var refreshButton = event.target.closest('[data-refresh-approval]');
+    if (refreshButton) {
+      initSubmitApproval();
+      return;
+    }
+
+    var bulkApproveButton = event.target.closest('[data-bulk-approve]');
+    if (bulkApproveButton) {
+      openBulkApproveForm();
+      return;
+    }
+
+    var bulkReleaseButton = event.target.closest('[data-bulk-release]');
+    if (bulkReleaseButton) {
+      openBulkReleaseForm();
+    }
+  });
 
   function cleanStr(s) {
     if (!s) return '';
@@ -506,6 +518,11 @@
     return allowed.includes(target) || currentPosition === target;
   }
 
+  function isChargeUserBulkApproveBlocked() {
+    const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
+    return currentPosition.includes('charg') || currentPosition.includes('chager');
+  }
+
   let approvalCurrentPage = 1;
   const approvalPageSize = 50;
   var approvalSearchDebounce = null;
@@ -564,72 +581,66 @@
   function initSubmitApproval() {
     const tbody = document.getElementById('approvalTableBody');
     if (!tbody) return;
-    tbody.innerHTML = '<tr><td colspan="10" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...</td></tr>';
     approvalCurrentPage = 1;
 
-    setTimeout(() => {
-      const rawData = (typeof pageData !== 'undefined' && Array.isArray(pageData)) ? pageData : (window.pageData || []);
-      if (!rawData || rawData.length === 0) { renderEmptyTable(tbody); return; }
+    const rawData = (typeof pageData !== 'undefined' && Array.isArray(pageData)) ? pageData : (window.pageData || []);
+    if (!rawData || rawData.length === 0) { 
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...</td></tr>';
+      return; 
+    }
 
-      let rows = rawData;
-      if (rows.length > 0 && String(rows[0][COL_MAP.ID]).toLowerCase().trim() === 'id') {
-        rows = rows.slice(1);
+    let rows = rawData;
+    if (rows.length > 0 && String(rows[0][COL_MAP.ID]).toLowerCase().trim() === 'id') {
+      rows = rows.slice(1);
+    }
+
+    // ========================================================================
+    // LỌC DỮ LIỆU THEO POSITION CỦA USER
+    // ========================================================================
+    const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
+
+    approvalRowsData = rows.filter(row => {
+      const id = row[COL_MAP.ID];
+      if (!id || String(id).trim() === '') return false;
+      
+      const statusRaw = String(row[COL_MAP.STATUS] || '');
+      const st = cleanStr(statusRaw);
+      const pdf = row[COL_MAP.PDF_LINK_AF] || row[COL_MAP.PDF_LINK_O] || '';
+      const hasPdf = pdf && String(pdf).includes('http');
+
+      // Charger xem được tất cả (hoặc chager, hoặc không có position)
+      if (currentPosition.includes('charg') || !currentPosition) {
+        const isTarget = st.includes('cho duyet') || st.includes('cho checker') || st.includes('cho approval')
+          || st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')
+          || st.includes('checker') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')
+          || st.includes('checking') || st.includes('pending');
+        return isTarget || (hasPdf && !st.includes('hoan thanh') && !st.includes('done') && !st.includes('released'));
       }
 
-      // ========================================================================
-      // LỌC DỮ LIỆU THEO POSITION CỦA USER
-      // ========================================================================
-      const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
-      console.log('[initSubmitApproval] Người dùng position:', currentPosition);
+      // Checker 1: Chỉ xem bản vẽ chờ Checker 1 (Chờ Duyệt)
+      if (currentPosition.includes('checker1') || currentPosition.includes('c1')) {
+        const isChecker1Waiting = st.includes('cho duyet') || st.includes('cho checker 1') || st.includes('checker1');
+        return isChecker1Waiting;
+      }
 
-      approvalRowsData = rows.filter(row => {
-        const id = row[COL_MAP.ID];
-        if (!id || String(id).trim() === '') return false;
-        
-        const statusRaw = String(row[COL_MAP.STATUS] || '');
-        const st = cleanStr(statusRaw);
-        const pdf = row[COL_MAP.PDF_LINK_AF] || row[COL_MAP.PDF_LINK_O] || '';
-        const hasPdf = pdf && String(pdf).includes('http');
+      // Checker 2: Chỉ xem bản vẽ chờ Checker 2
+      if (currentPosition.includes('checker2') || currentPosition.includes('c2')) {
+        const isChecker2Waiting = st.includes('cho checker 2') || st.includes('checker 2') || st.includes('checker2');
+        return isChecker2Waiting;
+      }
 
-        // Charger xem được tất cả (hoặc chager, hoặc không có position)
-        if (currentPosition.includes('charg') || !currentPosition) {
-          const isTarget = st.includes('cho duyet') || st.includes('cho checker') || st.includes('cho approval')
-            || st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')
-            || st.includes('checker') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')
-            || st.includes('checking') || st.includes('pending');
-          return isTarget || (hasPdf && !st.includes('hoan thanh') && !st.includes('done') && !st.includes('released'));
-        }
+      // Approval (GM QA): Chỉ xem bản vẽ chờ Approval
+      if (currentPosition.includes('approval') || currentPosition.includes('approver') || currentPosition.includes('gmqa')) {
+        const isApprovalWaiting = st.includes('cho approval') || st.includes('approval') || st.includes('gmqa')
+          || st.includes('trinh ky');
+        return isApprovalWaiting;
+      }
 
-        // Checker 1: Chỉ xem bản vẽ chờ Checker 1 (Chờ Duyệt)
-        if (currentPosition.includes('checker1') || currentPosition.includes('c1')) {
-          const isChecker1Waiting = st.includes('cho duyet') || st.includes('cho checker 1') || st.includes('checker1');
-          console.log(`[Filter Checker1] ID: ${id}, Status: "${statusRaw}" → ${isChecker1Waiting ? 'SHOW' : 'HIDE'}`);
-          return isChecker1Waiting;
-        }
+      // Mặc định: không hiển thị
+      return false;
+    });
 
-        // Checker 2: Chỉ xem bản vẽ chờ Checker 2
-        if (currentPosition.includes('checker2') || currentPosition.includes('c2')) {
-          const isChecker2Waiting = st.includes('cho checker 2') || st.includes('checker 2') || st.includes('checker2');
-          console.log(`[Filter Checker2] ID: ${id}, Status: "${statusRaw}" → ${isChecker2Waiting ? 'SHOW' : 'HIDE'}`);
-          return isChecker2Waiting;
-        }
-
-        // Approval (GM QA): Chỉ xem bản vẽ chờ Approval
-        if (currentPosition.includes('approval') || currentPosition.includes('approver') || currentPosition.includes('gmqa')) {
-          const isApprovalWaiting = st.includes('cho approval') || st.includes('approval') || st.includes('gmqa')
-            || st.includes('trinh ky');
-          console.log(`[Filter Approval] ID: ${id}, Status: "${statusRaw}" → ${isApprovalWaiting ? 'SHOW' : 'HIDE'}`);
-          return isApprovalWaiting;
-        }
-
-        // Mặc định: không hiển thị
-        console.log(`[Filter Default] ID: ${id}, Position: "${currentPosition}" → HIDE`);
-        return false;
-      });
-
-      console.log(`[initSubmitApproval] Tổng dữ liệu sau lọc: ${approvalRowsData.length}`);
-      renderApprovalTable();
-    }, 200);
+    renderApprovalTable();
   }
 
   function renderApprovalTable() {
@@ -859,7 +870,6 @@
     const dwNo  = btnEl.getAttribute('data-dw-no');
     const level = btnEl.getAttribute('data-level');
     const pdfUrl = (window._approvalPdfMap && window._approvalPdfMap[rowId]) || '';
-    console.log('[handleApproveById] rowId:', rowId, '| level:', level, '| pdfUrl:', pdfUrl);
     handleApprove(rowId, dwNo, level, pdfUrl);
   }
 
@@ -922,8 +932,7 @@
         formData.append("y", y);
         formData.append("width", width);
 
-        const localApiUrl = "http://10.156.42.195:8000/signToPDW";
-        console.log(`[handleApprove] Đang gọi Local API: ${localApiUrl} | Tọa độ: x=${x}, y=${y}, width=${width}`);
+        const localApiUrl = "http://10.156.42.195:8000/quan-ly-ban-ve/signToPDW";
 
         const apiResponse = await fetch(localApiUrl, { method: "POST", body: formData });
 
@@ -968,7 +977,6 @@
         if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
 
       } catch (err) {
-        console.error('[handleApprove Stamping Error]', err);
         if (typeof hideLoading === 'function') hideLoading();
         if (typeof Swal !== 'undefined') {
           Swal.fire('Lỗi Đóng Dấu / Ký Duyệt', err.message, 'error');
@@ -1065,7 +1073,10 @@
   }
 
   function updateBulkApproveButtonVisibility() {
+    const bulkBtn = document.getElementById('bulkApproveBtn');
     const allCheckboxes = document.querySelectorAll('.approval-row-checkbox');
+    
+    // Luôn cho phép user chọn checkboxes, chỉ ẩn nút submit nếu user không được phép bulk approve
     approvalBulkState.selectedRows.clear();
     
     allCheckboxes.forEach(cb => {
@@ -1075,8 +1086,15 @@
       }
     });
 
-    const bulkBtn = document.getElementById('bulkApproveBtn');
     const headerCheckbox = document.getElementById('headerApprovalCheckbox');
+    
+    // Nếu user là Charge, ẩn nút bulk approve nhưng vẫn cho phép chọn
+    if (isChargeUserBulkApproveBlocked()) {
+      if (bulkBtn) bulkBtn.style.display = 'none';
+      updateBulkReleaseButtonVisibility();
+      // Không uncheck checkbox nữa - cho phép chọn
+      return;
+    }
     
     if (bulkBtn) {
       bulkBtn.style.display = approvalBulkState.selectedRows.size > 0 ? 'inline-flex' : 'none';
@@ -1121,6 +1139,13 @@
   }
 
   function openBulkApproveForm() {
+    if (isChargeUserBulkApproveBlocked()) {
+      if (typeof Swal !== 'undefined') {
+        Swal.fire('Thông báo', 'Charge không được phép ký duyệt hàng loạt. Vui lòng ký từng bản vẽ theo từng bước.', 'warning');
+      }
+      return;
+    }
+
     if (approvalBulkState.selectedRows.size === 0) {
       if (typeof Swal !== 'undefined') {
         Swal.fire('Thông báo', 'Vui lòng chọn ít nhất 1 bản vẽ để ký', 'warning');
@@ -1316,6 +1341,13 @@
   }
 
   async function handleBulkApprove(level) {
+    if (isChargeUserBulkApproveBlocked()) {
+      if (typeof Swal !== 'undefined') {
+        Swal.fire('Thông báo', 'Charge không được phép ký duyệt hàng loạt.', 'warning');
+      }
+      return;
+    }
+
     const selectedRowIds = Array.from(approvalBulkState.selectedRows);
     if (selectedRowIds.length === 0) return;
 
@@ -1346,7 +1378,6 @@
           });
         });
       } catch (err) {
-        console.error(`Lỗi ký bản vẽ ${rowId}:`, err);
         failCount++;
       }
     }
@@ -1411,7 +1442,7 @@
       formData.append("y", y);
       formData.append("width", width);
 
-      const localApiUrl = "http://10.156.42.195:8000/signToPDW";
+      const localApiUrl = "http://10.156.42.195:8000/quan-ly-ban-ve/signToPDW";
       const apiResponse = await fetch(localApiUrl, { method: "POST", body: formData });
 
       if (!apiResponse.ok) {
@@ -1448,13 +1479,9 @@
 
       onSuccess();
     } catch (err) {
-      console.error('[Bulk Approve Error]', err);
       onError();
     }
   }
 
   window.initSubmitApproval = initSubmitApproval;
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initSubmitApproval, 500);
-  });
 </script>

@@ -16,7 +16,6 @@ function toSafeString(value) {
       if (text && text !== '[object Object]' && text !== '[object CellImage]') return text.trim();
     }
   } catch (err) {
-    Logger.log('toSafeString error: ' + err.toString());
   }
 
   return '';
@@ -47,7 +46,6 @@ function normalizeImageSource(value) {
         }
       }
     } catch (err) {
-      Logger.log('normalizeImageSource error: ' + err.toString());
     }
   }
 
@@ -608,6 +606,7 @@ function getCurrentUserEmail() {
 function saveDataToTestSheet(subject, matrixData, rowIdx) {
   try {
     var ss = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM");
+    var sectionImageFolderId = "19Faip8STiBLJ58aVLiqwVs4SaotKb1bm";
     var sheetData = ss.getSheetByName("Data") || ss.getSheetByName("data") || ss.insertSheet("Data");
     var sheetSO = ss.getSheetByName("SO");
     var sheetCustomer = ss.getSheetByName("Customer");
@@ -626,12 +625,25 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
     if (imageObj && imageObj.base64) {
       try {
+        var imageBytes = Utilities.base64Decode(imageObj.base64);
+        var imageMimeType = imageObj.mimeType || 'image/png';
+        var imageBlob = Utilities.newBlob(imageBytes, imageMimeType, imageObj.name || 'section-image');
+        var sectionImageFolder = DriveApp.getFolderById(sectionImageFolderId);
+        var imageFile = sectionImageFolder.createFile(imageBlob);
+
+        // Cho phép người dùng trong cùng miền mở ảnh từ liên kết Drive.
+        try {
+          imageFile.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
+        } catch (sharingErr) {
+          Logger.log('Không thể cập nhật quyền chia sẻ ảnh mặt cắt: ' + sharingErr.toString());
+        }
+
         imageSourceUrl = "data:" + imageObj.mimeType + ";base64," + imageObj.base64;
         cellImage = SpreadsheetApp.newCellImage()
           .setSourceUrl(imageSourceUrl)
           .build();
       } catch (imgErr) {
-        Logger.log("Lỗi tạo CellImage: " + imgErr.toString());
+        throw new Error('Không thể lưu hình ảnh mặt cắt vào Drive: ' + imgErr.toString());
       }
     }
 
@@ -682,12 +694,10 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
           if (existingTO === toCodeNormalized && existingCustomer === customerNameNormalized) {
             toCustomerExists = true;
-            Logger.log("⚠️ TO [" + toCodeNormalized + "] & Customer [" + customerNameNormalized + "] đã tồn tại. Chỉ lưu vào SO.");
             break;
           }
         }
       } catch (checkErr) {
-        Logger.log("Lỗi kiểm tra TO+Customer: " + checkErr.toString());
       }
     }
 
@@ -741,7 +751,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
       if (cellImage) {
         sheetData.getRange(targetRow, 33).setValue(cellImage);
       }
-      Logger.log("✅ Nâng cấp bản vẽ tại hàng " + targetRow + " - DW Code: " + dwCode);
     } else {
       // Chế độ INSERT: kiểm tra TO+Customer trước khi ghi
       // ========================================================================
@@ -772,12 +781,10 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
             if (existingTO === toCodeNormalized && existingCustomer === customerNameNormalized) {
               toCustomerExists = true;
-              Logger.log("⚠️ TO [" + toCodeNormalized + "] & Customer [" + customerNameNormalized + "] đã tồn tại. Chỉ lưu vào SO.");
               break;
             }
           }
         } catch (checkErr) {
-          Logger.log("Lỗi kiểm tra TO+Customer: " + checkErr.toString());
         }
       }
 
@@ -787,9 +794,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
         if (cellImage) {
           sheetData.getRange(targetRow, 33).setValue(cellImage);
         }
-        Logger.log("✅ Lưu TO [" + toCodeNormalized + "] & Customer [" + customerNameNormalized + "] vào sheet Data.");
       } else {
-        Logger.log("⏭️ Bỏ qua lưu Data - chỉ lưu vào SO.");
       }
     }
 
@@ -834,7 +839,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
         
         if (existingToMau === toMauNormalized || existingToCustomer === toCustomerNormalized) {
           soRowExists = soIdx + 1; // +1 vì hàng sheet bắt đầu từ 1, array index bắt đầu từ 0
-          Logger.log("✅ Tìm thấy SO record TO-MÀU [" + toMauNormalized + "] tại row " + soRowExists);
           break;
         }
       }
@@ -850,7 +854,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
           var currentTanXuatTO = parseInt(updateRow[6] || 0) || 0;
           var newTanXuatTO = currentTanXuatTO + 1;
           sheetSO.getRange(soRowExists, 7).setValue(newTanXuatTO); // Column G
-          Logger.log("📊 Cập nhật Tần xuất TO: " + currentTanXuatTO + " → " + newTanXuatTO);
           
           // Column H (index 7): Tần xuất MÀU theo TO - nếu màu giống +1
           var existingColorCode = (updateRow[2] || "").toString().trim().toUpperCase();
@@ -858,7 +861,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
             var currentTanXuatMau = parseInt(updateRow[7] || 0) || 0;
             var newTanXuatMau = currentTanXuatMau + 1;
             sheetSO.getRange(soRowExists, 8).setValue(newTanXuatMau); // Column H
-            Logger.log("🎨 Cập nhật Tần xuất MÀU: " + currentTanXuatMau + " → " + newTanXuatMau);
           }
           
           // Column J (index 9): Tần xuất theo khách hàng - nếu khách giống +1
@@ -867,12 +869,8 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
             var currentTanXuatKhach = parseInt(updateRow[9] || 0) || 0;
             var newTanXuatKhach = currentTanXuatKhach + 1;
             sheetSO.getRange(soRowExists, 10).setValue(newTanXuatKhach); // Column J
-            Logger.log("👥 Cập nhật Tần xuất khách: " + currentTanXuatKhach + " → " + newTanXuatKhach);
           }
-          
-          Logger.log("✅ Lưu SO: Cập nhật tần xuất cho TO-MÀU [" + toMauNormalized + "]");
         } catch (updateErr) {
-          Logger.log("❌ Lỗi cập nhật SO: " + updateErr.toString());
         }
       } else {
         // ========================================================================
@@ -894,7 +892,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
           }
         }
         var newTanXuatTO = maxTanXuatTO + 1;
-        Logger.log("📊 Tìm max Tần xuất TO [" + toToFind + "]: " + maxTanXuatTO + " → Mới: " + newTanXuatTO);
         
         // Tìm max Tần xuất theo khách (Column J) cho TO+khách này
         var maxTanXuatKhach = 0;
@@ -910,7 +907,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
           }
         }
         var newTanXuatKhach = maxTanXuatKhach + 1;
-        Logger.log("👥 Tìm max Tần xuất khách [" + toCustomerToFind + "]: " + maxTanXuatKhach + " → Mới: " + newTanXuatKhach);
         
         // Tạo hàng mới với tần xuất được tính toán
         var mappedRowSO = new Array(12).fill("");
@@ -928,7 +924,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
         mappedRowSO[11] = "";                 // L: Tình trạng phát hành
 
         sheetSO.appendRow(mappedRowSO);
-        Logger.log("✨ Lưu SO: Tạo hàng mới TO-MÀU [" + toMauNormalized + "] với G=" + newTanXuatTO + ", H=1, J=" + newTanXuatKhach);
       }
     }
 
@@ -996,10 +991,8 @@ function getManagedDrawings() {
       }
     }
 
-    Logger.log('[getManagedDrawings] Total managed drawings found: ' + managed.length);
     return { success: true, data: managed.reverse() };
   } catch (err) {
-    Logger.log('Lỗi getManagedDrawings: ' + err.toString());
     return { success: false, error: err.toString() };
   }
 }
@@ -1024,7 +1017,56 @@ function removeManagedDrawing(rowId) {
       message: 'Bản vẽ đã được chuyển về "Thêm bản vẽ"'
     };
   } catch (err) {
-    Logger.log('Lỗi removeManagedDrawing: ' + err.toString());
+    return { success: false, error: err.toString() };
+  }
+}
+
+// Fetch dữ liệu đầy đủ 1 row từ Data sheet
+function getDrawingByRowIdx(rowIdx) {
+  try {
+    var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
+    var ss = SpreadsheetApp.openById(sheetId);
+    var dataSheet = ss.getSheetByName('Data');
+
+    if (!dataSheet || rowIdx < 2) {
+      return { success: false, error: 'Invalid row index' };
+    }
+
+    var rowData = dataSheet.getRange(rowIdx, 1, 1, dataSheet.getLastColumn()).getValues()[0];
+    
+    // Ánh xạ chính xác theo thứ tự 34 cột (A->AH) của sheet Data:
+    // A(0): ID, B(1): Mail, C(2): Status, D(3): Group, E(4): Type, F(5): Version,
+    // G(6): Ngày tiếp nhận, H(7): Ngày hoàn thành dự kiến, I(8): TO, J(9): Dự án,
+    // K(10): Customer, L(11): Drawing code, M(12): Type DW, N(13): Nội dung thay đổi,
+    // O(14): File PDF, P(15): Người đảm trách, Q(16): Ngày HT người đảm trách,
+    // R(17): Checker, S(18): Ngày HT thực tế, T(19): Approver, U(20): Ngày PH thực tế,
+    // V(21): Status running, W(22): Note, X(23): FYE, Y(24): Type Drawing,
+    // Z(25): Type Product, AA(26): Product name, AB(27): Product code,
+    // AC(28): W, AD(29): H, AE(30): Excel, AF(31): PDF, AG(32): Image, AH(33): Mã SO
+    return {
+      success: true,
+      data: {
+        group: String(rowData[3] || ''),             // D: Group
+        type: String(rowData[4] || ''),              // E: Type
+        version: String(rowData[5] || ''),           // F: Version / Revise
+        receivedDate: String(rowData[6] || ''),     // G: Ngày tiếp nhận
+        assigneeDoneDate: String(rowData[7] || ''), // H: Ngày HT dự kiến
+        to: String(rowData[8] || ''),                // I: TO
+        project: String(rowData[9] || ''),           // J: Dự án
+        customer: String(rowData[10] || ''),         // K: Customer
+        dwCode: String(rowData[11] || ''),           // L: Drawing Code
+        typeDw: String(rowData[12] || rowData[24] || ''), // M / Y: Type DW
+        assignee: String(rowData[15] || ''),         // P: Người đảm trách
+        actualDoneDate: String(rowData[18] || ''),   // S: Ngày hoàn thành thực tế
+        note: String(rowData[22] || ''),             // W: Note / Change log
+        fye: String(rowData[23] || ''),              // X: FYE
+        width: String(rowData[28] || ''),            // AC: Width
+        height: String(rowData[29] || ''),           // AD: Height
+        image: rowData[32],                          // AG: Image (CellImage)
+        so: String(rowData[33] || '')                // AH: Mã SO
+      }
+    };
+  } catch (err) {
     return { success: false, error: err.toString() };
   }
 }
@@ -1127,7 +1169,6 @@ function getDrawingsWithoutImage() {
 
     return { success: true, data: pending.reverse() };
   } catch (err) {
-    Logger.log('Lỗi getDrawingsWithoutImage: ' + err.toString());
     return { success: false, error: err.toString() };
   }
 }
@@ -1164,7 +1205,6 @@ function updateBulkDrawing(rowIds, bulkData) {
       message: 'Đã cập nhật ' + rowIds.length + ' bản vẽ' 
     };
   } catch (err) {
-    Logger.log('Lỗi updateBulkDrawing: ' + err.toString());
     return { success: false, error: err.toString() };
   }
 }

@@ -1,309 +1,169 @@
-<div class="page-dwIf p-3 p-md-4 custom-scroll" style="height: 100%; min-height: 100%; overflow-y: auto; background-color: #f8fafc; display: flex; flex-direction: column;">
+<style>
+  /* ==========================================================================
+     PAGE DWIF (Drawing Info) - LIGHT LIQUID GLASS (iOS 27 Fluid Glassmorphism)
+     ========================================================================== */
+  .page-dwIf {
+    position: relative;
+    background: transparent !important;
+  }
+  
+  /* Tabs Navigation dạng viên thuốc iOS */
+  .page-dwIf .custom-tabs {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px;
+    border-radius: var(--liquid-radius-pill);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    box-shadow: var(--liquid-shadow-sm);
+  }
+  .page-dwIf .custom-tabs .nav-link {
+    border-radius: var(--liquid-radius-pill);
+    padding: 7px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--liquid-text-soft);
+    border: 1px solid transparent;
+    transition: var(--liquid-spring);
+  }
+  .page-dwIf .custom-tabs .nav-link:hover {
+    color: var(--liquid-primary-dark);
+    background: rgba(255, 255, 255, 0.7);
+  }
+  .page-dwIf .custom-tabs .nav-link.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    border-color: rgba(255, 255, 255, 0.35);
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    font-weight: 700;
+  }
 
-  <!-- ================= CUSTOM CSS ĐÃ ĐÓNG GÓI (.page-dwIf) ================= -->
-  <style>
-    /* Global Layout & Soft Styling */
-    .page-dwIf {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: #0f172a;
-      background: #f8fafc;
-      min-height: 100%;
-      visibility: visible;
-      opacity: 1;
-    }
+  /* Email List Liquid Container */
+  .page-dwIf .email-list-container {
+    border-right: 1px solid rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: var(--liquid-blur-subtle);
+    -webkit-backdrop-filter: var(--liquid-blur-subtle);
+  }
+  .page-dwIf .email-item {
+    display: block;
+    padding: 10px 14px;
+    border-left: 3px solid transparent;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+    background: rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    border-radius: 0 var(--liquid-radius-sm) var(--liquid-radius-sm) 0;
+    margin-right: 6px;
+    margin-bottom: 3px;
+    transition: var(--liquid-spring);
+  }
+  .page-dwIf .email-item:hover {
+    transform: translateX(4px) scale(1.01);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--liquid-shadow-sm);
+    border-left-color: rgba(16, 185, 129, 0.4);
+  }
+  .page-dwIf .email-item.active {
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.95), rgba(255, 255, 255, 0.9));
+    border-left-color: var(--liquid-primary);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
 
-    /* Tabs */
-    .page-dwIf .custom-tabs {
-      background: #ffffff;
-      padding: 6px;
-      border-radius: 12px;
-      display: inline-flex;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2e8f0;
-      margin-bottom: 20px;
-    }
+  /* Glass Panels & Modals */
+  .page-dwIf .glass-panel {
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-lg);
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    transition: var(--liquid-spring);
+  }
+  .page-dwIf .glass-panel:hover {
+    box-shadow: var(--liquid-shadow-lg);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+  .page-dwIf .modal-content {
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-xl);
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow);
+  }
 
-    .page-dwIf .custom-tabs .nav-link {
-      color: #64748b;
-      border-radius: 8px;
-      font-weight: 600;
-      padding: 10px 24px;
-      transition: all 0.2s ease;
-      border: none;
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
+  /* Data Tables */
+  .page-dwIf .custom-table th {
+    background: rgba(240, 253, 244, 0.75) !important;
+    backdrop-filter: var(--liquid-blur-subtle);
+    color: var(--liquid-text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .page-dwIf .custom-table tbody tr td {
+    transition: var(--liquid-spring-fast);
+  }
+  .page-dwIf .custom-table tbody tr:hover td {
+    background: rgba(209, 250, 229, 0.75) !important;
+    transform: translateY(-1px);
+  }
 
-    .page-dwIf .custom-tabs .nav-link::after {
-      content: '→';
-      font-size: 1.05rem;
-      line-height: 1;
-      opacity: 0.55;
-      transform: translateX(0);
-      transition: all 0.2s ease;
-    }
+  /* Compact Viewport Rules */
+  .page-dwIf > .d-flex.justify-content-center { margin-bottom: 8px !important; }
+  .page-dwIf #mail-section { height: calc(100vh - 148px); overflow: hidden; }
+  .page-dwIf #manual-section,
+  .page-dwIf #manage-section { height: calc(100vh - 148px); overflow: hidden; }
+  .page-dwIf #manual-section > .manual-panel,
+  .page-dwIf #manage-section > .manual-panel { height: 100%; padding: 6px !important; overflow: hidden; }
+  .page-dwIf #manual-section .table-responsive,
+  .page-dwIf #manage-section .table-responsive {
+    max-height: calc(100vh - 240px) !important;
+    overflow-y: auto !important;
+  }
 
-    .page-dwIf .custom-tabs .nav-link:hover {
-      color: var(--primary-color, #7CB342);
-      background: #f1f5f9;
-    }
+  /* Compact Table Rows */
+  .page-dwIf .custom-table { font-size: 0.72rem !important; }
+  .page-dwIf .custom-table th {
+    padding: 6px 8px !important;
+    font-size: 0.66rem !important;
+    white-space: nowrap !important;
+  }
+  .page-dwIf .custom-table td {
+    padding: 5px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.3 !important;
+    vertical-align: middle !important;
+  }
 
-    .page-dwIf .custom-tabs .nav-link:hover::after,
-    .page-dwIf .custom-tabs .nav-link.active::after {
-      opacity: 1;
-      transform: translateX(2px);
-    }
+  /* Email items compact */
+  .page-dwIf .email-sender { font-size: 0.78rem !important; }
+  .page-dwIf .email-subject { font-size: 0.72rem !important; }
 
-    .page-dwIf .custom-tabs .nav-link.active {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      color: var(--primary-color, #7CB342);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-    }
+  /* Buttons compact */
+  .page-dwIf #manual-section .btn,
+  .page-dwIf #manage-section .btn { padding: 4px 10px !important; font-size: 0.72rem !important; }
+  .page-dwIf #drawingFormModal .modal-dialog { max-width: min(95vw, 980px); margin: 0.75rem auto; }
+  .page-dwIf #drawingFormModal .modal-body { overflow-y: auto !important; }
+  .page-dwIf #drawingFormModal .form-control,
+  .page-dwIf #drawingFormModal .form-select { padding: 6px 10px; font-size: 0.8rem; }
+  .page-dwIf #drawingFormModal .form-label { margin-bottom: 2px; font-size: 0.68rem; font-weight: 700; }
 
-    /* Khung chính Glass Panel */
-    .page-dwIf .glass-panel {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
-      border: 1px solid #e2e8f0;
-      overflow: hidden;
-      position: relative;
-    }
-
-    /* Danh sách Email */
-    .page-dwIf .email-list-container {
-      background: #f8fafc;
-      border-right: 1px solid #e2e8f0;
-    }
-
-    .page-dwIf .email-item {
-      border-left: 4px solid transparent;
-      border-bottom: 1px solid #f1f5f9;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      padding: 14px 16px;
-      background: #ffffff;
-    }
-
-    .page-dwIf .email-item.status-pending {
-      border-left-color: #f59e0b !important;
-      background-color: #fffbeb;
-    }
-
-    .page-dwIf .email-item.status-received {
-      border-left-color: #10b981 !important;
-      background-color: #ecfdf5;
-    }
-
-    .page-dwIf .email-item:hover {
-      background: #f8fafc;
-      transform: translateX(2px);
-    }
-
-    .page-dwIf .email-item.active {
-      background: var(--primary-soft, #f0f7ea) !important;
-      border-left-color: var(--primary-color, #7CB342) !important;
-    }
-
-    .page-dwIf .email-item.unread .email-sender {
-      font-weight: 700;
-      color: #0f172a;
-    }
-
-    /* Datagridview Table Styling */
-    .page-dwIf .custom-table {
-      border-collapse: separate;
-      border-spacing: 0;
-      width: 100%;
-      min-width: 800px;
-    }
-
-    .page-dwIf .custom-table thead th {
-      background-color: #f8fafc;
-      color: #475569;
-      font-size: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 700;
-      padding: 14px 18px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-
-    .page-dwIf .custom-table tbody td {
-      padding: 14px 18px;
-      border-bottom: 1px solid #f1f5f9;
-      font-size: 0.9rem;
-      color: #334155;
-    }
-
-    .page-dwIf .custom-table tbody tr {
-      transition: all 0.15s ease;
-    }
-
-    .page-dwIf .custom-table tbody tr:hover {
-      background-color: #f8fafc !important;
-    }
-
-    /* Modal Styling Premium */
-    .page-dwIf .modal-content {
-      border-radius: 20px;
-      border: 1px solid #e2e8f0;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-    }
-
-    .page-dwIf .modal-header {
-      background: #ffffff;
-      border-bottom: 1px solid #f1f5f9;
-      padding: 20px 28px;
-    }
-
-    .page-dwIf .modal-footer {
-      background: #f8fafc;
-      border-top: 1px solid #f1f5f9;
-      padding: 16px 28px;
-    }
-
-    .page-dwIf .form-section-title {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--primary-color, #7CB342);
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .page-dwIf .form-section-title::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #e2e8f0;
-    }
-
-    /* Inputs Focus & Hover */
-    .page-dwIf .form-control,
-    .page-dwIf .form-select {
-      border-color: #cbd5e1;
-      border-radius: 10px;
-      font-size: 0.875rem;
-      padding: 9px 13px;
-      transition: all 0.2s ease;
-    }
-
-    .page-dwIf .form-control:focus,
-    .page-dwIf .form-select:focus {
-      border-color: var(--primary-color, #7CB342);
-      box-shadow: 0 0 0 4px rgba(124, 179, 66, 0.12);
-    }
-
-    .page-dwIf .form-label {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #475569;
-      margin-bottom: 5px;
-    }
-
-    /* Scrollbar */
-    .page-dwIf .custom-scroll::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
-    }
-
-    .page-dwIf .custom-scroll::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .page-dwIf .custom-scroll::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 10px;
-    }
-
-    .page-dwIf .custom-scroll::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-
-    /* Tab Pane Visibility - giữ tương thích với Bootstrap, hiện đúng tab đang active */
-    .page-dwIf .tab-pane {
-      display: none;
-    }
-
-    .page-dwIf .tab-responsive {
-      width: 100%;
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      margin-top: 16px;
-    }
-
-    .page-dwIf .tab-pane.show,
-    .page-dwIf .tab-pane.active {
-      display: block;
-      animation: fadeInTab 0.3s ease-in-out forwards;
-    }
-
-    .page-dwIf .tab-content {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      overflow: hidden;
-      min-height: 500px;
-      padding: 24px;
-      position: relative;
-    }
-
-    .page-dwIf .card {
-      background: #ffffff !important;
-      border: 1px solid #e2e8f0 !important;
-      color: #0f172a;
-      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
-    }
-
+  @media (max-width: 768px) {
+    .page-dwIf .custom-tabs { width: 100%; overflow-x: auto; }
+    .page-dwIf .custom-tabs .nav-link { min-width: max-content; }
+    .page-dwIf #mail-section { height: calc(100vh - 130px); }
     .page-dwIf #manual-section,
-    .page-dwIf #manage-section {
-      min-height: 620px;
-    }
+    .page-dwIf #manage-section { height: calc(100vh - 130px); }
+  }
+</style>
 
-    .page-dwIf .manual-panel {
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      min-height: 620px;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    .page-dwIf .manual-table-wrap {
-      position: relative;
-      min-height: 520px;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-
-    .page-dwIf .manual-empty-state {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: min(100%, 320px);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      text-align: center;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-  </style>
-
-  <!-- ================= TABS NAVIGATION ================= -->
-  <div class="d-flex justify-content-center mb-4">
+  <div class="page-dwIf" style="width: 100%; height: 100%; margin: 0 !important; padding: 0 !important;">
+    <!-- ================= TABS NAVIGATION ================= -->
+  <div class="d-flex justify-content-center mb-4" style="margin-top: 0 !important;">
     <ul class="nav nav-pills custom-tabs gap-2" id="dwIfTabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="mail-tab" data-bs-toggle="pill" data-bs-target="#mail-section" type="button"
@@ -498,11 +358,8 @@
     </div>
   </div>
 
-</div> <!-- End Tab Content -->
-
 <!-- ================= POPUP FORM (MODAL) ================= -->
-<div class="modal fade" id="drawingFormModal" tabindex="-1" aria-labelledby="modalFormTitle" aria-hidden="true"
-  data-bs-backdrop="static">
+<div class="modal fade" id="drawingFormModal" tabindex="-1" aria-labelledby="modalFormTitle" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
     <div class="modal-content rounded-4 border-0 shadow-lg">
       <form id="drawingForm" onsubmit="handleDrawingFormSubmit(event)">
@@ -615,6 +472,11 @@
               <label class="form-label fw-semibold">Ngày ĐT hoàn thành</label>
               <input type="date" id="formAssigneeDoneDate" class="form-control" />
             </div>
+
+            <div class="col-12" id="changeLogContainer" style="display: none;">
+              <label class="form-label fw-semibold">Nội dung thay đổi</label>
+              <textarea id="formChangeLog" class="form-control" rows="3" placeholder="Mô tả những thay đổi được thực hiện khi nâng cấp bản vẽ..."></textarea>
+            </div>
           </div>
         </div>
 
@@ -637,7 +499,6 @@
     try {
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     } catch (e) {
-      console.error('escHtml error:', e, 'value:', str);
       return '';
     }
   }
@@ -663,7 +524,11 @@
      ========================================================================== */
   var state = { emails: [], currentPage: 0, totalEmails: 0, hasMore: false, selectedId: null, keyword: '', currentEmailDetail: null };
 
+  var dwInfoInitialized = false;
+
   function initThongTinBanVe() {
+    if (dwInfoInitialized) return;
+    dwInfoInitialized = true;
     loadEmailsAndStats(0);
   }
 
@@ -721,20 +586,17 @@
   }
 
   function updateSidebarStatus(threadId, isReceived) {
-    // 1. Cập nhật trạng thái trong mảng data để khi chuyển trang không bị mất
     var emailObj = state.emails.find(function (e) { return e.id === threadId; });
     if (emailObj) emailObj.isReceived = isReceived;
 
-    // 2. Tìm thẻ HTML ở danh sách bên trái và đổi class màu
-    var sidebarItem = document.querySelector('#emailList .email-item[onclick*="' + threadId + '"]');
-    if (sidebarItem) {
-      if (isReceived) {
-        sidebarItem.classList.remove('status-pending');
-        sidebarItem.classList.add('status-received');
-      } else {
-        sidebarItem.classList.remove('status-received');
-        sidebarItem.classList.add('status-pending');
-      }
+    var items = document.querySelectorAll('#emailList .email-item');
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
+      if (String(item.dataset.threadId) !== String(threadId)) continue;
+
+      item.classList.toggle('status-pending', !isReceived);
+      item.classList.toggle('status-received', isReceived);
+      break;
     }
   }
 
@@ -745,37 +607,46 @@
       list.innerHTML = '<div class="text-center text-muted py-5"><i class="fa fa-inbox fs-4 mb-2"></i><br><small>Không tìm thấy email</small></div>'; return;
     }
 
-    // 1. Sắp xếp danh sách: Chưa tiếp nhận (false/undefined) lên đầu, Đã tiếp nhận (true) xuống cuối
     var sortedEmails = emails.slice().sort(function (a, b) {
       var aStatus = a.isReceived ? 1 : 0;
       var bStatus = b.isReceived ? 1 : 0;
       return aStatus - bStatus;
     });
 
-    // 2. Render HTML
-    var htmlBuffer = [];
+    var fragment = document.createDocumentFragment();
     for (var i = 0; i < sortedEmails.length; i++) {
       var email = sortedEmails[i];
-      var isActive = email.id === state.selectedId ? ' active' : '';
-      var isUnread = email.isUnread ? ' unread' : '';
-
-      var statusClass = email.isReceived ? ' status-received' : ' status-pending';
+      var item = document.createElement('div');
+      item.className = 'email-item position-relative' + (email.id === state.selectedId ? ' active' : '') + (email.isUnread ? ' unread' : '') + (email.isReceived ? ' status-received' : ' status-pending');
+      item.dataset.threadId = email.id;
+      item.setAttribute('role', 'button');
+      item.setAttribute('tabindex', '0');
 
       var dot = email.isUnread ? '<span class="position-absolute top-0 start-0 translate-middle p-1 bg-primary border border-light rounded-circle" style="margin-top:20px; margin-left:10px;"></span>' : '';
+      var sender = escHtml(String(email.senderName || email.senderEmail));
+      var dateText = escHtml(String(email.date));
+      var subjectText = escHtml(String(email.subject));
 
-      htmlBuffer.push(
-        '<div class="email-item position-relative' + isActive + isUnread + statusClass + '" onclick="openEmail(\'' + email.id + '\'); return false;">' +
-        dot +
+      item.innerHTML = dot +
         '<div class="d-flex justify-content-between align-items-center mb-1">' +
-        '<span class="email-sender text-truncate pe-2" style="font-size:0.9rem;">' + escHtml(String(email.senderName || email.senderEmail)) + '</span>' +
-        '<small class="text-muted text-nowrap" style="font-size:0.75rem;">' + escHtml(String(email.date)) + '</small>' +
+        '<span class="email-sender text-truncate pe-2" style="font-size:0.9rem;">' + sender + '</span>' +
+        '<small class="text-muted text-nowrap" style="font-size:0.75rem;">' + dateText + '</small>' +
         '</div>' +
-        '<div class="email-subject text-secondary text-truncate" style="font-size:0.85rem;">' + escHtml(String(email.subject)) + '</div>' +
-        '</div>'
-      );
+        '<div class="email-subject text-secondary text-truncate" style="font-size:0.85rem;">' + subjectText + '</div>';
+
+      fragment.appendChild(item);
     }
-    list.innerHTML = htmlBuffer.join('');
+
+    list.innerHTML = '';
+    list.appendChild(fragment);
   }
+
+  document.querySelector('.page-dwIf').addEventListener('click', function (event) {
+    var emailItem = event.target.closest('.email-item');
+    if (!emailItem || !emailItem.dataset || !emailItem.dataset.threadId) return;
+    event.preventDefault();
+    openEmail(emailItem.dataset.threadId);
+  });
 
   function renderPagination(data) {
     var pag = document.getElementById('pagination'); if (!pag) return;
@@ -789,7 +660,7 @@
     if (state.selectedId === threadId) return;
     state.selectedId = threadId;
     document.querySelectorAll('#emailList .email-item').forEach(function (el) {
-      el.classList.toggle('active', el.getAttribute('onclick').includes(threadId));
+      el.classList.toggle('active', String(el.dataset.threadId) === String(threadId));
     });
 
     showLoading('Đang tải nội dung email...');
@@ -822,10 +693,6 @@
         // BỔ SUNG ĐỒNG BỘ MÀU XANH CHO SIDEBAR
         updateSidebarStatus(threadId, true);
       }
-
-      google.script.run.withSuccessHandler(function (statsData) {
-        if (statsData && statsData.success) setText('statUnread', statsData.unread);
-      }).getStatistics();
 
     } catch (err) {
       hideLoading();
@@ -1090,7 +957,18 @@
 
   function getDrawingModal() {
     if (!drawingModalInstance) {
-      drawingModalInstance = new bootstrap.Modal(document.getElementById('drawingFormModal'));
+      var modalEl = document.getElementById('drawingFormModal');
+      drawingModalInstance = new bootstrap.Modal(modalEl, {
+        backdrop: false,
+        keyboard: false
+      });
+      
+      // Lắng nghe sự kiện modal show để re-fill ngày (tránh trường hợp form bị reset)
+      modalEl.addEventListener('shown.bs.modal', function () {
+        setTimeout(function () {
+          autoFillAssigneeDoneDate();
+        }, 100);
+      });
     }
     return drawingModalInstance;
   }
@@ -1107,26 +985,21 @@
       });
 
       hideLoading(); // <--- TẮT LOADING
-      console.log('[initNhapDuLieuBanVe] Response:', res);
       
       if (!res) {
-        console.warn('Response rỗng từ getDrawingsWithoutImage, fallback sang getPendingLogData');
         // Fallback nếu hàm mới chưa deploy
         return initPendingDataFallback();
       }
       
       if (res.success) {
-        console.log('✅ Dữ liệu thành công, total:', res.data?.length || 0);
         renderPendingList(res.data);
       } else {
-        console.error('❌ Error từ backend:', res.error);
         showToast('Lỗi tải danh sách: ' + res.error, 'error');
         // Fallback
         return initPendingDataFallback();
       }
     } catch (err) {
       hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
-      console.error('[initNhapDuLieuBanVe] Lỗi:', err.message);
       showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
       // Fallback
       return initPendingDataFallback();
@@ -1135,18 +1008,15 @@
 
   // Fallback - gọi hàm cũ nếu getDrawingsWithoutImage không sẵn dùng
   function initPendingDataFallback() {
-    console.log('[Fallback] Đang gọi getPendingLogData thay vì getDrawingsWithoutImage...');
     google.script.run
       .withSuccessHandler(function (res) {
         hideLoading();
-        console.log('[Fallback] Response:', res);
         if (res && res.success) {
           renderPendingList(res.data);
         }
       })
       .withFailureHandler(function (err) {
         hideLoading();
-        console.error('[Fallback] Error:', err.message);
         showToast('Lỗi tải dữ liệu: ' + err.message, 'error');
       })
       .getPendingLogData();
@@ -1155,6 +1025,26 @@
   function renderPendingList(logs) {
     drawingDataList = logs || [];
     renderDrawingTable(drawingDataList);
+  }
+
+  function checkSoExists(soRaw) {
+    if (!soRaw) return false;
+    var cleanSo = String(soRaw).trim().toUpperCase().replace(/\s+/g, "");
+    if (!cleanSo) return false;
+    var digitsSo = cleanSo.replace(/[^0-9]/g, "");
+
+    if (window.pageDataSoSet && window.pageDataSoSet.size > 0) {
+      return window.pageDataSoSet.has(cleanSo) || (digitsSo && digitsSo.length >= 3 && window.pageDataSoSet.has(digitsSo));
+    }
+    if (window.pageData && Array.isArray(window.pageData) && window.pageData.length > 0) {
+      if (typeof updatePageDataIndex === 'function') {
+        updatePageDataIndex(window.pageData);
+      }
+      if (window.pageDataSoSet && window.pageDataSoSet.size > 0) {
+        return window.pageDataSoSet.has(cleanSo) || (digitsSo && digitsSo.length >= 3 && window.pageDataSoSet.has(digitsSo));
+      }
+    }
+    return false;
   }
 
   function renderDrawingTable(data) {
@@ -1178,23 +1068,8 @@
         var subject = escHtml(String(item.subject || '')).replace(/'/g, "\\'");
         var soRaw = String(item.so || '');
 
-        // Kiểm tra xem Mã SO đã tồn tại trong sheet Data hay chưa
-        var exists = !!item.existsInData;
-        if (!exists && soRaw) {
-          var cleanSo = String(soRaw).trim().toUpperCase().replace(/\s+/g, "");
-          var digitsSo = cleanSo.replace(/[^0-9]/g, "");
-          if (window.pageDataSoSet && window.pageDataSoSet.size > 0) {
-            exists = (cleanSo && window.pageDataSoSet.has(cleanSo)) || (digitsSo && window.pageDataSoSet.has(digitsSo));
-          } else if (window.pageData && Array.isArray(window.pageData)) {
-            exists = window.pageData.some(function (r) {
-              if (!Array.isArray(r)) return false;
-              var rSo8 = String(r[8] || '').trim().toUpperCase().replace(/\s+/g, "");
-              var rSo4 = String(r[4] || '').trim().toUpperCase().replace(/\s+/g, "");
-              return (cleanSo && (rSo8.indexOf(cleanSo) !== -1 || rSo4.indexOf(cleanSo) !== -1)) || 
-                     (digitsSo && (rSo8.indexOf(digitsSo) !== -1 || rSo4.indexOf(digitsSo) !== -1));
-            });
-          }
-        }
+        // Kiểm tra xem Mã SO đã tồn tại trong sheet Data hay chưa (O(1) Set Lookup)
+        var exists = !!item.existsInData || checkSoExists(soRaw);
 
         var actionHtml = '';
         if (exists) {
@@ -1211,7 +1086,7 @@
             '</div>';
         }
 
-        return '<tr class="bg-white" style="transition: all 0.2s;">' +
+        return '<tr class="bg-white">' +
           '<td class="ps-4 fw-bold text-dark">' + type + '</td>' +
           '<td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1">' + to + '</span></td>' +
           '<td><code class="text-danger bg-light px-2 py-1 rounded fw-bold border">' + dwCode + '</code></td>' +
@@ -1237,7 +1112,8 @@
       for (var i = 0; i < window.pageData.length; i++) {
         var r = window.pageData[i];
         if (!Array.isArray(r)) continue;
-        if (r[32] && typeof r[32] === 'string' && r[32].length > 10) {
+        // Only treat r[32] as an image URL when it appears to be a real URL or data URI.
+        if (r[32] && typeof r[32] === 'string' && (/^https?:\/\//i.test(r[32]) || /^data:/i.test(r[32]))) {
           var rSo8 = String(r[8] || '').trim().toUpperCase().replace(/\s+/g, "");
           var rSo4 = String(r[4] || '').trim().toUpperCase().replace(/\s+/g, "");
           if ((cleanSo && (rSo8.indexOf(cleanSo) !== -1 || rSo4.indexOf(cleanSo) !== -1)) || 
@@ -1273,6 +1149,57 @@
     }, 150);
   }
 
+  function formatDateISO(dateObj) {
+    var d = new Date(dateObj);
+    if (isNaN(d.getTime())) return '';
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + day;
+  }
+
+  function addWorkingDaysFromToday(workDays) {
+    var start = new Date();
+    var count = 0;
+    var cursor = new Date(start.getTime());
+
+    while (count < workDays) {
+      cursor.setDate(cursor.getDate() + 1);
+      var day = cursor.getDay();
+      if (day !== 0 && day !== 6) {
+        count++;
+      }
+    }
+    return cursor;
+  }
+
+  function autoFillAssigneeDoneDate() {
+    var doneDateInput = document.getElementById('formAssigneeDoneDate');
+    if (!doneDateInput) return;
+
+    if (!doneDateInput.value) {
+      // 1. Tính toán ngay lập tức bằng fallback (chỉ bỏ qua cuối tuần)
+      var fallbackDate = addWorkingDaysFromToday(5);
+      var fallbackValue = formatDateISO(fallbackDate);
+      doneDateInput.value = fallbackValue;
+      
+      // 2. Nếu backend sẵn sàng, gọi để tính toán với holiday từ Cal sheet
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(function (resultDate) {
+          // Nếu backend trả về kết quả hợp lệ, cập nhật
+          if (resultDate && typeof resultDate === 'string' && resultDate.length >= 10 && resultDate !== fallbackValue) {
+            doneDateInput.value = resultDate;
+            console.log('✅ Cập nhật ngày ĐT hoàn thành từ backend (tính holiday): ' + resultDate);
+          }
+        }).withFailureHandler(function (error) {
+          console.warn('⚠️ Fallback: Backend không sẵn sàng, đang dùng tính toán client-side (chỉ bỏ qua T7, CN)');
+        }).getBusinessDateFromToday(5);
+      } else {
+        console.log('ℹ️ Google Apps Script không sẵn sàng, dùng fallback client-side');
+      }
+    }
+  }
+
   function toggleDrawingForm(rowIdx, subject, customer, to, so) {
     var container = document.getElementById('form-container-' + rowIdx);
     var form = document.getElementById('drawingForm');
@@ -1303,6 +1230,7 @@
     if (document.getElementById('formTO')) document.getElementById('formTO').value = to || '';
     if (document.getElementById('formSO')) document.getElementById('formSO').value = so || '';
 
+    autoFillAssigneeDoneDate();
     generateDwCode();
 
     container.appendChild(form);
@@ -1327,6 +1255,7 @@
     form.reset();
     var rDate = document.getElementById('formReceivedDate');
     if (rDate) rDate.value = new Date().toISOString().split('T')[0];
+    autoFillAssigneeDoneDate();
     generateDwCode();
 
     getDrawingModal().show();
@@ -1347,6 +1276,9 @@
     if (document.getElementById('formCustomer')) document.getElementById('formCustomer').value = customer || '';
     if (document.getElementById('formTO')) document.getElementById('formTO').value = to || '';
     if (document.getElementById('formSO')) document.getElementById('formSO').value = so || '';
+    
+    // Nếu ngày ĐT hoàn thành chưa có, tự động tính
+    autoFillAssigneeDoneDate();
     generateDwCode();
 
     getDrawingModal().show();
@@ -1355,10 +1287,14 @@
   function closeDrawingForm() {
     setToFieldVisibility(true);
     
+    // Hide "Nội dung thay đổi" field
+    var changeLogContainer = document.getElementById('changeLogContainer');
+    if (changeLogContainer) changeLogContainer.style.display = 'none';
+    
     // Re-enable tất cả field khi đóng form
     var allFields = ['formGroup', 'formType', 'formCustomer', 'formTO', 'formProject', 'formSO', 'formDwCode', 
                      'formVersion', 'formTypeDw', 'formAssignee', 'formWidth', 'formHeight', 'formReceivedDate', 
-                     'formAssigneeDoneDate', 'formActualDoneDate', 'formFYE', 'formNote', 'formImageFile'];
+                     'formAssigneeDoneDate', 'formActualDoneDate', 'formFYE', 'formNote', 'formImageFile', 'formChangeLog'];
     allFields.forEach(function(fieldId) {
       var field = document.getElementById(fieldId);
       if (field) field.disabled = false;
@@ -1445,6 +1381,9 @@
       if (currentRow && currentRow.to) toValue = String(currentRow.to);
     }
 
+    // Khi upgrade, sử dụng "Nội dung thay đổi" (formChangeLog) thay vì formNote
+    var noteValue = (pendingState && pendingState.isUpgradeMode) ? getVal('formChangeLog') : getVal('formNote');
+
     // Mảng 17 trường theo đúng thứ tự Form mới
     var rowData = [
       getVal('formGroup'),            // 0: Group
@@ -1463,7 +1402,7 @@
       getVal('formAssigneeDoneDate'), // 13: Ngày ĐT hoàn thành
       getVal('formActualDoneDate'),   // 14: Ngày HT thực tế (An toàn nếu rỗng)
       getVal('formFYE'),              // 15: FYE
-      getVal('formNote')              // 16: Note
+      noteValue                       // 16: Note / Nội dung thay đổi
     ];
 
     var form = document.getElementById('drawingForm');
@@ -1654,63 +1593,120 @@
 
     setToFieldVisibility(true);
     showSingleEditFields();
+    
+    // Hiển thị "Nội dung thay đổi" field
+    var changeLogContainer = document.getElementById('changeLogContainer');
+    if (changeLogContainer) changeLogContainer.style.display = 'block';
 
     var form = document.getElementById('drawingForm');
     if (!form) return;
 
     form.reset();
     
-    // Pre-fill thông tin bản vẽ hiện tại (read-only để xem)
-    if (document.getElementById('formType')) {
-      document.getElementById('formType').value = drawingItem.type || 'New';
-      document.getElementById('formType').disabled = true;
-    }
-    if (document.getElementById('formTO')) {
-      document.getElementById('formTO').value = drawingItem.to || '';
-      document.getElementById('formTO').disabled = true;
-    }
-    if (document.getElementById('formCustomer')) {
-      document.getElementById('formCustomer').value = drawingItem.customer || '';
-      document.getElementById('formCustomer').disabled = true;
-    }
-    if (document.getElementById('formDwCode')) {
-      document.getElementById('formDwCode').value = drawingItem.dwCode || '';
-      document.getElementById('formDwCode').disabled = true;
-    }
-    if (document.getElementById('formSO')) {
-      document.getElementById('formSO').value = drawingItem.so || '';
-      document.getElementById('formSO').disabled = true;
-    }
-    
-    // Disable các trường khác
-    var fieldsToDisable = ['formGroup', 'formProject', 'formVersion', 'formTypeDw', 'formAssignee', 'formReceivedDate', 'formAssigneeDoneDate'];
-    fieldsToDisable.forEach(function(fieldId) {
-      var field = document.getElementById(fieldId);
-      if (field) {
-        field.value = '';
-        field.disabled = true;
-      }
-    });
-    
-    // Enable chỉ 3 trường cần sửa
-    if (document.getElementById('formWidth')) {
-      document.getElementById('formWidth').value = '';
-      document.getElementById('formWidth').disabled = false;
-    }
-    if (document.getElementById('formHeight')) {
-      document.getElementById('formHeight').value = '';
-      document.getElementById('formHeight').disabled = false;
-    }
-    if (document.getElementById('formImageFile')) {
-      document.getElementById('formImageFile').value = '';
-      document.getElementById('formImageFile').disabled = false;
-    }
-    if (document.getElementById('formImagePreview')) {
-      document.getElementById('formImagePreview').style.display = 'none';
-      document.getElementById('formImagePreview').src = '';
-    }
+    // Mở popup ngay để người dùng không phải chờ server trước khi thấy giao diện.
+    var modal = getDrawingModal();
+    document.getElementById('modalFormTitle').textContent = 'Đang tải thông tin bản vẽ...';
+    modal.show();
 
-    getDrawingModal().show();
+    // Fetch dữ liệu đầy đủ từ backend
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (!res || !res.success || !res.data) {
+          showToast('Không thể tải dữ liệu bản vẽ', 'error');
+          return;
+        }
+        
+        var fullData = res.data;
+        document.getElementById('modalFormTitle').textContent = 'Nâng Cấp Bản Vẽ';
+        
+        // Pre-fill thông tin bản vẽ hiện tại (read-only)
+        if (document.getElementById('formGroup')) {
+          document.getElementById('formGroup').value = fullData.group || '';
+          document.getElementById('formGroup').disabled = true;
+        }
+        if (document.getElementById('formType')) {
+          document.getElementById('formType').value = fullData.type || '';
+          document.getElementById('formType').disabled = true;
+        }
+        if (document.getElementById('formCustomer')) {
+          document.getElementById('formCustomer').value = fullData.customer || '';
+          document.getElementById('formCustomer').disabled = true;
+        }
+        if (document.getElementById('formTO')) {
+          document.getElementById('formTO').value = fullData.to || '';
+          document.getElementById('formTO').disabled = true;
+        }
+        if (document.getElementById('formProject')) {
+          document.getElementById('formProject').value = fullData.project || '';
+          document.getElementById('formProject').disabled = true;
+        }
+        if (document.getElementById('formSO')) {
+          document.getElementById('formSO').value = fullData.so || '';
+          document.getElementById('formSO').disabled = true;
+        }
+        if (document.getElementById('formDwCode')) {
+          document.getElementById('formDwCode').value = fullData.dwCode || '';
+          document.getElementById('formDwCode').disabled = true;
+        }
+        if (document.getElementById('formVersion')) {
+          document.getElementById('formVersion').value = fullData.version || '';
+          document.getElementById('formVersion').disabled = true;
+        }
+        if (document.getElementById('formTypeDw')) {
+          document.getElementById('formTypeDw').value = fullData.typeDw || '';
+          document.getElementById('formTypeDw').disabled = true;
+        }
+        if (document.getElementById('formAssignee')) {
+          document.getElementById('formAssignee').value = fullData.assignee || '';
+          document.getElementById('formAssignee').disabled = true;
+        }
+        if (document.getElementById('formReceivedDate')) {
+          document.getElementById('formReceivedDate').value = formatDateISO(fullData.receivedDate) || '';
+          document.getElementById('formReceivedDate').disabled = true;
+        }
+        if (document.getElementById('formAssigneeDoneDate')) {
+          document.getElementById('formAssigneeDoneDate').value = formatDateISO(fullData.assigneeDoneDate) || '';
+          document.getElementById('formAssigneeDoneDate').disabled = true;
+        }
+        if (document.getElementById('formActualDoneDate')) {
+          document.getElementById('formActualDoneDate').value = formatDateISO(fullData.actualDoneDate) || '';
+          document.getElementById('formActualDoneDate').disabled = true;
+        }
+        if (document.getElementById('formFYE')) {
+          document.getElementById('formFYE').value = fullData.fye || '';
+          document.getElementById('formFYE').disabled = true;
+        }
+        
+        // Enable chỉ 3 trường cần sửa + change log
+        if (document.getElementById('formWidth')) {
+          document.getElementById('formWidth').value = '';
+          document.getElementById('formWidth').disabled = false;
+        }
+        if (document.getElementById('formHeight')) {
+          document.getElementById('formHeight').value = '';
+          document.getElementById('formHeight').disabled = false;
+        }
+        if (document.getElementById('formImageFile')) {
+          document.getElementById('formImageFile').value = '';
+          document.getElementById('formImageFile').disabled = false;
+        }
+        if (document.getElementById('formImagePreview')) {
+          document.getElementById('formImagePreview').style.display = 'none';
+          document.getElementById('formImagePreview').src = '';
+        }
+        if (document.getElementById('formChangeLog')) {
+          document.getElementById('formChangeLog').value = fullData.note || '';
+          document.getElementById('formChangeLog').disabled = false;
+        }
+
+        if (!document.getElementById('formAssigneeDoneDate').value) {
+          autoFillAssigneeDoneDate();
+        }
+      })
+      .withFailureHandler(function (err) {
+        showToast('Lỗi kết nối: ' + err.message, 'error');
+      })
+      .getDrawingByRowIdx(drawingItem.rowIdx);
   }
 
   // ========== OPEN BULK EDIT FORM ==========
@@ -1730,6 +1726,9 @@
     var form = document.getElementById('drawingForm');
     if (!form) return;
     form.reset();
+    
+    // Tự động điền ngày hoàn thành
+    autoFillAssigneeDoneDate();
 
     getDrawingModal().show();
   }
@@ -1782,22 +1781,7 @@
         var subject = escHtml(String(item.subject || '')).replace(/'/g, "\\'");
         var soRaw = String(item.so || '');
 
-        var exists = !!item.existsInData;
-        if (!exists && soRaw) {
-          var cleanSo = String(soRaw).trim().toUpperCase().replace(/\s+/g, "");
-          var digitsSo = cleanSo.replace(/[^0-9]/g, "");
-          if (window.pageDataSoSet && window.pageDataSoSet.size > 0) {
-            exists = (cleanSo && window.pageDataSoSet.has(cleanSo)) || (digitsSo && window.pageDataSoSet.has(digitsSo));
-          } else if (window.pageData && Array.isArray(window.pageData)) {
-            exists = window.pageData.some(function (r) {
-              if (!Array.isArray(r)) return false;
-              var rSo8 = String(r[8] || '').trim().toUpperCase().replace(/\s+/g, "");
-              var rSo4 = String(r[4] || '').trim().toUpperCase().replace(/\s+/g, "");
-              return (cleanSo && (rSo8.indexOf(cleanSo) !== -1 || rSo4.indexOf(cleanSo) !== -1)) || 
-                     (digitsSo && (rSo8.indexOf(digitsSo) !== -1 || rSo4.indexOf(digitsSo) !== -1));
-            });
-          }
-        }
+        var exists = !!item.existsInData || checkSoExists(soRaw);
 
         var actionHtml = '';
         if (exists) {
@@ -1812,7 +1796,7 @@
             '</div>';
         }
 
-        return '<tr class="bg-white" style="transition: all 0.2s;">' +
+        return '<tr class="bg-white">' +
           '<td class="ps-4"><div class="form-check"><input class="form-check-input drawing-checkbox" type="checkbox" id="checkbox-' + id + '" data-row-id="' + id + '" onchange="toggleDrawingCheckbox(' + id + ')"></div></td>' +
           '<td class="fw-bold text-dark">' + type + '</td>' +
           '<td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1">' + to + '</span></td>' +
@@ -1900,6 +1884,7 @@
         btn.addEventListener('click', function (e) {
           e.stopPropagation();
           e.preventDefault();
+          if (this.disabled) return;
           var itemData = JSON.parse(this.dataset.item);
           openUpgradeDrawingForm(itemData);
         });
@@ -1977,23 +1962,10 @@
     if (typeof originalInitThongTinBanVe === 'function') {
       originalInitThongTinBanVe();
     }
-
-    // Load tab 2 (manual) và tab 3 (manage) ngay từ lúc khởi tạo
-    // để tránh loading khi người dùng bấm vào tab
-    setTimeout(function() {
-      if (!window.__dwInfoInitialLoadGuard.manual) {
-        window.__dwInfoInitialLoadGuard.manual = true;
-        initNhapDuLieuBanVe();
-      }
-      if (!window.__dwInfoInitialLoadGuard.manage) {
-        window.__dwInfoInitialLoadGuard.manage = true;
-        loadManagedDrawings();
-      }
-    }, 200);
   };
 
   // Chỉ load 1 lần duy nhất khi tab được bật lần đầu
-  document.addEventListener('shown.bs.tab', function (e) {
+  document.querySelector('.page-dwIf').addEventListener('shown.bs.tab', function (e) {
     var targetId = e && e.target ? e.target.id : '';
 
     if (targetId === 'manual-tab' && !window.__dwInfoInitialLoadGuard.manual) {
@@ -2046,4 +2018,4 @@
   }
 
 </script>
-</div>
+</div> <!-- End page-dwIf -->

@@ -1,253 +1,268 @@
-<div class="page-dashboard p-3 p-md-4 custom-scroll" style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
-  <style>
-    /* =========================================================
-       CSS SCOPED CHO TRANG TỔNG QUAN (DASHBOARD)
-       ========================================================= */
-    .page-dashboard {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      color: var(--text-main, #1e293b);
-    }
+<style>
+  /* ==========================================================================
+     PAGE DASHBOARD - LIGHT LIQUID GLASS (iOS 27 Fluid Glassmorphism)
+     ========================================================================== */
+  .page-dashboard {
+    position: relative;
+    overflow-x: hidden;
+    background: transparent !important;
+    padding: 4px !important;
+  }
+  
+  /* Filter Card & Header Controls */
+  .page-dashboard .filter-card {
+    background: var(--liquid-glass-elevated) !important;
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border) !important;
+    border-radius: var(--liquid-radius-lg) !important;
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95) !important;
+    padding: 16px 20px !important;
+    transition: var(--liquid-spring);
+  }
+  .page-dashboard .filter-card:hover {
+    box-shadow: var(--liquid-shadow-lg) !important;
+    border-color: rgba(16, 185, 129, 0.3) !important;
+  }
+  .page-dashboard .filter-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--liquid-radius-sm);
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.9), rgba(255, 255, 255, 0.8));
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: var(--liquid-primary-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: var(--liquid-shadow-sm);
+  }
+  
+  /* Segmented Switch Control dạng viên thuốc iOS */
+  .page-dashboard .segmented-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: rgba(240, 253, 244, 0.65) !important;
+    backdrop-filter: var(--liquid-blur-subtle);
+    -webkit-backdrop-filter: var(--liquid-blur-subtle);
+    border: 1px solid rgba(16, 185, 129, 0.18) !important;
+    border-radius: var(--liquid-radius-pill) !important;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  }
+  .page-dashboard .segmented-btn {
+    border: 0;
+    background: transparent;
+    color: var(--liquid-text-soft);
+    border-radius: var(--liquid-radius-pill);
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--liquid-spring);
+  }
+  .page-dashboard .segmented-btn:hover {
+    color: var(--liquid-primary-dark);
+    background: rgba(255, 255, 255, 0.6);
+  }
+  .page-dashboard .segmented-btn.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35) !important;
+    font-weight: 700;
+  }
+  
+  .page-dashboard .btn-reset-filter {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--liquid-radius-sm);
+    background: rgba(255, 255, 255, 0.85);
+    border: var(--liquid-border);
+    color: var(--liquid-text-muted);
+    box-shadow: var(--liquid-shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--liquid-spring);
+  }
+  .page-dashboard .btn-reset-filter:hover {
+    transform: rotate(180deg) scale(1.08);
+    color: var(--liquid-primary-dark);
+    background: #ffffff;
+    box-shadow: var(--liquid-shadow-md);
+  }
+  .page-dashboard .btn-reset-filter:active {
+    transform: rotate(180deg) scale(0.92);
+  }
 
-    .page-dashboard .text-custom-purple {
-        color: #5311a3 !important;
-      }
+  /* KPI Cards Liquid Glass */
+  .page-dashboard .kpi-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 116px;
+    padding: 18px 20px;
+    border-radius: var(--liquid-radius-lg);
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    transition: var(--liquid-spring);
+    cursor: pointer;
+  }
+  .page-dashboard .kpi-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow);
+    border-color: rgba(16, 185, 129, 0.4);
+  }
+  .page-dashboard .kpi-card:active {
+    transform: scale(0.97);
+  }
+  .page-dashboard .kpi-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--liquid-radius-md);
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.95), rgba(255, 255, 255, 0.8));
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: var(--liquid-primary-dark);
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--liquid-shadow-sm);
+    transition: var(--liquid-spring);
+  }
+  .page-dashboard .kpi-card:hover .kpi-icon {
+    transform: scale(1.1) rotate(-4deg);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(16, 185, 129, 0.35);
+  }
 
-    .page-dashboard .kpi-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 14px 18px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 100%; /* Thêm dòng này để ép các card cao bằng nhau */
-    }
+  /* Chart Cards Liquid Glass */
+  .page-dashboard .chart-card {
+    min-height: 270px;
+    padding: 20px;
+    border-radius: var(--liquid-radius-lg);
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    transition: var(--liquid-spring);
+  }
+  .page-dashboard .chart-card:hover {
+    box-shadow: var(--liquid-shadow-lg);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
 
-    .page-dashboard .kpi-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
-      border-color: #cbd5e1;
-    }
+  /* ==========================================================================
+     DASHBOARD FILTER GRID (Bộ lọc gọn gàng dạng lưới ngang)
+     ========================================================================== */
+  .page-dashboard .dashboard-filter-grid {
+    display: grid !important;
+    grid-template-columns: 2.2fr 1.2fr 1.2fr 1.4fr 1fr 1fr !important;
+    gap: 8px !important;
+    align-items: flex-end !important;
+    background: var(--liquid-glass-elevated) !important;
+    backdrop-filter: var(--liquid-blur) !important;
+    -webkit-backdrop-filter: var(--liquid-blur) !important;
+    border: var(--liquid-border) !important;
+    border-radius: var(--liquid-radius-lg) !important;
+    padding: 10px 14px !important;
+    box-shadow: var(--liquid-shadow-sm) !important;
+  }
+  .page-dashboard .dashboard-filter-field {
+    min-width: 0 !important;
+  }
+  .page-dashboard .dashboard-filter-field label {
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    color: var(--liquid-text-soft) !important;
+    margin-bottom: 3px !important;
+    display: block !important;
+    white-space: nowrap !important;
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+  }
+  .page-dashboard .dashboard-filter-field .form-control,
+  .page-dashboard .dashboard-filter-field .form-select {
+    font-size: 0.76rem !important;
+    padding: 4px 8px !important;
+    min-height: 32px !important;
+    height: 32px !important;
+    border-radius: var(--liquid-radius-xs) !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(203, 213, 225, 0.85) !important;
+  }
+  .page-dashboard .dashboard-filter-field .input-group-text {
+    padding: 4px 8px !important;
+    font-size: 0.76rem !important;
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid rgba(203, 213, 225, 0.85) !important;
+  }
+  .page-dashboard .dashboard-detail-search {
+    width: min(420px, 45vw);
+  }
 
-    .page-dashboard .kpi-icon {
-      width: 52px;
-      height: 52px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.4rem;
-      flex-shrink: 0;
+  @media (max-width: 1024px) {
+    .page-dashboard .dashboard-filter-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
     }
-
-    .page-dashboard .filter-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 14px 20px;
-      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
-      transition: all 0.2s ease;
-    }
-
-    .page-dashboard .filter-card:hover {
-      border-color: #cbd5e1;
-      box-shadow: 0 6px 24px -2px rgba(15, 23, 42, 0.06);
-    }
-
-    .page-dashboard .filter-icon-box {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #f0f7ea 0%, #e1f0d4 100%);
-      border: 1px solid rgba(124, 179, 66, 0.25);
-      color: #689F38;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.15rem;
-      flex-shrink: 0;
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.8), 0 2px 6px rgba(124, 179, 66, 0.12);
-    }
-
-    .page-dashboard .segmented-control {
-      display: inline-flex;
-      align-items: center;
-      background: #f1f5f9;
-      padding: 4px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      gap: 3px;
-    }
-
-    .page-dashboard .segmented-btn {
-      border: none;
-      background: transparent;
-      color: #64748b;
-      font-size: 0.82rem;
-      font-weight: 600;
-      padding: 6px 16px;
-      border-radius: 9px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      white-space: nowrap;
-      user-select: none;
-      line-height: 1.3;
-    }
-
-    .page-dashboard .segmented-btn:hover {
-      color: #1e293b;
-      background: rgba(255, 255, 255, 0.6);
-    }
-
-    .page-dashboard .segmented-btn.active {
-      background: #ffffff;
-      color: #558b2f;
-      font-weight: 700;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05);
-    }
-
-    .page-dashboard .segmented-btn .badge-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #7CB342;
-      display: inline-block;
-      opacity: 0;
-      transform: scale(0.5);
-      transition: all 0.2s ease;
-    }
-
-    .page-dashboard .segmented-btn.active .badge-dot {
-      opacity: 1;
-      transform: scale(1);
-    }
-
-    .page-dashboard .fye-select-group {
-      background: #ffffff;
-      border: 1px solid #cbd5e1;
-      border-radius: 12px;
-      padding: 2px 4px 2px 10px;
-      transition: all 0.2s ease;
-    }
-
-    .page-dashboard .fye-select-group:focus-within, 
-    .page-dashboard .fye-select-group:hover {
-      border-color: #7CB342;
-      box-shadow: 0 0 0 3px rgba(124, 179, 66, 0.12);
-    }
-
-    .page-dashboard .btn-reset-filter {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      border: 1px solid #cbd5e1;
-      background: #ffffff;
-      color: #64748b;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.25s ease;
-      cursor: pointer;
-    }
-
-    .page-dashboard .btn-reset-filter:hover {
-      background: #f8fafc;
-      color: #1e293b;
-      border-color: #94a3b8;
-      transform: rotate(180deg);
-    }
-
-    .page-dashboard .kpi-card:hover {
-      border-color: #7CB342;
-      box-shadow: 0 4px 16px rgba(124,179,66,0.13);
-      transform: translateY(-2px);
-    }
-    .page-dashboard .kpi-card.kpi-active {
-      border-color: #7CB342;
-      background: linear-gradient(135deg, #f0f7ea 0%, #fff 100%);
-      box-shadow: 0 4px 18px rgba(124,179,66,0.18);
-    }
-    .page-dashboard .kpi-card.kpi-active-design {
-      border-color: #f59e0b;
-      background: linear-gradient(135deg, #fffbeb 0%, #fff 100%);
-      box-shadow: 0 4px 18px rgba(245,158,11,0.16);
-    }
-    .page-dashboard .kpi-card.kpi-active-approve {
-      border-color: #3b82f6;
-      background: linear-gradient(135deg, #eff6ff 0%, #fff 100%);
-      box-shadow: 0 4px 18px rgba(59,130,246,0.16);
-    }
-    .page-dashboard .kpi-card.kpi-active-release {
-      border-color: #10b981;
-      background: linear-gradient(135deg, #ecfdf5 0%, #fff 100%);
-      box-shadow: 0 4px 18px rgba(16,185,129,0.16);
-    }
-
-    .page-dashboard .chart-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-    }
-
-    .page-dashboard .table-custom {
+  }
+  @media (max-width: 640px) {
+    .page-dashboard .dashboard-detail-search {
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
     }
-
-    .page-dashboard .table-custom th {
-      background: #f8fafc;
-      color: #64748b;
-      font-weight: 700;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 12px 16px;
-      border-bottom: 2px solid #e2e8f0;
+    .page-dashboard .dashboard-filter-grid {
+      grid-template-columns: 1fr !important;
     }
+  }
 
-    .page-dashboard .table-custom td {
-      padding: 12px 16px;
-      vertical-align: middle;
-      border-bottom: 1px solid #f1f5f9;
-      color: #1e293b;
-      font-size: 0.85rem;
-    }
+  /* Tables & Rows */
+  .page-dashboard .table-custom thead th {
+    background: rgba(240, 253, 244, 0.75) !important;
+    backdrop-filter: var(--liquid-blur-subtle);
+    color: var(--liquid-text-muted);
+    letter-spacing: 0.06em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 6px 8px !important;
+  }
+  .page-dashboard .table-custom tbody tr td {
+    transition: var(--liquid-spring-fast);
+    font-size: 0.74rem !important;
+    padding: 6px 8px !important;
+  }
+  .page-dashboard .table-custom tbody tr:hover td {
+    background: rgba(209, 250, 229, 0.75) !important;
+    transform: translateY(-1px);
+  }
 
-    .page-dashboard .table-custom tbody tr:hover td {
-      background: #f8fafc;
-    }
-
-
-    .page-dashboard .filter-chip {
-      background: #e2e8f0;
-      color: #334155;
-      font-size: 0.78rem;
-      font-weight: 600;
-      padding: 4px 12px;
-      border-radius: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s;
-    }
-    .page-dashboard .filter-chip.f-kpi { background: #e0e7ff; color: #4f46e5; border: 1px solid #c7d2fe; }
-    .page-dashboard .filter-chip.f-project { background: #fce7f3; color: #db2777; border: 1px solid #fbcfe8; }
-    .page-dashboard .filter-chip.f-month { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
-    .page-dashboard .filter-chip.f-type { background: #d1fae5; color: #0d9488; border: 1px solid #99f6e4; }
-    .page-dashboard .filter-chip i { cursor: pointer; border-radius: 50%; padding: 2px; }
-    .page-dashboard .filter-chip i:hover { background: rgba(0,0,0,0.1); }
-  </style>
-
+  /* Filter Chips & Badges */
+  .page-dashboard .badge,
+  .page-dashboard .filter-chip {
+    padding: 4px 10px;
+    border-radius: var(--liquid-radius-pill);
+    background: rgba(209, 250, 229, 0.85);
+    color: var(--liquid-primary-dark);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    font-weight: 700;
+    font-size: 0.72rem;
+    box-shadow: var(--liquid-shadow-sm);
+    transition: var(--liquid-spring);
+  }
+  .page-dashboard .filter-chip:hover {
+    transform: scale(1.05);
+    background: #10b981;
+    color: #ffffff;
+  }
+</style>
+<div class="page-dashboard custom-scroll" style="min-height: 100%; height: auto; overflow-y: auto !important; background: transparent; margin: 0 !important; padding: 0; width: 100%;">
   <!-- BỘ LỌC TỔNG QUAN (FYE & TYPE FILTER BAR) -->
-  <div class="filter-card mb-4">
+  <div class="filter-card mb-3" style="margin-top: 0 !important;">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
       <div class="d-flex align-items-center gap-3">
         <div class="filter-icon-box">
@@ -257,8 +272,9 @@
           <div class="d-flex align-items-center gap-2">
             <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.95rem; letter-spacing: -0.2px;">Dữ Liệu Bản Vẽ Đóng Gói G2G</h6>
             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-0" style="font-size: 0.7rem; font-weight: 600;">Live Data</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-0" id="dashRoleBadge" style="font-size: 0.7rem; font-weight: 700;">Đang xác định quyền</span>
           </div>
-          <!-- <small class="text-muted" style="font-size: 0.78rem;"></small> -->
+              <small class="text-muted d-block mt-1" style="font-size: 0.78rem;">Tìm nhanh theo mã, dự án, người tạo, trạng thái và thời gian cập nhật.</small>
         </div>
       </div>
 
@@ -287,22 +303,22 @@
 
         <!-- Lọc TYPE Segmented Control -->
         <div class="segmented-control shadow-sm" role="group" id="dashTypeBtnGroup">
-          <button type="button" class="btn segmented-btn active" onclick="setDashTypeFilter('ALL', this)">
+          <button type="button" class="btn segmented-btn active" data-type-filter="ALL">
             <span class="badge-dot"></span>Tất cả
           </button>
-          <button type="button" class="btn segmented-btn" onclick="setDashTypeFilter('BARSALE', this)">
+          <button type="button" class="btn segmented-btn" data-type-filter="BARSALE">
             <span class="badge-dot"></span>BARSALE
           </button>
-          <button type="button" class="btn segmented-btn" onclick="setDashTypeFilter('OEM', this)">
+          <button type="button" class="btn segmented-btn" data-type-filter="OEM">
             <span class="badge-dot"></span>OEM
           </button>
-          <button type="button" class="btn segmented-btn" onclick="setDashTypeFilter('WE SASH', this)">
+          <button type="button" class="btn segmented-btn" data-type-filter="WE SASH">
             <span class="badge-dot"></span>WE SASH
           </button>
         </div>
 
         <!-- Nút Reset Filter -->
-        <button class="btn-reset-filter shadow-sm" onclick="resetDashFilters()" title="Đặt lại bộ lọc">
+        <button class="btn-reset-filter shadow-sm" data-reset-filter="dashboard" title="Đặt lại bộ lọc">
           <i class="bi bi-arrow-clockwise"></i>
         </button>
       </div>
@@ -315,11 +331,24 @@
     <button class="btn btn-sm btn-link text-danger text-decoration-none px-2" onclick="clearAllCrossFilters()" style="font-size: 0.75rem; font-weight: 600;">Xóa tất cả</button>
   </div>
 
+  <div class="dashboard-preview-modal d-none" id="dashboardPreviewModal" role="dialog" aria-modal="true" aria-labelledby="dashboardPreviewTitle">
+    <div class="dashboard-preview-dialog">
+      <div class="dashboard-preview-head">
+        <div>
+          <h5 id="dashboardPreviewTitle">Xem trước bản vẽ</h5>
+          <small id="dashboardPreviewMeta">Tài liệu đang được mở trong hệ thống</small>
+        </div>
+        <button type="button" class="btn btn-light border" onclick="closeDashboardPreview()" aria-label="Đóng xem trước"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="dashboard-preview-body" id="dashboardPreviewBody"></div>
+    </div>
+  </div>
+
  <!-- KPI CARDS -->
-  <div class="row g-3 mb-4 align-items-stretch">
+  <div class="row g-2 mb-3 align-items-stretch">
     <!-- Tổng Số Yêu Cầu -->
     <div class="col-12 col-sm-6 col-xl-4">
-      <div class="kpi-card h-100" id="kpiCard-all" onclick="setKpiFilter('all')" title="Xem tất cả">
+      <div class="kpi-card h-100" id="kpiCard-all" data-kpi-filter="all" title="Xem tất cả">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Tổng Số Bản Vẽ</span>
           <h3 class="fw-bold text-dark mb-0" id="dashTotalCount">--</h3>
@@ -333,7 +362,7 @@
 
     <!-- Chờ Thiết Kế -->
     <div class="col-12 col-sm-6 col-xl-2">
-      <div class="kpi-card h-100" id="kpiCard-design" onclick="setKpiFilter('design')" title="Xem bản vẽ chờ thiết kế">
+      <div class="kpi-card h-100" id="kpiCard-design" data-kpi-filter="design" title="Xem bản vẽ chờ thiết kế">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Chờ Thiết Kế</span>
           <h3 class="fw-bold text-dark mb-0" id="dashDesignCount">--</h3>
@@ -347,7 +376,7 @@
 
     <!-- Chờ Ký Duyệt -->
     <div class="col-12 col-sm-6 col-xl-2">
-      <div class="kpi-card h-100" id="kpiCard-sign" onclick="setKpiFilter('sign')" title="Xem bản vẽ chờ ký duyệt">
+      <div class="kpi-card h-100" id="kpiCard-sign" data-kpi-filter="sign" title="Xem bản vẽ chờ ký duyệt">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Chờ Ký Duyệt</span>
           <h3 class="fw-bold text-dark mb-0" id="dashApprovalCount">--</h3>
@@ -362,7 +391,7 @@
     <!-- Chờ Ban Hành Lên QA System -->
     <div class="col-12 col-sm-6 col-xl-2">
       <!-- Đổi id thành kpiCard-qa để không bị trùng -->
-      <div class="kpi-card h-100" id="kpiCard-release" onclick="setKpiFilter('release')" title="Xem bản vẽ chờ QA System">
+      <div class="kpi-card h-100" id="kpiCard-release" data-kpi-filter="release" title="Xem bản vẽ chờ QA System">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Chờ Ban Hành</span>
           <!-- Đổi id thành dashQaCount để không bị trùng -->
@@ -377,7 +406,7 @@
 
     <!-- Đã Ban Hành -->
     <div class="col-12 col-sm-6 col-xl-2">
-      <div class="kpi-card h-100" id="kpiCard-released" onclick="setKpiFilter('released')" title="Xem bản vẽ đã ban hành">
+      <div class="kpi-card h-100" id="kpiCard-released" data-kpi-filter="released" title="Xem bản vẽ đã ban hành">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Đã Ban Hành Lên QA System</span>
           <h3 class="fw-bold text-dark mb-0" id="dashReleasedCount">--</h3>
@@ -452,9 +481,13 @@
             <h6 class="fw-bold text-dark mb-0" id="dashTableTitle">
               <i class="fa fa-history me-2 text-success"></i>Danh sách chi tiết
             </h6>
-            <small class="text-muted" style="font-size: 0.78rem;" id="dashTableSubtitle">Danh sách bản vẽ đóng gói <em>(Hãy lọc dữ liệu bằng các nút bên trên để khoanh vùng bản vẽ)</em></small>
+            <small class="text-muted" style="font-size: 0.78rem;" id="dashTableSubtitle">Danh sách bản vẽ đóng gói</small>
           </div>
           <div class="d-flex gap-2 align-items-center">
+            <div class="input-group input-group-sm dashboard-detail-search">
+              <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+              <input id="dashSearchInput" class="form-control" type="search" placeholder="Tìm mã, SKU, TO, dự án, người tạo, trạng thái..." autocomplete="off" oninput="requestDashboardRefresh()" aria-label="Tìm kiếm trong danh sách chi tiết">
+            </div>
             <span id="dashTableFilterBadge" class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold d-none" style="font-size: 0.72rem;"></span>
             <!-- <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-semibold"
               onclick="switchTab('release', document.getElementById('nav-btn-release'))">
@@ -504,12 +537,19 @@
     kpi: 'all',      // 'all', 'design', 'approve', 'release'
     project: null,   // Lưu tên dự án khi click biểu đồ
     month: null,     // Lưu nhãn tháng khi click biểu đồ (vd: 'T5')
-    isNew: null      // Lưu loại thiết kế (true/false) khi click biểu đồ 2
+    isNew: null,     // Lưu loại thiết kế (true/false) khi click biểu đồ 2
+    search: '',
+    creator: '',
+    status: 'ALL',
+    dateFrom: '',
+    dateTo: ''
   };
 
   var dashChart1Instance = null;
   var dashChart2Instance = null;
   var dashChartTotalFyeInstance = null;
+  var lastDashboardRenderKey = '';
+  var lastDashboardDataRef = null;
 
   // Cấu hình con trỏ chuột cho Chart.js để biết là có thể click
   var chartInteractionOptions = {
@@ -518,33 +558,115 @@
     }
   };
 
+  document.querySelector('.page-dashboard').addEventListener('click', function (event) {
+    var previewButton = event.target.closest('[data-drawing-preview]');
+    if (previewButton) {
+      event.preventDefault();
+      openDashboardPreview(previewButton.dataset.previewUrl, previewButton.dataset.previewTitle || 'Bản vẽ');
+      return;
+    }
+    var typeButton = event.target.closest('[data-type-filter]');
+    if (typeButton) {
+      setDashTypeFilter(typeButton.dataset.typeFilter, typeButton);
+      return;
+    }
+
+    var kpiButton = event.target.closest('[data-kpi-filter]');
+    if (kpiButton) {
+      setKpiFilter(kpiButton.dataset.kpiFilter);
+      return;
+    }
+
+    var resetButton = event.target.closest('[data-reset-filter]');
+    if (resetButton) {
+      resetDashFilters();
+    }
+  });
+
+  function openDashboardPreview(url, title) {
+    var modal = document.getElementById('dashboardPreviewModal');
+    var body = document.getElementById('dashboardPreviewBody');
+    var titleEl = document.getElementById('dashboardPreviewTitle');
+    var metaEl = document.getElementById('dashboardPreviewMeta');
+    if (!modal || !body || !url) return;
+
+    var safeUrl = String(url).replace(/&amp;/g, '&');
+    var lowerUrl = safeUrl.toLowerCase();
+    var isImage = /\.(png|jpe?g|gif|webp)(\?|#|$)/i.test(lowerUrl);
+    var isPdf = lowerUrl.includes('.pdf') || lowerUrl.includes('application/pdf');
+    titleEl.textContent = title || 'Xem trước bản vẽ';
+    metaEl.textContent = isPdf ? 'PDF preview' : (isImage ? 'Image preview' : 'Tài liệu liên kết');
+    body.innerHTML = isImage
+      ? '<img class="dashboard-preview-image" src="' + safeUrl.replace(/"/g, '&quot;') + '" alt="' + String(title || 'Bản vẽ').replace(/"/g, '&quot;') + '">'
+      : (isPdf
+        ? '<iframe class="dashboard-preview-frame" src="' + safeUrl.replace(/"/g, '&quot;') + '" title="Xem trước PDF"></iframe>'
+        : '<div class="dashboard-preview-fallback"><i class="bi bi-file-earmark-text"></i><p>Định dạng này không hỗ trợ xem trực tiếp.</p><a class="btn btn-primary" href="' + safeUrl.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener">Mở tài liệu</a></div>');
+    modal.classList.remove('d-none');
+  }
+
+  function closeDashboardPreview() {
+    var modal = document.getElementById('dashboardPreviewModal');
+    var body = document.getElementById('dashboardPreviewBody');
+    if (body) body.innerHTML = '';
+    if (modal) modal.classList.add('d-none');
+  }
+
+  var dashboardRefreshTimer = null;
+  var dashboardRenderRaf = null;
+
+  function requestDashboardRefresh() {
+    if (dashboardRenderRaf) {
+      cancelAnimationFrame(dashboardRenderRaf);
+    }
+
+    dashboardRenderRaf = requestAnimationFrame(function () {
+      dashboardRenderRaf = null;
+      if (dashboardRefreshTimer) {
+        clearTimeout(dashboardRefreshTimer);
+      }
+      dashboardRefreshTimer = setTimeout(function () {
+        dashboardRefreshTimer = null;
+        if (!document.hidden) {
+          updateDashboardStats();
+        }
+      }, 40);
+    });
+  }
+
   // =========================================================
   // CÁC HÀM CẬP NHẬT BỘ LỌC TỪ UI
   // =========================================================
   function setDashTypeFilter(typeVal, btnEl) {
     globalFilters.type = typeVal;
-    document.querySelectorAll('#dashTypeBtnGroup .btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#dashTypeBtnGroup .btn').forEach(function (b) {
+      b.classList.remove('active');
+    });
     if (btnEl) btnEl.classList.add('active');
-    updateDashboardStats();
+    requestDashboardRefresh();
   }
 
   function setKpiFilter(group) {
     globalFilters.kpi = group;
-    // Đổi UI KPI
-    ['all', 'design', 'sign', 'release','released'].forEach(g => {
+    ['all', 'design', 'sign', 'release', 'released'].forEach(function (g) {
       var c = document.getElementById('kpiCard-' + g);
       if (c) c.className = 'kpi-card h-100';
     });
-    var activeMap = { all: 'kpi-active', design: 'kpi-active-design', sign: 'kpi-active-sign', release: 'kpi-active-release' ,released: 'kpi-active-released'};
+    var activeMap = { all: 'kpi-active', design: 'kpi-active-design', sign: 'kpi-active-sign', release: 'kpi-active-release', released: 'kpi-active-released' };
     var activeCard = document.getElementById('kpiCard-' + group);
     if (activeCard) activeCard.classList.add(activeMap[group]);
-    updateDashboardStats();
+    requestDashboardRefresh();
   }
 
   function resetDashFilters() {
-    globalFilters = { fye: 'ALL', type: 'ALL', kpi: 'all', project: null, month: null, isNew: null };
-    document.getElementById('dashFyeFilter').value = 'ALL';
-    setDashTypeFilter('ALL', document.querySelector('#dashTypeBtnGroup .btn')); // Sẽ gọi updateDashboardStats()
+    globalFilters = { fye: 'ALL', type: 'ALL', kpi: 'all', project: null, month: null, isNew: null, search: '', creator: '', status: 'ALL', dateFrom: '', dateTo: '' };
+    var dashFyeFilter = document.getElementById('dashFyeFilter');
+    if (dashFyeFilter) dashFyeFilter.value = 'ALL';
+    ['dashSearchInput'].forEach(function (id) {
+      var input = document.getElementById(id);
+      if (input) input.value = '';
+    });
+    var firstTypeButton = document.querySelector('#dashTypeBtnGroup .btn');
+    setDashTypeFilter('ALL', firstTypeButton);
     setKpiFilter('all');
   }
 
@@ -552,28 +674,51 @@
     globalFilters.project = null;
     globalFilters.month = null;
     globalFilters.isNew = null;
-    updateDashboardStats();
+    globalFilters.search = '';
+    var searchInput = document.getElementById('dashSearchInput');
+    if (searchInput) searchInput.value = '';
+    requestDashboardRefresh();
   }
 
   // =========================================================
   // HELPER FUNCTIONS (FYE, Value Extractor)
   // =========================================================
+  var _fyeMemoCache = {};
   function computeFYE(input) {
     if (!input) return '';
+    if (typeof input === 'string' && _fyeMemoCache[input] !== undefined) {
+      return _fyeMemoCache[input];
+    }
     var month, year;
-    if (input instanceof Date) { month = input.getMonth() + 1; year = input.getFullYear(); } 
-    else {
-      var parts = String(input).split('/');
-      if (parts.length >= 3) { month = parseInt(parts[1], 10); year = parseInt(parts[2], 10); } 
-      else {
-        var d = new Date(input);
-        if (!isNaN(d.getTime())) { month = d.getMonth() + 1; year = d.getFullYear(); } else return '';
+    if (input instanceof Date) { 
+      month = input.getMonth() + 1; 
+      year = input.getFullYear(); 
+    } else {
+      var strInput = String(input).trim();
+      var parts = strInput.split('/');
+      if (parts.length >= 3) { 
+        month = parseInt(parts[1], 10); 
+        year = parseInt(parts[2], 10); 
+      } else {
+        var d = new Date(strInput);
+        if (!isNaN(d.getTime())) { 
+          month = d.getMonth() + 1; 
+          year = d.getFullYear(); 
+        } else {
+          if (typeof input === 'string') _fyeMemoCache[input] = '';
+          return '';
+        }
       }
     }
-    if (isNaN(month) || isNaN(year) || year < 2000) return '';
+    if (isNaN(month) || isNaN(year) || year < 2000) {
+      if (typeof input === 'string') _fyeMemoCache[input] = '';
+      return '';
+    }
     var fyeYear = (month >= 4) ? year + 1 : year;
     var fyeNum = fyeYear % 100; 
-    return 'FYE' + (fyeNum < 10 ? '0' + fyeNum : String(fyeNum));
+    var res = 'FYE' + (fyeNum < 10 ? '0' + fyeNum : String(fyeNum));
+    if (typeof input === 'string') _fyeMemoCache[input] = res;
+    return res;
   }
 
   function getRowValue(row, key) {
@@ -587,19 +732,19 @@
         case 'reqNo': return String(row[8] || row[0] || '');
         case 'dwNo': return String(row[11] || row[8] || '');
         case 'project': return String(row[9] || ''); 
-        case 'fye': return String(row[23] || '').trim() || computeFYE(String(row[6] || ''));
+        case 'fye': return String(row[23] || '').trim() || computeFYE(row[6]);
         case 'date': return String(row[6] || '');
         case 'note': return String(row[22] || row[13] || '');
         case 'pdfSample': return String(row[31] || '');
-        case 'estimatedCompletionDate':return String(row[7] || '');
-        case 'completionDate':return String(row[16] || '');
-        case 'releaseDate':return String(row[34] || '');
-        case 'ngDamTrach':return String(row[15] || '');
-        case 'checker':return String(row[17] || '');
-        case 'approve':return String(row[19] || '');
-        case 'customer':return String(row[10] || '');
-        case 'to':return String(row[8] || '');
-
+        case 'estimatedCompletionDate': return String(row[7] || '');
+        case 'completionDate': return String(row[16] || '');
+        case 'releaseDate': return String(row[34] || '');
+        case 'ngDamTrach': return String(row[15] || '');
+        case 'checker': return String(row[17] || '');
+        case 'approve': return String(row[19] || '');
+        case 'customer': return String(row[10] || '');
+        case 'creator': return String(row[12] || '');
+        case 'to': return String(row[8] || '');
         default: return ''; 
       }
     } else if (row && typeof row === 'object') {
@@ -612,22 +757,19 @@
         case 'reqNo': return String(row.reqNo || row.requestNo || row[8] || row[0] || '');
         case 'dwNo': return String(row.dwNo || row.drawingNo || row[11] || '');
         case 'project': return String(row.project || row.Project || row[9] || '');
-        case 'fye': return String(row.fye || row.FYE || row[23] || '').trim() || computeFYE(String(row.date || row.Date || row[6] || ''));
+        case 'fye': return String(row.fye || row.FYE || row[23] || '').trim() || computeFYE(row.date || row.Date || row[6]);
         case 'date': return String(row.date || row.Date || row[6] || '');
         case 'note': return String(row.note || row.Note || row[22] || '');
         case 'pdfSample': return String(row.pdfSample || row[31] || '');
-        case 'estimatedCompletionDate':return String(row.estimatedCompletionDate || row[7] || '');
-        case 'completionDate':return String(row.completionDate || row[16] || '');
-        case 'releaseDate':return String(row.releaseDate || row[34] || '');
-        case 'ngDamTrach':return String(row.ngDamTrach||row[16] || '');
-        case 'checker':return String(row.checker||row[17] || '');
-        case 'approve':return String(row.approve||row[19] || '');
-        case 'customer':return String(row.customer||row[10] || '');
-        case 'to':return String(row.to||row[8] || '');
-
-        
-
-
+        case 'estimatedCompletionDate': return String(row.estimatedCompletionDate || row[7] || '');
+        case 'completionDate': return String(row.completionDate || row[16] || '');
+        case 'releaseDate': return String(row.releaseDate || row[34] || '');
+        case 'ngDamTrach': return String(row.ngDamTrach || row[16] || '');
+        case 'checker': return String(row.checker || row[17] || '');
+        case 'approve': return String(row.approve || row[19] || '');
+        case 'customer': return String(row.customer || row[10] || '');
+        case 'creator': return String(row.creator || row.createdBy || row[12] || '');
+        case 'to': return String(row.to || row[8] || '');
         default: return '';
       }
     }
@@ -650,34 +792,90 @@
     select.value = currentVal;
   }
 
+  function populateDashFilterOptions(rawData) {
+    var projectList = document.getElementById('dashProjectOptions');
+    var creatorList = document.getElementById('dashCreatorOptions');
+    if (!projectList || !creatorList) return;
+
+    var projects = new Set();
+    var creators = new Set();
+    rawData.forEach(function (row) {
+      var project = getRowValue(row, 'project').trim();
+      var creator = getRowValue(row, 'creator').trim();
+      if (project) projects.add(project);
+      if (creator) creators.add(creator);
+    });
+
+    projectList.innerHTML = Array.from(projects).sort().slice(0, 100).map(function (value) {
+      return '<option value="' + String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '"></option>';
+    }).join('');
+    creatorList.innerHTML = Array.from(creators).sort().slice(0, 100).map(function (value) {
+      return '<option value="' + String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '"></option>';
+    }).join('');
+  }
+
+  function updateDashboardRoleBadge() {
+    var badge = document.getElementById('dashRoleBadge');
+    if (!badge) return;
+    var position = (typeof user !== 'undefined' && user && user.position) ? String(user.position).trim() : '';
+    var roleMap = { Charger: 'Vai trò: Charger', 'Checker 1': 'Vai trò: Checker 1', 'Checker 2': 'Vai trò: Checker 2', Approval: 'Vai trò: Approval' };
+    badge.textContent = roleMap[position] || (position ? 'Vai trò: ' + position : 'Vai trò: Người dùng');
+  }
+
+  function parseDashboardDate(value) {
+    if (!value) return null;
+    var text = String(value).trim();
+    var slashParts = text.split('/');
+    var date = null;
+    if (slashParts.length === 3 && slashParts[0].length <= 2) {
+      date = new Date(Number(slashParts[2]), Number(slashParts[1]) - 1, Number(slashParts[0]));
+    } else {
+      date = new Date(text);
+    }
+    return isNaN(date.getTime()) ? null : date;
+  }
+
   // =========================================================
   // VẼ NHÃN BỘ LỌC (UI CHIPS)
   // =========================================================
   function renderFilterChips() {
     var container = document.getElementById('activeFiltersContainer');
     var chipsArea = document.getElementById('filterChipsArea');
+    if (!container || !chipsArea) return;
+
     var html = '';
     var hasSubFilters = false;
 
     if (globalFilters.kpi !== 'all') {
-      let labels = { design: 'Chờ thiết kế', sign: 'Chờ ký duyệt', release: 'Chờ ban hành', released: 'Đã ban hành' };
-      html += `<span class="filter-chip f-kpi">Trạng thái: ${labels[globalFilters.kpi]} <i class="bi bi-x-circle-fill" onclick="setKpiFilter('all')"></i></span>`;
+      var labels = { design: 'Chờ thiết kế', sign: 'Chờ ký duyệt', release: 'Chờ ban hành', released: 'Đã ban hành' };
+      html += '<span class="filter-chip f-kpi">Trạng thái: ' + labels[globalFilters.kpi] + ' <i class="bi bi-x-circle-fill" onclick="setKpiFilter(\'all\')"></i></span>';
       hasSubFilters = true;
     }
     if (globalFilters.project) {
-      html += `<span class="filter-chip f-project">Dự án: ${globalFilters.project} <i class="bi bi-x-circle-fill" onclick="globalFilters.project=null; updateDashboardStats()"></i></span>`;
+      html += '<span class="filter-chip f-project">Dự án: ' + globalFilters.project + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.project=null; globalFilters.search=\'\'; document.getElementById(\'dashSearchInput\').value=\'\'; requestDashboardRefresh()"></i></span>';
       hasSubFilters = true;
     }
     if (globalFilters.month) {
-      html += `<span class="filter-chip f-month">Tháng: ${globalFilters.month} <i class="bi bi-x-circle-fill" onclick="globalFilters.month=null; updateDashboardStats()"></i></span>`;
+      html += '<span class="filter-chip f-month">Tháng: ' + globalFilters.month + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.month=null; requestDashboardRefresh()"></i></span>';
       hasSubFilters = true;
     }
     if (globalFilters.isNew !== null) {
-      let label = globalFilters.isNew ? 'Thiết kế mới (NEW)' : 'Chỉnh sửa (REVISE)';
-      html += `<span class="filter-chip f-type">Phân loại: ${label} <i class="bi bi-x-circle-fill" onclick="globalFilters.isNew=null; updateDashboardStats()"></i></span>`;
+      var label = globalFilters.isNew ? 'Thiết kế mới (NEW)' : 'Chỉnh sửa (REVISE)';
+      html += '<span class="filter-chip f-type">Phân loại: ' + label + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.isNew=null; requestDashboardRefresh()"></i></span>';
+      hasSubFilters = true;
+    }
+    if (globalFilters.search) {
+      html += '<span class="filter-chip">Tìm kiếm: ' + globalFilters.search + '</span>';
       hasSubFilters = true;
     }
 
+    if (chipsArea.dataset.lastHtml === html) {
+      if (hasSubFilters) container.classList.remove('d-none');
+      else container.classList.add('d-none');
+      return;
+    }
+
+    chipsArea.dataset.lastHtml = html;
     chipsArea.innerHTML = html;
     if (hasSubFilters) container.classList.remove('d-none');
     else container.classList.add('d-none');
@@ -688,131 +886,135 @@
   // TRÁI TIM HỆ THỐNG: CẬP NHẬT MỌI THỨ THEO BỘ LỌC
   // =========================================================
   function updateDashboardStats() {
-    var rawData = (window.pageData && Array.isArray(window.pageData)) ? window.pageData : [];
+    var sourceData = (window.pageData && Array.isArray(window.pageData)) ? window.pageData : [];
+    var rawData = sourceData;
     if (!rawData || rawData.length === 0) return;
     if (rawData.length > 0 && String(getRowValue(rawData[0], 'id')).toLowerCase() === 'id') rawData = rawData.slice(1);
-    
-    // Đồng bộ Dropdown FYE
-    globalFilters.fye = document.getElementById('dashFyeFilter')?.value || 'ALL';
+
+    var dashFyeFilter = document.getElementById('dashFyeFilter');
+    if (dashFyeFilter) {
+      globalFilters.fye = dashFyeFilter.value || 'ALL';
+    }
+
+    var searchInput = document.getElementById('dashSearchInput');
+    globalFilters.search = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+    var renderKey = [globalFilters.fye, globalFilters.type, globalFilters.kpi,
+      globalFilters.project || '', globalFilters.month || '', globalFilters.isNew, globalFilters.search,
+      globalFilters.search].join('|');
+
+    if (lastDashboardDataRef === sourceData && lastDashboardRenderKey === renderKey) return;
+    lastDashboardDataRef = sourceData;
+    lastDashboardRenderKey = renderKey;
+
     populateDashFyeOptions(rawData);
+    populateDashFilterOptions(rawData);
+    updateDashboardRoleBadge();
     renderFilterChips();
 
     var fyeMonthLabels = ['T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12', 'T1', 'T2', 'T3'];
+    var total = 0;
+    var pendingDesign = 0;
+    var pendingApprove = 0;
+    var release = 0;
+    var released = 0;
+    var baseData = [];
+    var finalData = [];
+    var newCountsByMonth = new Array(12).fill(0);
+    var reviseCountsByMonth = new Array(12).fill(0);
+    var projectCountsByMonth = {};
+    var fyeDistributionMap = {};
 
-    // 1. TẦNG 1: LỌC CƠ BẢN (Dành để tính thẻ KPI để số không bị biến mất khi bấm biểu đồ)
-    var baseData = rawData.filter(function (row) {
-      var itemGroup = (getRowValue(row, 'group') + " " + getRowValue(row, 'type')).toUpperCase();
+    rawData.forEach(function (row) {
+      var itemGroup = (getRowValue(row, 'group') + ' ' + getRowValue(row, 'type')).toUpperCase();
       var itemFye = getRowValue(row, 'fye').toUpperCase();
-      if (globalFilters.type === 'BARSALE' && !itemGroup.includes('BARSALE')) return false;
-      if (globalFilters.type === 'OEM' && !itemGroup.includes('OEM')) return false;
-      if (globalFilters.type === 'WE SASH' && (itemGroup.includes('BARSALE') || itemGroup.includes('OEM'))) return false;
-      if (globalFilters.fye !== 'ALL' && itemFye !== globalFilters.fye) return false;
-      return true;
-    });
+      var searchText = (Array.isArray(row) ? row : Object.values(row || {})).join(' ').toLowerCase();
+      var matchesBaseFilter = true;
 
-    // Tính KPI từ Tầng 1
-    var total = baseData.length;
-    var pendingDesign = 0, pendingApprove = 0, released = 0,release = 0 ;
-    baseData.forEach(function(row) {
-      var st = getRowValue(row, 'status').toLowerCase();
-      var pdfSample = getRowValue(row, 'pdfSample').trim();
-      if (st.includes('đang thực hiện') || st.includes('trả về charger')) pendingDesign++;
-      else if (st.includes('chờ checker') || st.includes('chờ approval')) pendingApprove++;
-      else if (st.includes('đã ban hành') ) released++;
-      else if (st.includes('chờ ban hành') || st.includes('ban hành thất bại') ) release++;
+      if (globalFilters.type === 'BARSALE' && !itemGroup.includes('BARSALE')) matchesBaseFilter = false;
+      if (globalFilters.type === 'OEM' && !itemGroup.includes('OEM')) matchesBaseFilter = false;
+      if (globalFilters.type === 'WE SASH' && (itemGroup.includes('BARSALE') || itemGroup.includes('OEM'))) matchesBaseFilter = false;
+      if (globalFilters.fye !== 'ALL' && itemFye !== globalFilters.fye) matchesBaseFilter = false;
+      if (globalFilters.search && !searchText.includes(globalFilters.search)) matchesBaseFilter = false;
+      if (globalFilters.project && getRowValue(row, 'project').trim() !== globalFilters.project) matchesBaseFilter = false;
+      if (!matchesBaseFilter) return;
+
+      total += 1;
+      baseData.push(row);
+
+      var status = getRowValue(row, 'status').toLowerCase();
+      if (status.includes('đang thực hiện') || status.includes('trả về charger')) pendingDesign += 1;
+      else if (status.includes('chờ checker') || status.includes('chờ approval')) pendingApprove += 1;
+      else if (status.includes('đã ban hành')) released += 1;
+      else if (status.includes('chờ ban hành') || status.includes('ban hành thất bại')) release += 1;
     });
 
     document.getElementById('dashTotalCount').textContent = total;
     document.getElementById('dashDesignCount').textContent = pendingDesign;
     document.getElementById('dashApprovalCount').textContent = pendingApprove;
-     document.getElementById('dashReleaseCount').textContent = release;
+    document.getElementById('dashReleaseCount').textContent = release;
     document.getElementById('dashReleasedCount').textContent = released;
 
-
-    // 2. TẦNG 2: LỌC CHUYÊN SÂU (Cho Biểu Đồ và Bảng)
-    var finalData = baseData.filter(function(row) {
-      var st = getRowValue(row, 'status').toLowerCase();
-      var pdfSample = getRowValue(row, 'pdfSample').trim();
+    baseData.forEach(function (row) {
+      var status = getRowValue(row, 'status').toLowerCase();
       var projectVal = getRowValue(row, 'project').trim() || 'Khác';
-      var ver = getRowValue(row, 'version').toLowerCase();
-      var note = getRowValue(row, 'note').toLowerCase();
+      var version = getRowValue(row, 'version').toLowerCase();
       var dateVal = getRowValue(row, 'date');
-
-      // Xác định tính chất row
-      var isNewRow = true;
-      if (ver === '1' || ver === '2' || ver.includes('rev') || ver.includes('sửa') || (parseInt(ver) > 0) && !(ver==='0' || ver==='v0')) isNewRow = false;
-      
-      var monthIdx = -1;
-      if (dateVal) {
-        var d = new Date(dateVal);
-        if (!isNaN(d.getTime())) { monthIdx = (d.getMonth() + 1 >= 4) ? (d.getMonth() - 3) : (d.getMonth() + 9); }
-      }
-      var monthLabel = (monthIdx >= 0 && monthIdx <= 11) ? fyeMonthLabels[monthIdx] : null;
-
-      // Filter theo KPI
-      if (globalFilters.kpi === 'design' && !(st.includes('trả về charger') || st.includes('đang thực hiện'))) return false;
-      if (globalFilters.kpi === 'sign' && !(st.includes('chờ checker') || st.includes('chờ approval'))) return false;
-      if (globalFilters.kpi === 'released' && !(st.includes('đã ban hành'))) return false;
-      if (globalFilters.kpi === 'release' && !(st.includes('chờ ban hành') || st.includes('ban hành thất bại') )) return false;
-
-      // Filter theo biểu đồ
-      if (globalFilters.project && projectVal !== globalFilters.project) return false;
-      if (globalFilters.month && monthLabel !== globalFilters.month) return false;
-      if (globalFilters.isNew !== null && isNewRow !== globalFilters.isNew) return false;
-
-      return true;
-    });
-
-
-    // 3. TẠO DỮ LIỆU VẼ BIỂU ĐỒ (Từ finalData)
-    var newCountsByMonth = new Array(12).fill(0);
-    var reviseCountsByMonth = new Array(12).fill(0);
-    var projectCountsByMonth = {};
-    var fyeDistributionMap = {}; 
-
-    finalData.forEach(function (row) {
-      var ver = getRowValue(row, 'version').toLowerCase();
-      var dateVal = getRowValue(row, 'date');
-      var projectVal = getRowValue(row, 'project').trim() || 'Khác'; 
       var currentFye = getRowValue(row, 'fye').toUpperCase();
+      var monthIdx = -1;
 
-      var isNew = true;
-      if (ver === '1' || ver === '2' || ver.includes('rev') || ver.includes('sửa') || (parseInt(ver) > 0) && !(ver==='0' || ver==='v0')) isNew = false;
+      var isNewRow = true;
+      if (version === '1' || version === '2' || version.includes('rev') || version.includes('sửa') || (parseInt(version, 10) > 0 && !(version === '0' || version === 'v0'))) {
+        isNewRow = false;
+      }
 
-      // Cho Biểu đồ FYE
+      if (dateVal) {
+        var dateObject = new Date(dateVal);
+        if (!isNaN(dateObject.getTime())) {
+          monthIdx = (dateObject.getMonth() + 1 >= 4) ? (dateObject.getMonth() - 3) : (dateObject.getMonth() + 9);
+        }
+      }
+
+      var monthLabel = (monthIdx >= 0 && monthIdx <= 11) ? fyeMonthLabels[monthIdx] : null;
+      var matchesKpiFilter = true;
+
+      if (globalFilters.kpi === 'design' && !(status.includes('trả về charger') || status.includes('đang thực hiện'))) matchesKpiFilter = false;
+      if (globalFilters.kpi === 'sign' && !(status.includes('chờ checker') || status.includes('chờ approval'))) matchesKpiFilter = false;
+      if (globalFilters.kpi === 'released' && !(status.includes('đã ban hành'))) matchesKpiFilter = false;
+      if (globalFilters.kpi === 'release' && !(status.includes('chờ ban hành') || status.includes('ban hành thất bại'))) matchesKpiFilter = false;
+
+      if (globalFilters.project && projectVal !== globalFilters.project) matchesKpiFilter = false;
+      if (globalFilters.month && monthLabel !== globalFilters.month) matchesKpiFilter = false;
+      if (globalFilters.isNew !== null && isNewRow !== globalFilters.isNew) matchesKpiFilter = false;
+
+      if (!matchesKpiFilter) return;
+
+      finalData.push(row);
+
       if (currentFye) {
         if (!fyeDistributionMap[currentFye]) fyeDistributionMap[currentFye] = { newCount: 0, reviseCount: 0 };
-        if (isNew) fyeDistributionMap[currentFye].newCount++;
-        else fyeDistributionMap[currentFye].reviseCount++;
+        if (isNewRow) fyeDistributionMap[currentFye].newCount += 1;
+        else fyeDistributionMap[currentFye].reviseCount += 1;
       }
 
-      // Cho Biểu đồ 12 tháng
-      var monthIdx = -1;
-      if (dateVal) {
-        var d = new Date(dateVal);
-        if (!isNaN(d.getTime())) { monthIdx = (d.getMonth() + 1 >= 4) ? (d.getMonth() - 3) : (d.getMonth() + 9); }
-      }
-      
       if (monthIdx >= 0 && monthIdx <= 11) {
         if (!projectCountsByMonth[projectVal]) projectCountsByMonth[projectVal] = new Array(12).fill(0);
-        projectCountsByMonth[projectVal][monthIdx]++;
-        if (isNew) newCountsByMonth[monthIdx]++;
-        else reviseCountsByMonth[monthIdx]++;
+        projectCountsByMonth[projectVal][monthIdx] += 1;
+        if (isNewRow) newCountsByMonth[monthIdx] += 1;
+        else reviseCountsByMonth[monthIdx] += 1;
       }
     });
 
-    // HIỂN THỊ/ẨN BIỂU ĐỒ FYE
     var rowChartFye = document.getElementById('rowChartTotalFye');
     if (rowChartFye) {
       if (globalFilters.fye === 'ALL') {
         rowChartFye.classList.remove('d-none');
-        renderFyeChart(fyeDistributionMap); 
+        renderFyeChart(fyeDistributionMap);
       } else {
-        rowChartFye.classList.add('d-none'); 
+        rowChartFye.classList.add('d-none');
       }
     }
 
-    // VẼ 2 BIỂU ĐỒ THÁNG & BẢNG
     renderDashCharts(projectCountsByMonth, newCountsByMonth, reviseCountsByMonth, fyeMonthLabels);
     renderDashRecentTable(finalData);
   }
@@ -834,11 +1036,18 @@
   function renderFyeChart(fyeDataMap) {
     if (typeof Chart === 'undefined') return;
     var ctx = document.getElementById('chartTotalByFye').getContext('2d');
-    if (dashChartTotalFyeInstance) dashChartTotalFyeInstance.destroy();
 
     var labels = Object.keys(fyeDataMap).sort((a,b) => parseInt(a.replace('FYE','')) - parseInt(b.replace('FYE','')));
     var newData = labels.map(l => fyeDataMap[l].newCount);
     var reviseData = labels.map(l => fyeDataMap[l].reviseCount);
+
+    if (dashChartTotalFyeInstance) {
+      dashChartTotalFyeInstance.data.labels = labels;
+      dashChartTotalFyeInstance.data.datasets[0].data = newData;
+      dashChartTotalFyeInstance.data.datasets[1].data = reviseData;
+      dashChartTotalFyeInstance.update('none');
+      return;
+    }
 
     dashChartTotalFyeInstance = new Chart(ctx, {
       type: 'bar',
@@ -851,6 +1060,7 @@
       },
       options: {
         ...chartInteractionOptions,
+        animation: false,
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { position: 'top' }, tooltip: commonTooltip },
         scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
@@ -871,7 +1081,6 @@
 
     // CHART 1: DỰ ÁN
     var ctx1 = document.getElementById('chartReceptionStatus').getContext('2d');
-    if (dashChart1Instance) dashChart1Instance.destroy();
 
     var colorPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
     var projectDatasets = [], colorIdx = 0;
@@ -880,11 +1089,18 @@
       colorIdx++;
     }
 
-    dashChart1Instance = new Chart(ctx1, {
+    if (dashChart1Instance) {
+      dashChart1Instance.data.labels = fyeMonthLabels;
+      dashChart1Instance.data.datasets = projectDatasets;
+      dashChart1Instance.update('none');
+    }
+
+    if (!dashChart1Instance) dashChart1Instance = new Chart(ctx1, {
       type: 'bar',
       data: { labels: fyeMonthLabels, datasets: projectDatasets },
       options: {
         ...chartInteractionOptions,
+        animation: false,
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: commonTooltip },
         scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
@@ -892,6 +1108,9 @@
           if(elements.length > 0) {
             globalFilters.month = chart.data.labels[elements[0].index];
             globalFilters.project = chart.data.datasets[elements[0].datasetIndex].label;
+            var searchInput = document.getElementById('dashSearchInput');
+            globalFilters.search = globalFilters.project.toLowerCase();
+            if (searchInput) searchInput.value = globalFilters.project;
             updateDashboardStats(); // Gọi lại để lọc toàn bộ màn hình
           }
         }
@@ -900,7 +1119,13 @@
 
     // CHART 2: NEW VS REVISE
     var ctx2 = document.getElementById('chartNewVsRevise').getContext('2d');
-    if (dashChart2Instance) dashChart2Instance.destroy();
+    if (dashChart2Instance) {
+      dashChart2Instance.data.labels = fyeMonthLabels;
+      dashChart2Instance.data.datasets[0].data = newCountsByMonth;
+      dashChart2Instance.data.datasets[1].data = reviseCountsByMonth;
+      dashChart2Instance.update('none');
+      return;
+    }
 
     dashChart2Instance = new Chart(ctx2, {
       type: 'bar',
@@ -913,6 +1138,7 @@
       },
       options: {
         ...chartInteractionOptions,
+        animation: false,
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: commonTooltip },
         scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
@@ -941,21 +1167,21 @@
     if (!tbody) return;
 
     if (dataList.length === 0) {
-      // Đổi colspan thành 11 cho khớp với thead
       tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-2 text-black-50"></i>Không có dữ liệu trùng khớp.</td></tr>';
       return;
     }
 
-    var html = '';
-    dataList.slice(0, 15).forEach(function(row) {
+    var fragment = document.createDocumentFragment();
+    var limitedRows = dataList.slice(0, 15);
+
+    limitedRows.forEach(function (row) {
       var id = getRowValue(row, 'id');
       var group = getRowValue(row, 'group') || '';
-      var reqNo = getRowValue(row, 'reqNo') || id || 'N/A';
-      var dwNo = getRowValue(row, 'dwNo') || '<i class="text-muted">Chưa có mã</i>';
+      var dwNo = getRowValue(row, 'dwNo') || 'Chưa có mã';
       var type = getRowValue(row, 'type') || '—';
       var version = getRowValue(row, 'version') || '0';
       var st = getRowValue(row, 'status') || 'Chưa xác định';
-      var to = getRowValue(row, 'to') || '<i class="text-muted">Chưa có mã</i>';
+      var to = getRowValue(row, 'to') || 'Chưa có mã';
       var project = getRowValue(row, 'project') || '—';
       var customer = getRowValue(row, 'customer') || '—';
       var completionDate = getRowValue(row, 'completionDate') || '—';
@@ -966,95 +1192,91 @@
       var ngDamTrach = getRowValue(row, 'ngDamTrach') || '';
       var checker = getRowValue(row, 'checker') || '';
       var approve = getRowValue(row, 'approve') || '';
-      const [checker1, checker2] = checker.split('\n');
+      var checkerParts = checker.split('\n');
+      var checker1 = checkerParts[0] || '';
+      var checker2 = checkerParts[1] || '';
 
-      // 1. CỘT PDF
-      const pdf = (pdflink && String(pdflink).includes('http')) 
-          ? `<a href="${pdflink}" target="_blank" class="btn btn-sm btn-outline-danger border-0 py-1 px-2" title="Xem bản vẽ PDF"><i class="bi bi-file-earmark-pdf-fill fs-5"></i></a>` 
-          : '<span class="text-muted small"><i class="bi bi-dash"></i></span>';
-      
-      // 2. TỐI ƯU CỘT CHỮ KÝ (Nằm chung với Status)
-      let signHtml = `<div class="mt-2 pt-2 border-top border-secondary border-opacity-25 text-start w-100" style="font-size: 0.75rem; line-height: 1.4;">`;
-      if (ngDamTrach) signHtml += `<div class="d-flex justify-content-between"><span class="text-muted">Chg:</span> <span class="fw-medium text-dark">${String(ngDamTrach).replace(/</g, '&lt;')}</span></div>`;
+      var pdf = (pdflink && String(pdflink).includes('http'))
+        ? '<button type="button" data-drawing-preview data-preview-url="' + String(pdflink).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" data-preview-title="' + String(dwNo).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" class="btn btn-sm btn-outline-danger border-0 py-1 px-2" title="Xem trước bản vẽ PDF"><i class="bi bi-file-earmark-pdf-fill fs-5"></i></button>'
+        : '<span class="text-muted small"><i class="bi bi-dash"></i></span>';
+
+      var signHtml = '<div class="mt-2 pt-2 border-top border-secondary border-opacity-25 text-start w-100" style="font-size: 0.75rem; line-height: 1.4;">';
+      if (ngDamTrach) signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">Chg:</span> <span class="fw-medium text-dark">' + String(ngDamTrach).replace(/</g, '&lt;') + '</span></div>';
       if (checker1 || checker2) {
-        let chk = [checker1, checker2].filter(Boolean).join(', ');
-        signHtml += `<div class="d-flex justify-content-between"><span class="text-muted">Chk:</span> <span class="fw-medium text-dark">${String(chk).replace(/</g, '&lt;')}</span></div>`;
+        var chkValue = [checker1, checker2].filter(Boolean).join(', ');
+        signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">Chk:</span> <span class="fw-medium text-dark">' + String(chkValue).replace(/</g, '&lt;') + '</span></div>';
       }
-      if (approve) signHtml += `<div class="d-flex justify-content-between"><span class="text-muted">App:</span> <span class="fw-medium text-primary">${String(approve).replace(/</g, '&lt;')}</span></div>`;
-      signHtml += `</div>`;
+      if (approve) signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">App:</span> <span class="fw-medium text-primary">' + String(approve).replace(/</g, '&lt;') + '</span></div>';
+      signHtml += '</div>';
       if (!ngDamTrach && !checker1 && !checker2 && !approve) signHtml = '';
 
-      // 3. TỐI ƯU CỘT THỜI GIAN (Gộp các loại ngày vào 1 khối Timeline để tiết kiệm chiều ngang)
-      let dateHtml = `<div class="text-start d-flex flex-column gap-1 mx-auto" style="font-size: 0.75rem; width: fit-content;">`;
-      dateHtml += `<div title="Ngày tiếp nhận"><i class="bi bi-box-arrow-in-right text-secondary me-1"></i> <span class="fw-medium text-dark">${String(date).replace(/</g, '&lt;')}</span></div>`;
-      
-      let isLate = false;
-      if (estimatedCompletionDate !== '—' && completionDate === '—') {
-         let tmDate = new Date(estimatedCompletionDate);
-         if (!isNaN(tmDate) && tmDate < new Date()) isLate = true;
-      }
-      let tmColor = isLate ? 'text-danger fw-bold' : 'text-primary fw-medium';
-      
-      dateHtml += `<div title="Hạn chót (TM)"><i class="bi bi-stopwatch text-warning me-1"></i> <span class="${tmColor}">${String(estimatedCompletionDate).replace(/</g, '&lt;')}</span></div>`;
-      if (completionDate !== '—') dateHtml += `<div title="Ngày hoàn thành (ACT)"><i class="bi bi-check2-circle text-success me-1"></i> <span class="fw-medium text-success">${String(completionDate).replace(/</g, '&lt;')}</span></div>`;
-      if (releaseDate !== '—') dateHtml += `<div title="Ngày ban hành"><i class="bi bi-send-check text-info me-1"></i> <span class="fw-medium text-info">${String(releaseDate).replace(/</g, '&lt;')}</span></div>`;
-      dateHtml += `</div>`;
+      var dateHtml = '<div class="text-start d-flex flex-column gap-1 mx-auto" style="font-size: 0.75rem; width: fit-content;">';
+      dateHtml += '<div title="Ngày tiếp nhận"><i class="bi bi-box-arrow-in-right text-secondary me-1"></i> <span class="fw-medium text-dark">' + String(date).replace(/</g, '&lt;') + '</span></div>';
 
-      // 4. MÀU SẮC TRẠNG THÁI
+      var isLate = false;
+      if (estimatedCompletionDate !== '—' && completionDate === '—') {
+        var tmDate = new Date(estimatedCompletionDate);
+        if (!isNaN(tmDate.getTime()) && tmDate < new Date()) isLate = true;
+      }
+      var tmColor = isLate ? 'text-danger fw-bold' : 'text-primary fw-medium';
+
+      dateHtml += '<div title="Hạn chót (TM)"><i class="bi bi-stopwatch text-warning me-1"></i> <span class="' + tmColor + '">' + String(estimatedCompletionDate).replace(/</g, '&lt;') + '</span></div>';
+      if (completionDate !== '—') dateHtml += '<div title="Ngày hoàn thành (ACT)"><i class="bi bi-check2-circle text-success me-1"></i> <span class="fw-medium text-success">' + String(completionDate).replace(/</g, '&lt;') + '</span></div>';
+      if (releaseDate !== '—') dateHtml += '<div title="Ngày ban hành"><i class="bi bi-send-check text-info me-1"></i> <span class="fw-medium text-info">' + String(releaseDate).replace(/</g, '&lt;') + '</span></div>';
+      dateHtml += '</div>';
+
       var badgeClass = 'bg-secondary text-white';
-      let stt = 'Chưa xác định';
+      var stt = 'Chưa xác định';
       var stLower = st.toLowerCase();
       var stIcon = 'bi-circle';
-      
-      if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành')) {
-         badgeClass = 'bg-info text-dark border border-info'; stt = "DW ban hành"; stIcon = 'bi-hourglass-split';
-      } else if(stLower.includes('đã ban hành') || stLower.includes('released')) {
-         badgeClass = 'bg-success text-white'; stt = "Đã ban hành"; stIcon = 'bi-check-circle-fill';
-      } else if (stLower.includes('checker') || stLower.includes('approval')) {
-         badgeClass = 'bg-warning text-dark'; stt = "Đang trình ký" ; stIcon = 'bi-pencil-square';
-      } else if (stLower.includes('trả về charger') || stLower.includes('returned')) {
-         badgeClass = 'bg-danger text-white'; stt = "Bị trả lại"; stIcon = 'bi-exclamation-triangle-fill';
-      } else if (stLower.includes('đang thực hiện') ) {
-         badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25'; 
-         stt = (ngDamTrach ? ngDamTrach.split(' ')[0] : 'Charger') + " đang thực hiện"; 
-         stIcon = 'bi-palette-fill';
-      }
-      else if (stLower.includes('ban hành thất bại') ) {
-          badgeClass = 'bg-danger text-white'; stt = "Ban hành thất bại"; stIcon = 'bi-exclamation-triangle-fill';
-      }
-        
 
-      // RENDER HTML TỪNG DÒNG (Đúng 11 thẻ td)
-      html += `
-        <tr class="align-middle border-bottom border-light hover-bg-light transition-all">
-          <td class="d-none">${String(id).replace(/</g, '&lt;')}</td>
-          <td class="d-none">${String(group).replace(/</g, '&lt;')}</td>
-          <td class="text-center">
-            <span class="badge bg-light text-dark border px-2 py-1 shadow-sm">${String(type).replace(/</g, '&lt;')}</span>
-          </td>
-          <td class="text-center fw-medium text-secondary">${String(to).replace(/</g, '&lt;')}</td>
-          <td class="text-center fw-bold text-dark" style="font-size: 0.9rem;">${String(dwNo).replace(/</g, '&lt;')}</td>
-          <td class="text-center text-muted" style="font-size: 0.85rem;">v${String(version).replace(/</g, '&lt;')}</td>
-          <td class="text-center fw-semibold text-dark text-truncate" style="max-width: 120px;" title="${String(project).replace(/</g, '&lt;')}">
-            ${String(project).replace(/</g, '&lt;')}
-          </td>
-          <td class="text-center text-muted text-truncate" style="font-size: 0.85rem; max-width: 120px;" title="${String(customer).replace(/</g, '&lt;')}">
-            <i class="bi bi-person-fill me-1"></i>${String(customer).replace(/</g, '&lt;')}
-          </td>
-          <td class="py-2">${dateHtml}</td>
-          <td class="text-center">${pdf}</td>
-          <td class="text-center">
-            <div class="d-flex flex-column h-100 justify-content-center align-items-center">
-              <span class="badge ${badgeClass} w-100 py-2 shadow-sm mb-1" style="font-size: 0.75rem;">
-                <i class="bi ${stIcon} me-1"></i>${stt}
-              </span>
-              ${signHtml}
-            </div>
-          </td>
-        </tr>`;
+      if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành')) {
+        badgeClass = 'bg-info text-dark border border-info';
+        stt = 'DW ban hành';
+        stIcon = 'bi-hourglass-split';
+      } else if (stLower.includes('đã ban hành') || stLower.includes('released')) {
+        badgeClass = 'bg-success text-white';
+        stt = 'Đã ban hành';
+        stIcon = 'bi-check-circle-fill';
+      } else if (stLower.includes('checker') || stLower.includes('approval')) {
+        badgeClass = 'bg-warning text-dark';
+        stt = 'Đang trình ký';
+        stIcon = 'bi-pencil-square';
+      } else if (stLower.includes('trả về charger') || stLower.includes('returned')) {
+        badgeClass = 'bg-danger text-white';
+        stt = 'Bị trả lại';
+        stIcon = 'bi-exclamation-triangle-fill';
+      } else if (stLower.includes('đang thực hiện')) {
+        badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25';
+        stt = (ngDamTrach ? ngDamTrach.split(' ')[0] : 'Charger') + ' đang thực hiện';
+        stIcon = 'bi-palette-fill';
+      } else if (stLower.includes('ban hành thất bại')) {
+        badgeClass = 'bg-danger text-white';
+        stt = 'Ban hành thất bại';
+        stIcon = 'bi-exclamation-triangle-fill';
+      }
+
+      var tr = document.createElement('tr');
+      tr.className = 'align-middle border-bottom border-light hover-bg-light transition-all';
+      tr.innerHTML = [
+        '<td class="d-none">' + String(id).replace(/</g, '&lt;') + '</td>',
+        '<td class="d-none">' + String(group).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center"><span class="badge bg-light text-dark border px-2 py-1 shadow-sm">' + String(type).replace(/</g, '&lt;') + '</span></td>',
+        '<td class="text-center fw-medium text-secondary">' + String(to).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center fw-bold text-dark" style="font-size: 0.9rem;">' + String(dwNo).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center text-muted" style="font-size: 0.85rem;">v' + String(version).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center fw-semibold text-dark text-truncate" style="max-width: 120px;" title="' + String(project).replace(/</g, '&lt;') + '">' + String(project).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center text-muted text-truncate" style="font-size: 0.85rem; max-width: 120px;" title="' + String(customer).replace(/</g, '&lt;') + '"><i class="bi bi-person-fill me-1"></i>' + String(customer).replace(/</g, '&lt;') + '</td>',
+        '<td class="py-2">' + dateHtml + '</td>',
+        '<td class="text-center">' + pdf + '</td>',
+        '<td class="text-center"><div class="d-flex flex-column h-100 justify-content-center align-items-center"><span class="badge ' + badgeClass + ' w-100 py-2 shadow-sm mb-1" style="font-size: 0.75rem;"><i class="bi ' + stIcon + ' me-1"></i>' + stt + '</span>' + signHtml + '</div></td>'
+      ].join('');
+
+      fragment.appendChild(tr);
     });
-    
-    tbody.innerHTML = html;
+
+    tbody.innerHTML = '';
+    tbody.appendChild(fragment);
   }
 
   document.addEventListener('DOMContentLoaded', function () {

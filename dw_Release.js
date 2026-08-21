@@ -1,164 +1,201 @@
-function getAllDataForStats() {
-  try {
-    const ss = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE");
-    const sheet = ss.getSheetByName("data");
-    
-    if (!sheet) {
-      Logger.log("Lỗi: Không tìm thấy sheet tên 'data'");
-      return []; 
+const drawingSheetConfig = {
+  spreadsheetId: "1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE",
+  sheetName: "data",
+  idColumnIndex: 1,
+  requestNumberColumnIndex: 9,
+  departmentStatusColumnIndex: 24,
+  noteColumnIndex: 34,
+};
+
+const getDrawingSheet = () => SpreadsheetApp.openById(drawingSheetConfig.spreadsheetId).getSheetByName(drawingSheetConfig.sheetName);
+
+const normalizeCellValue = (value) => String(value ?? "").trim();
+
+const groupContiguousRowNumbers = (rowNumbers) => {
+  if (!rowNumbers || rowNumbers.length === 0) {
+    return [];
+  }
+
+  const sortedRowNumbers = [...new Set(rowNumbers)].sort((left, right) => left - right);
+  const groupedRows = [];
+  let startRow = sortedRowNumbers[0];
+  let previousRow = sortedRowNumbers[0];
+
+  for (let index = 1; index < sortedRowNumbers.length; index += 1) {
+    const currentRow = sortedRowNumbers[index];
+
+    if (currentRow === previousRow + 1) {
+      previousRow = currentRow;
+      continue;
     }
-    
-    const lastrow = sheet.getLastRow();
-    const lastcol = sheet.getLastColumn();
-    
-    if (lastrow <= 1) {
+
+    groupedRows.push([startRow, previousRow - startRow + 1]);
+    startRow = currentRow;
+    previousRow = currentRow;
+  }
+
+  groupedRows.push([startRow, previousRow - startRow + 1]);
+  return groupedRows;
+};
+
+const clearRowsByGroups = (sheet, rowNumbers, lastColumn) => {
+  const groupedRows = groupContiguousRowNumbers(rowNumbers);
+
+  groupedRows.forEach(([startRow, length]) => {
+    sheet.getRange(startRow, 1, length, lastColumn).clearContent();
+  });
+};
+
+const setStatusOnRowGroups = (sheet, rowNumbers, columnIndex, statusText) => {
+  const groupedRows = groupContiguousRowNumbers(rowNumbers);
+
+  groupedRows.forEach(([startRow, length]) => {
+    const values = Array.from({ length }, () => [statusText]);
+    sheet.getRange(startRow, columnIndex, length, 1).setValues(values);
+  });
+};
+
+const getAllDataForStats = () => {
+  try {
+    const sheet = getDrawingSheet();
+    if (!sheet) {
       return [];
     }
-    
-    const range = sheet.getRange(2, 1, lastrow - 1, lastcol);
-    const data = range.getValues();
-    
-    const formattedData = data.map(row => {
-      return row.map(cell => {
-        if (cell instanceof Date) {
-          return Utilities.formatDate(cell, Session.getScriptTimeZone(), "dd/MM/yyyy");
-        }
-        return cell;
-      });
-    });
-    // console.log(formattedData[5][37]);
-    
-    return formattedData;
-    
-  } catch (e) {
-    Logger.log("Lỗi trong getAllDataForStats: " + e.toString());
-    return []; 
-  }
-}
-function delDwNo(id) {
-  const ss = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE");
-  const sheet = ss.getSheetByName("data");
-  
-  // Lấy toàn bộ ID ở cột A (Cột 1)
-  const idColumnValues = sheet.getRange(1, 1, sheet.getLastRow(), 1).getValues();
-  
-  // Tìm vị trí của ID trong cột
-  // Dùng String() để tránh lỗi so sánh số và chuỗi
-  const rowIndex = idColumnValues.findIndex(row => String(row[0]) === String(id)) + 1;
 
-  if (rowIndex > 0) {
-    // Nếu tìm thấy, dọn dẹp nội dung hàng đó
-    sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).clearContent();
-    return "Thành công";
-  } else {
+    const lastRow = sheet.getLastRow();
+    const lastColumn = sheet.getLastColumn();
+
+    if (lastRow <= 1) {
+      return [];
+    }
+
+    const rows = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+    return rows.map((row) => row.map((cell) => (cell instanceof Date ? Utilities.formatDate(cell, Session.getScriptTimeZone(), "dd/MM/yyyy") : cell)));
+  } catch (error) {
+    Logger.log(`Lỗi đọc dữ liệu thống kê: ${error.toString()}`);
+    return [];
+  }
+};
+
+const delDwNo = (id) => {
+  const sheet = getDrawingSheet();
+  if (!sheet) {
+    throw new Error("Không tìm thấy sheet dữ liệu release.");
+  }
+
+  const targetId = normalizeCellValue(id);
+  const idColumnValues = sheet.getRange(1, 1, sheet.getLastRow(), 1).getValues();
+  const rowIndex = idColumnValues.findIndex((row) => normalizeCellValue(row[0]) === targetId) + 1;
+
+  if (rowIndex <= 0) {
     throw new Error("Không tìm thấy ID bản vẽ. Có thể dữ liệu đã được thay đổi bởi người khác.");
   }
-}
 
+  sheet.getRange(rowIndex, 1, 1, sheet.getLastColumn()).clearContent();
+  return "Thành công";
+};
 
-
-function delOrderNo(idList) {
-  const ss = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE");
-  const sheet = ss.getSheetByName("data");
-  const lastRow = sheet.getLastRow();
-  const lastCol = sheet.getLastColumn();
-
-  if (lastRow < 2) return;
-
-  const range = sheet.getRange(2, 1, lastRow - 1, lastCol);
-  const data = range.getValues();
-  
-  // Ép kiểu idList về mảng string để so sánh chính xác
-  const targetIds = Array.isArray(idList) ? idList.map(String) : [String(idList)];
-
-  // Duyệt dữ liệu thực tế ngay lúc này trên server
-  data.forEach((row, index) => {
-    const currentReqNo = String(row[8]); // Cột I
-    if (targetIds.indexOf(currentReqNo) !== -1) {
-      // index + 2 vì data bắt đầu từ hàng 2
-      sheet.getRange(index + 2, 1, 1, lastCol).clearContent();
-    }
-  });
-}
-
-function updateDrawingFull(payload) {
-  try {
-    // 1. Sửa lỗi kiểm tra Object rỗng
-    if (!payload || !payload.id) return "Dữ liệu không hợp lệ"; 
-    
-    const ss = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE");
-    const sheet = ss.getSheetByName("data");
-    if (!sheet) throw new Error("Không tìm thấy Sheet 'data'");
-
-    const lastrow = sheet.getLastRow();
-    const lastcol = sheet.getLastColumn();
-    
-    if (lastrow < 2) return "Bảng dữ liệu trống";
-
-    // Lấy toàn bộ mảng dữ liệu lên xử lý
-    const dataRange = sheet.getRange(2, 1, lastrow - 1, lastcol);
-    const data = dataRange.getValues();
-
-    // 2. Dùng vòng lặp for thay vì forEach để có thể dừng sớm
-    for (let i = 0; i < data.length; i++) {
-      // Ép kiểu String để so sánh an toàn
-      if (String(data[i][0]) === String(payload.id)) {
-        
-        // Cập nhật giá trị ngay trên Mảng (rất nhanh vì xử lý trong bộ nhớ)
-        // Lưu ý: Index của mảng data[i] bắt đầu từ 0 (tương ứng cột A = 0, B = 1...)
-        data[i][1] = payload.type;       // Cột B (2) -> Index 1
-        data[i][4] = payload.dwNo;       // Cột E (5) -> Index 4
-        data[i][5] = payload.ver;        // Cột F (6) -> Index 5
-        data[i][2] = payload.lineCus;    // Cột C (3) -> Index 2
-        data[i][3] = payload.lineCode;   // Cột D (4) -> Index 3
-        data[i][9] = payload.designNo;   // Cột J (10)-> Index 9
-        data[i][7] = payload.shape;      // Cột H (8) -> Index 7
-        data[i][11] = payload.deptLq;    // Cột L (12)-> Index 11
-        data[i][17] = payload.link;      // Cột R (18)-> Index 17
-        data[i][33] = payload.note;      // Cột AH (34)-> Index 33
-        data[i][39] = payload.changeType; // Cột Ah (40)-> Index 39
-
-        // 3. Đổ lại ĐÚNG MỘT HÀNG đó xuống Sheet (Gọi API 1 lần duy nhất)
-        const rowIndex = i + 2;
-        sheet.getRange(rowIndex, 1, 1, lastcol).setValues([data[i]]);
-        
-        return "Cập nhật thành công"; // Thoát hàm ngay lập tức
-      }
-    }
-
-    throw new Error("Không tìm thấy ID bản vẽ để cập nhật!");
-
-  } catch (e) {
-    Logger.log("Lỗi updateDrawingFull: " + e.message);
-    // Quăng lỗi ra để client (withFailureHandler) có thể bắt được và hiển thị Swal.fire
-    throw new Error(e.message); 
+const delOrderNo = (idList) => {
+  const sheet = getDrawingSheet();
+  if (!sheet) {
+    return;
   }
-}
 
-
-
-function sendToChargeQA(idList) {
-  const ss = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE");
-  const sheet = ss.getSheetByName("data");
   const lastRow = sheet.getLastRow();
-  const lastCol = sheet.getLastColumn();
+  const lastColumn = sheet.getLastColumn();
 
-  if (lastRow < 2) return;
-  let supID = [];
-  const range = sheet.getRange(2, 1, lastRow - 1, lastCol);
-  const data = range.getValues();
-  
-  // Ép kiểu idList về mảng string để so sánh chính xác
-  const targetIds = Array.isArray(idList) ? idList.map(String) : [String(idList)];
+  if (lastRow < 2) {
+    return;
+  }
 
-  // Duyệt dữ liệu thực tế ngay lúc này trên server
+  const targetIds = Array.isArray(idList) ? idList.map((item) => normalizeCellValue(item)) : [normalizeCellValue(idList)];
+  const data = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+  const rowNumbers = [];
+
   data.forEach((row, index) => {
-    const currentReqNo = String(row[8]); // Cột I
-    if (targetIds.indexOf(currentReqNo) !== -1 && row[33] !=="") {
-      // index + 2 vì data bắt đầu từ hàng 2
-      sheet.getRange(index + 2, 24).setValue("Dept đã chọn phương án");
-      supID.push(row[0]);
+    const currentRequestNumber = normalizeCellValue(row[drawingSheetConfig.requestNumberColumnIndex - 1]);
+    if (targetIds.includes(currentRequestNumber)) {
+      rowNumbers.push(index + 2);
     }
   });
-  return supID;
-}
+
+  clearRowsByGroups(sheet, rowNumbers, lastColumn);
+};
+
+const updateDrawingFull = (payload) => {
+  try {
+    if (!payload || !payload.id) {
+      return "Dữ liệu không hợp lệ";
+    }
+
+    const sheet = getDrawingSheet();
+    if (!sheet) {
+      throw new Error("Không tìm thấy Sheet 'data'");
+    }
+
+    const lastRow = sheet.getLastRow();
+    const lastColumn = sheet.getLastColumn();
+
+    if (lastRow < 2) {
+      return "Bảng dữ liệu trống";
+    }
+
+    const data = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+    const targetRowIndex = data.findIndex((row) => normalizeCellValue(row[0]) === normalizeCellValue(payload.id));
+
+    if (targetRowIndex === -1) {
+      throw new Error("Không tìm thấy ID bản vẽ để cập nhật!");
+    }
+
+    const updatedRow = [...data[targetRowIndex]];
+    updatedRow[1] = payload.type;
+    updatedRow[4] = payload.dwNo;
+    updatedRow[5] = payload.ver;
+    updatedRow[2] = payload.lineCus;
+    updatedRow[3] = payload.lineCode;
+    updatedRow[9] = payload.designNo;
+    updatedRow[7] = payload.shape;
+    updatedRow[11] = payload.deptLq;
+    updatedRow[17] = payload.link;
+    updatedRow[33] = payload.note;
+    updatedRow[39] = payload.changeType;
+
+    const rowNumber = targetRowIndex + 2;
+    sheet.getRange(rowNumber, 1, 1, lastColumn).setValues([updatedRow]);
+    return "Cập nhật thành công";
+  } catch (error) {
+    throw new Error(error.message || "Lỗi khi cập nhật dữ liệu bản vẽ");
+  }
+};
+
+const sendToChargeQA = (idList) => {
+  const sheet = getDrawingSheet();
+  if (!sheet) {
+    return [];
+  }
+
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+
+  if (lastRow < 2) {
+    return [];
+  }
+
+  const targetIds = Array.isArray(idList) ? idList.map((item) => normalizeCellValue(item)) : [normalizeCellValue(idList)];
+  const data = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+  const rowsToUpdate = [];
+  const approvedIds = [];
+
+  data.forEach((row, index) => {
+    const currentRequestNumber = normalizeCellValue(row[drawingSheetConfig.requestNumberColumnIndex - 1]);
+    const hasNote = normalizeCellValue(row[drawingSheetConfig.noteColumnIndex - 1]) !== "";
+
+    if (targetIds.includes(currentRequestNumber) && hasNote) {
+      rowsToUpdate.push(index + 2);
+      approvedIds.push(row[0]);
+    }
+  });
+
+  setStatusOnRowGroups(sheet, rowsToUpdate, drawingSheetConfig.departmentStatusColumnIndex, "Dept đã chọn phương án");
+  return approvedIds;
+};

@@ -22,766 +22,681 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 
 
+  <!-- ========== CONSOLIDATED CSS - SHELL & GLOBAL ========== -->
   <style>
-    /* =========================================================
-       CSS VARIABLES - BẢNG MÀU CHỦ ĐẠO SAAS
-       ========================================================= */
-
+    /* ==========================================================================
+       LIQUID GLASS DESIGN SYSTEM (iOS 27 Fluid Glassmorphism - Light Theme)
+       ========================================================================== */
     :root {
-      --primary-color: #7CB342;
-      --primary-hover: #689F38;
-      --primary-soft: #f0f7ea;
-      --primary-soft-hover: #e1f0d4;
-      --primary-gradient: linear-gradient(135deg, #99CC66, #7CB342);
-      --text-main: #1e293b;
-      --text-muted: #64748b;
-      --bg-body: #f4f7f9;
-      --sidebar-width: 240px;
-      --sidebar-mini-width: 68px;
+      /* Bảng màu chính: Emerald Glass kết hợp Slate & Pure Glass */
+      --liquid-primary: #10b981;
+      --liquid-primary-dark: #059669;
+      --liquid-primary-light: #34d399;
+      --liquid-primary-soft: rgba(16, 185, 129, 0.12);
+      --liquid-primary-glow: rgba(16, 185, 129, 0.28);
+      
+      --liquid-accent: #0ea5e9;
+      --liquid-accent-soft: rgba(14, 165, 233, 0.12);
+      
+      --liquid-text: #0f172a;
+      --liquid-text-soft: #334155;
+      --liquid-text-muted: #64748b;
+      --liquid-text-light: #94a3b8;
+      
+      /* Nền kính lỏng & Đổ bóng khúc xạ */
+      --liquid-bg: linear-gradient(135deg, #f0fdf4 0%, #e6f7ef 35%, #f4fbf7 70%, #ecfdf5 100%);
+      --liquid-glass-base: rgba(255, 255, 255, 0.72);
+      --liquid-glass-elevated: rgba(255, 255, 255, 0.88);
+      --liquid-glass-subtle: rgba(255, 255, 255, 0.48);
+      --liquid-glass-hover: rgba(255, 255, 255, 0.95);
+      
+      --liquid-border: 1px solid rgba(255, 255, 255, 0.92);
+      --liquid-border-soft: 1px solid rgba(16, 185, 129, 0.16);
+      --liquid-border-subtle: 1px solid rgba(203, 213, 225, 0.65);
+      
+      --liquid-shadow-sm: 0 4px 16px 0 rgba(16, 185, 129, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.03);
+      --liquid-shadow-md: 0 10px 30px -4px rgba(16, 185, 129, 0.08), 0 4px 12px 0 rgba(0, 0, 0, 0.04);
+      --liquid-shadow-lg: 0 20px 48px -6px rgba(16, 185, 129, 0.12), 0 8px 24px 0 rgba(0, 0, 0, 0.05);
+      --liquid-shadow-glow: 0 0 24px 0 rgba(16, 185, 129, 0.35);
+      
+      --liquid-blur: blur(24px) saturate(190%);
+      --liquid-blur-subtle: blur(14px) saturate(160%);
+      
+      /* Bo góc Squircle Apple */
+      --liquid-radius-xs: 8px;
+      --liquid-radius-sm: 12px;
+      --liquid-radius-md: 16px;
+      --liquid-radius-lg: 22px;
+      --liquid-radius-xl: 30px;
+      --liquid-radius-pill: 9999px;
+      
+      /* Apple Spring Physics Timing */
+      --liquid-spring: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      --liquid-spring-fast: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      --liquid-ease: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    /* GLOBAL BOOTSTRAP OVERRIDES TO MATCH SAAS GREEN THEME */
-    .text-primary {
-      color: var(--primary-color) !important;
-    }
-
-    .bg-primary {
-      background-color: #ffffff !important;
-    }
-
-    .bg-primary-soft {
-      background-color: var(--primary-soft) !important;
-    }
-
-    .border-primary {
-      border-color: var(--primary-color) !important;
-    }
-
-    .btn-primary {
-      background-color: #ffffff !important;
-      border-color: #cbd5e1 !important;
-      color: #1e293b !important;
-    }
-
-    .btn-primary:hover,
-    .btn-primary:focus,
-    .btn-primary:active {
-      background-color: #f8fafc !important;
-      border-color: #cbd5e1 !important;
-      color: #1e293b !important;
-    }
-
-    .btn-outline-primary {
-      color: var(--primary-color) !important;
-      border-color: var(--primary-color) !important;
-    }
-
-    .btn-outline-primary:hover,
-    .btn-outline-primary:focus,
-    .btn-outline-primary:active {
-      background-color: #ffffff !important;
-      border-color: var(--primary-color) !important;
-      color: var(--primary-color) !important;
-    }
-
-    .form-control:focus,
-    .form-select:focus {
-      border-color: var(--primary-color) !important;
-      box-shadow: 0 0 0 0.25rem rgba(124, 179, 66, 0.2) !important;
-    }
-
-    .nav-pills {
-      background: #f1f5f9;
-      padding: 4px;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-      display: inline-flex;
-      gap: 3px;
-    }
-
-    .nav-pills .nav-link {
-      color: #64748b;
-      font-weight: 600;
-      font-size: 0.82rem;
-      border-radius: 9px !important;
-      padding: 6px 16px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      border: none !important;
-      background: transparent;
-    }
-
-    .nav-pills .nav-link:hover {
-      color: #1e293b;
-      background: rgba(255, 255, 255, 0.6);
-    }
-
-    .nav-pills .nav-link.active {
-      background-color: #ffffff !important;
-      color: #558b2f !important;
-      font-weight: 700 !important;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.05) !important;
-    }
-
-    /* =========================================================
-       UNIFIED SAAS DESIGN SYSTEM CLASSES FOR ALL VIEWS
-       ========================================================= */
-
-    /* 1. Page Header Standard */
-    .app-page-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid #e2e8f0;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .app-header-left {
-      display: flex;
-      align-items: center;
-      gap: 0.625rem;
-    }
-
-    .app-header-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      color: var(--primary-color, #7CB342);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      flex-shrink: 0;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-    }
-
-    .app-page-title {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 0;
-      line-height: 1.3;
-    }
-
-    .app-page-subtitle {
-      font-size: 0.775rem;
-      color: #64748b;
-      margin: 0;
-    }
-
-    /* 2. Card Standard */
-    .app-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
-      padding: 16px;
-      transition: all 0.2s ease;
-    }
-
-    /* 3. Table Standard */
-    .app-table {
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    html, body {
+      min-height: 100vh;
       width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
+      background: var(--liquid-bg);
+      background-attachment: fixed;
+      color: var(--liquid-text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
     }
 
-    .app-table thead th {
-      background: #f8fafc;
-      color: #64748b;
-      font-weight: 700;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      padding: 10px 12px;
-      border-bottom: 2px solid #e2e8f0;
-      white-space: nowrap;
-    }
-
-    .app-table tbody td {
-      padding: 10px 12px;
-      vertical-align: middle;
-      border-bottom: 1px solid #f1f5f9;
-      color: #1e293b;
-      font-size: 0.82rem;
-      transition: background 0.15s ease;
-    }
-
-    .app-table tbody tr:hover td {
-      background: #f8fafc;
-    }
-
-    /* 4. Unified Button Styles */
-    .app-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 6px 14px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      border-radius: 8px;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      border: 1px solid transparent;
-      line-height: 1.4;
-    }
-
-    .app-btn-primary {
-      background: #ffffff;
-      border-color: #cbd5e1;
-      color: #1e293b;
-    }
-
-    .app-btn-primary:hover {
-      background: #f8fafc;
-      border-color: #94a3b8;
-      color: #0f172a;
-    }
-
-    .app-btn-outline {
-      background: #ffffff;
-      border-color: #e2e8f0;
-      color: #64748b;
-    }
-
-    .app-btn-outline:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
-      color: #1e293b;
-    }
-
-    .app-btn-success {
-      background: #ecfdf5;
-      border-color: #a7f3d0;
-      color: #047857;
-    }
-
-    .app-btn-success:hover {
-      background: #10b981;
-      color: #ffffff;
-      border-color: #10b981;
-    }
-
-    .app-btn-danger {
-      background: #fef2f2;
-      border-color: #fecaca;
-      color: #b91c1c;
-    }
-
-    .app-btn-danger:hover {
-      background: #ef4444;
-      color: #ffffff;
-      border-color: #ef4444;
-    }
-
-    /* 5. Unified Badges */
-    .app-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      border-radius: 8px;
-      line-height: 1.3;
-    }
-
-    .app-badge-success {
-      background: #ecfdf5;
-      color: #047857;
-      border: 1px solid #a7f3d0;
-    }
-
-    .app-badge-warning {
-      background: #fffbeb;
-      color: #b45309;
-      border: 1px solid #fde68a;
-    }
-
-    .app-badge-danger {
-      background: #fef2f2;
-      color: #b91c1c;
-      border: 1px solid #fecaca;
-    }
-
-    .app-badge-info {
-      background: #eff6ff;
-      color: #1d4ed8;
-      border: 1px solid #bfdbfe;
-    }
-
-    .app-badge-secondary {
-      background: #f1f5f9;
-      color: #475569;
-      border: 1px solid #e2e8f0;
-    }
-
-    /* 6. Unified Search Box */
-    .app-search-box {
-      display: flex;
-      align-items: center;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 10px;
-      padding: 2px 12px;
-      transition: all 0.2s ease;
-    }
-
-    .app-search-box:focus-within {
-      border-color: var(--primary-color, #7CB342);
-      box-shadow: 0 0 0 3px rgba(124, 179, 66, 0.15);
-    }
-
-    .app-search-box input {
-      border: none;
-      outline: none;
-      box-shadow: none;
-      background: transparent;
-      padding: 8px 6px;
-      font-size: 0.875rem;
-      color: #1e293b;
-      width: 100%;
-    }
-
-    .app-search-box i {
-      color: #94a3b8;
-      font-size: 0.875rem;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      background-color: var(--bg-body);
-      color: var(--text-main);
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden !important;
-    }
-
-    /* Tùy chỉnh thanh cuộn cho toàn bộ trang */
-    ::-webkit-scrollbar,
-    .custom-scrollbar::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    ::-webkit-scrollbar-track,
-    .custom-scrollbar::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb,
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 10px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover,
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-
-    /* =========================================================
-       SIDEBAR & MENU ITEMS
-       ========================================================= */
-    .sidebar {
-      width: var(--sidebar-width);
-      flex-shrink: 0;
-      /* QUAN TRỌNG: Giữ cho sidebar không bị bẹp dúm */
-      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 1040;
-      background: #ffffff;
-      border-right: 1px solid #e2e8f0 !important;
-    }
-
-    .brand-icon {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      width: 36px;
-      height: 36px;
+    /* Ambient Liquid Lights */
+    body::before, body::after {
+      content: "";
+      position: fixed;
       border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(80px);
+      opacity: 0.6;
+      animation: liquidFloat 16s ease-in-out infinite alternate;
+    }
+    body::before {
+      width: 500px;
+      height: 500px;
+      top: -100px;
+      left: -100px;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.25) 0%, rgba(16, 185, 129, 0.05) 70%, transparent 100%);
+    }
+    body::after {
+      width: 600px;
+      height: 600px;
+      bottom: -120px;
+      right: -120px;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.2) 0%, rgba(56, 189, 248, 0.04) 70%, transparent 100%);
+      animation-delay: -8s;
+    }
+    @keyframes liquidFloat {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, 30px) scale(1.08); }
+      100% { transform: translate(-30px, 50px) scale(0.95); }
     }
 
-    /* Nút Menu Chính */
-    .index-nav-item {
-      display: flex !important;
-      align-items: center;
-      color: var(--text-muted);
-      border-radius: 10px !important;
-      padding: 8px 0 !important;
-      transition: all 0.2s ease;
-      margin-bottom: 2px;
-      white-space: nowrap;
-      overflow: hidden;
+    /* Scrollbar phong cách iOS Glass */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(16, 185, 129, 0.2);
+      border-radius: 9999px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+      backdrop-filter: var(--liquid-blur-subtle);
+      transition: var(--liquid-ease);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(16, 185, 129, 0.45);
+      background-clip: padding-box;
     }
 
-    .index-nav-item i {
-      min-width: 44px;
-      text-align: center;
-      font-size: 1.05rem;
-      transition: color 0.2s;
-    }
-
-    .index-nav-item:hover {
-      background-color: #f8fafc;
-      color: var(--text-main);
-    }
-
-    /* Hiệu ứng Nút Đang Chọn (Active) */
-    .index-nav-item.active {
-      background-color: var(--primary-soft) !important;
-      color: var(--primary-color) !important;
-      font-weight: 600 !important;
-    }
-
-    .index-nav-item.active i {
-      color: var(--primary-color);
-    }
-
-    /* Hiệu ứng xoay mũi tên khi mở Sub-menu */
-    .index-nav-item[data-bs-toggle="collapse"] .fa-chevron-down {
-      transition: transform 0.3s ease;
-    }
-
-    .index-nav-item[data-bs-toggle="collapse"]:not(.collapsed) .fa-chevron-down {
-      transform: rotate(180deg);
-    }
-
-    /* Menu Con (Sub-menu) */
-    .sub-nav-item {
-      color: var(--text-muted);
-      border-radius: 6px !important;
-      transition: all 0.2s;
-      padding: 7px 10px !important;
-      font-size: 0.82rem;
-      white-space: nowrap;
-    }
-
-    .sub-nav-item:hover {
-      background-color: #f1f5f9;
-      color: var(--text-main);
-      transform: translateX(4px);
-    }
-
-    .sub-nav-item.active-sub {
-      background-color: var(--primary-soft) !important;
-      color: var(--primary-color) !important;
-      font-weight: 600;
-    }
-
-    /* =========================================================
-       HIỆU ỨNG MINI SIDEBAR THÔNG MINH
-       ========================================================= */
-    @media (min-width: 769px) {
-
-      /* Mặc định thu nhỏ Sidebar */
-      .sidebar {
-        width: var(--sidebar-mini-width) !important;
-        overflow-x: hidden;
-      }
-
-      /* Khi trỏ chuột vào thì phình to ra */
-      .sidebar:hover {
-        width: var(--sidebar-width) !important;
-        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.03) !important;
-      }
-
-      /* Giấu phần chữ đi khi thu nhỏ */
-      .sidebar .nav-text,
-      .sidebar .brand-text {
-        opacity: 0;
-        visibility: hidden;
-        transition: opacity 0.2s ease;
-      }
-
-      /* Hiện phần chữ ra khi phình to */
-      .sidebar:hover .nav-text,
-      .sidebar:hover .brand-text {
-        opacity: 1;
-        visibility: visible;
-        transition-delay: 0.1s;
-      }
-
-      /* Ẩn Submenu và mũi tên khi Sidebar thu nhỏ */
-      .sidebar:not(:hover) .collapse {
-        display: none !important;
-      }
-
-      .sidebar:not(:hover) .fa-chevron-down {
-        display: none;
-      }
-    }
-
-    @media (max-width: 768px) {
-      .sidebar {
-        position: fixed;
-        transform: translateX(-100%);
-        height: 100vh;
-      }
-
-      .sidebar.open {
-        transform: translateX(0);
-        box-shadow: 10px 0 30px rgba(0, 0, 0, 0.1);
-      }
-    }
-
-    /* =========================================================
-       TOPBAR TÙY CHỈNH
-       ========================================================= */
-    .topbar {
-      height: 60px;
-      flex-shrink: 0;
-      background: rgba(255, 255, 255, 0.95) !important;
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid #e2e8f0 !important;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-      position: relative;
-      z-index: 1050 !important;
-    }
-
-    .topbar .dropdown-menu {
-      z-index: 1060 !important;
-    }
-
-    .btn-icon {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: #f8fafc;
-      color: var(--text-muted);
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    /* ==========================================================================
+       HỆ THỐNG LIQUID TOOLTIP (iOS Floating Bubbles)
+       ========================================================================== */
+    [data-tooltip] {
       position: relative;
     }
-
-    .btn-icon:hover {
-      background: #e2e8f0;
-      color: var(--primary-color);
-    }
-
-    .notify-dot {
+    [data-tooltip]::before {
+      content: attr(data-tooltip);
       position: absolute;
-      top: 6px;
-      right: 8px;
-      width: 8px;
-      height: 8px;
-      background: #ef4444;
-      border-radius: 50%;
-      border: 2px solid #fff;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px) scale(0.92);
+      padding: 6px 12px;
+      border-radius: var(--liquid-radius-sm);
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: var(--liquid-blur);
+      -webkit-backdrop-filter: var(--liquid-blur);
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.2s;
+      z-index: 99999;
+    }
+    [data-tooltip]::after {
+      content: "";
+      position: absolute;
+      bottom: calc(100% + 3px);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      border-width: 5px 5px 0 5px;
+      border-style: solid;
+      border-color: rgba(15, 23, 42, 0.88) transparent transparent transparent;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), visibility 0.2s;
+      z-index: 99999;
+    }
+    [data-tooltip]:hover::before {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0) scale(1);
+    }
+    [data-tooltip]:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+    /* Vị trí tooltip bottom */
+    [data-tooltip-pos="bottom"]::before {
+      bottom: auto;
+      top: calc(100% + 8px);
+      transform: translateX(-50%) translateY(-4px) scale(0.92);
+    }
+    [data-tooltip-pos="bottom"]::after {
+      bottom: auto;
+      top: calc(100% + 3px);
+      border-width: 0 5px 5px 5px;
+      border-color: transparent transparent rgba(15, 23, 42, 0.88) transparent;
+      transform: translateX(-50%) translateY(-4px);
+    }
+    [data-tooltip-pos="bottom"]:hover::before,
+    [data-tooltip-pos="bottom"]:hover::after {
+      transform: translateX(-50%) translateY(0) scale(1);
     }
 
-    /* Profile Avatar */
-    .user-avatar {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
-      background: var(--primary-soft);
-      color: var(--primary-color);
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(124, 179, 66, 0.2);
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .user-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* =========================================================
-       LOCK SCREEN & DISABLE SCROLLBARS
-       ========================================================= */
-    html,
-    body {
-      height: 100vh !important;
-      max-height: 100vh !important;
-      overflow: hidden !important;
-    }
-
-    /* Hide scrollbars visually everywhere */
-    ::-webkit-scrollbar,
-    .custom-scrollbar::-webkit-scrollbar {
-      display: none !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
-    * {
-      scrollbar-width: none !important;
-      -ms-overflow-style: none !important;
-    }
-
-    .index-page-view {
-      display: none;
-      width: 100%;
-      height: 100%;
-      margin: 0 !important;
-      padding: 0 !important;
-      animation: fadeInUp 0.3s ease-out;
-    }
-
-    .index-page-view.active {
-      display: block !important;
-      width: 100% !important;
-      height: 100% !important;
-      margin-top: 0 !important;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(15px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* =========================================================
-       INITIAL APP LOADER (SPLASH SCREEN)
-       ========================================================= */
+    /* ==========================================================================
+       INITIAL LOADER (Liquid Ring iOS)
+       ========================================================================== */
     #initialAppLoader {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: radial-gradient(circle at 50% 30%, #ffffff 0%, #f0f4f8 100%);
-      z-index: 9999;
+      inset: 0;
+      z-index: 99999;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s;
+      background: radial-gradient(circle at center, rgba(255, 255, 255, 0.94) 0%, rgba(240, 253, 244, 0.96) 100%);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
     }
-
     .loader-card {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      border-radius: 24px;
-      padding: 40px 48px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(124, 179, 66, 0.08);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      width: 420px;
-      max-width: 90vw;
+      width: min(440px, 90vw);
+      padding: 38px 30px 30px;
+      border-radius: var(--liquid-radius-xl);
+      background: var(--liquid-glass-elevated);
+      backdrop-filter: var(--liquid-blur);
+      -webkit-backdrop-filter: var(--liquid-blur);
+      border: var(--liquid-border);
+      box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow);
       text-align: center;
-      animation: splashPop 0.5s ease-out;
+      animation: liquidPulseIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-
-    @keyframes splashPop {
-      0% {
-        opacity: 0;
-        transform: scale(0.92);
-      }
-
-      100% {
-        opacity: 1;
-        transform: scale(1);
-      }
+    @keyframes liquidPulseIn {
+      from { opacity: 0; transform: scale(0.92) translateY(20px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
-
     .loader-logo-ring {
-      width: 84px;
-      height: 84px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: 2px solid rgba(243, 111, 33, 0.3);
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 20px;
-      position: relative;
-      box-shadow: 0 8px 24px rgba(243, 111, 33, 0.18);
-      overflow: visible;
-    }
-
-    .loader-logo-ring::after {
-      content: '';
-      position: absolute;
-      inset: -6px;
       border-radius: 50%;
-      border: 2px dashed rgba(243, 111, 33, 0.4);
-      animation: spinRing 12s linear infinite;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(209, 250, 229, 0.8));
+      border: 2px solid rgba(16, 185, 129, 0.35);
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.2), inset 0 0 15px rgba(255, 255, 255, 0.9);
+      position: relative;
     }
-
-    @keyframes spinRing {
-      0% {
-        transform: rotate(0deg);
-      }
-
-      100% {
-        transform: rotate(360deg);
-      }
-    }
-
     .loader-progress-track {
       width: 100%;
       height: 8px;
-      background: #e2e8f0;
-      border-radius: 10px;
+      margin: 22px 0 14px;
       overflow: hidden;
-      margin: 20px 0 12px 0;
-      position: relative;
+      border-radius: var(--liquid-radius-pill);
+      background: rgba(16, 185, 129, 0.12);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
     }
-
     .loader-progress-bar {
+      width: 25%;
       height: 100%;
-      width: 5%;
-      background: linear-gradient(90deg, #99CC66, #7CB342);
-      border-radius: 10px;
-      transition: width 0.35s ease;
-      box-shadow: 0 0 10px rgba(124, 179, 66, 0.5);
+      border-radius: inherit;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 50%, #059669 100%);
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.6);
+      transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-
     .loader-steps {
       display: flex;
-      justify-content: space-between;
-      width: 100%;
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid #f1f5f9;
-      font-size: 0.72rem;
-      color: #94a3b8;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(16, 185, 129, 0.12);
+      font-size: 0.75rem;
+      color: var(--liquid-text-muted);
       font-weight: 600;
     }
-
     .loader-step-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--liquid-radius-pill);
+      background: rgba(255, 255, 255, 0.65);
+      border: 1px solid rgba(16, 185, 129, 0.15);
+      transition: var(--liquid-spring);
+    }
+    .loader-step-item.active {
+      color: var(--liquid-primary-dark);
+      background: rgba(209, 250, 229, 0.85);
+      border-color: var(--liquid-primary);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.18);
+    }
+    #mainLoadingOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1060;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: var(--liquid-blur-subtle);
+      -webkit-backdrop-filter: var(--liquid-blur-subtle);
+    }
+    #mainLoadingOverlay.show { display: flex; }
+
+    /* ==========================================================================
+       SIDEBAR (Liquid Glass Nav Bar iOS)
+       ========================================================================== */
+    .sidebar {
+      width: 250px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(240, 253, 244, 0.75) 100%);
+      backdrop-filter: var(--liquid-blur);
+      -webkit-backdrop-filter: var(--liquid-blur);
+      border-right: var(--liquid-border);
+      box-shadow: 10px 0 35px rgba(16, 185, 129, 0.05);
+      z-index: 100;
+      transition: var(--liquid-spring);
+      position: relative;
+    }
+    .sidebar .brand-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(209, 250, 229, 0.9));
+      border: var(--liquid-border);
+      box-shadow: var(--liquid-shadow-sm);
+      transition: var(--liquid-spring);
       display: flex;
       align-items: center;
-      gap: 4px;
-      transition: color 0.3s ease;
+      justify-content: center;
     }
-
-    .loader-step-item.active {
-      color: var(--primary-color, #7CB342);
+    .sidebar .brand-icon:hover {
+      transform: scale(1.06) rotate(-3deg);
+      box-shadow: var(--liquid-shadow-md);
+    }
+    .sidebar nav {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      padding: 14px 12px;
+      overflow-y: auto;
+    }
+    .index-nav-item {
+      display: flex !important;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      min-height: 46px;
+      padding: 11px 14px;
+      border-radius: var(--liquid-radius-md);
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--liquid-text-soft);
+      font-weight: 600;
+      font-size: 0.88rem;
+      text-align: left;
+      cursor: pointer;
+      position: relative;
+      transition: var(--liquid-spring);
+      backdrop-filter: var(--liquid-blur-subtle);
+      -webkit-backdrop-filter: var(--liquid-blur-subtle);
+    }
+    .index-nav-item i {
+      width: 22px;
+      min-width: 22px;
+      height: 30px;
+      font-size: 1.1rem;
+      text-align: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--liquid-text-muted);
+      transition: var(--liquid-spring);
+    }
+    .index-nav-item:hover {
+      color: var(--liquid-primary-dark);
+      background: rgba(255, 255, 255, 0.75);
+      border: var(--liquid-border);
+      box-shadow: var(--liquid-shadow-sm);
+      transform: none;
+    }
+    .index-nav-item:hover i {
+      color: var(--liquid-primary);
+      transform: scale(1.15);
+    }
+    .index-nav-item.active {
+      color: var(--liquid-primary-dark);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(209, 250, 229, 0.9) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.9);
       font-weight: 700;
     }
+    .index-nav-item.active i {
+      color: var(--liquid-primary);
+    }
+    .index-nav-item.active::after {
+      content: "";
+      position: absolute;
+      right: 12px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--liquid-primary);
+      box-shadow: 0 0 10px var(--liquid-primary);
+    }
+    .nav-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .loader-step-item.done {
-      color: #10b981;
+    /* Trạng thái thu gọn menu desktop và mở menu trên màn hình nhỏ. */
+    .sidebar-compact .sidebar {
+      width: 76px;
+    }
+    .sidebar-compact .sidebar .brand-text,
+    .sidebar-compact .sidebar .nav-text {
+      width: 0;
+      max-width: 0;
+      margin-left: 0 !important;
+      opacity: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .sidebar-compact .sidebar > div:first-child {
+      justify-content: center;
+      padding-left: 0 !important;
+    }
+    .sidebar-compact .sidebar nav {
+      padding-left: 10px !important;
+      padding-right: 10px !important;
+    }
+    .sidebar-compact .index-nav-item {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+      height: 46px;
+      min-width: 56px;
+    }
+    .sidebar-compact .index-nav-item i {
+      margin: 0;
+    }
+    .sidebar-compact .index-nav-item.active::after {
+      right: 5px;
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: 250px;
+        transform: translateX(-105%);
+        transition: transform 0.25s ease;
+        z-index: 1100;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-compact .sidebar {
+        width: 250px;
+      }
+      .d-flex.vh-100.w-100::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 1090;
+        background: rgba(15, 23, 42, 0.28);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+      }
+      .d-flex.vh-100.w-100:has(.sidebar.open)::before {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    /* ==========================================================================
+       TOPBAR (Liquid Header iOS)
+       ========================================================================== */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      min-height: 66px;
+      padding: 0 28px;
+      background: var(--liquid-glass-base);
+      backdrop-filter: var(--liquid-blur);
+      -webkit-backdrop-filter: var(--liquid-blur);
+      border-bottom: var(--liquid-border);
+      box-shadow: var(--liquid-shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: var(--liquid-ease);
+    }
+    .topbar h6 {
+      color: var(--liquid-text);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+    .topbar small {
+      color: var(--liquid-text-muted);
+      font-weight: 500;
+      display: block;
+      font-size: 0.75rem;
+    }
+    .btn-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--liquid-radius-sm);
+      border: var(--liquid-border);
+      background: var(--liquid-glass-elevated);
+      backdrop-filter: var(--liquid-blur-subtle);
+      -webkit-backdrop-filter: var(--liquid-blur-subtle);
+      color: var(--liquid-text-soft);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--liquid-shadow-sm);
+      cursor: pointer;
+      position: relative;
+      transition: var(--liquid-spring);
+    }
+    .btn-icon:hover {
+      transform: translateY(-2px) scale(1.06);
+      background: #ffffff;
+      color: var(--liquid-primary);
+      box-shadow: var(--liquid-shadow-md);
+    }
+    .btn-icon:active {
+      transform: scale(0.92);
+    }
+    .notify-dot {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 8px;
+      height: 8px;
+      background: #ef4444;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(209, 250, 229, 0.95), rgba(16, 185, 129, 0.2));
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--liquid-primary-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      box-shadow: var(--liquid-shadow-sm);
+      transition: var(--liquid-spring);
+      cursor: pointer;
+    }
+    .user-avatar:hover {
+      transform: scale(1.05);
+      box-shadow: var(--liquid-shadow-md);
+    }
+
+    /* ==========================================================================
+       GLOBAL SCROLLBAR & SCROLL BEHAVIOR
+       ========================================================================== */
+    * {
+      scrollbar-width: thin !important;
+      scrollbar-color: rgba(16, 185, 129, 0.4) transparent !important;
+    }
+    ::-webkit-scrollbar {
+      width: 6px !important;
+      height: 6px !important;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(16, 185, 129, 0.35) !important;
+      border-radius: 999px !important;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(16, 185, 129, 0.7) !important;
+    }
+    .custom-scroll, .custom-scrollbar, .table-responsive {
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* ==========================================================================
+       MAIN CONTENT CONTAINER & CARDS (Liquid Panels)
+       ========================================================================== */
+    .index-main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      overflow-y: auto !important;
+      height: calc(100vh - 66px);
+      padding: 10px !important;
+    }
+    .index-page-view {
+      display: none;
+      width: 100%;
+      min-height: 100%;
+      height: auto;
+      overflow-y: visible;
+      animation: liquidFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    .index-page-view.active {
+      display: block;
+    }
+    @keyframes liquidFadeIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.995); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ==========================================================================
+       MODAL & BACKDROP FULL WEB SCREEN (Toàn bộ màn hình trình duyệt)
+       ========================================================================== */
+    .modal {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 99999 !important;
+      overflow-x: hidden !important;
+      overflow-y: auto !important;
+      padding: 12px !important;
+    }
+    .modal-backdrop {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 99990 !important;
+      background-color: rgba(15, 23, 42, 0.45) !important;
+      backdrop-filter: blur(12px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+    }
+    .modal-dialog {
+      max-width: min(94vw, 1160px) !important;
+      margin: 1.5rem auto !important;
+      z-index: 99999 !important;
+      position: relative !important;
+    }
+    .modal-dialog.modal-xl, 
+    .modal-dialog.modal-lg {
+      max-width: min(96vw, 1380px) !important;
+      width: 96vw !important;
+    }
+    .modal-dialog.modal-sm {
+      max-width: min(90vw, 420px) !important;
+    }
+    .modal-content {
+      max-height: 92vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      border: var(--liquid-border) !important;
+      border-radius: var(--liquid-radius-xl) !important;
+      background: rgba(255, 255, 255, 0.96) !important;
+      backdrop-filter: blur(28px) saturate(190%) !important;
+      -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.95) inset !important;
+    }
+    .modal-header {
+      padding: 14px 22px !important;
+      border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+    }
+    .modal-body {
+      padding: 20px 24px !important;
+      overflow-y: auto !important;
+      max-height: calc(92vh - 130px) !important;
+    }
+    .modal-footer {
+      padding: 12px 24px !important;
+      border-top: 1px solid rgba(16, 185, 129, 0.15) !important;
     }
   </style>
 
@@ -797,7 +712,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<body class="overflow-hidden">
+<body class="overflow-x-hidden">
 
   <!-- MÀN HÌNH LOADING DỮ LIỆU BAN ĐẦU (INITIAL SPLASH LOADER) -->
   <div id="initialAppLoader">
@@ -847,7 +762,7 @@
     <!-- OVERLAY LOADING SAAS STYLE (Dùng cho thao tác trong app) -->
     <div id="mainLoadingOverlay"
       class="position-fixed w-100 h-100 top-0 start-0 flex-column align-items-center justify-content-center bg-white bg-opacity-75 d-none"
-      style="z-index: 1060; backdrop-filter: blur(4px);">
+      style="z-index: 1060;">
       <div class="spinner-border text-success mb-3" role="status"
         style="width: 3.5rem; height: 3.5rem; border-width: 4px;">
         <span class="visually-hidden">Loading...</span>
@@ -931,6 +846,9 @@
           <button class="btn btn-icon d-md-none border-0 me-2" onclick="toggleMainSidebar()" id="menuBtn">
             <i class="fa fa-bars"></i>
           </button>
+          <button class="btn btn-icon d-none d-md-flex me-2" onclick="toggleDesktopSidebar()" id="desktopSidebarToggle" aria-label="Thu gọn hoặc mở rộng menu" title="Thu gọn / Mở rộng menu">
+            <i class="fa fa-bars-staggered"></i>
+          </button>
           <div class="d-flex flex-column lh-sm">
             <h6 class="mb-0 fw-bold d-none d-md-block text-dark" id="topbarPageTitle" style="font-size: 14px;">Tổng Quan
               Hệ Thống</h6>
@@ -982,8 +900,7 @@
       </header>
 
       <!-- VIEWS CONTAINER -->
-      <div class="container-fluid p-0 flex-grow-1 overflow-hidden index-main-wrapper"
-        style="height: calc(100vh - 60px); max-height: calc(100vh - 60px);">
+      <div class="container-fluid p-0 flex-grow-1 overflow-hidden index-main-wrapper">
 
         <div id="index-page-dashboard" class="index-page-view active">
           <?!= include('dashboard') ?>
@@ -992,20 +909,23 @@
         <div id="index-page-dwInformation" class="index-page-view">
           <?!= include('dwInformation') ?>
         </div>
+
         <div id="index-page-seachDwByAi" class="index-page-view">
           <?!= include('seachDwByAi') ?>
         </div>
 
-        <div id="index-page-dwDesign" class="index-page-view ">
+        <div id="index-page-dwDesign" class="index-page-view">
           <?!= include('dwDesign') ?>
         </div>
 
         <div id="index-page-submitDrawingsForApproval" class="index-page-view">
           <?!= include('submitDrawingsForApproval') ?>
         </div>
+
         <div id="index-page-release" class="index-page-view">
           <?!= include('dwRelease') ?>
         </div>
+
 
 
       </div>
@@ -1017,16 +937,53 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
+    // Tự động chuyển tất cả modal ra document.body để thoát khỏi stacking context và hiển thị Full Web
+    function hoistModalsToBody() {
+      document.querySelectorAll('.modal').forEach(function (modalEl) {
+        if (modalEl.parentElement && modalEl.parentElement !== document.body) {
+          document.body.appendChild(modalEl);
+        }
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', hoistModalsToBody);
+    } else {
+      hoistModalsToBody();
+    }
+    setTimeout(hoistModalsToBody, 300);
+    setTimeout(hoistModalsToBody, 1200);
+
     let loadingRequests = 0;
     let failsafeTimer = null;
+    let activePageName = 'dashboard';
+    window.appTabRenderVersion = { mainData: 1, releaseData: 1 };
+    window.appTabLastRendered = {};
+    window.appTabRenderQueue = {};
 
+    function schedulePageRender(pageName, renderTask, renderKey) {
+      if (!pageName || typeof renderTask !== 'function') return;
+
+      var queueKey = renderKey || pageName;
+      if (window.appTabRenderQueue[queueKey]) return;
+
+      window.appTabRenderQueue[queueKey] = true;
+      requestAnimationFrame(function () {
+        try {
+          renderTask();
+        } finally {
+          delete window.appTabRenderQueue[queueKey];
+        }
+      });
+    }
     // ============================================================
     // APP DATA STORE — Trung tâm quản lý cache dữ liệu client-side
     // ============================================================
     window.AppDataStore = (function () {
       var _cache = {};
       var _listeners = {};
-      var TTL = 5 * 60 * 1000; // 5 phút
+      var _lastRequestedAt = {};
+      var _inFlight = {};
+      var TTL = 5 * 60 * 1000;
 
       var _serverFnMap = {
         mainData: 'getMainData',
@@ -1036,35 +993,53 @@
       function _notify(key) {
         var entry = _cache[key];
         if (!entry || !entry.data) return;
+        if (key === 'mainData') window.appTabRenderVersion.mainData++;
+        if (key === 'releaseData') window.appTabRenderVersion.releaseData++;
         (_listeners[key] || []).forEach(function (fn) { try { fn(entry.data); } catch (e) { } });
       }
 
       function _fetch(key) {
-        if (!_cache[key]) _cache[key] = { data: null, fetchedAt: 0, loading: false };
+        if (_inFlight[key]) return;
+        if (!_cache[key]) _cache[key] = { data: [], fetchedAt: 0, loading: false };
         if (_cache[key].loading) return;
+
+        var now = Date.now();
+        var lastRequestedAt = _lastRequestedAt[key] || 0;
+        if (now - lastRequestedAt < 1500) {
+          return;
+        }
+
+        _lastRequestedAt[key] = now;
+        _inFlight[key] = true;
         _cache[key].loading = true;
+
         var fnName = _serverFnMap[key];
-        if (!fnName) { _cache[key].loading = false; return; }
+        if (!fnName) {
+          _cache[key].loading = false;
+          _inFlight[key] = false;
+          return;
+        }
+
         google.script.run
           .withSuccessHandler(function (data) {
-            _cache[key] = { data: data, fetchedAt: Date.now(), loading: false };
-            // Đồng bộ pageData & tạo Index tra cứu tức thì O(1)
+            var normalizedData = Array.isArray(data) ? data : (data ? [data] : []);
+            _cache[key] = { data: normalizedData, fetchedAt: Date.now(), loading: false };
+            _inFlight[key] = false;
             if (key === 'mainData') {
-              window.pageData = data;
-              updatePageDataIndex(data);
+              window.pageData = normalizedData;
+              updatePageDataIndex(normalizedData);
             }
             _notify(key);
           })
-          .withFailureHandler(function (err) {
+          .withFailureHandler(function () {
             _cache[key].loading = false;
-            console.error('[AppDataStore] Fetch lỗi key=' + key, err);
+            _inFlight[key] = false;
+            _lastRequestedAt[key] = 0;
           })
-        [fnName]();
+          [fnName]();
       }
 
       return {
-        // Đăng ký callback khi data của key sẵn sàng.
-        // Nếu data đã có trong cache, gọi ngay lập tức.
         onReady: function (key, cb) {
           if (!_listeners[key]) _listeners[key] = [];
           _listeners[key].push(cb);
@@ -1074,29 +1049,27 @@
           }
         },
 
-        // Lấy data hiện tại (null nếu chưa có)
         get: function (key) {
           var e = _cache[key];
           return e ? e.data : null;
         },
 
-        // Đánh dấu stale + notify ngay từ cache cũ (nếu có) + fetch mới ngầm
         invalidate: function (key) {
-          var hadData = _cache[key] && _cache[key].data;
-          if (_cache[key]) {
-            _cache[key].fetchedAt = 0;
-            _cache[key].loading = false; // Reset để _fetch không bị skip
-          }
-          // Notify ngay từ cache cũ để UI không bị trắng
-          if (hadData) _notify(key);
-          // Fetch mới ngầm từ server
+          var entry = _cache[key] || { data: [], fetchedAt: 0, loading: false };
+          entry.fetchedAt = 0;
+          entry.loading = false;
+          _inFlight[key] = false;
+          _lastRequestedAt[key] = 0;
+          _cache[key] = entry;
           _fetch(key);
         },
 
-        // Khởi động: fetch cả 2 nguồn song song
         init: function () {
           _fetch('mainData');
-          _fetch('releaseData');
+        },
+
+        ensure: function (key) {
+          _fetch(key);
         }
       };
     })();
@@ -1126,12 +1099,15 @@
 
     function updatePageDataIndex(data) {
       var set = new Set();
+      var searchableColumns = [4, 8, 9, 10, 11, 12];
       if (Array.isArray(data)) {
         for (var i = 0; i < data.length; i++) {
           var row = data[i];
           if (!Array.isArray(row)) continue;
-          for (var c = 0; c < row.length; c++) {
-            var raw = safeStringVal(row[c]);
+          for (var c = 0; c < searchableColumns.length; c++) {
+            var columnIndex = searchableColumns[c];
+            if (columnIndex >= row.length) continue;
+            var raw = safeStringVal(row[columnIndex]);
             if (!raw) continue;
             var val = raw.trim().toUpperCase().replace(/\s+/g, "");
             if (val && val !== 'UNDEFINED' && val !== 'NULL') {
@@ -1190,28 +1166,70 @@
       }
     }
 
+    function clearStaleScreenOverlays() {
+      var overlaySelectors = [
+        '#mainLoadingOverlay',
+        '#dept-detail-modal-overlay'
+      ];
+
+      overlaySelectors.forEach(function (selector) {
+        var items = document.querySelectorAll(selector);
+        items.forEach(function (item) {
+          if (!item) return;
+          item.style.display = 'none';
+          item.style.visibility = 'hidden';
+          item.style.opacity = '0';
+          item.setAttribute('aria-hidden', 'true');
+          item.classList.remove('show', 'fade');
+          item.classList.remove('active');
+        });
+      });
+    }
+
     function hideInitialAppLoader() {
       var loader = document.getElementById('initialAppLoader');
       if (loader) {
         loader.style.opacity = '0';
         loader.style.visibility = 'hidden';
-        setTimeout(function () {
-          loader.style.display = 'none';
-        }, 500);
+        loader.style.display = 'none';
       }
     }
 
     function showFirstLoading(text) {
+      var loader = document.getElementById('initialAppLoader');
+      if (loader) {
+        loader.style.display = 'flex';
+        loader.style.visibility = 'visible';
+        loader.style.opacity = '1';
+      }
+
       updateInitialProgress(20, text || "LIXIL BEHAVIORS");
       clearTimeout(failsafeTimer);
       failsafeTimer = setTimeout(function () {
         updateInitialProgress(100, "Hoàn tất!", "stepReleaseData");
-        forceHideLoading();
+        hideInitialAppLoader();
       }, 12000);
+    }
+
+    function isInitialLoaderVisible() {
+      var loader = document.getElementById('initialAppLoader');
+      if (!loader) return false;
+      return loader.style.display !== 'none' && loader.style.visibility !== 'hidden' && loader.style.opacity !== '0';
     }
 
     function showLoading(text) {
       loadingRequests++;
+
+      if (isInitialLoaderVisible()) {
+        updateInitialProgress(80, text || 'Đang xử lý dữ liệu...', 'stepMainData');
+        clearTimeout(failsafeTimer);
+        failsafeTimer = setTimeout(function () {
+          updateInitialProgress(100, 'Hoàn tất!', 'stepReleaseData');
+          hideInitialAppLoader();
+        }, 12000);
+        return;
+      }
+
       var el = document.getElementById('mainLoadingText');
       if (el && text) el.textContent = text;
 
@@ -1237,6 +1255,9 @@
       if (overlay) {
         overlay.classList.remove('d-flex');
         overlay.classList.add('d-none');
+        overlay.style.display = 'none';
+        overlay.style.visibility = 'hidden';
+        overlay.style.opacity = '0';
       }
     }
 
@@ -1246,23 +1267,40 @@
       if (sidebar) sidebar.classList.toggle('open');
     }
 
+    function toggleDesktopSidebar() {
+      if (window.innerWidth <= 992) return toggleMainSidebar();
+      var shell = document.querySelector('.d-flex.vh-100.w-100');
+      if (!shell) return;
+      shell.classList.toggle('sidebar-compact');
+      var isCompact = shell.classList.contains('sidebar-compact');
+      localStorage.setItem('sidebar_compact', isCompact ? '1' : '0');
+      var toggle = document.getElementById('desktopSidebarToggle');
+      if (toggle) {
+        toggle.setAttribute('aria-pressed', isCompact ? 'true' : 'false');
+        toggle.title = isCompact ? 'Mở rộng menu' : 'Thu gọn menu';
+      }
+    }
+
     // Chuyển Trang (Views)
     function switchTab(pageName, element) {
+      if (pageName === activePageName) return;
+
       forceHideLoading();
+      clearStaleScreenOverlays();
+      activePageName = pageName;
 
       const activeEditModals = document.querySelectorAll('[id^="edit-wrapper-"]');
       activeEditModals.forEach(m => m.remove());
 
       var pages = document.querySelectorAll('.index-page-view');
-      pages.forEach(p => p.classList.remove('active'));
+      pages.forEach(function (p) {
+        p.classList.toggle('active', p.id === 'index-page-' + pageName);
+      });
 
-      var targetPage = document.getElementById('index-page-' + pageName);
-      if (targetPage) targetPage.classList.add('active');
-
-      // Đặt Active Menu Cha
-      var items = document.querySelectorAll('.index-nav-item');
-      items.forEach(i => i.classList.remove('active'));
-      if (element) element.classList.add('active');
+      var navButtons = document.querySelectorAll('.index-nav-item');
+      navButtons.forEach(function (button) {
+        button.classList.toggle('active', button.id === 'nav-btn-' + pageName);
+      });
 
       // Cập nhật Tiêu đề và Phụ đề Topbar động theo trang được chọn
       const pageTitleMap = {
@@ -1313,20 +1351,51 @@
         }
       }
 
-      // Tự động cập nhật dữ liệu của trang tương ứng khi người dùng chuyển Tab
-      // Chuyển trang: render từ cache ngay nếu có, gọi hàm init từng trang
-      if (pageName === 'dashboard' && typeof updateDashboardStats === 'function') {
-        if (window.pageData && window.pageData.length > 0) {
-          updateDashboardStats();
+      // Giảm giật bằng cách đẩy render chính của từng page xuống một lần duy nhất trong frame kế tiếp.
+      schedulePageRender(pageName, function () {
+        var mVer = window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0;
+        var rVer = window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0;
+
+        if (pageName === 'dashboard' && typeof updateDashboardStats === 'function') {
+          if (window.pageData && window.pageData.length > 0 && window.appTabLastRendered.dashboard !== mVer) {
+            updateDashboardStats();
+            window.appTabLastRendered.dashboard = mVer;
+          }
         }
-      }
-      if (pageName === 'submitDrawingsForApproval' && typeof initSubmitApproval === 'function') initSubmitApproval();
-      if (pageName === 'dwDesign' && typeof initThietKeBanVe === 'function') initThietKeBanVe();
-      if (pageName === 'release' && typeof history_loadData === 'function') history_loadData();
-      if (pageName === 'dwInformation' && typeof initThongTinBanVe === 'function') initThongTinBanVe();
+        if (pageName === 'submitDrawingsForApproval' && typeof initSubmitApproval === 'function') {
+          if (window.appTabLastRendered.submitDrawingsForApproval !== mVer) {
+            initSubmitApproval();
+            window.appTabLastRendered.submitDrawingsForApproval = mVer;
+          }
+        }
+        if (pageName === 'dwDesign' && typeof initThietKeBanVe === 'function') {
+          if (window.appTabLastRendered.dwDesign !== mVer) {
+            initThietKeBanVe();
+            window.appTabLastRendered.dwDesign = mVer;
+          }
+        }
+        if (pageName === 'release' && typeof history_loadData === 'function') {
+          if (window.appTabLastRendered.release !== rVer) {
+            history_loadData();
+            window.appTabLastRendered.release = rVer;
+          }
+        }
+        if (pageName === 'dwInformation' && typeof initThongTinBanVe === 'function') {
+          if (window.appTabLastRendered.dwInformation !== mVer) {
+            initThongTinBanVe();
+            window.appTabLastRendered.dwInformation = mVer;
+          }
+        }
+        if (pageName === 'seachDwByAi' && typeof initSeachDwByAi === 'function') {
+          if (window.appTabLastRendered.seachDwByAi !== mVer) {
+            initSeachDwByAi();
+            window.appTabLastRendered.seachDwByAi = mVer;
+          }
+        }
+      }, 'render-' + pageName + '-' + (pageName === 'release' ? (window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0) : (window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0)));
 
-
-      window.scrollTo(0, 0);
+      var activePage = document.getElementById('index-page-' + pageName);
+      if (activePage) activePage.scrollTop = 0;
 
       // Dành cho Mobile: Đóng sidebar sau khi chọn menu
       if (window.innerWidth <= 768) {
@@ -1385,7 +1454,18 @@
  
     // Khởi tạo hệ thống
     document.addEventListener('DOMContentLoaded', function () {
+      clearStaleScreenOverlays();
       showFirstLoading("LIXIL BEHAVIORS");
+
+      var appShell = document.querySelector('.d-flex.vh-100.w-100');
+      if (appShell && localStorage.getItem('sidebar_compact') === '1' && window.innerWidth > 992) {
+        appShell.classList.add('sidebar-compact');
+        var sidebarToggle = document.getElementById('desktopSidebarToggle');
+        if (sidebarToggle) {
+          sidebarToggle.setAttribute('aria-pressed', 'true');
+          sidebarToggle.title = 'Mở rộng menu';
+        }
+      }
 
       const savedLang = localStorage.getItem('app_lang') || 'vi';
       if (typeof changeLanguage === 'function') changeLanguage(savedLang);
@@ -1426,21 +1506,31 @@
       // Đăng ký các page lắng nghe khi mainData sẵn sàng / cập nhật
       AppDataStore.onReady('mainData', function (data) {
         pageData = data; // Đồng bộ alias cũ
-        if (typeof initThongTinBanVe === 'function') initThongTinBanVe();
-        if (typeof initNhapDuLieuBanVe === 'function') initNhapDuLieuBanVe();
-        if (typeof initThietKeBanVe === 'function') initThietKeBanVe();
-        if (typeof updateDashboardStats === 'function') updateDashboardStats();
-        if (typeof initSubmitApproval === 'function') initSubmitApproval();
+        var mVer = window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0;
+        if (activePageName === 'dashboard' && typeof updateDashboardStats === 'function') {
+          updateDashboardStats();
+          window.appTabLastRendered.dashboard = mVer;
+        } else if (activePageName === 'submitDrawingsForApproval' && typeof initSubmitApproval === 'function') {
+          initSubmitApproval();
+          window.appTabLastRendered.submitDrawingsForApproval = mVer;
+        } else if (activePageName === 'dwDesign' && typeof initThietKeBanVe === 'function') {
+          initThietKeBanVe();
+          window.appTabLastRendered.dwDesign = mVer;
+        }
 
         _initialLoadedParts.mainData = true;
-        var p = _initialLoadedParts.releaseData ? 100 : 75;
-        updateInitialProgress(p, "Đã tải xong dữ liệu bản vẽ...", "stepMainData");
+        // Dữ liệu lịch sử đã chuyển sang tải lười, không được giữ loader ở 75%.
+        updateInitialProgress(100, "Đã tải xong dữ liệu bản vẽ...", "stepMainData");
         forceHideLoading();
       });
 
       // Đăng ký dwRelease lắng nghe releaseData
       AppDataStore.onReady('releaseData', function (data) {
-        if (typeof handleHistorySuccess === 'function') handleHistorySuccess(data);
+        var rVer = window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0;
+        if (typeof handleHistorySuccess === 'function') {
+          handleHistorySuccess(data);
+          window.appTabLastRendered.release = rVer;
+        }
 
         _initialLoadedParts.releaseData = true;
         var p = _initialLoadedParts.mainData ? 100 : 85;
@@ -1833,7 +1923,6 @@
       google.script.run
         .withSuccessHandler(function (res) {
           if (res && !res.success) {
-            console.error("Lỗi ghi Noti từ Server:", res.error);
             if (typeof showToast === 'function') {
               showToast("Không thể lưu thông báo: " + res.error, "error");
             }
@@ -1844,7 +1933,6 @@
           }
         })
         .withFailureHandler(function (err) {
-          console.error("Mất kết nối Server khi ghi Noti:", err.message);
           if (typeof showToast === 'function') {
             showToast("Lỗi kết nối máy chủ khi lưu thông báo!", "error");
           }

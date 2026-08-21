@@ -49,7 +49,6 @@ function getUser(mail) {
       position: userRow[4],
     };
   } catch (e) {
-    Logger.log("Lỗi lấy User: " + e.toString());
     return null;
   }
 }
@@ -88,7 +87,6 @@ function getUserProfile() {
       }
     }
   } catch (err) {
-    Logger.log(err.toString());
   }
 
   var names = profile.name.trim().split(" ");
@@ -102,7 +100,6 @@ function getUserProfile() {
         profile.avatarUrl = photoUrl.replace(/=s\d+(-c)?$/, '=s128-c');
       }
     } catch (e) {
-      Logger.log(e.toString());
     }
   }
 
@@ -115,17 +112,25 @@ function getUserProfile() {
 }
 
 function addNotification(notiText) {
-  var ss = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM");
-  var sheet = ss.getSheetByName("Note");
-  if (!sheet) return { success: false, error: "Không tìm thấy sheet Noti" };
+  if (!notiText || !String(notiText).trim()) {
+    return { success: false, error: "Nội dung thông báo trống" };
+  }
 
-  var profile = getUserProfile();
-  var now = new Date();
-  var dateStr = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy/MM/dd");
-  var timeStr = Utilities.formatDate(now, Session.getScriptTimeZone(), "HH:mm:ss");
+  try {
+    var ss = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM");
+    var sheet = ss.getSheetByName("Note");
+    if (!sheet) return { success: false, error: "Không tìm thấy sheet Noti" };
 
-  sheet.appendRow([profile.email, profile.name, notiText, dateStr, timeStr]);
-  return { success: true };
+    var profile = getUserProfile();
+    var now = new Date();
+    var dateStr = Utilities.formatDate(now, Session.getScriptTimeZone(), "yyyy/MM/dd");
+    var timeStr = Utilities.formatDate(now, Session.getScriptTimeZone(), "HH:mm:ss");
+
+    sheet.appendRow([profile.email, profile.name, String(notiText).trim(), dateStr, timeStr]);
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err && err.message ? err.message : "Lỗi lưu thông báo" };
+  }
 }
 
 function getLatestNotifications() {

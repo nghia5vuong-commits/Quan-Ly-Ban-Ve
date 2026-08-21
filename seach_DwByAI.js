@@ -58,7 +58,6 @@ function getInitialData() {
       dwList: Object.values(dwListMap)
     };
   } catch (e) {
-    console.error("Lỗi getInitialData: ", e);
     return { dataMap: {}, customers: [], dwList: [] };
   }
 }
@@ -111,7 +110,6 @@ function processCopyAndSave(payload) {
     return { status: "success", newLink: newFileUrl };
 
   } catch (e) {
-    console.error("Lỗi processCopyAndSave: ", e);
     throw new Error(e.message);
   }
 }
@@ -156,7 +154,6 @@ function fetchImagesFromDrive(fileNames) {
 
     return imageMap;
   } catch (e) {
-    console.error("Lỗi fetchImagesFromDrive: ", e);
     throw new Error("Lỗi tải tệp tin từ Google Drive: " + e.message);
   }
 }
@@ -171,7 +168,6 @@ function logSearchActionAsync() {
     SpreadsheetApp.openById(CONFIG.SHEET_LOG).getSheetByName("Thống kê")
       .appendRow([now.getFullYear(), now.getMonth() + 1, now.getDate(), email, now.toLocaleTimeString()]);
   } catch (e) {
-    console.warn("Không thể ghi log: ", e);
   }
 }
 
@@ -256,7 +252,6 @@ function getCustomerStandard(customerName) {
 
     return results;
   } catch (e) {
-    console.error("Lỗi getCustomerStandard: ", e);
     throw new Error("Lỗi đọc Sheet: " + e.message);
   }
 }
@@ -285,7 +280,7 @@ function getBase64FromUrlOrId(urlOrId) {
             return "data:" + blob.getContentType() + ";base64," + Utilities.base64Encode(blob.getBytes());
           }
         }
-      } catch (e1) { console.warn("Fetch URL error: ", e1); }
+      } catch (e1) { }
     }
 
     // Layer 2: Trích xuất Drive File ID (chuỗi 25+ ký tự)
@@ -303,14 +298,14 @@ function getBase64FromUrlOrId(urlOrId) {
             return "data:" + blob.getContentType() + ";base64," + Utilities.base64Encode(blob.getBytes());
           }
         }
-      } catch (e2) { console.warn("Drive API error: ", e2); }
+      } catch (e2) { }
 
       try {
         const blob = DriveApp.getFileById(fileId).getBlob();
         if (blob && blob.getBytes().length > 100) {
           return "data:" + blob.getContentType() + ";base64," + Utilities.base64Encode(blob.getBytes());
         }
-      } catch (e3) { console.warn("DriveApp error: ", e3); }
+      } catch (e3) { }
     }
 
     // Layer 3: Tìm kiếm theo mã bản vẽ / tên file trong FOLDER_CACHE
@@ -322,7 +317,6 @@ function getBase64FromUrlOrId(urlOrId) {
 
     return "";
   } catch (e) {
-    console.error("Lỗi getBase64FromUrlOrId: ", e);
     return "";
   }
 }

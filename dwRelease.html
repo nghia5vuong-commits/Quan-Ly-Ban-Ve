@@ -1,161 +1,217 @@
-<div id="stats-history" class="p-3 p-md-4 custom-scroll" style="height: 100%; overflow-y: auto; background-color: #f8fafc;">
+<style>
+  /* ==========================================================================
+     PAGE DWRELEASE - LIGHT LIQUID GLASS (iOS 27 Fluid Glassmorphism)
+     ========================================================================== */
+  #stats-history {
+    position: relative;
+    background: transparent !important;
+  }
 
-  <style>
-    /* --- CSS CÔ LẬP CHO TRANG QUẢN LÝ BAN HÀNH (SCOPED CSS) --- */
-    #stats-history {
-      font-family: 'Inter', 'Segoe UI', sans-serif;
-      background-color: transparent;
-      color: #374151;
-    }
+  /* KPI & Dashboard Cards Liquid Glass */
+  #stats-history .card-dashboard {
+    position: relative;
+    overflow: hidden;
+    padding: 16px 18px;
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-lg);
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    transition: var(--liquid-spring);
+    cursor: pointer;
+  }
+  #stats-history .card-dashboard:hover {
+        transform: none;
+    box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow);
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+  #stats-history .card-dashboard.active-card {
+    border-color: var(--liquid-primary) !important;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.4), var(--liquid-shadow-md) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(209, 250, 229, 0.75) 100%) !important;
+  }
+  
+  #stats-history .icon-box {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--liquid-radius-md);
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.95), rgba(255, 255, 255, 0.8));
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: var(--liquid-primary-dark);
+    font-size: 1.25rem;
+    box-shadow: var(--liquid-shadow-sm);
+    transition: var(--liquid-spring);
+  }
+  #stats-history .card-dashboard:hover .icon-box {
+    transform: scale(1.1) rotate(-3deg);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(16, 185, 129, 0.35);
+  }
+  #stats-history .icon-box.bg-info {
+    background: linear-gradient(135deg, rgba(224, 242, 254, 0.95), rgba(255, 255, 255, 0.8));
+    color: #0284c7;
+    border-color: rgba(14, 165, 233, 0.25);
+  }
+  #stats-history .icon-box.bg-warning {
+    background: linear-gradient(135deg, rgba(254, 243, 199, 0.95), rgba(255, 255, 255, 0.8));
+    color: #d97706;
+    border-color: rgba(245, 158, 11, 0.25);
+  }
+  #stats-history .icon-box.bg-danger {
+    background: linear-gradient(135deg, rgba(254, 226, 226, 0.95), rgba(255, 255, 255, 0.8));
+    color: #dc2626;
+    border-color: rgba(239, 68, 68, 0.25);
+  }
 
-    /* 1. Dashboard Cards */
-    #stats-history .card-dashboard {
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid #e5e7eb; 
-      background-color: #ffffff;
-      position: relative;
-      overflow: hidden;
-    }
-    #stats-history .card-dashboard::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
-      background: transparent; transition: all 0.3s ease;
-    }
-    #stats-history .card-dashboard:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 32px rgba(0,0,0,0.06) !important;
-      border-color: #d1d5db;
-    }
-    
-    #stats-history #dept-card-total:hover::before { background: var(--primary-color, #7CB342); }
-    #stats-history #dept-card-approved:hover::before { background: #10b981; }
-    #stats-history #dept-card-checking:hover::before { background: #f59e0b; }
-    #stats-history #dept-card-returned:hover::before { background: #ef4444; }
+  /* App Cards */
+  #stats-history .app-card {
+    position: relative;
+    overflow: hidden;
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur);
+    -webkit-backdrop-filter: var(--liquid-blur);
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-lg);
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    padding: 16px 18px;
+    transition: var(--liquid-spring);
+  }
+  #stats-history .app-card:hover {
+        transform: none;
+    box-shadow: var(--liquid-shadow-lg);
+    border-color: rgba(16, 185, 129, 0.3);
+  }
 
-    #stats-history .active-card {
-      background-color: #f8fafc !important;
-      border-color: #cbd5e1 !important;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
-    #stats-history .active-card::before { background: #64748b !important; }
+  /* Tables & Rows compact */
+  #stats-history .table th {
+    background: rgba(240, 253, 244, 0.85) !important;
+    backdrop-filter: var(--liquid-blur-subtle);
+    color: var(--liquid-text-muted);
+    font-size: 0.68rem !important;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 8px 10px !important;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2) !important;
+  }
+  #stats-history .table td {
+    font-size: 0.74rem !important;
+    padding: 7px 10px !important;
+    vertical-align: middle;
+    transition: var(--liquid-spring-fast);
+  }
+  #stats-history .table tbody tr:hover td {
+    background: rgba(209, 250, 229, 0.65) !important;
+        transform: none;
+  }
 
-    #stats-history .icon-box {
-      width: 52px; height: 52px; border-radius: 14px;
-      display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-    }
+  /* Table scroll */
+  #stats-history .table-responsive {
+    max-height: calc(100vh - 320px) !important;
+    overflow-y: auto !important;
+    border-radius: 12px;
+  }
 
-    /* 2. Main Table Container */
-    #stats-history .table-card-container {
-      background: #ffffff; border: 1px solid #e5e7eb;
-      border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); overflow: hidden;
-    }
-    #stats-history .table-header-custom { background: #f8fafc; border-bottom: 1px solid #e5e7eb; }
+  /* Buttons */
+  #stats-history .btn-emerald-gradient {
+    padding: 7px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: var(--liquid-radius-sm);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 0.76rem;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+    transition: var(--liquid-spring);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #stats-history .btn-emerald-gradient:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+    background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
+  }
 
-    /* App Card — matches index/dwInfo standard */
-    #stats-history .app-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-      padding: 20px;
-    }
-    
-    /* Table Styling */
-    #stats-history .table-hover tbody tr { transition: all 0.2s; }
-    #stats-history .table-hover tbody tr:hover { background-color: #f8fafc; }
-    #stats-history .table th {
-      font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;
-      color: #64748b; padding: 14px 16px; border-bottom: 2px solid #e2e8f0; background: transparent;
-    }
-    #stats-history .table td {
-      padding: 12px 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; color: #334155;
-    }
-    #stats-history .progress { background-color: #e2e8f0; border-radius: 99px; }
-    #stats-history .progress-bar { border-radius: 99px; }
+  #stats-history .btn-custom-light {
+    padding: 6px 14px;
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-sm);
+    background: var(--liquid-glass-elevated);
+    backdrop-filter: var(--liquid-blur-subtle);
+    color: var(--liquid-text-soft);
+    font-weight: 600;
+    font-size: 0.76rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-shadow: var(--liquid-shadow-sm);
+    transition: var(--liquid-spring);
+  }
+  #stats-history .btn-custom-light:hover {
+    transform: translateY(-2px) scale(1.02);
+    background: #ffffff;
+    box-shadow: var(--liquid-shadow-md);
+    color: var(--liquid-primary-dark);
+  }
 
-    /* 3. Search Bar */
-    #stats-history .search-input-group {
-      background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; transition: all 0.2s;
-    }
-    #stats-history .search-input-group:focus-within {
-      border-color: var(--primary-color, #7CB342); box-shadow: 0 0 0 4px rgba(124, 179, 66, 0.1);
-    }
-    #stats-history .search-input-group input { border: none; box-shadow: none; background: transparent; padding: 8px 12px; }
-    #stats-history .search-input-group .input-group-text { background: transparent; border: none; color: #94a3b8; }
+  /* Search Input Groups */
+  #stats-history .search-input-group {
+    border-radius: var(--liquid-radius-sm);
+    border: 1px solid rgba(203, 213, 225, 0.85);
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: var(--liquid-blur-subtle);
+    transition: var(--liquid-spring-fast);
+  }
+  #stats-history .search-input-group:focus-within {
+    border-color: var(--liquid-primary);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+    background: #ffffff;
+  }
+  #stats-history .search-input-group .input-group-text {
+    background: transparent;
+    border: 0;
+    color: var(--liquid-text-muted);
+    font-size: 0.85rem;
+  }
+  #stats-history .search-input-group .form-control {
+    border: 0;
+    background: transparent;
+    font-size: 0.8rem;
+    box-shadow: none !important;
+  }
 
-    /* 4. Utilities & Buttons */
-    #stats-history .cursor-pointer { cursor: pointer; }
-    #stats-history .btn-custom-light {
-      background: #ffffff; border: 1px solid #e2e8f0; color: #475569;
-      border-radius: 8px; font-weight: 500; transition: all 0.2s; padding: 6px 14px;
-    }
-    #stats-history .btn-custom-light:hover { background: #f8fafc; border-color: #cbd5e1; color: #1e293b; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-
-    /* 5. HE THONG Z-INDEX MODALS & OVERLAYS CHUAN HR */
-    #dept-detail-modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 42, 0.65); z-index: 10000 !important; backdrop-filter: blur(5px);
-      display: none; align-items: center; justify-content: center;
-    }
-    #dept-detail-modal-container {
-      animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      border: 1px solid rgba(226, 232, 240, 0.8); box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
-      z-index: 10005 !important;
-    }
-    #modalDeptSelectHistory { z-index: 10030 !important; }
-    #modalDeptSelectHistory + .modal-backdrop { z-index: 10025 !important; }
-    .swal2-container { z-index: 10050 !important; }
-
-    @keyframes modalScaleUp { 
-        from { transform: scale(0.95) translateY(20px); opacity: 0; } 
-        to { transform: scale(1) translateY(0); opacity: 1; } 
-    }
-
-    /* Info Grid Detail Cards */
-    #stats-history .detail-grid-card {
-      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;
-    }
-    #stats-history .detail-label {
-      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px;
-      color: #64748b; font-weight: 700; margin-bottom: 4px; display: block;
-    }
-    #stats-history .detail-value { font-size: 0.95rem; font-weight: 600; color: #0f172a; }
-
-    /* Custom Scrollbar */
-    #stats-history .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    #stats-history .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
-    #stats-history .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
-    #stats-history .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-    /* Animations */
-    #stats-history .animate-fade { animation: fadeInRight 0.3s ease-out; }
-    @keyframes fadeInRight {
-        from { opacity: 0; transform: translateX(10px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-    #stats-history .badge { font-weight: 600; padding: 0.4em 0.8em; letter-spacing: 0.3px; }
-  </style>
-
-  <div class="container-fluid p-0">
+  /* Allow outer wrapper to scroll */
+  #stats-history { overflow-y: auto !important; max-height: 100% !important; }
+</style>
+  <div class="container-fluid p-0" style="width: 100%; margin: 0 !important; min-height: 100%; height: auto; overflow-y: auto;">
 
     <!-- HEADER ROW: filter left, title right -->
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
       <div></div>
       <div class="d-flex gap-2 align-items-center flex-wrap">
           <button class="btn btn-custom-light btn-sm shadow-sm" style="min-width: 140px; text-align:left; pointer-events: none;">
-             <span id="dept-name-display" class="fw-bold"><i class="spinner-border spinner-border-sm me-2"></i>Loading...</span>
+             <span id="dept-name-display" class="fw-bold"><i class="spinner-border spinner-border-sm me-2"></i>Đang tải...</span>
           </button>
-          <select id="fye-year-filter" class="form-select form-select-sm border-primary shadow-sm text-primary fw-bold" style="width: auto; cursor: pointer; border-radius:8px;" onchange="history_onMainFilterChange()">
+          <select id="fye-year-filter" class="form-select form-select-sm shadow-sm text-success fw-bold" style="width: auto; cursor: pointer; border-radius: var(--liquid-radius-sm); border: 1px solid rgba(16, 185, 129, 0.35); background: var(--liquid-glass-elevated);" onchange="history_onMainFilterChange()">
               <option value="ALL" data-i18n="his_opt_all_fye">📅 Tất cả FYE</option>
           </select>
-          <button class="btn btn-sm shadow-sm fw-medium rounded-3 px-3 d-flex align-items-center" id="dept-btn-reload" onclick="history_loadData()" style="background:#4F46E5; border:none; color:#fff;">
-            <i class="bi bi-arrow-clockwise me-2"></i> <span data-i18n="his_btn_reload">Làm mới</span>
+          <button class="btn btn-emerald-gradient btn-sm shadow-sm" id="dept-btn-reload" onclick="history_loadData()">
+            <i class="bi bi-arrow-clockwise me-1"></i> <span data-i18n="his_btn_reload">Làm mới</span>
           </button>
       </div>
     </div>
 
     <!-- KPI CARDS -->
-    <div class="row g-2 mb-2">
+    <div class="row g-2 mb-2" style="--bs-gutter-x: 0.5rem; --bs-gutter-y: 0.5rem; margin: 0;">
        <div class="col-md-3">
            <div class="card card-dashboard h-100 rounded-4 p-3 active-card" id="dept-card-total" onclick="history_filterByCard('ALL')">
                <div class="d-flex align-items-center justify-content-between">
@@ -228,11 +284,11 @@
     <div class="app-card mb-3 d-flex flex-wrap gap-3 align-items-center">
         <div class="input-group search-input-group overflow-hidden" style="max-width: 300px;">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control" id="dept-search-reqno" data-i18n-placeholder="his_ph_search_req" placeholder="Search Request No." oninput="_onSearchInput()">
+            <input type="text" class="form-control" id="dept-search-reqno" placeholder="Tìm QA-G2G..." oninput="_onSearchInput()" aria-label="Tìm QA-G2G">
         </div>
         <div class="input-group search-input-group overflow-hidden" style="max-width: 260px;">
             <span class="input-group-text"><i class="bi bi-building"></i></span>
-            <input type="text" class="form-control" id="dept-search-dept" data-i18n-placeholder="his_ph_search_dept" placeholder="Search Department" oninput="_onSearchInput()">
+            <input type="text" class="form-control" id="dept-search-dept" data-i18n-placeholder="his_ph_search_dept" placeholder="Tìm bộ phận..." oninput="_onSearchInput()">
         </div>
         <button class="btn btn-light border rounded-3 px-3 fw-medium text-secondary" onclick="history_clearSearch()">
             <i class="bi bi-x-lg me-1"></i> <span data-i18n="his_btn_clear_filter">Xóa lọc</span>
@@ -280,7 +336,6 @@
                         <th class="py-3" data-i18n="his_th_date">Ngày Yêu Cầu</th>
                         <th class="py-3 text-center" style="width: 15%;" data-i18n="his_th_progress">Tiến độ</th>
                         <th class="py-3 text-center" data-i18n="his_th_status">Trạng thái</th>
-                        <th class="py-3 text-center" data-i18n="his_th_detail">Chi tiết</th>
                     </tr>
                 </thead>
                 <tbody id="dept-table-body" class="border-top-0 bg-white">
@@ -434,7 +489,6 @@
     </div>
   </div>
 </div>
-</div> 
 
 <script>
     function t(key) {
@@ -458,7 +512,7 @@
         DEPT_NOTE_EDIT:33, CHECKER_NOTE_EDIT:34, APPROVER_NOTE_EDIT:35, TRANGTHAIDW:23, REMARK:36, FILE_DS_DW:37,CHANGE_TYPE:39,STAMPED:38
     };
    
-    const wrapper = document.getElementById('stats-history');
+    let wrapper = null;
     
     let masterRawData = []; 
     let deptRawData = [];    
@@ -470,37 +524,82 @@
     };
     
     let fyeChartInstance = null;
+    let historyLoadActive = false;
     var _pendingReloadBtn = null;
     var _pendingReloadBtnText = '';
 
     window.history_loadData = function() {
-        if(typeof user !== 'undefined' && user.dept) {
-            document.getElementById('dept-name-display').innerHTML = `<i class="bi bi-person-badge me-2"></i> QA-G2G`;
-        } else {
-            document.getElementById('dept-name-display').innerHTML = `<i class="bi bi-person-badge me-2"></i> Chưa có BP`;
+        if (historyLoadActive) return;
+        historyLoadActive = true;
+        wrapper = document.getElementById('stats-history');
+        
+        var deptDisplay = document.getElementById('dept-name-display');
+        if (deptDisplay) {
+            if (typeof user !== 'undefined' && user && user.dept) {
+                deptDisplay.innerHTML = `<i class="bi bi-person-badge me-2"></i> ${user.dept}`;
+            } else {
+                deptDisplay.innerHTML = `<i class="bi bi-person-badge me-2"></i> Toàn bộ BP`;
+            }
         }
 
+        var btn = document.getElementById('dept-btn-reload');
+        if (btn) {
+            _pendingReloadBtn = btn;
+            _pendingReloadBtnText = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang tải...';
+            btn.disabled = true;
+        }
+
+        // 1. Kiểm tra cache AppDataStore trước
         if (typeof AppDataStore !== 'undefined') {
-            // Nếu đã có cache, hiển thị ngay lập tức
             var cached = AppDataStore.get('releaseData');
             if (cached && Array.isArray(cached) && cached.length > 0) {
                 handleHistorySuccess(cached);
-            } else {
-                // Chưa có data, hiện spinner trên nút reload để báo đang tải
-                var btn = document.getElementById('dept-btn-reload');
-                if (btn) {
-                    _pendingReloadBtn = btn;
-                    _pendingReloadBtnText = btn.innerHTML;
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Loading...';
-                    btn.disabled = true;
-                }
+                return;
             }
-            // Luôn invalidate để refresh ngầm từ server
-            AppDataStore.invalidate('releaseData');
+        }
+
+        // 2. Gọi trực tiếp backend getReleaseData
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
+            google.script.run
+                .withSuccessHandler(function (data) {
+                    if (typeof AppDataStore !== 'undefined') {
+                        AppDataStore.set('releaseData', data);
+                    }
+                    handleHistorySuccess(data);
+                })
+                .withFailureHandler(function (err) {
+                    historyLoadActive = false;
+                    if (_pendingReloadBtn) {
+                        _pendingReloadBtn.innerHTML = _pendingReloadBtnText;
+                        _pendingReloadBtn.disabled = false;
+                        _pendingReloadBtn = null;
+                        _pendingReloadBtnText = '';
+                    }
+                    const message = err && err.message ? err.message : 'Không thể tải dữ liệu QA-G2G.';
+                    const tbody = document.getElementById('dept-table-body');
+                    if (tbody) {
+                        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-danger">${message}</td></tr>`;
+                    }
+                    console.error('Lỗi tải dữ liệu releaseData:', err);
+                })
+                .getReleaseData();
+        } else {
+            historyLoadActive = false;
+            if (_pendingReloadBtn) {
+                _pendingReloadBtn.innerHTML = _pendingReloadBtnText;
+                _pendingReloadBtn.disabled = false;
+                _pendingReloadBtn = null;
+            }
+            const tbody = document.getElementById('dept-table-body');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-danger">Không thể kết nối tới máy chủ dữ liệu.</td></tr>';
+            }
         }
     };
 
     function handleHistorySuccess(data) {
+        historyLoadActive = false;
         if (_pendingReloadBtn) {
             _pendingReloadBtn.innerHTML = _pendingReloadBtnText;
             _pendingReloadBtn.disabled = false;
@@ -511,15 +610,8 @@
         if (!data || !Array.isArray(data)) data = [];
         masterRawData = data;
 
-        if (typeof user !== 'undefined' && user.dept) {
-            const userDept = String(user.dept).trim().toUpperCase();
-            deptRawData = masterRawData.filter(r => {
-                const rowDept = String(r[COL.DEPT]).trim().toUpperCase();
-                return rowDept === "QA-G2G";
-            });
-        } else {
-            deptRawData = [];
-        }
+        // Nạp toàn bộ dữ liệu - user sẽ dùng bộ lọc trên UI để lọc theo bộ phận
+        deptRawData = masterRawData.slice();
 
         history_initFyeOptions();
         history_applyAllPageFilters();
@@ -544,10 +636,11 @@
         });
         fyeSelect.innerHTML = optionsHtml;
 
-        if (availableFyes.includes(curVal)) {
+        // Giữ ALL mặc định để người dùng xem được toàn bộ danh sách
+        if (curVal && curVal !== 'ALL' && availableFyes.includes(curVal)) {
             fyeSelect.value = curVal;
-        } else if (availableFyes.length > 0) {
-            fyeSelect.value = availableFyes[availableFyes.length - 1];
+        } else {
+            fyeSelect.value = "ALL";
         }
     }
 
@@ -560,23 +653,22 @@
 
     function history_getFilteredData() {
         const selectedFye = document.getElementById('fye-year-filter')?.value || 'ALL';
-        let filtered = [...deptRawData];
+        let filtered = deptRawData;
 
         if (selectedFye !== 'ALL') {
-            filtered = filtered.filter(r => {
-                const dInfo = parseFyeDate(r[COL.REQ_DATE]);
+            filtered = filtered.filter(function (row) {
+                const dInfo = parseFyeDate(row[COL.REQ_DATE]);
                 return dInfo && dInfo.fyeStr === selectedFye;
             });
         }
 
         if (deptFilterState.chartMonthIdx !== null) {
-            filtered = filtered.filter(r => {
-                const dInfo = parseFyeDate(r[COL.REQ_DATE]);
+            filtered = filtered.filter(function (row) {
+                const dInfo = parseFyeDate(row[COL.REQ_DATE]);
                 if (!dInfo) return false;
-                
+
                 const matchMonth = dInfo.fyeMonthIndex === deptFilterState.chartMonthIdx;
-                const matchDept = deptFilterState.chartDept ? String(r[COL.DEPT]).trim() === deptFilterState.chartDept : true;
-                
+                const matchDept = deptFilterState.chartDept ? String(row[COL.DEPT]).trim() === deptFilterState.chartDept : true;
                 return matchMonth && matchDept;
             });
         }
@@ -621,8 +713,12 @@
        🟢 LOGIC BIỂU ĐỒ CỘT CHỒNG THEO 12 THÁNG NĂM TÀI CHÍNH (FYE)
        ========================================================= */
     
+    var _fyeDateMemo = {};
     function parseFyeDate(dateVal) {
         if (!dateVal) return null;
+        if (typeof dateVal === 'string' && _fyeDateMemo[dateVal] !== undefined) {
+            return _fyeDateMemo[dateVal];
+        }
         let d = new Date(dateVal);
         
         if (isNaN(d.getTime()) && typeof dateVal === 'string' && dateVal.includes('/')) {
@@ -632,7 +728,10 @@
             }
         }
         
-        if (isNaN(d.getTime())) return null;
+        if (isNaN(d.getTime())) {
+            if (typeof dateVal === 'string') _fyeDateMemo[dateVal] = null;
+            return null;
+        }
 
         const month = d.getMonth() + 1; 
         const year = d.getFullYear();   
@@ -642,12 +741,14 @@
 
         const fyeMonthIndex = month >= 4 ? month - 4 : month + 8;
 
-        return {
+        const res = {
             fyeStr: fyeStr,
             fyeMonthIndex: fyeMonthIndex,
             year: year,
             month: month
         };
+        if (typeof dateVal === 'string') _fyeDateMemo[dateVal] = res;
+        return res;
     }
 
     window.history_renderChart = function() {
@@ -676,7 +777,15 @@
             uniqueRequests = uniqueRequests.filter(r => r.dateInfo.fyeStr === selectedFye);
         }
 
-        const depts = [...new Set(uniqueRequests.map(r => r.dept))].sort();
+        const departmentCounts = {};
+        uniqueRequests.forEach(function (request) {
+            const monthIdx = request.dateInfo.fyeMonthIndex;
+            if (monthIdx < 0 || monthIdx >= 12) return;
+            if (!departmentCounts[request.dept]) departmentCounts[request.dept] = new Array(12).fill(0);
+            departmentCounts[request.dept][monthIdx] += 1;
+        });
+
+        const depts = Object.keys(departmentCounts).sort();
         const monthLabels = [
             t('his_month_4'), t('his_month_5'), t('his_month_6'), 
             t('his_month_7'), t('his_month_8'), t('his_month_9'), 
@@ -691,20 +800,9 @@
         ];
 
         const datasets = depts.map((deptName, idx) => {
-            const dataCounts = new Array(12).fill(0);
-
-            uniqueRequests.forEach(req => {
-                if (req.dept === deptName) {
-                    const monthIdx = req.dateInfo.fyeMonthIndex;
-                    if (monthIdx >= 0 && monthIdx < 12) {
-                        dataCounts[monthIdx]++;
-                    }
-                }
-            });
-
             return {
                 label: deptName,
-                data: dataCounts,
+                data: departmentCounts[deptName],
                 backgroundColor: colorPalette[idx % colorPalette.length],
                 borderRadius: 4,
                 borderSkipped: false
@@ -715,7 +813,10 @@
         if (!ctx) return;
 
         if (fyeChartInstance) {
-            fyeChartInstance.destroy();
+            fyeChartInstance.data.labels = monthLabels;
+            fyeChartInstance.data.datasets = datasets;
+            fyeChartInstance.update('none');
+            return;
         }
 
         fyeChartInstance = new Chart(ctx, {
@@ -916,18 +1017,18 @@
         
         labelFilter.setAttribute('data-i18n', filterKey);
 
-        const searchReqNo = (document.getElementById('dept-search-reqno')?.value || "").trim().toLowerCase();
+        const searchQaG2g = (document.getElementById('dept-search-reqno')?.value || "").trim().toLowerCase();
         const searchDept  = (document.getElementById('dept-search-dept')?.value || "").trim().toLowerCase();
 
-        if (searchReqNo) {
-            reqArray = reqArray.filter(i => String(i.info[COL.REQ_NO]).toLowerCase().includes(searchReqNo));
+        if (searchQaG2g) {
+            reqArray = reqArray.filter(i => String(i.info[COL.DEPT]).toLowerCase().includes(searchQaG2g));
         }
         if (searchDept) {
             reqArray = reqArray.filter(i => String(i.info[COL.DEPT]).toLowerCase().includes(searchDept));
         }
 
         if(reqArray.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5 text-muted fst-italic"><span data-i18n="his_no_data">${t('his_no_data')}</span></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted fst-italic"><span data-i18n="his_no_data">${t('his_no_data')}</span></td></tr>`;
             if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('app_lang') || 'vi');
             updateDeptPaginationUI(0, 0, 0, 1, 1);
             return;
@@ -943,7 +1044,7 @@
         const endIdx = startIdx + deptPageSize;
         const pageItems = reqArray.slice(startIdx, endIdx);
 
-        pageItems.forEach(item => {
+        const rowHtml = pageItems.map(item => {
             let disabled = "disabled";
             const rowInfo = item.info;
             const reqNo = rowInfo[COL.REQ_NO];
@@ -964,7 +1065,7 @@
                 badge = `<span class="badge bg-warning text-dark rounded-pill"><span data-i18n="his_badge_pending">${t('his_badge_pending')}</span></span>`;
             }
 
-            const tr = `
+            return `
                 <tr style="cursor:pointer" onclick="history_openModal('${reqNo}')" id="dept-tr-${reqNo}">
                     <td class="ps-3" onclick="event.stopPropagation()">
                         <input type="checkbox" class="form-check-input dept-req-checkbox cursor-pointer" 
@@ -981,11 +1082,11 @@
                         <small class="text-muted" style="font-size:0.7rem">${item.dwApproved}/${item.dwTotal}</small>
                     </td>
                     <td>${badge}</td>
-                    <td><small class="text-muted"><i class="bi bi-eye"></i></small></td>
                 </tr>
             `;
-            tbody.insertAdjacentHTML('beforeend', tr);
-        });
+        }).join('');
+
+        tbody.innerHTML = rowHtml;
 
         updateDeptPaginationUI(totalItems, startIdx, endIdx, deptCurrentPage, totalPages);
 
@@ -1014,7 +1115,8 @@
     };
 
     window.history_toggleAll = function(source) {
-        const checkboxes = wrapper.querySelectorAll('.dept-req-checkbox:not(:disabled)');
+        const _wrapper = wrapper || document.getElementById('stats-history');
+        const checkboxes = (_wrapper ? _wrapper.querySelectorAll('.dept-req-checkbox:not(:disabled)') : document.querySelectorAll('#stats-history .dept-req-checkbox:not(:disabled)'));
         checkboxes.forEach(cb => {
             cb.checked = source.checked;
             const tr = document.getElementById('dept-tr-' + cb.value);
@@ -1036,13 +1138,17 @@
     };
 
     window.history_updateBulkToolbar = function() {
-        const checkedCount = wrapper.querySelectorAll('.dept-req-checkbox:checked').length;
+        const _wrapper = wrapper || document.getElementById('stats-history');
+        const checkedEls = _wrapper ? _wrapper.querySelectorAll('.dept-req-checkbox:checked') : document.querySelectorAll('#stats-history .dept-req-checkbox:checked');
+        const checkedCount = (checkedEls && checkedEls.length) ? checkedEls.length : 0;
         const toolbar = document.getElementById('dept-inline-bulk-actions');
         const countBadge = document.getElementById('dept-selected-count');
         const filterBadge = document.getElementById('dept-table-filter-status-text');
-        
+
         if(countBadge) countBadge.innerText = checkedCount;
-        
+
+        if (!toolbar) return; // nothing to toggle if toolbar missing
+
         if (checkedCount > 0) {
             toolbar.classList.remove('d-none');
             toolbar.classList.add('d-flex');
@@ -1223,7 +1329,7 @@ window.history_handleBulkAction = function(actionType, singleReqNo, sourceBtn) {
         const tbody = document.getElementById('dept-m-dw-list');
         tbody.innerHTML = '';
 
-        details.forEach((row, index) => {
+        const detailRowsHtml = details.map((row, index) => {
             const dwId = row[COL.DW_ID];
             const status = row[COL.STATUS];
             
@@ -1292,8 +1398,10 @@ window.history_handleBulkAction = function(actionType, singleReqNo, sourceBtn) {
                     </td>
                     <td class="text-center">${actionBtnHtml}</td>
                 </tr>`;
-            tbody.insertAdjacentHTML('beforeend', tr); 
-        });
+            return tr;
+        }).join('');
+
+        tbody.innerHTML = detailRowsHtml;
 
         document.getElementById('dept-detail-modal-overlay').style.display = 'flex';
         if (typeof changeLanguage === 'function') changeLanguage(localStorage.getItem('app_lang') || 'vi');
@@ -1558,7 +1666,6 @@ window.history_handleBulkAction = function(actionType, singleReqNo, sourceBtn) {
                     }, 800);
                 })
                 .withFailureHandler(function(err) {
-                    console.error("Lỗi check version:", err);
                     if (loading) loading.classList.add('d-none');
                     inputEl.disabled = false;
                     verInput.value = "01"; 
@@ -1566,7 +1673,6 @@ window.history_handleBulkAction = function(actionType, singleReqNo, sourceBtn) {
                 .getLastVersion(dwNo); 
         } else {
             setTimeout(() => {
-                console.log("Mock check version for:", dwNo);
                 if (loading) loading.classList.add('d-none');
                 inputEl.disabled = false;
                 verInput.value = "02"; 
@@ -1652,8 +1758,6 @@ window.history_deleteSingleDW = function(dwId, reqNo) {
     });
 };
 
-    history_loadData();
-
     let _searchTimer = null;
 
     function _onSearchInput() {
@@ -1662,9 +1766,6 @@ window.history_deleteSingleDW = function(dwId, reqNo) {
             history_renderTable();
         }, 300); 
     }
-
-    document.getElementById('dept-search-reqno')?.addEventListener('input', _onSearchInput);
-    document.getElementById('dept-search-dept')?.addEventListener('input', _onSearchInput);
 
     window.history_clearSearch = function() {
         const inputReq = document.getElementById('dept-search-reqno');

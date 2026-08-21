@@ -12,43 +12,49 @@ var COL_CHECKER_DATE = 18;
 var COL_APPROVAL_BY = 19;
 var COL_APPROVAL_DATE = 20;
 
-function _cleanStr(s) {
-  return String(s || '')
+const _cleanStr = (s) => String(s || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
-}
 
-function generateRandomString(length) {
+const generateRandomString = (length) => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
-}
+};
 
-function _toDateKey(dateValue) {
+const _toDateKey = (dateValue) => {
   var d = dateValue instanceof Date ? dateValue : new Date(dateValue);
   if (isNaN(d.getTime())) return '';
   var y = d.getFullYear();
   var m = String(d.getMonth() + 1).padStart(2, '0');
   var day = String(d.getDate()).padStart(2, '0');
   return y + '-' + m + '-' + day;
-}
+};
 
-function _loadCalendarRows() {
+const _loadCalendarRows = () => {
   try {
     var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
     var calSheet = ss.getSheetByName('Cal');
     if (!calSheet) return [];
     var values = calSheet.getDataRange().getValues();
+    if (!values || values.length < 2) return [];
     return values.slice(1);
   } catch (e) {
-    Logger.log('[Cal] Lỗi đọc sheet Cal: ' + e.message);
     return [];
   }
+};
+
+const _normalizeCalendarText = (value) => {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
 }
 
 function _isCalendarOffDate(dateKey) {
@@ -61,12 +67,22 @@ function _isCalendarOffDate(dateKey) {
     if (!rowDate) continue;
 
     if (String(rowDate).slice(0, 10) === dateKey) {
-      var status = String(row[2] || '').toLowerCase();
-      var desc = String(row[3] || '').toLowerCase();
-      var text = status + ' ' + desc;
-      if (text.indexOf('weekend') !== -1 || text.indexOf('holiday') !== -1 || text.indexOf('nghi') !== -1 || text.indexOf('off') !== -1 || text.indexOf('rest') !== -1 || text.indexOf('sunday') !== -1 || text.indexOf('saturday') !== -1) {
-        return true;
+      var status = _normalizeCalendarText(row[2]);
+      var description = _normalizeCalendarText(row[3]);
+      var text = (status + ' ' + description).trim();
+
+      var offPatterns = [
+        'weekend', 'holiday', 'nghi', 'day off', 'off', 'rest', 'sunday', 'saturday',
+        'khong lam', 'khong hoat dong', 'ngay nghi', 'leave', 'non working', 'non-working',
+        'close', 'closed'
+      ];
+
+      for (var j = 0; j < offPatterns.length; j++) {
+        if (text.indexOf(offPatterns[j]) !== -1) {
+          return true;
+        }
       }
+
       return false;
     }
   }
@@ -77,10 +93,9 @@ function _isCalendarOffDate(dateKey) {
   return dayNum === 0 || dayNum === 6;
 }
 
-function getReleaseDueDate(requestDate, requestType) {
-  var type = String(requestType || 'Normal').toLowerCase();
-  var businessDays = (type === 'urgent') ? 3 : 7;
-  var startDate = requestDate ? new Date(requestDate + 'T00:00:00') : new Date();
+function _getBusinessDateAfterDays(dateValue, businessDays) {
+  var requestedDays = Number(businessDays) || 5;
+  var startDate = dateValue ? new Date(dateValue + 'T00:00:00') : new Date();
   if (isNaN(startDate.getTime())) {
     startDate = new Date();
   }
@@ -89,7 +104,7 @@ function getReleaseDueDate(requestDate, requestType) {
   var cursor = new Date(startDate.getTime());
   var maxLoops = 366;
 
-  while (workingDays < businessDays && maxLoops > 0) {
+  while (workingDays < requestedDays && maxLoops > 0) {
     cursor.setDate(cursor.getDate() + 1);
     var key = _toDateKey(cursor);
     if (_isCalendarOffDate(key)) {
@@ -103,7 +118,15 @@ function getReleaseDueDate(requestDate, requestType) {
   return _toDateKey(cursor);
 }
 
-function sendMailFromDeptToCharge(dataToNotify, deptName) {
+const getBusinessDateFromToday = (workingDays) => _getBusinessDateAfterDays(new Date(), Number(workingDays) || 5);
+
+const getReleaseDueDate = (requestDate, requestType) => {
+  var type = String(requestType || 'Normal');
+  var businessDays = /^urgent$/i.test(type) ? 3 : 5;
+  return _getBusinessDateAfterDays(requestDate || new Date(), businessDays);
+};
+
+const sendMailFromDeptToCharge = (dataToNotify, deptName) => {
   const sheetUser = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE").getSheetByName("User");
   const userLastRow = sheetUser.getLastRow();
   if (userLastRow < 2) return;
@@ -116,7 +139,6 @@ function sendMailFromDeptToCharge(dataToNotify, deptName) {
   );
 
   if (targetUsers.length === 0) {
-    console.log("Không tìm thấy Charger nào thuộc bộ phận QA để gửi mail.");
     return;
   }
 
@@ -220,11 +242,9 @@ function sendMailFromDeptToCharge(dataToNotify, deptName) {
     body,
     { htmlBody: htmlBody }
   );
-}
+};
 
-
-
-function _getNextStep(currentStatus) {
+const _getNextStep = (currentStatus) => {
   var st = _cleanStr(currentStatus);
 
   if (st.indexOf('checker 1') !== -1 || st.indexOf('checker1') !== -1 ||
@@ -261,7 +281,6 @@ function _getUserNameByEmail(email) {
     var userSheet = ss.getSheetByName(userSheetName);
     
     if (!userSheet) {
-      Logger.log('Không tìm thấy sheet tên là: ' + userSheetName);
       return email; 
     }
 
@@ -275,13 +294,12 @@ function _getUserNameByEmail(email) {
       }
     }
   } catch (e) {
-    Logger.log('Lỗi dò tên user: ' + e.message);
   }
   
   return email; 
-}
+};
 
-function _normalizeRoleName(value) {
+const _normalizeRoleName = (value) => {
   return String(value || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
@@ -315,7 +333,6 @@ function _getUserEmailByRole(roleNames) {
       }
     }
   } catch (e) {
-    Logger.log('Lỗi dò email theo role: ' + e.message);
   }
 
   return '';
@@ -323,7 +340,6 @@ function _getUserEmailByRole(roleNames) {
 
 function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus, actorName) {
   if (!targetEmail) {
-    Logger.log('[ApprovalEmail] Không có email đích cho level: ' + currentLevel);
     return false;
   }
 
@@ -421,16 +437,13 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
 
   try {
     GmailApp.sendEmail(targetEmail, subject, "", { htmlBody: htmlBody });
-    Logger.log('[ApprovalEmail] Gửi email thành công tới ' + targetEmail + ' cho bản vẽ ' + dwNo);
     return true;
   } catch (e) {
-    Logger.log('[ApprovalEmail] Lỗi gửi email tới ' + targetEmail + ': ' + e.message);
     return false;
   }
-}
+};
 
-
-function _findRowByIdInColA(sheet, drawingId) {
+const _findRowByIdInColA = (sheet, drawingId) => {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) return -1;
   var ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
@@ -438,9 +451,9 @@ function _findRowByIdInColA(sheet, drawingId) {
     if (String(ids[i][0]).trim() === String(drawingId).trim()) return i + 2;
   }
   return -1;
-}
+};
 
-function _writeNote(ss, notiText, userEmail) {
+const _writeNote = (ss, notiText, userEmail) => {
   var noteSheet = ss.getSheetByName(SUBMIT_NOTE);
   if (!noteSheet) return;
   var profile = getUserProfile();
@@ -453,9 +466,9 @@ function _writeNote(ss, notiText, userEmail) {
     Utilities.formatDate(now, tz, 'yyyy/MM/dd'),
     Utilities.formatDate(now, tz, 'HH:mm:ss')
   ]);
-}
+};
 
-function approveDrawingOnServer(drawingId, approvedLevel) {
+const approveDrawingOnServer = (drawingId, approvedLevel) => {
   if (!drawingId) throw new Error('Thieu ID ban ve.');
 
   var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
@@ -521,11 +534,7 @@ function approveDrawingOnServer(drawingId, approvedLevel) {
 
   if (notifyEmail) {
     _sendApprovalWorkflowEmail(notifyEmail, dwNo, step.level, step.nextStatus, approverName);
-  } else {
-    Logger.log('[approveDrawingOnServer] Không tìm thấy email đích để thông báo: level=' + step.level + ', dw=' + dwNo);
   }
-
-  Logger.log('[approveDrawingOnServer] ID=' + drawingId + ' | ' + currentStatus + ' -> ' + step.nextStatus + ' | By=' + approverName);
 
   return {
     success: true,
@@ -536,9 +545,9 @@ function approveDrawingOnServer(drawingId, approvedLevel) {
     approvedBy: approverName,
     approvedAt: nowStr
   };
-}
+};
 
-function rejectDrawingOnServer(drawingId, reason) {
+const rejectDrawingOnServer = (drawingId, reason) => {
   if (!drawingId) throw new Error('Thieu ID ban ve.');
   if (!reason || !reason.trim()) throw new Error('Vui long nhap ly do tu choi.');
 
@@ -572,15 +581,8 @@ function rejectDrawingOnServer(drawingId, reason) {
     ' | Lý do: ' + reason.trim();
   _writeNote(ss, notiMsg, rejectorEmail);
 
-  Logger.log('[rejectDrawingOnServer] ID=' + drawingId + ' | By=' + rejectorEmail + ' | Reason=' + reason);
-
   return { success: true };
-}
-
-
-
-
-
+};
 
 
 
@@ -603,7 +605,8 @@ function  requestReleaseDW(arr) {
     if(row[0]) existingIds.add(String(row[0]));
   });
 
-  const requestType = String((arr && arr[2]) || 'Normal');
+  const requestTypeRaw = String((arr && arr[2]) || 'Normal');
+  const requestType = /^urgent$/i.test(requestTypeRaw) ? 'Urgent' : 'Normal';
   const requestDateRaw = String((arr && arr[4]) || new Date().toISOString().slice(0, 10));
   const computedDueDate = getReleaseDueDate(requestDateRaw, requestType);
   const finalDueDate = String((arr && arr[5]) || computedDueDate);
@@ -674,7 +677,7 @@ function  requestReleaseDW(arr) {
       "",
       arr[1],
       requestDateRaw,
-      requestType === 'Urgent' ? 'Urgent' : 'Normal',
+      requestType,
       finalDueDate,
       "",
       row[5],
