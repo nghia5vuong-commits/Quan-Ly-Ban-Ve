@@ -741,9 +741,10 @@
     const id = document.getElementById('uploadDwId').value;
     const pdfFile = document.getElementById('pdfFileInput').files[0];
     const excelFile = document.getElementById('excelFileInput').files[0];
+    const fileName = document.getElementById("uploadDwTo").value;
     const btnSubmit = document.getElementById('btnSubmitDesign');
 
-    if (!id || !pdfFile || !excelFile) {
+    if (!id || !pdfFile || !excelFile || !fileName) {
       return Swal.fire('Cảnh báo', 'Vui lòng chọn Mã TO và tải đủ PDF, Excel!', 'warning');
     }
 
@@ -760,7 +761,7 @@
       // 2. Chuẩn bị dữ liệu cho Local Server luôn (Không cần đợi Drive nữa)
       const formData = new FormData();
       formData.append('id', id);
-      formData.append('pdf_url', 'Updating...'); // Local server hiện tại chỉ lưu file, không cần dùng URL này nữa
+      formData.append('filename', fileName); // Local server hiện tại chỉ lưu file, không cần dùng URL này nữa
       formData.append('excel_file', excelFile); 
       const LOCAL_SERVER_URL = "http://10.156.42.195:8000/upload-design-excel"; 
 
