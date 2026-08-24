@@ -10,6 +10,11 @@
     background: transparent !important;
     padding: 0 !important;
   }
+  #rejectModal > div {
+    border: 1px solid rgba(16, 185, 129, 0.18);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25) !important;
+    animation: modalPanelIn 0.18s ease-out both;
+  }
 
   /* Main Container Card */
   .page-submitDrawingsForApproval .app-card {
@@ -379,7 +384,7 @@
 
   <!-- MODAL POPUP TỪ CHỐI BẢN VẼ -->
   <div id="rejectModal"
-    style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.45); backdrop-filter:blur(3px); align-items:center; justify-content:center;">
+    style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.58); backdrop-filter:none; align-items:center; justify-content:center;">
     <div
       style="background:#ffffff; border-radius:16px; padding:28px; width:450px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.2); animation:rmPopIn .2s ease;">
       <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
@@ -528,7 +533,7 @@
   }
 
   let approvalCurrentPage = 1;
-  const approvalPageSize = 50;
+  const approvalPageSize = 25;
   var approvalSearchDebounce = null;
 
   function onSearchApprovalInput() {

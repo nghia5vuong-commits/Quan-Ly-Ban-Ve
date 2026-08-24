@@ -29,24 +29,21 @@ function normalizeImageSource(value) {
 
   if (typeof value === 'object') {
     try {
-      if (typeof value.getContentUrl === 'function') {
-        var contentUrl = value.getContentUrl();
-        if (contentUrl) return String(contentUrl).trim();
-      }
-      if (typeof value.getUrl === 'function') {
-        var imgUrl = value.getUrl();
-        if (imgUrl) return String(imgUrl).trim();
-      }
-      if (typeof value.toString === 'function') {
-        var strVal = String(value.toString());
-        if (strVal && strVal !== '[object Object]' && strVal !== '[object CellImage]') {
-          if (/^(https?:\/\/|data:|\/|drive\.google|googleusercontent)/i.test(strVal)) {
-            return strVal.trim();
-          }
+      var imageUrl = typeof value.getContentUrl === 'function' ? value.getContentUrl() : '';
+      if (imageUrl) {
+        var response = UrlFetchApp.fetch(imageUrl, {
+          headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+          muteHttpExceptions: true
+        });
+        if (response.getResponseCode() === 200) {
+          var blob = response.getBlob();
+          return 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes());
         }
       }
     } catch (err) {
+      Logger.log('Lỗi đọc CellImage AG: ' + err.toString());
     }
+    return '';
   }
 
   return '';
@@ -620,8 +617,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
     var formRow = matrixData[0];
     var imageObj = formRow.pop();
-    var cellImage = null;
-    var imageSourceUrl = '';
 
     if (imageObj && imageObj.base64) {
       try {
@@ -638,10 +633,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
           Logger.log('Không thể cập nhật quyền chia sẻ ảnh mặt cắt: ' + sharingErr.toString());
         }
 
-        imageSourceUrl = "data:" + imageObj.mimeType + ";base64," + imageObj.base64;
-        cellImage = SpreadsheetApp.newCellImage()
-          .setSourceUrl(imageSourceUrl)
-          .build();
       } catch (imgErr) {
         throw new Error('Không thể lưu hình ảnh mặt cắt vào Drive: ' + imgErr.toString());
       }
@@ -741,16 +732,13 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     mappedRowData[29] = heightVal;          // AD: H
     mappedRowData[30] = "";                 // AE: Sample File Excel
     mappedRowData[31] = "";                 // AF: Sample File PDF
-    mappedRowData[32] = "";                  // AG: Hình ảnh mặt cắt (để trống, ảnh được chèn bởi CellImage riêng)
+    mappedRowData[32] = "";                  // AG: Hình ảnh mặt cắt
     mappedRowData[33] = soNo;              // AH: Mã SO
 
     // Chỉ kiểm tra TO+Customer trong chế độ INSERT (không upgrade)
     if (isUpgradeMode) {
       // Chế độ UPDATE: luôn ghi lại dữ liệu vào hàng hiện có
       sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
-      if (cellImage) {
-        sheetData.getRange(targetRow, 33).setValue(cellImage);
-      }
     } else {
       // Chế độ INSERT: kiểm tra TO+Customer trước khi ghi
       // ========================================================================
@@ -791,9 +779,6 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
       // Chỉ lưu vào sheet "Data" nếu TO + Customer chưa tồn tại
       if (!toCustomerExists) {
         sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
-        if (cellImage) {
-          sheetData.getRange(targetRow, 33).setValue(cellImage);
-        }
       } else {
       }
     }
@@ -1062,7 +1047,7 @@ function getDrawingByRowIdx(rowIdx) {
         fye: String(rowData[23] || ''),              // X: FYE
         width: String(rowData[28] || ''),            // AC: Width
         height: String(rowData[29] || ''),           // AD: Height
-        image: rowData[32],                          // AG: Image (CellImage)
+        image: normalizeImageSource(rowData[32]),     // AG: ảnh mặt cắt
         so: String(rowData[33] || '')                // AH: Mã SO
       }
     };

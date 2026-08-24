@@ -137,11 +137,6 @@ const getSignBlob = (userMail) => {
     const rawValue = signCell.getValue();
     const rawFormula = signCell.getFormula();
 
-    if (rawValue && typeof rawValue === "object" && typeof rawValue.getContentUrl === "function") {
-      const imageUrl = rawValue.getContentUrl();
-      return UrlFetchApp.fetch(imageUrl).getBlob();
-    }
-
     if (rawFormula && rawFormula.toUpperCase().indexOf("=IMAGE") === 0) {
       const imageMatch = rawFormula.match(/=IMAGE\(\s*"([^"]+)"/i);
       if (imageMatch) {

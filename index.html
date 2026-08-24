@@ -54,13 +54,13 @@
       --liquid-border-soft: 1px solid rgba(16, 185, 129, 0.16);
       --liquid-border-subtle: 1px solid rgba(203, 213, 225, 0.65);
       
-      --liquid-shadow-sm: 0 4px 16px 0 rgba(16, 185, 129, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.03);
-      --liquid-shadow-md: 0 10px 30px -4px rgba(16, 185, 129, 0.08), 0 4px 12px 0 rgba(0, 0, 0, 0.04);
-      --liquid-shadow-lg: 0 20px 48px -6px rgba(16, 185, 129, 0.12), 0 8px 24px 0 rgba(0, 0, 0, 0.05);
-      --liquid-shadow-glow: 0 0 24px 0 rgba(16, 185, 129, 0.35);
+      --liquid-shadow-sm: 0 1px 4px rgba(15, 23, 42, 0.06);
+      --liquid-shadow-md: 0 3px 10px rgba(15, 23, 42, 0.08);
+      --liquid-shadow-lg: 0 6px 18px rgba(15, 23, 42, 0.1);
+      --liquid-shadow-glow: 0 0 10px rgba(16, 185, 129, 0.16);
       
-      --liquid-blur: blur(24px) saturate(190%);
-      --liquid-blur-subtle: blur(14px) saturate(160%);
+      --liquid-blur: none;
+      --liquid-blur-subtle: none;
       
       /* Bo góc Squircle Apple */
       --liquid-radius-xs: 8px;
@@ -71,9 +71,9 @@
       --liquid-radius-pill: 9999px;
       
       /* Apple Spring Physics Timing */
-      --liquid-spring: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      --liquid-spring-fast: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-      --liquid-ease: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      --liquid-spring: all 0.12s ease;
+      --liquid-spring-fast: all 0.08s ease;
+      --liquid-ease: all 0.12s ease;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -98,9 +98,9 @@
       border-radius: 50%;
       pointer-events: none;
       z-index: 0;
-      filter: blur(80px);
-      opacity: 0.6;
-      animation: liquidFloat 16s ease-in-out infinite alternate;
+      filter: none;
+      opacity: 0.22;
+      animation: none;
     }
     body::before {
       width: 500px;
@@ -663,9 +663,9 @@
       width: 100vw !important;
       height: 100vh !important;
       z-index: 99990 !important;
-      background-color: rgba(15, 23, 42, 0.45) !important;
-      backdrop-filter: blur(12px) saturate(180%) !important;
-      -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+      background-color: rgba(15, 23, 42, 0.58) !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
     .modal-dialog {
       max-width: min(94vw, 1160px) !important;
@@ -686,15 +686,21 @@
       display: flex !important;
       flex-direction: column !important;
       border: var(--liquid-border) !important;
-      border-radius: var(--liquid-radius-xl) !important;
-      background: rgba(255, 255, 255, 0.96) !important;
-      backdrop-filter: blur(28px) saturate(190%) !important;
-      -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
-      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(255, 255, 255, 0.95) inset !important;
+      border-radius: 18px !important;
+      background: #ffffff !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(16, 185, 129, 0.12) !important;
+      animation: modalPanelIn 0.18s ease-out both;
+    }
+    @keyframes modalPanelIn {
+      from { opacity: 0; transform: translateY(10px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
     }
     .modal-header {
       padding: 14px 22px !important;
       border-bottom: 1px solid rgba(16, 185, 129, 0.15) !important;
+      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%) !important;
     }
     .modal-body {
       padding: 20px 24px !important;
@@ -704,6 +710,27 @@
     .modal-footer {
       padding: 12px 24px !important;
       border-top: 1px solid rgba(16, 185, 129, 0.15) !important;
+      background: #f8fafc !important;
+    }
+    .modal .btn-close {
+      width: 34px;
+      height: 34px;
+      padding: 8px;
+      border-radius: 50%;
+      background-color: rgba(226, 232, 240, 0.7);
+      opacity: 0.8;
+    }
+    .modal .btn-close:hover {
+      background-color: rgba(16, 185, 129, 0.16);
+      opacity: 1;
+    }
+    .swal2-container {
+      background: rgba(15, 23, 42, 0.58) !important;
+    }
+    .swal2-popup {
+      border: 1px solid rgba(16, 185, 129, 0.18) !important;
+      border-radius: 18px !important;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25) !important;
     }
   </style>
 
@@ -1042,8 +1069,16 @@
             _cache[key].loading = false;
             _inFlight[key] = false;
             _lastRequestedAt[key] = 0;
-            if (key === 'releaseData' && typeof handleHistoryFailure === 'function') {
-              handleHistoryFailure(error);
+            if (key === 'mainData') {
+              window._initialLoadedParts.mainData = true;
+              updateInitialProgress(70, 'Không tải được dữ liệu bản vẽ', 'stepMainData');
+              window.checkInitialDataReady();
+            }
+            if (key === 'releaseData') {
+              window._initialLoadedParts.releaseData = true;
+              if (typeof handleHistoryFailure === 'function') handleHistoryFailure(error);
+              updateInitialProgress(85, 'Không tải được dữ liệu QA-G2G', 'stepReleaseData');
+              window.checkInitialDataReady();
             }
           })
           [fnName]();
@@ -1076,6 +1111,7 @@
 
         init: function () {
           _fetch('mainData');
+          _fetch('releaseData');
         },
 
         ensure: function (key) {
@@ -1144,6 +1180,31 @@
     var pageData = [];
 
     var _initialLoadedParts = { user: false, mainData: false, releaseData: false };
+
+    window.checkInitialDataReady = function () {
+      if (!_initialLoadedParts.mainData || !_initialLoadedParts.releaseData) return;
+      updateInitialProgress(100, 'Đã tải xong dữ liệu hệ thống', 'stepReleaseData');
+      forceHideLoading();
+    };
+
+    function preloadPageData() {
+      // Khởi tạo dữ liệu các trang ngay trong splash loader để chuyển tab không bị chờ.
+      if (typeof initThongTinBanVe === 'function') initThongTinBanVe();
+      if (typeof initNhapDuLieuBanVe === 'function') {
+        window.__dwInfoInitialLoadGuard = window.__dwInfoInitialLoadGuard || {};
+        window.__dwInfoInitialLoadGuard.manual = true;
+        initNhapDuLieuBanVe();
+      }
+      if (typeof loadManagedDrawings === 'function') {
+        window.__dwInfoInitialLoadGuard = window.__dwInfoInitialLoadGuard || {};
+        window.__dwInfoInitialLoadGuard.manage = true;
+        loadManagedDrawings();
+      }
+      if (typeof initThietKeBanVe === 'function') {
+        window.__dwDesignPreloaded = true;
+        initThietKeBanVe();
+      }
+    }
 
     function updateInitialProgress(percent, text, stepDoneId) {
       var bar = document.getElementById('appLoadProgressBar');
@@ -1511,6 +1572,12 @@
           }
         }
         updateInitialProgress(40, "LIXIL BEHAVIORS", "stepUser");
+        _initialLoadedParts.user = true;
+      }).withFailureHandler(function (error) {
+        _initialLoadedParts.user = true;
+        updateInitialProgress(40, 'Không tải được thông tin người dùng', 'stepUser');
+        window.checkInitialDataReady();
+        console.error('Lỗi tải thông tin người dùng:', error);
       }).getUserProfile();
 
       // Đăng ký các page lắng nghe khi mainData sẵn sàng / cập nhật
@@ -1528,27 +1595,31 @@
           window.appTabLastRendered.dwDesign = mVer;
         }
 
+        if (typeof initThietKeBanVe === 'function' && window.__dwDesignPreloaded) {
+          initThietKeBanVe();
+        }
+
         _initialLoadedParts.mainData = true;
-        // Dữ liệu lịch sử đã chuyển sang tải lười, không được giữ loader ở 75%.
-        updateInitialProgress(100, "Đã tải xong dữ liệu bản vẽ...", "stepMainData");
-        forceHideLoading();
+        updateInitialProgress(70, "Đã tải dữ liệu bản vẽ...", "stepMainData");
+        window.checkInitialDataReady();
       });
 
       // Đăng ký dwRelease lắng nghe releaseData
       AppDataStore.onReady('releaseData', function (data) {
         var rVer = window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0;
-        if (typeof handleHistorySuccess === 'function') {
+        if (Array.isArray(data) && data.length > 0 && typeof handleHistorySuccess === 'function') {
           handleHistorySuccess(data);
           window.appTabLastRendered.release = rVer;
         }
 
         _initialLoadedParts.releaseData = true;
-        var p = _initialLoadedParts.mainData ? 100 : 85;
-        updateInitialProgress(p, "LIXIL BEHAVIORS", "stepReleaseData");
+        updateInitialProgress(85, "Đã tải dữ liệu QA-G2G...", "stepReleaseData");
+        window.checkInitialDataReady();
       });
 
       // Bắt đầu fetch song song cả 2 nguồn
       AppDataStore.init();
+      preloadPageData();
     });
 
 

@@ -7,16 +7,27 @@ const sheetConfig = {
 };
 
 const formatSheetCellValue = (cell) => {
-  if (cell && typeof cell.getContentUrl === "function") {
-    return cell.getContentUrl() || "";
-  }
-
-  if (String(cell) === "[object CellImage]") {
-    return "";
-  }
-
   if (cell instanceof Date) {
     return Utilities.formatDate(cell, Session.getScriptTimeZone(), "dd/MM/yyyy");
+  }
+
+  if (cell && typeof cell === "object") {
+    try {
+      const imageUrl = typeof cell.getContentUrl === "function" ? cell.getContentUrl() : "";
+      if (imageUrl) {
+        const response = UrlFetchApp.fetch(imageUrl, {
+          headers: { Authorization: `Bearer ${ScriptApp.getOAuthToken()}` },
+          muteHttpExceptions: true,
+        });
+        if (response.getResponseCode() === 200) {
+          const blob = response.getBlob();
+          return `data:${blob.getContentType()};base64,${Utilities.base64Encode(blob.getBytes())}`;
+        }
+      }
+    } catch (error) {
+      Logger.log(`Lỗi đọc CellImage: ${error.toString()}`);
+    }
+    return "";
   }
 
   return cell;
@@ -56,20 +67,37 @@ const getAllData = () => getMainData();
 const getMainData = () => getSheetDataByConfig(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName);
 
 const getReleaseData = () => {
-  const spreadsheet = SpreadsheetApp.openById(sheetConfig.releaseSpreadsheetId);
+  const releaseSpreadsheet = SpreadsheetApp.openById(sheetConfig.releaseSpreadsheetId);
   const expectedSheetName = String(sheetConfig.releaseSheetName).trim().toLowerCase();
-  const sheet = spreadsheet.getSheets().find((candidate) => String(candidate.getName()).trim().toLowerCase() === expectedSheetName);
-  if (!sheet) {
+  const releaseSheet = releaseSpreadsheet.getSheets().find((candidate) => String(candidate.getName()).trim().toLowerCase() === expectedSheetName);
+  if (!releaseSheet) {
     throw new Error(`Không tìm thấy sheet "${sheetConfig.releaseSheetName}" trong file dữ liệu ban hành.`);
   }
 
-  const lastRow = sheet.getLastRow();
-  const lastColumn = sheet.getLastColumn();
-  if (lastRow <= 1 || lastColumn === 0) {
-    return [];
-  }
+  const releaseRows = releaseSheet.getLastRow() > 1
+    ? normalizeSheetRows(releaseSheet.getRange(2, 1, releaseSheet.getLastRow() - 1, releaseSheet.getLastColumn()).getValues())
+    : [];
 
-  return normalizeSheetRows(sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues());
+  // Một số yêu cầu QA-G2G đang nằm ở Data trước khi được ghi sang sheet release.
+  // Hợp nhất chúng để dashboard không bị rỗng giữa hai bước của quy trình.
+  const mainSheet = getSheetByIdAndName(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName);
+  const mainRows = mainSheet && mainSheet.getLastRow() > 1
+    ? normalizeSheetRows(mainSheet.getRange(2, 1, mainSheet.getLastRow() - 1, mainSheet.getLastColumn()).getValues())
+    : [];
+  const isQaG2gRow = (row) => String(row[10] || '').trim().toUpperCase() === 'QA-G2G';
+  const qaReleaseRows = releaseRows.filter(isQaG2gRow);
+  const qaRows = mainRows.filter(isQaG2gRow);
+  const mergedRows = [];
+  const seenKeys = new Set();
+
+  qaReleaseRows.concat(qaRows).forEach((row) => {
+    const key = String(row[0] || '').trim() || `${row[8] || ''}|${row[4] || ''}|${row[5] || ''}`;
+    if (seenKeys.has(key)) return;
+    seenKeys.add(key);
+    mergedRows.push(row);
+  });
+
+  return mergedRows;
 };
 
 const getHolidaysFromCal = () => {

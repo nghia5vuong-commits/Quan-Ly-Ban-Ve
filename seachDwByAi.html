@@ -9,6 +9,17 @@
     position: relative;
     background: transparent !important;
     padding: 0 !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+  #page-seachDwByAI main {
+    height: auto !important;
+    min-height: 100%;
+    overflow: visible !important;
+  }
+  #page-seachDwByAI .search-layout {
+    height: auto !important;
+    min-height: 100%;
   }
 
   /* Cards & Glass Panels */
@@ -26,6 +37,10 @@
   #page-seachDwByAI .glass-card:hover {
     box-shadow: var(--liquid-shadow-lg);
     border-color: rgba(16, 185, 129, 0.3);
+  }
+  #page-seachDwByAI .search-layout > [class*="col-"] {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
   /* Upload & Preview Container */
@@ -478,16 +493,13 @@
 
   <main class="container-fluid p-0" style="height: 100%; overflow: hidden;">
 
-    <div class="row g-0" style="height: 100%;">
+    <div class="row g-0 search-layout" style="height: 100%;">
       <div class="col-lg-4 col-md-5">
         <div class="custom-sticky">
           <div class="glass-card">
             <label class="upload-title"><i class="bi bi-image"></i> <span data-i18n="upload_title">Hình ảnh đầu
                 vào</span></label>
-            <input type="file" class="form-control mb-3 custom-file-input" id="imageInput" accept="image/*"
-              onchange="previewSelectedImage(event)">
-
-            <div id="previewContainer" class="mb-3" onclick="document.getElementById('imageInput').click()">
+            <div id="previewContainer" class="mb-3">
               <div id="previewPlaceholder" class="text-center p-2">
                 <i class="bi bi-cloud-arrow-up fs-2 text-primary d-block mb-1"></i>
                 <span class="small text-muted fw-semibold">Chọn hoặc kéo thả ảnh bản vẽ vào đây</span>
@@ -568,7 +580,7 @@
                 <div class="ai-neural-core">
                   <div class="core-rings ring-1"></div>
                   <div class="core-rings ring-2"></div>
-                  <i class="bi bi-cpu-fill"></i>
+                  <i class="bi bi-robot"></i>
                 </div>
                 <div class="stream-line"></div>
               </div>
@@ -580,7 +592,7 @@
                 </div>
                 <div class="scan-viewport">
                   <div class="db-matrix-icon">
-                    <i class="bi bi-diagram-3-fill"></i>
+                    <i class="bi bi-database-fill"></i>
                   </div>
                   <div class="scan-laser laser-db"></div>
                   <div class="scan-grid-overlay"></div>
@@ -790,8 +802,7 @@
     var allCustomers = [];
     var globalDataMap = {};
 
-    function previewSelectedImage(event) {
-      var file = event.target.files[0];
+    function previewImageFile(file) {
       var container = document.getElementById('previewContainer');
       var preview = document.getElementById('previewImage');
       var loaderImg = document.getElementById('loaderOriginalImg');
@@ -933,6 +944,10 @@
 
     function executeSearchWithImage(imgSrc) {
       if (!imgSrc) { alert('Chua co hinh anh de tim kiem!'); return; }
+      if (/googleusercontent\.com|CellImage/i.test(String(imgSrc))) {
+        alert('Anh CellImage da het han, vui long keo tha lai anh ban ve.');
+        return;
+      }
       var navBtn = document.getElementById('nav-btn-seachDwByAi');
       if (typeof switchTab === 'function') switchTab('seachDwByAi', navBtn);
 
@@ -956,13 +971,20 @@
       } else {
         google.script.run
           .withSuccessHandler(function (base64Data) {
+            if (!base64Data || String(base64Data).indexOf('data:image') !== 0) {
+              if (aiLoader) aiLoader.style.display = 'none';
+              if (searchBtn) searchBtn.disabled = false;
+              alert('Không thể đọc hình mặt cắt từ cột AG.');
+              return;
+            }
             hideWelcomeCard();
-            var finalTarget = (base64Data && base64Data.length > 50) ? base64Data : imgSrc;
-            processImageAndSearch(finalTarget);
+            processImageAndSearch(base64Data);
           })
           .withFailureHandler(function (err) {
+            if (aiLoader) aiLoader.style.display = 'none';
+            if (searchBtn) searchBtn.disabled = false;
             hideWelcomeCard();
-            processImageAndSearch(imgSrc);
+            alert('Không thể đọc hình mặt cắt từ cột AG: ' + (err && err.message ? err.message : 'Lỗi không xác định'));
           })
           .getBase64FromUrlOrId(imgSrc);
 
@@ -970,22 +992,12 @@
     }
 
     function uploadAndSearch() {
-      var fileInput = document.getElementById('imageInput');
       var previewImg = document.getElementById('previewImage');
-      if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-        if (previewImg && previewImg.src && previewImg.src.length > 20) {
-          executeSearchWithImage(previewImg.src);
-          return;
-        }
-        alert(t('no_image'));
+      if (previewImg && previewImg.src && previewImg.src.length > 20) {
+        executeSearchWithImage(previewImg.src);
         return;
       }
-      var file = fileInput.files[0];
-      var reader = new FileReader();
-      reader.onload = function (e) {
-        processImageAndSearch(e.target.result);
-      };
-      reader.readAsDataURL(file);
+      alert(t('no_image'));
     }
 
 
@@ -1029,16 +1041,17 @@
       results.forEach(function (item, index) {
         var col = document.createElement('div'); col.className = 'col';
         var cleanName = item.name ? (item.name.split('.').slice(0, -1).join('.') || item.name) : 'N/A';
+        var toCode = /^TO-/i.test(cleanName) ? cleanName : 'TO-' + cleanName;
         var scoreHtml = item.score ? ('<div class="fw-bold text-danger mb-1">#' + (index + 1) + ' - ' + t('match_rate') + ' ' + item.score + '%</div>') : ('<div class="fw-bold text-muted mb-1">#' + (index + 1) + '</div>');
         col.innerHTML = '<div class="result-card ' + (index === 0 ? 'best-match' : '') + '" onclick="openLink(\'' + (item.link || '') + '\')" style="cursor:pointer;position:relative;">' +
           '<img src="' + (item.url || '') + '" alt="' + cleanName + '" onerror="this.src=\'https://via.placeholder.com/200?text=No+Image\';">' +
           scoreHtml +
-          '<div class="mb-2"><span class="filename-tag">' + cleanName + '</span></div>' +
+          '<div class="mb-2"><span class="filename-tag">' + toCode + '</span></div>' +
           '<div class="result-info-box mb-3">' +
           '<div class="info-item"><span class="info-label">&#128207; ' + t('size_label') + '</span><span class="info-value">' + (item.h || '--') + ' x ' + (item.w || '--') + '</span></div>' +
           '<div class="info-item"><span class="info-label">&#128100; ' + t('cust_label') + '</span><span class="info-value text-primary">' + (item.customer || t('general_cust')) + '</span></div>' +
           '</div>' +
-          '<button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm rounded-pill" onclick="event.stopPropagation();openform(\'' + (item.link_xlsx || '') + '\')">' +
+          '<button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm rounded-pill" onclick="event.stopPropagation();openform(\'' + escapeInlineValue(item.link_xlsx || '') + '\',\'' + escapeInlineValue(toCode) + '\')">' +
           '<i class="bi bi-file-earmark-check"></i> ' + t('action_to_link') +
           '</button></div>';
         resultFragment.appendChild(col);
@@ -1046,8 +1059,18 @@
       grid.appendChild(resultFragment);
     }
 
-    function openform(link_xlsx) {
-      if (!link_xlsx || link_xlsx === '---' || link_xlsx === '') { alert('Ban ghi nay khong co link xlsx!'); return; }
+    function escapeInlineValue(value) {
+      return String(value || '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/[\r\n]+/g, ' ');
+    }
+
+    function openform(link_xlsx, queryString) {
+      if (!link_xlsx || link_xlsx === '---' || link_xlsx === '') {
+        findAndOpenExcel(queryString);
+        return;
+      }
       document.getElementById('formH').value = document.getElementById('HInput').value;
       document.getElementById('formW').value = document.getElementById('WInput').value;
       document.getElementById('hiddenLinkXlsx').value = link_xlsx;
@@ -1055,6 +1078,43 @@
       document.getElementById('dwSelectValue').value = '';
       renderDwDropdown(globalDwList);
       new bootstrap.Modal(document.getElementById('useLinkModal')).show();
+    }
+
+    function findAndOpenExcel(queryString) {
+      if (!queryString) {
+        alert('Khong co ma ban ve de tim file Excel!');
+        return;
+      }
+
+      if (typeof showLoading === 'function') showLoading('Dang tim file Excel ' + queryString + '...');
+      var endpoint = 'http://10.156.42.195:8000/quan-ly-ban-ve/find-excel?query_string=' + encodeURIComponent(queryString);
+      fetch(endpoint)
+        .then(function (response) {
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          var contentDisposition = response.headers.get('Content-Disposition') || '';
+          return response.blob().then(function (blob) {
+            return { blob: blob, contentDisposition: contentDisposition };
+          });
+        })
+        .then(function (result) {
+          var filenameMatch = result.contentDisposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)/i);
+          var filename = filenameMatch && filenameMatch[1]
+            ? decodeURIComponent(filenameMatch[1].replace(/"/g, '').trim())
+            : queryString + '.xlsx';
+          var downloadUrl = URL.createObjectURL(result.blob);
+          var downloadLink = document.createElement('a');
+          downloadLink.href = downloadUrl;
+          downloadLink.download = filename;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          downloadLink.remove();
+          setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 1000);
+          if (typeof hideLoading === 'function') hideLoading();
+        })
+        .catch(function (error) {
+          if (typeof hideLoading === 'function') hideLoading();
+          alert('Khong the tim file Excel: ' + error.message);
+        });
     }
 
     function toggleDropdownDw() { document.getElementById('dwWrapper').classList.toggle('open'); }
@@ -1097,7 +1157,6 @@
       var w = document.getElementById('formW').value;
       var link_xlsx = document.getElementById('hiddenLinkXlsx').value;
       var dwVal = document.getElementById('dwSelectValue').value;
-      // var fileInput = document.getElementById('imageInput');
       if (!h || !w || !dwVal) { alert('Vui long nhap day du thong tin!'); return; }
       var parts = dwVal.split('|');
       var btnSave = document.querySelector('#useLinkModal .btn-primary');
@@ -1347,7 +1406,6 @@
 
     // Export all to window scope
     window.hideWelcomeCard = hideWelcomeCard;
-    window.previewSelectedImage = previewSelectedImage;
     window.processImageAndSearch = processImageAndSearch;
     window.executeSearchWithImage = executeSearchWithImage;
     window.uploadAndSearch = uploadAndSearch;
@@ -1373,6 +1431,27 @@
 
     // Attach searchBtn
     (function () { var btn = document.getElementById('searchBtn'); if (btn) btn.onclick = uploadAndSearch; })();
+
+    (function () {
+      var container = document.getElementById('previewContainer');
+      if (!container) return;
+
+      var picker = document.createElement('input');
+      picker.type = 'file';
+      picker.accept = 'image/*';
+      picker.hidden = true;
+      picker.addEventListener('change', function () {
+        if (picker.files && picker.files[0]) previewImageFile(picker.files[0]);
+      });
+      container.appendChild(picker);
+      container.addEventListener('click', function () { picker.click(); });
+      container.addEventListener('dragover', function (event) { event.preventDefault(); });
+      container.addEventListener('drop', function (event) {
+        event.preventDefault();
+        var file = event.dataTransfer && event.dataTransfer.files[0];
+        if (file && file.type.indexOf('image/') === 0) previewImageFile(file);
+      });
+    })();
   </script>
 
 </div>

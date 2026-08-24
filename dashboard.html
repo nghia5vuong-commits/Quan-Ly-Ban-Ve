@@ -72,6 +72,11 @@
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35) !important;
     font-weight: 700;
   }
+  .page-dashboard .segmented-btn:focus-visible,
+  .page-dashboard .kpi-card:focus-visible {
+    outline: 3px solid rgba(14, 165, 233, 0.28);
+    outline-offset: 2px;
+  }
   
   .page-dashboard .btn-reset-filter {
     width: 38px;
@@ -119,6 +124,22 @@
   }
   .page-dashboard .kpi-card:active {
     transform: scale(0.97);
+  }
+  .page-dashboard .kpi-card.kpi-active,
+  .page-dashboard .kpi-card.kpi-active-design,
+  .page-dashboard .kpi-card.kpi-active-sign,
+  .page-dashboard .kpi-card.kpi-active-release,
+  .page-dashboard .kpi-card.kpi-active-released {
+    border: 2px solid var(--liquid-primary) !important;
+    background: linear-gradient(135deg, #ffffff 0%, rgba(209, 250, 229, 0.82) 100%) !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14), var(--liquid-shadow-md) !important;
+  }
+  .page-dashboard .kpi-card.kpi-active .kpi-icon,
+  .page-dashboard .kpi-card.kpi-active-design .kpi-icon,
+  .page-dashboard .kpi-card.kpi-active-sign .kpi-icon,
+  .page-dashboard .kpi-card.kpi-active-release .kpi-icon,
+  .page-dashboard .kpi-card.kpi-active-released .kpi-icon {
+    border-color: var(--liquid-primary);
   }
   .page-dashboard .kpi-icon {
     width: 50px;
@@ -348,7 +369,7 @@
   <div class="row g-2 mb-3 align-items-stretch">
     <!-- Tổng Số Yêu Cầu -->
     <div class="col-12 col-sm-6 col-xl-4">
-      <div class="kpi-card h-100" id="kpiCard-all" data-kpi-filter="all" title="Xem tất cả">
+      <div class="kpi-card h-100 kpi-active" id="kpiCard-all" data-kpi-filter="all" title="Xem tất cả">
         <div>
           <span class="text-muted fw-semibold small d-block mb-1">Tổng Số Bản Vẽ</span>
           <h3 class="fw-bold text-dark mb-0" id="dashTotalCount">--</h3>

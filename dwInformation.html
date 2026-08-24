@@ -959,8 +959,8 @@
     if (!drawingModalInstance) {
       var modalEl = document.getElementById('drawingFormModal');
       drawingModalInstance = new bootstrap.Modal(modalEl, {
-        backdrop: false,
-        keyboard: false
+        backdrop: true,
+        keyboard: true
       });
       
       // Lắng nghe sự kiện modal show để re-fill ngày (tránh trường hợp form bị reset)
@@ -1113,7 +1113,7 @@
         var r = window.pageData[i];
         if (!Array.isArray(r)) continue;
         // Only treat r[32] as an image URL when it appears to be a real URL or data URI.
-        if (r[32] && typeof r[32] === 'string' && (/^https?:\/\//i.test(r[32]) || /^data:/i.test(r[32]))) {
+        if (r[32] && typeof r[32] === 'string' && !/googleusercontent\.com|CellImage/i.test(r[32]) && (/^https?:\/\//i.test(r[32]) || /^data:/i.test(r[32]))) {
           var rSo8 = String(r[8] || '').trim().toUpperCase().replace(/\s+/g, "");
           var rSo4 = String(r[4] || '').trim().toUpperCase().replace(/\s+/g, "");
           if ((cleanSo && (rSo8.indexOf(cleanSo) !== -1 || rSo4.indexOf(cleanSo) !== -1)) || 
@@ -1125,8 +1125,12 @@
       }
     }
 
-    var defaultImg = "https://img.icons8.com/?size=100&id=Wy3XKG1CjyKf&format=png&color=000000";
-    var finalImg = imageUrl || defaultImg;
+    if (/googleusercontent\.com|CellImage/i.test(String(imageUrl || ''))) imageUrl = '';
+    if (!imageUrl) {
+      showToast('Không tìm thấy hình mặt cắt ở cột AG.', 'warning');
+      return;
+    }
+    var finalImg = imageUrl;
 
     // 3. Thực thi kích hoạt dán ảnh và tìm kiếm trên seachDwByAi
     setTimeout(function () {
@@ -1587,9 +1591,9 @@
     }
 
     pendingState.selectedLogIdx = drawingItem.rowIdx;
-    pendingState.subject = 'Nâng cấp bản vẽ - ' + drawingItem.dwCode;
+    pendingState.subject = 'Update Version - ' + drawingItem.dwCode;
     pendingState.isUpgradeMode = true;  // Đánh dấu chế độ upgrade
-    document.getElementById('modalFormTitle').textContent = 'Nâng Cấp Bản Vẽ';
+    document.getElementById('modalFormTitle').textContent = 'Update Version';
 
     setToFieldVisibility(true);
     showSingleEditFields();
@@ -1617,7 +1621,7 @@
         }
         
         var fullData = res.data;
-        document.getElementById('modalFormTitle').textContent = 'Nâng Cấp Bản Vẽ';
+        document.getElementById('modalFormTitle').textContent = 'Update Version';
         
         // Pre-fill thông tin bản vẽ hiện tại (read-only)
         if (document.getElementById('formGroup')) {
@@ -1785,7 +1789,7 @@
 
         var actionHtml = '';
         if (exists) {
-          var imgUrl = escHtml(String(item.imageUrl || ''));
+          var imgUrl = /googleusercontent\.com|CellImage/i.test(String(item.imageUrl || '')) ? '' : escHtml(String(item.imageUrl || ''));
           var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
           actionHtml = '<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
             '<i class="fa fa-search me-1"></i>Tìm kiếm</button>';
@@ -1850,6 +1854,7 @@
         var dwCode = escHtml(String(item.dwCode || ''));
         var customer = escHtml(String(item.customer || 'Unknown'));
         var cutDrawing = String(item.cutDrawing || '').trim();
+        if (/googleusercontent\.com|CellImage/i.test(cutDrawing)) cutDrawing = '';
         var so = String(item.so || '').trim();
         var id = parseInt(item.rowIdx) || 0;
         var safeCutDrawing = escHtml(cutDrawing).replace(/'/g, "\\'");
@@ -1864,8 +1869,8 @@
         }
 
         var actionHtml = '<div class="btn-group shadow-sm">' +
-          '<button class="btn btn-sm btn-light border text-primary upgrade-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Nâng cấp bản vẽ"><i class="fa fa-arrow-up-right-dots me-1"></i>Nâng cấp</button>' +
-          '<button class="btn btn-sm btn-light border text-danger" onclick="event.stopPropagation(); removeManagedDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash me-1"></i>Xóa</button>' +
+          '<button class="btn btn-sm btn-light border text-primary upgrade-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Update Version"><i class="fa fa-arrow-up-right-dots me-1"></i>Update Version</button>' +
+          '<button class="btn btn-sm btn-light border text-danger" onclick="event.stopPropagation(); removeManagedDrawing(' + id + ')" title="Delete"><i class="fa fa-trash me-1"></i>Delete</button>' +
           '</div>';
 
         return '<tr class="bg-white" style="cursor:pointer;" onclick="handleSearchPackagingDrawing(\'' + safeCutDrawing + '\', \'' + safeSo + '\');">' +

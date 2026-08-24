@@ -9,7 +9,11 @@ const drawingSheetConfig = {
 
 const getDrawingSheet = () => SpreadsheetApp.openById(drawingSheetConfig.spreadsheetId).getSheetByName(drawingSheetConfig.sheetName);
 
-const normalizeCellValue = (value) => String(value ?? "").trim();
+const normalizeCellValue = (value) => {
+  if (value instanceof Date) return Utilities.formatDate(value, Session.getScriptTimeZone(), "dd/MM/yyyy");
+  if (value && typeof value === "object") return "";
+  return String(value ?? "").trim();
+};
 
 const groupContiguousRowNumbers = (rowNumbers) => {
   if (!rowNumbers || rowNumbers.length === 0) {
@@ -70,7 +74,7 @@ const getAllDataForStats = () => {
     }
 
     const rows = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
-    return rows.map((row) => row.map((cell) => (cell instanceof Date ? Utilities.formatDate(cell, Session.getScriptTimeZone(), "dd/MM/yyyy") : cell)));
+    return rows.map((row) => row.map((cell) => normalizeCellValue(cell)));
   } catch (error) {
     Logger.log(`Lỗi đọc dữ liệu thống kê: ${error.toString()}`);
     return [];
