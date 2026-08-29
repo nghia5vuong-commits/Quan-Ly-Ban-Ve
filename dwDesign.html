@@ -5,7 +5,47 @@
   .page-dwDesign {
     position: relative;
     background: transparent !important;
+    padding: 4px !important;
   }
+
+  .page-dwDesign .design-preview-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.42);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .page-dwDesign .design-preview-dialog {
+    display: flex;
+    flex-direction: column;
+    width: min(1100px, 96vw);
+    height: min(780px, 92vh);
+    overflow: hidden;
+    border: var(--liquid-border);
+    border-radius: var(--liquid-radius-lg);
+    background: var(--liquid-glass-elevated);
+    box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow);
+  }
+  .page-dwDesign .design-preview-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 18px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    background: rgba(255, 255, 255, 0.78);
+  }
+  .page-dwDesign .design-preview-head h5 { margin: 0; color: var(--liquid-text); font-weight: 800; }
+  .page-dwDesign .design-preview-head small { color: var(--liquid-text-muted); }
+  .page-dwDesign .design-preview-body { flex: 1; min-height: 0; background: #f8fafc; }
+  .page-dwDesign .design-preview-frame { width: 100%; height: 100%; border: 0; background: #fff; }
+  .page-dwDesign .design-preview-fallback { height: 100%; display: grid; place-content: center; justify-items: center; gap: 10px; color: var(--liquid-text-muted); }
+  .page-dwDesign .design-preview-fallback i { font-size: 2.5rem; color: var(--liquid-primary); }
   
   /* App Cards & Glass Cards */
   .page-dwDesign .app-card, 
@@ -199,6 +239,18 @@
   .page-dwDesign .form-select { font-size: 0.8rem !important; padding: 6px 10px !important; }
 </style>
   <div class="page-dwDesign" style="width: 100%; margin: 0 !important; min-height: 100%; height: auto; overflow-y: auto;">
+    <div class="design-preview-modal d-none" id="designPreviewModal" role="dialog" aria-modal="true" aria-labelledby="designPreviewTitle">
+      <div class="design-preview-dialog">
+        <div class="design-preview-head">
+          <div>
+            <h5 id="designPreviewTitle">Xem trước bản vẽ</h5>
+            <small id="designPreviewMeta">PDF preview</small>
+          </div>
+          <button type="button" class="btn btn-light border" onclick="closeDesignPreview()" aria-label="Đóng xem trước"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="design-preview-body" id="designPreviewBody"></div>
+      </div>
+    </div>
     <div class="row g-4">
 
       <!-- LEFT PANEL: TẢI FILE -->
@@ -342,11 +394,40 @@
   let dwDesignInitGuard = false;
 
   document.querySelector('.page-dwDesign').addEventListener('click', function (event) {
+    var previewButton = event.target.closest('[data-dw-preview]');
+    if (previewButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      openDesignPreview(previewButton.dataset.previewUrl, 'Xem trước bản vẽ PDF');
+      return;
+    }
     var refreshButton = event.target.closest('[data-refresh-design]');
     if (refreshButton) {
       initThietKeBanVe();
       return;
     }
+  });
+
+  function openDesignPreview(url, title) {
+    var modal = document.getElementById('designPreviewModal');
+    var body = document.getElementById('designPreviewBody');
+    var titleEl = document.getElementById('designPreviewTitle');
+    if (!modal || !body || !url) return;
+    var safeUrl = String(url).replace(/&amp;/g, '&').replace(/"/g, '&quot;');
+    if (titleEl) titleEl.textContent = title || 'Xem trước bản vẽ';
+    body.innerHTML = '<iframe class="design-preview-frame" src="' + safeUrl + '" title="Xem trước PDF"></iframe>';
+    modal.classList.remove('d-none');
+  }
+
+  function closeDesignPreview() {
+    var modal = document.getElementById('designPreviewModal');
+    var body = document.getElementById('designPreviewBody');
+    if (body) body.innerHTML = '';
+    if (modal) modal.classList.add('d-none');
+  }
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') closeDesignPreview();
   });
 
   // Cập nhật tên file khi chọn
@@ -628,7 +709,7 @@
        let btnPdfGuiKy = '';
        let canSubmit = false;
        if (pdfGuiKy && String(pdfGuiKy).includes('http')) {
-           btnPdfGuiKy = `<a href="${pdfGuiKy}" target="_blank" class="btn btn-sm btn-primary py-0 px-2"><i class="bi bi-eye"></i> Xem</a>`;
+           btnPdfGuiKy = `<a href="${pdfGuiKy}" target="_blank" data-dw-preview="true" data-preview-url="${String(pdfGuiKy).replace(/"/g, '&quot;')}" class="btn btn-sm btn-primary py-0 px-2"><i class="bi bi-eye"></i> Xem</a>`;
            canSubmit = true;
        } else {
            btnPdfGuiKy = `<span class="badge bg-warning text-dark">Chưa có link</span>`;

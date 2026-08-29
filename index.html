@@ -1189,16 +1189,16 @@
 
     function preloadPageData() {
       // Khởi tạo dữ liệu các trang ngay trong splash loader để chuyển tab không bị chờ.
-      if (typeof initThongTinBanVe === 'function') initThongTinBanVe();
+      if (typeof initThongTinBanVe === 'function') initThongTinBanVe(true);
       if (typeof initNhapDuLieuBanVe === 'function') {
         window.__dwInfoInitialLoadGuard = window.__dwInfoInitialLoadGuard || {};
         window.__dwInfoInitialLoadGuard.manual = true;
-        initNhapDuLieuBanVe();
+        initNhapDuLieuBanVe(true);
       }
       if (typeof loadManagedDrawings === 'function') {
         window.__dwInfoInitialLoadGuard = window.__dwInfoInitialLoadGuard || {};
         window.__dwInfoInitialLoadGuard.manage = true;
-        loadManagedDrawings();
+        loadManagedDrawings(true);
       }
       if (typeof initThietKeBanVe === 'function') {
         window.__dwDesignPreloaded = true;

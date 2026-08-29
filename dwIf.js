@@ -1,6 +1,7 @@
 var MAIL_CONFIG = {
   SUBJECT_FILTERS: ['MANUFACTURING ORDER', 'NEW PROJECT', 'THÔNG BÁO TỰ ĐỘNG'],
-  MAX_THREADS: 100,
+  MAX_THREADS: 25,
+  LIST_CACHE_SECONDS: 30,
   TIMEZONE: 'Asia/Ho_Chi_Minh'
 };
 
@@ -61,6 +62,11 @@ function getManufacturingEmails(page, keyword) {
   try {
     page = page || 0;
     keyword = keyword || '';
+    var cache = CacheService.getScriptCache();
+    var cacheKey = 'MAIL_LIST_' + page + '_' + Utilities.base64EncodeWebSafe(keyword).substring(0, 80);
+    var cached = cache.get(cacheKey);
+    if (cached) return JSON.parse(cached);
+
     var query = buildQuery(keyword);
     var limit = MAIL_CONFIG.MAX_THREADS;
     var start = page * limit;
@@ -132,13 +138,15 @@ function getManufacturingEmails(page, keyword) {
       } catch (err) { }
     }
 
-    return {
+    var result = {
       success: true,
       emails: emails,
       total: hasMore ? (start + limit + "+") : (start + emails.length),
       page: page,
       hasMore: hasMore
     };
+    cache.put(cacheKey, JSON.stringify(result), MAIL_CONFIG.LIST_CACHE_SECONDS);
+    return result;
   } catch (err) {
     return { success: false, error: err.toString(), emails: [], total: 0 };
   }
@@ -419,7 +427,9 @@ function saveToLogSheet(threadId, subject, parsedData, fullDataString) {
     ];
 
     logSheet.appendRow(rowData);
-    CacheService.getScriptCache().remove("MAIL_STATS");
+    var cache = CacheService.getScriptCache();
+    cache.remove("MAIL_STATS");
+    cache.remove("MAIL_LIST_0_");
 
     return { success: true, message: 'Đã lưu tiếp nhận thiết kế thành công!' };
   } catch (err) {
@@ -1189,6 +1199,37 @@ function updateBulkDrawing(rowIds, bulkData) {
       success: true, 
       message: 'Đã cập nhật ' + rowIds.length + ' bản vẽ' 
     };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
+function updateDrawingData(rowIdx, formRow) {
+  try {
+    var ss = SpreadsheetApp.openById('1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM');
+    var sheet = ss.getSheetByName('Data');
+    if (!sheet || !rowIdx || rowIdx < 2 || !formRow) return { success: false, error: 'Dữ liệu cập nhật không hợp lệ' };
+
+    var row = sheet.getRange(rowIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var fields = [
+      [3, formRow[0]], [4, formRow[1]], [10, formRow[2]], [8, formRow[3]],
+      [9, formRow[4]], [33, formRow[5]], [11, formRow[6]], [5, formRow[7]],
+      [12, formRow[8]], [15, formRow[9]], [28, formRow[10]], [29, formRow[11]],
+      [6, formRow[12]], [7, formRow[13]], [18, formRow[14]], [23, formRow[15]], [22, formRow[16]]
+    ];
+    fields.forEach(function (field) { row[field[0]] = field[1] === undefined ? '' : field[1]; });
+
+    var imageObj = formRow[17];
+    if (imageObj && imageObj.base64) {
+      var folder = DriveApp.getFolderById('19Faip8STiBLJ58aVLiqwVs4SaotKb1bm');
+      var blob = Utilities.newBlob(Utilities.base64Decode(imageObj.base64), imageObj.mimeType || 'image/png', imageObj.name || 'section-image');
+      var file = folder.createFile(blob);
+      try { file.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW); } catch (sharingErr) {}
+      row[32] = file.getUrl();
+    }
+
+    sheet.getRange(rowIdx, 1, 1, row.length).setValues([row]);
+    return { success: true };
   } catch (err) {
     return { success: false, error: err.toString() };
   }

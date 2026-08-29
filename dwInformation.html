@@ -146,6 +146,59 @@
   /* Buttons compact */
   .page-dwIf #manual-section .btn,
   .page-dwIf #manage-section .btn { padding: 4px 10px !important; font-size: 0.72rem !important; }
+  .page-dwIf .managed-action-group {
+    display: inline-flex;
+    gap: 5px;
+    padding: 4px;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 12px;
+    background: rgba(248, 250, 252, 0.82);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  }
+  .page-dwIf .managed-action-btn {
+    min-height: 30px;
+    padding: 5px 9px !important;
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    font-size: 0.68rem !important;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  }
+  .page-dwIf .managed-action-btn:hover,
+  .page-dwIf .managed-action-btn:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(15, 23, 42, 0.14);
+  }
+  .page-dwIf .managed-action-btn i { margin-right: 4px !important; }
+  .page-dwIf .managed-edit-btn {
+    color: #047857 !important;
+    background: #ecfdf5 !important;
+    border-color: #a7f3d0 !important;
+  }
+  .page-dwIf .managed-edit-btn:hover { background: #d1fae5 !important; }
+  .page-dwIf .managed-search-btn {
+    color: #0369a1 !important;
+    background: #f0f9ff !important;
+    border-color: #bae6fd !important;
+  }
+  .page-dwIf .managed-search-btn:hover { background: #e0f2fe !important; }
+  .page-dwIf .managed-upgrade-btn {
+    color: #1d4ed8 !important;
+    background: #eff6ff !important;
+    border-color: #bfdbfe !important;
+  }
+  .page-dwIf .managed-upgrade-btn:hover { background: #dbeafe !important; }
+  .page-dwIf .managed-delete-btn {
+    color: #b91c1c !important;
+    background: #fef2f2 !important;
+    border-color: #fecaca !important;
+  }
+  .page-dwIf .managed-delete-btn:hover { background: #fee2e2 !important; }
+  @media (max-width: 1100px) {
+    .page-dwIf .managed-action-group { flex-wrap: wrap; justify-content: flex-end; }
+  }
   .page-dwIf #drawingFormModal .modal-dialog { max-width: min(95vw, 980px); margin: 0.75rem auto; }
   .page-dwIf #drawingFormModal .modal-body { overflow-y: auto !important; }
   .page-dwIf #drawingFormModal .form-control,
@@ -526,30 +579,22 @@
 
   var dwInfoInitialized = false;
 
-  function initThongTinBanVe() {
+  function initThongTinBanVe(isBackground) {
     if (dwInfoInitialized) return;
     dwInfoInitialized = true;
-    loadEmailsAndStats(0);
+    loadEmailsAndStats(0, !!isBackground);
   }
 
-  async function loadEmailsAndStats(page) {
-    loadingRequests++;
+  async function loadEmailsAndStats(page, isBackground) {
+    if (!isBackground) loadingRequests++;
     state.currentPage = page;
 
     try {
-      // Bắn 2 luồng xuống máy chủ cùng một lúc bằng Promise.all
-      const [emailRes, statsRes] = await Promise.all([
-        new Promise((resolve, reject) => {
-          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getManufacturingEmails(page, state.keyword);
-        }),
-        new Promise((resolve, reject) => {
-          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getStatistics();
-        })
-      ]);
+      // Hiển thị danh sách ngay khi dữ liệu email về, không chờ thống kê.
+      const emailRes = await new Promise((resolve, reject) => {
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getManufacturingEmails(page, state.keyword);
+      });
 
-      hideLoading(); // <--- TẮT LOADING
-
-      // Xử lý kết quả Email
       if (!emailRes || !emailRes.success) {
         showToast('Lỗi tải danh sách: ' + (emailRes ? emailRes.error : 'rỗng'), 'error');
       } else {
@@ -559,16 +604,19 @@
         renderEmailList(emailRes.emails);
         renderPagination(emailRes);
       }
+      if (!isBackground) hideLoading();
 
-      // Xử lý kết quả Thống Kê
-      if (statsRes && statsRes.success) {
+      // Thống kê chạy riêng, không chặn thao tác chọn email.
+      google.script.run.withSuccessHandler(function (statsRes) {
+        if (statsRes && statsRes.success) {
         setText('statTotal', statsRes.total);
         setText('statUnread', statsRes.unread);
         setText('statToday', statsRes.today);
         setText('statWeek', statsRes.thisWeek);
-      }
+        }
+      }).getStatistics();
     } catch (err) {
-      hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
+      if (!isBackground) hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
       showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
     }
   }
@@ -951,7 +999,7 @@
   /* ==========================================================================
      MODULE 1.2: NHẬP DỮ LIỆU BẢN VẼ
      ========================================================================== */
-  var pendingState = { selectedLogIdx: null, subject: '', isUpgradeMode: false };
+  var pendingState = { selectedLogIdx: null, subject: '', isUpgradeMode: false, isFullEditMode: false };
   var drawingDataList = [];
   var drawingModalInstance = null; // Quản lý instance của Modal
 
@@ -973,8 +1021,13 @@
     return drawingModalInstance;
   }
 
-  async function initNhapDuLieuBanVe() {
-    loadingRequests++;
+  var pendingDrawingsLoading = false;
+  var pendingDrawingsLoaded = false;
+
+  async function initNhapDuLieuBanVe(isBackground) {
+    if (pendingDrawingsLoading || (pendingDrawingsLoaded && isBackground)) return;
+    pendingDrawingsLoading = true;
+    if (!isBackground) loadingRequests++;
     closeDrawingForm();
     try {
       const res = await new Promise((resolve, reject) => {
@@ -984,39 +1037,44 @@
           .getDrawingsWithoutImage();
       });
 
-      hideLoading(); // <--- TẮT LOADING
+      if (!isBackground) hideLoading(); // <--- TẮT LOADING
       
       if (!res) {
         // Fallback nếu hàm mới chưa deploy
-        return initPendingDataFallback();
+        pendingDrawingsLoading = false;
+        return initPendingDataFallback(isBackground);
       }
       
       if (res.success) {
+        pendingDrawingsLoaded = true;
         renderPendingList(res.data);
       } else {
         showToast('Lỗi tải danh sách: ' + res.error, 'error');
         // Fallback
-        return initPendingDataFallback();
+        pendingDrawingsLoading = false;
+        return initPendingDataFallback(isBackground);
       }
+      pendingDrawingsLoading = false;
     } catch (err) {
-      hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
+      if (!isBackground) hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
+      pendingDrawingsLoading = false;
       showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
       // Fallback
-      return initPendingDataFallback();
+      return initPendingDataFallback(isBackground);
     }
   }
 
   // Fallback - gọi hàm cũ nếu getDrawingsWithoutImage không sẵn dùng
-  function initPendingDataFallback() {
+  function initPendingDataFallback(isBackground) {
     google.script.run
       .withSuccessHandler(function (res) {
-        hideLoading();
+        if (!isBackground) hideLoading();
         if (res && res.success) {
           renderPendingList(res.data);
         }
       })
       .withFailureHandler(function (err) {
-        hideLoading();
+        if (!isBackground) hideLoading();
         showToast('Lỗi tải dữ liệu: ' + err.message, 'error');
       })
       .getPendingLogData();
@@ -1076,13 +1134,13 @@
           // Đã tồn tại trong Data -> Ẩn nút Sửa/Xóa, Hiện nút Tìm kiếm bản vẽ đóng gói
           var imgUrl = escHtml(String(item.imageUrl || ''));
           var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
-          actionHtml = '<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
-            '<i class="fa fa-search me-1"></i>Tìm kiếm</button>';
+          actionHtml = '<div class="managed-action-group"><button class="managed-action-btn managed-search-btn" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
+            '<i class="fa fa-search"></i>Tìm kiếm</button></div>';
         } else {
           // Chưa có trong Data -> Hiện nút Sửa & Xóa
-          actionHtml = '<div class="btn-group shadow-sm">' +
-            '<button class="btn btn-sm btn-light border text-primary" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen me-1"></i>Sửa</button>' +
-            '<button class="btn btn-sm btn-light border text-danger" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash me-1"></i>Xóa</button>' +
+          actionHtml = '<div class="managed-action-group">' +
+            '<button class="managed-action-btn managed-edit-btn" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen"></i>Sửa</button>' +
+            '<button class="managed-action-btn managed-delete-btn" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash"></i>Xóa</button>' +
             '</div>';
         }
 
@@ -1320,6 +1378,7 @@
     if (form) form.reset();
     pendingState.selectedLogIdx = null;
     pendingState.isUpgradeMode = false;
+    pendingState.isFullEditMode = false;
   }
 
   // Chức năng Xóa với thông báo mới
@@ -1386,7 +1445,7 @@
     }
 
     // Khi upgrade, sử dụng "Nội dung thay đổi" (formChangeLog) thay vì formNote
-    var noteValue = (pendingState && pendingState.isUpgradeMode) ? getVal('formChangeLog') : getVal('formNote');
+    var noteValue = (pendingState && (pendingState.isUpgradeMode || pendingState.isFullEditMode)) ? getVal('formChangeLog') : getVal('formNote');
 
     // Mảng 17 trường theo đúng thứ tự Form mới
     var rowData = [
@@ -1421,7 +1480,8 @@
         var base64String = event.target.result.split(',')[1];
         var imageObj = { base64: base64String, mimeType: file.type, name: file.name };
         rowData.push(imageObj);
-        sendDataToGas(rowData);
+        if (pendingState.isFullEditMode) sendManagedEditToGas(rowData);
+        else sendDataToGas(rowData);
       };
       reader.onerror = function () {
         hideLoading();
@@ -1430,7 +1490,8 @@
       reader.readAsDataURL(file);
     } else {
       rowData.push(null);
-      sendDataToGas(rowData);
+      if (pendingState.isFullEditMode) sendManagedEditToGas(rowData);
+      else sendDataToGas(rowData);
     }
   }
 
@@ -1500,6 +1561,27 @@
         showToast('Lỗi hệ thống: ' + err.message, 'error');
       })
       .saveDataToTestSheet(pendingState.subject, [rowData], pendingState.selectedLogIdx);
+  }
+
+  function sendManagedEditToGas(rowData) {
+    google.script.run
+      .withSuccessHandler(function (res) {
+        hideLoading();
+        if (res && res.success) {
+          showToast('Đã cập nhật dữ liệu!', 'success');
+          closeDrawingForm();
+          managedDrawingsLoaded = false;
+          loadManagedDrawings(true);
+          if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
+        } else {
+          showToast('Lỗi cập nhật: ' + (res ? res.error : 'Không rõ'), 'error');
+        }
+      })
+      .withFailureHandler(function (err) {
+        hideLoading();
+        showToast('Lỗi hệ thống: ' + err.message, 'error');
+      })
+      .updateDrawingData(pendingState.selectedLogIdx, rowData);
   }
 
   // ========== HỆ THỐNG CHECKBOX & BULK EDIT ==========
@@ -1593,6 +1675,7 @@
     pendingState.selectedLogIdx = drawingItem.rowIdx;
     pendingState.subject = 'Update Version - ' + drawingItem.dwCode;
     pendingState.isUpgradeMode = true;  // Đánh dấu chế độ upgrade
+    pendingState.isFullEditMode = false;
     document.getElementById('modalFormTitle').textContent = 'Update Version';
 
     setToFieldVisibility(true);
@@ -1713,6 +1796,51 @@
       .getDrawingByRowIdx(drawingItem.rowIdx);
   }
 
+  function openEditManagedDrawing(drawingItem) {
+    if (!drawingItem) return showToast('Không tìm thấy dữ liệu bản vẽ', 'warning');
+
+    pendingState.selectedLogIdx = drawingItem.rowIdx;
+    pendingState.subject = 'Sửa dữ liệu - ' + (drawingItem.dwCode || '');
+    pendingState.isUpgradeMode = false;
+    pendingState.isFullEditMode = true;
+    setToFieldVisibility(true);
+    showSingleEditFields();
+    var changeLogContainer = document.getElementById('changeLogContainer');
+    if (changeLogContainer) changeLogContainer.style.display = 'none';
+
+    var form = document.getElementById('drawingForm');
+    if (!form) return;
+    form.reset();
+    document.getElementById('modalFormTitle').textContent = 'Đang tải dữ liệu...';
+    getDrawingModal().show();
+
+    google.script.run
+      .withSuccessHandler(function (res) {
+        if (!res || !res.success || !res.data) return showToast('Không thể tải dữ liệu bản vẽ', 'error');
+        var data = res.data;
+        document.getElementById('modalFormTitle').textContent = 'Sửa dữ liệu bản vẽ';
+        var values = {
+          formGroup: data.group, formType: data.type, formCustomer: data.customer,
+          formTO: data.to, formProject: data.project, formSO: data.so,
+          formDwCode: data.dwCode, formVersion: data.version, formTypeDw: data.typeDw,
+          formAssignee: data.assignee, formWidth: data.width, formHeight: data.height,
+          formReceivedDate: formatDateISO(data.receivedDate),
+          formAssigneeDoneDate: formatDateISO(data.assigneeDoneDate),
+          formActualDoneDate: formatDateISO(data.actualDoneDate), formFYE: data.fye
+        };
+        Object.keys(values).forEach(function (id) {
+          var field = document.getElementById(id);
+          if (field) { field.value = values[id] || ''; field.disabled = false; }
+        });
+        var changeLog = document.getElementById('formChangeLog');
+        if (changeLog) { changeLog.value = data.note || ''; changeLog.disabled = true; }
+        var preview = document.getElementById('formImagePreview');
+        if (preview && data.image) { preview.src = data.image; preview.style.display = 'block'; }
+      })
+      .withFailureHandler(function (err) { showToast('Lỗi kết nối: ' + err.message, 'error'); })
+      .getDrawingByRowIdx(drawingItem.rowIdx);
+  }
+
   // ========== OPEN BULK EDIT FORM ==========
   function openBulkEditForm() {
     if (bulkState.selectedRows.size === 0) {
@@ -1791,12 +1919,12 @@
         if (exists) {
           var imgUrl = /googleusercontent\.com|CellImage/i.test(String(item.imageUrl || '')) ? '' : escHtml(String(item.imageUrl || ''));
           var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
-          actionHtml = '<button class="btn btn-sm btn-outline-primary fw-bold shadow-sm" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
-            '<i class="fa fa-search me-1"></i>Tìm kiếm</button>';
+          actionHtml = '<div class="managed-action-group"><button class="managed-action-btn managed-search-btn" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
+            '<i class="fa fa-search"></i>Tìm kiếm</button></div>';
         } else {
-          actionHtml = '<div class="btn-group shadow-sm">' +
-            '<button class="btn btn-sm btn-light border text-primary" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen me-1"></i>Sửa</button>' +
-            '<button class="btn btn-sm btn-light border text-danger" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash me-1"></i>Xóa</button>' +
+          actionHtml = '<div class="managed-action-group">' +
+            '<button class="managed-action-btn managed-edit-btn" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen"></i>Sửa</button>' +
+            '<button class="managed-action-btn managed-delete-btn" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash"></i>Xóa</button>' +
             '</div>';
         }
 
@@ -1815,23 +1943,31 @@
 
   // ========== QUẢN LÍ BẢN VẼ - LOAD & SEARCH ==========
   var managedDrawingList = [];
+  var managedDrawingsLoading = false;
+  var managedDrawingsLoaded = false;
 
-  function loadManagedDrawings() {
-    showLoading('Đang tải bản vẽ đủ dữ liệu...');
+  function loadManagedDrawings(isBackground) {
+    if (managedDrawingsLoading || (managedDrawingsLoaded && isBackground)) return;
+    managedDrawingsLoading = true;
+    if (!isBackground) showLoading('Đang tải bản vẽ đủ dữ liệu...');
 
     google.script.run
       .withSuccessHandler(function (res) {
-        hideLoading();
-        if (!res) return showToast('Lỗi phản hồi rỗng', 'error');
-        if (res.success) {
+        if (!isBackground) hideLoading();
+        if (!res) {
+          showToast('Lỗi phản hồi rỗng', 'error');
+        } else if (res.success) {
           managedDrawingList = res.data || [];
+          managedDrawingsLoaded = true;
           renderManagedDrawingTable(managedDrawingList);
         } else {
           showToast('Lỗi tải danh sách: ' + res.error, 'error');
         }
+        managedDrawingsLoading = false;
       })
       .withFailureHandler(function (err) {
-        hideLoading();
+        if (!isBackground) hideLoading();
+        managedDrawingsLoading = false;
         showToast('Lỗi kết nối: ' + err.message, 'error');
       })
       .getManagedDrawings();
@@ -1868,9 +2004,10 @@
           cutDrawingHtml = '<small class="text-muted">' + escHtml(cutDrawing) + '</small>';
         }
 
-        var actionHtml = '<div class="btn-group shadow-sm">' +
-          '<button class="btn btn-sm btn-light border text-primary upgrade-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Update Version"><i class="fa fa-arrow-up-right-dots me-1"></i>Update Version</button>' +
-          '<button class="btn btn-sm btn-light border text-danger" onclick="event.stopPropagation(); removeManagedDrawing(' + id + ')" title="Delete"><i class="fa fa-trash me-1"></i>Delete</button>' +
+        var actionHtml = '<div class="managed-action-group">' +
+          '<button class="managed-action-btn managed-edit-btn edit-managed-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Sửa dữ liệu"><i class="fa fa-pen"></i>Sửa dữ liệu</button>' +
+          '<button class="managed-action-btn managed-upgrade-btn upgrade-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Update Version"><i class="fa fa-arrow-up-right-dots"></i>Update Version</button>' +
+          '<button class="managed-action-btn managed-delete-btn" onclick="event.stopPropagation(); removeManagedDrawing(' + id + ')" title="Delete"><i class="fa fa-trash"></i>Xóa</button>' +
           '</div>';
 
         return '<tr class="bg-white" style="cursor:pointer;" onclick="handleSearchPackagingDrawing(\'' + safeCutDrawing + '\', \'' + safeSo + '\');">' +
@@ -1892,6 +2029,13 @@
           if (this.disabled) return;
           var itemData = JSON.parse(this.dataset.item);
           openUpgradeDrawingForm(itemData);
+        });
+      });
+      tbody.querySelectorAll('.edit-managed-btn').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+          e.stopPropagation();
+          e.preventDefault();
+          openEditManagedDrawing(JSON.parse(this.dataset.item));
         });
       });
     }
