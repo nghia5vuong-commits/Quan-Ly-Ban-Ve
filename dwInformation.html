@@ -486,11 +486,19 @@
             <div class="col-md-3 col-sm-6">
               <label class="form-label fw-semibold">Version <span class="text-danger">*</span></label>
               <select id="formVersion" class="form-select bg-light" required>
-                <option value="v1.0">v1.0</option>
-                <option value="v1.1">v1.1</option>
-                <option value="v2.0">v2.0</option>
-                <option value="v3.0">v3.0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="Other">Other</option>
               </select>
+              <input type="number" id="formCustomVersion" class="form-control bg-light mt-2" placeholder="Nhập Version khác..." min="1" inputmode="numeric" style="display: none;" />
             </div>
             <div class="col-md-3 col-sm-6">
               <label class="form-label fw-semibold">Type DW <span class="text-danger">*</span></label>
@@ -1317,6 +1325,7 @@
     form.reset();
     var rDate = document.getElementById('formReceivedDate');
     if (rDate) rDate.value = new Date().toISOString().split('T')[0];
+    fillCurrentUserAssignee();
     autoFillAssigneeDoneDate();
     generateDwCode();
 
@@ -1352,10 +1361,12 @@
     // Hide "Nội dung thay đổi" field
     var changeLogContainer = document.getElementById('changeLogContainer');
     if (changeLogContainer) changeLogContainer.style.display = 'none';
+    var changeLogField = document.getElementById('formChangeLog');
+    if (changeLogField) changeLogField.required = false;
     
     // Re-enable tất cả field khi đóng form
     var allFields = ['formGroup', 'formType', 'formCustomer', 'formTO', 'formProject', 'formSO', 'formDwCode', 
-                     'formVersion', 'formTypeDw', 'formAssignee', 'formWidth', 'formHeight', 'formReceivedDate', 
+             'formVersion', 'formCustomVersion', 'formTypeDw', 'formAssignee', 'formWidth', 'formHeight', 'formReceivedDate', 
                      'formAssigneeDoneDate', 'formActualDoneDate', 'formFYE', 'formNote', 'formImageFile', 'formChangeLog'];
     allFields.forEach(function(fieldId) {
       var field = document.getElementById(fieldId);
@@ -1376,6 +1387,7 @@
     // Reset lại trạng thái form
     var form = document.getElementById('drawingForm');
     if (form) form.reset();
+    setVersionOtherVisibility();
     pendingState.selectedLogIdx = null;
     pendingState.isUpgradeMode = false;
     pendingState.isFullEditMode = false;
@@ -1427,6 +1439,46 @@
   }
   document.addEventListener('change', function (e) { if (e.target && e.target.id === 'formTypeDw') generateDwCode(); });
 
+  function setVersionOtherVisibility() {
+    var versionSelect = document.getElementById('formVersion');
+    var customVersion = document.getElementById('formCustomVersion');
+    if (!versionSelect || !customVersion) return;
+    var isOther = versionSelect.value === 'Other';
+    customVersion.style.display = isOther ? 'block' : 'none';
+    customVersion.required = isOther;
+    if (!isOther) customVersion.value = '';
+  }
+
+  function getSelectedVersion() {
+    var versionSelect = document.getElementById('formVersion');
+    var customVersion = document.getElementById('formCustomVersion');
+    if (versionSelect && versionSelect.value === 'Other') {
+      return customVersion ? customVersion.value.trim() : '';
+    }
+    return versionSelect ? versionSelect.value : '';
+  }
+
+  function selectNextVersion(currentVersion) {
+    var current = parseInt(String(currentVersion || '').replace(/[^0-9]/g, ''), 10);
+    var next = isNaN(current) ? 1 : current + 1;
+    var versionSelect = document.getElementById('formVersion');
+    var customVersion = document.getElementById('formCustomVersion');
+    if (!versionSelect) return;
+
+    if (next >= 1 && next <= 10) {
+      versionSelect.value = String(next);
+      if (customVersion) customVersion.value = '';
+    } else {
+      versionSelect.value = 'Other';
+      if (customVersion) customVersion.value = String(next);
+    }
+    setVersionOtherVisibility();
+  }
+
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'formVersion') setVersionOtherVisibility();
+  });
+
   function handleDrawingFormSubmit(e) {
     e.preventDefault();
 
@@ -1445,7 +1497,17 @@
     }
 
     // Khi upgrade, sử dụng "Nội dung thay đổi" (formChangeLog) thay vì formNote
+    if (pendingState && pendingState.isUpgradeMode && !getVal('formChangeLog').trim()) {
+      showToast('Vui lòng nhập nội dung thay đổi khi Update Version.', 'warning');
+      return;
+    }
+
     var noteValue = (pendingState && (pendingState.isUpgradeMode || pendingState.isFullEditMode)) ? getVal('formChangeLog') : getVal('formNote');
+    var selectedVersion = getSelectedVersion();
+    if (!selectedVersion) {
+      showToast('Vui lòng nhập Version.', 'warning');
+      return;
+    }
 
     // Mảng 17 trường theo đúng thứ tự Form mới
     var rowData = [
@@ -1456,7 +1518,7 @@
       getVal('formProject'),          // 4: Dự án
       getVal('formSO'),               // 5: Số SO
       getVal('formDwCode'),           // 6: Dw Code
-      getVal('formVersion'),          // 7: Version
+      selectedVersion,                // 7: Version
       getVal('formTypeDw'),           // 8: Type DW
       getVal('formAssignee'),         // 9: Người đảm trách
       getVal('formWidth'),            // 10: Width
@@ -1665,6 +1727,65 @@
     if (fields) fields.style.display = 'none';
   }
 
+  function fillCurrentUserAssignee() {
+    var assignee = document.getElementById('formAssignee');
+    if (assignee && typeof user !== 'undefined' && user && user.name) {
+      assignee.value = user.name;
+    }
+  }
+
+  function fillManagedDrawingForm(data, isUpgrade) {
+    var values = {
+      formGroup: data.group, formType: data.type, formCustomer: data.customer,
+      formTO: data.to, formProject: data.project, formSO: data.so,
+      formDwCode: data.dwCode, formVersion: data.version, formTypeDw: data.typeDw,
+      formAssignee: data.assignee, formWidth: data.width, formHeight: data.height,
+      formReceivedDate: formatDateISO(data.receivedDate),
+      formAssigneeDoneDate: formatDateISO(data.assigneeDoneDate),
+      formActualDoneDate: formatDateISO(data.actualDoneDate), formFYE: data.fye
+    };
+
+    Object.keys(values).forEach(function (id) {
+      var field = document.getElementById(id);
+      if (field) { field.value = values[id] || ''; field.disabled = !!isUpgrade; }
+    });
+
+    if (isUpgrade) {
+      var versionField = document.getElementById('formVersion');
+      if (versionField) {
+        versionField.disabled = false;
+        selectNextVersion(data.version);
+      }
+      ['formWidth', 'formHeight', 'formImageFile', 'formChangeLog'].forEach(function (id) {
+        var field = document.getElementById(id);
+        if (field) field.disabled = false;
+      });
+      var changeLog = document.getElementById('formChangeLog');
+      if (changeLog) {
+        changeLog.value = data.note || '';
+        changeLog.required = true;
+      }
+      document.getElementById('formWidth').value = '';
+      document.getElementById('formHeight').value = '';
+      document.getElementById('formImageFile').value = '';
+      document.getElementById('formImagePreview').style.display = 'none';
+      document.getElementById('formImagePreview').src = '';
+    } else {
+      var typeField = document.getElementById('formType');
+      if (typeField) {
+        typeField.value = 'Revise';
+        typeField.disabled = false;
+      }
+      var versionField = document.getElementById('formVersion');
+      if (versionField) versionField.disabled = true;
+      setVersionOtherVisibility();
+      var changeLog = document.getElementById('formChangeLog');
+      if (changeLog) { changeLog.value = data.note || ''; changeLog.disabled = true; }
+      var preview = document.getElementById('formImagePreview');
+      if (preview && data.image) { preview.src = data.image; preview.style.display = 'block'; }
+    }
+  }
+
   // ========== OPEN UPGRADE DRAWING FORM (TAB 3) ==========
   function openUpgradeDrawingForm(drawingItem) {
     if (!drawingItem) {
@@ -1694,6 +1815,12 @@
     var modal = getDrawingModal();
     document.getElementById('modalFormTitle').textContent = 'Đang tải thông tin bản vẽ...';
     modal.show();
+
+    if (drawingItem.version !== undefined) {
+      document.getElementById('modalFormTitle').textContent = 'Update Version';
+      fillManagedDrawingForm(drawingItem, true);
+      return;
+    }
 
     // Fetch dữ liệu đầy đủ từ backend
     google.script.run
@@ -1737,7 +1864,8 @@
         }
         if (document.getElementById('formVersion')) {
           document.getElementById('formVersion').value = fullData.version || '';
-          document.getElementById('formVersion').disabled = true;
+          document.getElementById('formVersion').disabled = false;
+          selectNextVersion(fullData.version);
         }
         if (document.getElementById('formTypeDw')) {
           document.getElementById('formTypeDw').value = fullData.typeDw || '';
@@ -1764,7 +1892,7 @@
           document.getElementById('formFYE').disabled = true;
         }
         
-        // Enable chỉ 3 trường cần sửa + change log
+        // Chỉ mở các trường được phép cập nhật trong chế độ Update Version.
         if (document.getElementById('formWidth')) {
           document.getElementById('formWidth').value = '';
           document.getElementById('formWidth').disabled = false;
@@ -1784,6 +1912,7 @@
         if (document.getElementById('formChangeLog')) {
           document.getElementById('formChangeLog').value = fullData.note || '';
           document.getElementById('formChangeLog').disabled = false;
+          document.getElementById('formChangeLog').required = true;
         }
 
         if (!document.getElementById('formAssigneeDoneDate').value) {
@@ -1814,6 +1943,12 @@
     document.getElementById('modalFormTitle').textContent = 'Đang tải dữ liệu...';
     getDrawingModal().show();
 
+    if (drawingItem.version !== undefined) {
+      document.getElementById('modalFormTitle').textContent = 'Sửa dữ liệu bản vẽ';
+      fillManagedDrawingForm(drawingItem, false);
+      return;
+    }
+
     google.script.run
       .withSuccessHandler(function (res) {
         if (!res || !res.success || !res.data) return showToast('Không thể tải dữ liệu bản vẽ', 'error');
@@ -1832,6 +1967,14 @@
           var field = document.getElementById(id);
           if (field) { field.value = values[id] || ''; field.disabled = false; }
         });
+        var typeField = document.getElementById('formType');
+        if (typeField) {
+          typeField.value = 'Revise';
+          typeField.disabled = false;
+        }
+        var versionField = document.getElementById('formVersion');
+        if (versionField) versionField.disabled = true;
+        setVersionOtherVisibility();
         var changeLog = document.getElementById('formChangeLog');
         if (changeLog) { changeLog.value = data.note || ''; changeLog.disabled = true; }
         var preview = document.getElementById('formImagePreview');
@@ -1881,6 +2024,7 @@
     form.reset();
     var rDate = document.getElementById('formReceivedDate');
     if (rDate) rDate.value = new Date().toISOString().split('T')[0];
+    fillCurrentUserAssignee();
     if (document.getElementById('formCustomer')) document.getElementById('formCustomer').value = customer || '';
     if (document.getElementById('formTO')) document.getElementById('formTO').value = to || '';
     if (document.getElementById('formSO')) document.getElementById('formSO').value = so || '';

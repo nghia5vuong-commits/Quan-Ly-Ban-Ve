@@ -627,6 +627,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
     var formRow = matrixData[0];
     var imageObj = formRow.pop();
+    var uploadedImageUrl = '';
 
     if (imageObj && imageObj.base64) {
       try {
@@ -642,6 +643,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
         } catch (sharingErr) {
           Logger.log('Không thể cập nhật quyền chia sẻ ảnh mặt cắt: ' + sharingErr.toString());
         }
+        uploadedImageUrl = imageFile.getUrl();
 
       } catch (imgErr) {
         throw new Error('Không thể lưu hình ảnh mặt cắt vào Drive: ' + imgErr.toString());
@@ -709,7 +711,9 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     var userEmail = getCurrentUserEmail();
 
     // 2. Ghi dữ liệu vào sheet "Data" (33 cột từ A -> AG)
-    var mappedRowData = new Array(33).fill("");
+    var mappedRowData = isUpgradeMode
+      ? sheetData.getRange(rowIdx, 1, 1, Math.max(sheetData.getLastColumn(), 34)).getValues()[0]
+      : new Array(34).fill("");
     mappedRowData[0] = autoId;             // A: ID
     mappedRowData[1] = userEmail;          // B: Mail ID
     mappedRowData[2] = "Đang thực hiện";           // C: Status (không thay đổi nếu upgrade)
@@ -742,7 +746,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     mappedRowData[29] = heightVal;          // AD: H
     mappedRowData[30] = "";                 // AE: Sample File Excel
     mappedRowData[31] = "";                 // AF: Sample File PDF
-    mappedRowData[32] = "";                  // AG: Hình ảnh mặt cắt
+    if (uploadedImageUrl) mappedRowData[32] = uploadedImageUrl; // AG: Hình ảnh mặt cắt
     mappedRowData[33] = soNo;              // AH: Mã SO
 
     // Chỉ kiểm tra TO+Customer trong chế độ INSERT (không upgrade)
@@ -979,7 +983,20 @@ function getManagedDrawings() {
           to: String(toVal),
           dwCode: String(dwCodeVal),
           customer: String(customerVal),
+          group: String(row[3] || ''),
+          project: String(row[9] || ''),
+          version: String(row[5] || ''),
+          receivedDate: String(row[6] || ''),
+          assigneeDoneDate: String(row[7] || ''),
+          typeDw: String(row[12] || row[24] || ''),
+          assignee: String(row[15] || ''),
+          actualDoneDate: String(row[18] || ''),
+          note: String(row[22] || ''),
+          fye: String(row[23] || ''),
+          width: String(row[28] || ''),
+          height: String(row[29] || ''),
           cutDrawing: agStr,    // Already converted to string
+          image: agStr,
           so: String(row[33] || ''),
           rowIdx: i + 2                 // Row index (1-based)
         });
