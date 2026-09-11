@@ -16,7 +16,7 @@
     animation: modalPanelIn 0.18s ease-out both;
   }
 
-  /* Main Container Card */
+  /* Main Container Card */ 
   .page-submitDrawingsForApproval .app-card {
     position: relative;
     overflow: hidden;
@@ -290,6 +290,131 @@
     .page-submitDrawingsForApproval .level-card-group { grid-template-columns: 1fr; }
     .page-submitDrawingsForApproval > .app-card > .table-responsive { max-height: calc(100vh - 260px) !important; }
   }
+
+  /* ===== BẢNG MA TRẬN BAN HÀNH - DRAWING DISTRIBUTION MATRIX ===== */
+  .dw-matrix-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 360px;
+    border: 1px solid #d1fae5;
+    border-radius: 10px;
+    background: #fff;
+  }
+  .dw-matrix-table {
+    border-collapse: collapse;
+    min-width: 1020px;
+    width: 100%;
+    font-size: 0.72rem;
+  }
+  .dw-matrix-table th, .dw-matrix-table td {
+    border: 1px solid #e2e8f0;
+    padding: 4px 5px;
+    white-space: nowrap;
+  }
+  /* Header row 1 - cột thông tin cơ sở */
+  .dw-matrix-table .th-info {
+    background: #FEF9C3;
+    color: #713f12;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 0.68rem;
+  }
+  /* Header row 1 - cột bộ phận */
+  .dw-matrix-table .th-dept {
+    background: #DCFCE7;
+    color: #14532d;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    font-size: 0.68rem;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .dw-matrix-table .th-dept:hover { background: #bbf7d0; }
+  /* FAB group header */
+  .dw-matrix-table .th-fab-group {
+    background: #d1fae5;
+    color: #065f46;
+    font-weight: 800;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 0.7rem;
+    border-bottom: 2px solid #6ee7b7;
+  }
+  /* Header row 2 - sub FAB depts */
+  .dw-matrix-table .th-fab-sub {
+    background: #DCFCE7;
+    color: #14532d;
+    font-weight: 700;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    font-size: 0.68rem;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .dw-matrix-table .th-fab-sub:hover { background: #bbf7d0; }
+  /* Data rows */
+  .dw-matrix-table tbody tr { transition: background 0.1s; }
+  .dw-matrix-table tbody tr:hover td { background: rgba(209, 250, 229, 0.35) !important; }
+  .dw-matrix-table .td-info {
+    text-align: center;
+    font-size: 0.71rem;
+    color: #334155;
+  }
+  .dw-matrix-table .td-info.td-type { font-weight: 700; color: #1e3a5f; }
+  /* Ô bộ phận - toggle O */
+  .dw-matrix-table .td-dept {
+    text-align: center;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #0f766e;
+    min-width: 36px;
+    width: 36px;
+    transition: background 0.12s;
+    user-select: none;
+  }
+  .dw-matrix-table .td-dept:hover { background: rgba(16,185,129,0.1) !important; }
+  .dw-matrix-table .td-dept.active { background: rgba(16,185,129,0.08); }
+  /* Checkbox row */
+  .dw-matrix-table .td-check {
+    text-align: center;
+    width: 34px;
+    background: #fafafa;
+  }
+  /* Release toolbar */
+  .release-matrix-toolbar {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 6px 8px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 8px;
+  }
+  .release-matrix-toolbar .rmtb-btn {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    color: #334155;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .release-matrix-toolbar .rmtb-btn:hover { background: #e0f2fe; border-color: #38bdf8; color: #0369a1; }
+  .release-matrix-toolbar .rmtb-btn.preset { background: #f0fdf4; border-color: #86efac; color: #15803d; }
+  .release-matrix-toolbar .rmtb-btn.preset:hover { background: #dcfce7; }
+  .release-matrix-toolbar .rmtb-btn.danger { background: #fff1f2; border-color: #fda4af; color: #be123c; }
+  .release-matrix-toolbar .rmtb-btn.danger:hover { background: #ffe4e6; }
+  .rmtb-label { font-size: 0.68rem; color: #94a3b8; font-weight: 600; white-space: nowrap; }
 </style>
 
   <div class="app-card" style="margin: 0;">
@@ -407,11 +532,11 @@
         <i class="bi bi-exclamation-circle me-1"></i>Vui lòng nhập lý do từ chối!
       </div>
       <div style="display:flex; gap:10px; margin-top:20px; justify-content:flex-end;">
-        <button onclick="closeRejectModal()"
+        <button type="button" onclick="closeRejectModal()"
           style="padding:8px 20px; border-radius:8px; border:1px solid #cbd5e1; background:#f8fafc; color:#64748b; font-weight:600; font-size:0.85rem; cursor:pointer;">
           Hủy
         </button>
-        <button onclick="submitReject()"
+        <button type="button" id="btnConfirmReject" onclick="submitReject()"
           style="padding:8px 22px; border-radius:8px; border:none; background:#ef4444; color:#ffffff; font-weight:700; font-size:0.85rem; cursor:pointer; display:inline-flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(239,68,68,0.3);">
           <i class="bi bi-x-circle-fill"></i> Xác Nhận Từ Chối
         </button>
@@ -459,20 +584,21 @@
   }
 
   const COL_MAP = {
-    ID: 0,           // Cột A: ID
-    GROUP: 3,        // Cột D: Group
-    TYPE: 4,         // Cột E: Type
-    REQ_NO: 8,       // Cột I: Request No / TO
-    PROJECT: 9,      // Cột J: Dự án
-    CUSTOMER: 10,    // Cột K: Khách hàng
-    DW_NO: 11,       // Cột L: Mã bản vẽ
-    VERSION: 12,     // Cột M: Phiên bản
-    STATUS: 2,       // Cột C: Trạng thái
-    PDF_LINK_O: 14,  // Cột O (15): File Drawing (PDF)
-    PDF_LINK_AF: 31, // Cột AF (32): File Stamped PDF
-    CHECKER_BY: 17,  // Cột R: Người ký Checker
+    ID: 0,            // Cột A: ID
+    GROUP: 3,         // Cột D: Group
+    TYPE: 4,          // Cột E: Type
+    REQ_NO: 8,        // Cột I: Request No / TO
+    PROJECT: 9,       // Cột J: Dự án
+    CUSTOMER: 10,     // Cột K: Khách hàng
+    DW_NO: 11,        // Cột L: Mã bản vẽ
+    DRAWING_REVISE: 5, // Cột F: Drawing Revise
+    VERSION: 12,      // Cột M: Version Drawing
+    STATUS: 2,        // Cột C: Trạng thái
+    PDF_LINK_O: 14,   // Cột O (15): File Drawing (PDF)
+    PDF_LINK_AF: 31,  // Cột AF (32): File Stamped PDF
+    CHECKER_BY: 17,   // Cột R: Người ký Checker
     CHECKER_DATE: 18, // Cột S: Ngày ký Checker
-    APPROVAL_BY: 19, // Cột T: Người ký Approval
+    APPROVAL_BY: 19,  // Cột T: Người ký Approval
     APPROVAL_DATE: 20 // Cột U: Ngày ký Approval
   };
 
@@ -506,6 +632,13 @@
       .toLowerCase()
       .replace(/\s+/g, '')
       .trim();
+  }
+
+  function isReleaseEligibleRow(row) {
+    if (!row) return false;
+    const status = String(row[COL_MAP.STATUS] || '');
+    const st = cleanStr(status);
+    return st === 'cho ban hanh';
   }
 
   function canUserApproveLevel(levelName) {
@@ -592,7 +725,9 @@
     if (!tbody) return;
     approvalCurrentPage = 1;
 
-    const rawData = (typeof pageData !== 'undefined' && Array.isArray(pageData)) ? pageData : (window.pageData || []);
+    const rawData = (Array.isArray(window.pageData) && window.pageData.length > 0)
+      ? window.pageData
+      : ((typeof pageData !== 'undefined' && Array.isArray(pageData)) ? pageData : []);
     if (!rawData || rawData.length === 0) { 
       tbody.innerHTML = '<tr><td colspan="10" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...</td></tr>';
       return; 
@@ -711,6 +846,7 @@
 
   function buildRowHtml(row, idx) {
     const id = String(row[COL_MAP.ID] || '');
+    const sourceRowIndex = approvalRowsData.indexOf(row);
     const type = row[COL_MAP.TYPE] || row[COL_MAP.GROUP] || '—';
     const reqNo = row[COL_MAP.REQ_NO] || '—';
     const dwNo = row[COL_MAP.DW_NO] || 'Chưa có mã';
@@ -731,7 +867,7 @@
     else if (st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')) { bb = '#e0f2fe'; bc = '#0369a1'; }
     else if (st.includes('hoan thanh') || st.includes('done') || st.includes('released')) { bb = '#f0fdf4'; bc = '#15803d'; }
 
-    const isReleaseStatus = st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh');
+    const isReleaseStatus = st === 'cho ban hanh';
 
     const pdfBtn = hasPdf
       ? `<button class="btn-view-pdf shadow-sm" onclick="event.stopPropagation();viewApprovalPdf('${pdfUrl}')"><i class="bi bi-file-earmark-pdf-fill text-danger"></i> PDF</button>`
@@ -744,16 +880,6 @@
       : pdfBtn;
 
     const mkActions = (state, id, dwNo, level, label) => {
-      if (isReleaseStatus) {
-        if (level !== 'Approval') return '';
-        return `
-          <div class="level-actions">
-            <button class="btn-step-approve shadow-sm" data-row-id="${id}" data-dw-no="${dwNo}" onclick="openBulkReleaseFormForRow('${id}', '${dwNo}')">
-              <i class="fa fa-rocket me-1"></i> Gửi ban hành
-            </button>
-          </div>`;
-      }
-
       if (state === 'done') return '';
       if (state !== 'waiting') return '';
       if (!canUserApproveLevel(level)) return '';
@@ -773,7 +899,7 @@
     return `
     <tr class="dw-row" onclick="toggleRowDetail('${id}')">
       <td class="text-center" onclick="event.stopPropagation();">
-        <input type="checkbox" class="form-check-input approval-row-checkbox" data-row-id="${id}" onchange="updateBulkApproveButtonVisibility(); updateBulkReleaseButtonVisibility();" style="cursor: pointer;">
+        <input type="checkbox" class="form-check-input approval-row-checkbox" data-row-id="${id}" data-row-index="${sourceRowIndex}" onchange="updateBulkApproveButtonVisibility(); updateBulkReleaseButtonVisibility();" style="cursor: pointer;">
       </td>
       <td class="text-center fw-bold text-secondary">${idx + 1}</td>
       <td><span class="badge bg-light text-dark border px-2 py-1">${type}</span></td>
@@ -866,47 +992,73 @@
     window.open(url, '_blank');
   }
 
+  // Cờ chống nhấn đúp / thao tác 2 lần
+  var _isApprovingSingle = false;
+  var _isRejectingDrawing = false;
+  var _isBulkApproving = false;
+  var _isBulkReleasing = false;
+
+  // UI Loading chuẩn hệ thống (iOS Liquid Glass Overlay)
+  function showApprovalLoading(msg) {
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: 'Đang lưu dữ liệu...',
+        html: `
+          <div style="padding: 10px 0; text-align: center;">
+            <div class="spinner-border text-success mb-3" style="width: 3.2rem; height: 3.2rem;" role="status"></div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 6px;">${msg || 'Hệ thống đang xử lý, vui lòng chờ...'}</div>
+            <small style="color: #64748b; font-size: 0.8rem;"><i class="bi bi-shield-lock-fill me-1"></i>Thao tác đang được thực hiện an toàn. Vui lòng không nhấn lại.</small>
+          </div>
+        `,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false
+      });
+    }
+  }
+
+  function hideApprovalLoading() {
+    if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+      Swal.close();
+    }
+  }
+
+  // Đăng ký toàn cục
+  window.showLoading = showApprovalLoading;
+  window.hideLoading = hideApprovalLoading;
+
   // Wrapper đọc pdfUrl từ map thay vì inject URL trực tiếp vào onclick (tránh URL bị break)
   function handleApproveById(btnEl) {
+    if (_isApprovingSingle) return;
     const rowId = btnEl.getAttribute('data-row-id');
     const dwNo  = btnEl.getAttribute('data-dw-no');
     const level = btnEl.getAttribute('data-level');
     const pdfUrl = (window._approvalPdfMap && window._approvalPdfMap[rowId]) || '';
-    handleApprove(rowId, dwNo, level, pdfUrl);
+    handleApprove(rowId, dwNo, level, pdfUrl, btnEl);
   }
 
-  async function handleApprove(rowId, dwNo, level, passedPdfUrl) {
-    // 1. Xác định tọa độ đóng dấu từ window.sign
-    let posKey = String(level || '').toLowerCase().replace(/\s+/g, '');
-    if (posKey.indexOf('checker1') !== -1 || posKey.indexOf('c1') !== -1) posKey = 'checker1';
-    else if (posKey.indexOf('checker2') !== -1 || posKey.indexOf('c2') !== -1) posKey = 'checker2';
-    else if (posKey.indexOf('approval') !== -1 || posKey.indexOf('approver') !== -1) posKey = 'approver';
-    else if (posKey.indexOf('charger') !== -1 || posKey.indexOf('chager') !== -1) posKey = 'chager';
-    else if (typeof user !== 'undefined' && user.position) {
-      posKey = String(user.position).toLowerCase().replace(/\s+/g, '');
-      if (posKey === 'charger') posKey = 'chager';
-    }
-
-    const signObj = window.sign || {
-      chager: [790, 465, 40],
-      checker1: [735, 465, 40],
-      checker2: [715, 480, 40],
-      approver: [640, 465, 40]
-    };
-
-    const coords = signObj[posKey] || signObj['checker1'];
-    const [x, y, width] = coords;
+  async function handleApprove(rowId, dwNo, level, passedPdfUrl, triggerBtn) {
+    if (_isApprovingSingle) return;
 
     const targetRow = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
     const pdfUrl = (passedPdfUrl && passedPdfUrl.includes('http')) ? passedPdfUrl : (targetRow ? String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '') : '');
 
     const doIt = async () => {
+      if (_isApprovingSingle) return;
+      _isApprovingSingle = true;
+
+      const originalBtnHtml = triggerBtn ? triggerBtn.innerHTML : '';
+      if (triggerBtn) {
+        triggerBtn.disabled = true;
+        triggerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang xử lý...';
+      }
+
       try {
         if (!pdfUrl || !pdfUrl.includes('http')) {
           throw new Error("Bản vẽ này chưa có đường dẫn file PDF đính kèm trên Google Drive để thực hiện đóng dấu chữ ký!");
         }
 
-        if (typeof showLoading === 'function') showLoading('BƯỚC 1/3: Đang tải file PDF & con dấu từ Google Drive...');
+        showApprovalLoading('BƯỚC 1/3: Đang tải file PDF & con dấu từ Google Drive...');
 
         const userMail = (typeof user !== 'undefined' && user.mail) ? user.mail : 'System';
 
@@ -922,17 +1074,16 @@
           throw new Error(fileData ? (fileData.message || fileData.error) : "Không thể lấy dữ liệu PDF/Con dấu từ Google Drive.");
         }
 
-        if (typeof showLoading === 'function') showLoading(`BƯỚC 2/3: Đang gửi tới Local API (10.156.42.195:8000) đóng dấu cấp ${level} [x:${x}, y:${y}, w:${width}]...`);
+        showApprovalLoading(`BƯỚC 2/3: Đang thực hiện đóng dấu chữ ký cấp ${level}...`);
 
         const pdfBlob = await fetch("data:application/pdf;base64," + fileData.pdfBase64).then(res => res.blob());
         const stampBlob = await fetch("data:image/png;base64," + fileData.stampBase64).then(res => res.blob());
 
+        // Gửi cho Python Backend: Chỉ cần truyền file và chức vụ level, Python sẽ tự định vị ô
         const formData = new FormData();
         formData.append("pdf_file", pdfBlob, "document.pdf");
         formData.append("stamp_file", stampBlob, "stamp.png");
-        formData.append("x", x);
-        formData.append("y", y);
-        formData.append("width", width);
+        formData.append("level", level);
 
         const localApiUrl = "http://10.156.42.195:8000/quan-ly-ban-ve/signToPDW";
 
@@ -942,17 +1093,27 @@
           throw new Error(`Local API (${localApiUrl}) trả về lỗi HTTP ${apiResponse.status}. Vui lòng kiểm tra lại dịch vụ đóng dấu!`);
         }
 
+        const contentType = String(apiResponse.headers.get('content-type') || '').toLowerCase();
+        if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
+          const errorText = await apiResponse.text();
+          throw new Error(`Local API (${localApiUrl}) không trả đúng file PDF đã ký. ${errorText ? 'Chi tiết: ' + errorText : ''}`);
+        }
+
         const signedPdfBlob = await apiResponse.blob();
+        if (!signedPdfBlob || signedPdfBlob.size < 64) {
+          throw new Error('Local API trả về PDF đã ký nhưng kích thước file quá nhỏ hoặc rỗng.');
+        }
+
         const base64SignedPdf = await new Promise((resolve) => {
           const reader = new FileReader();
           reader.onloadend = () => resolve(reader.result.split(',')[1]);
           reader.readAsDataURL(signedPdfBlob);
         });
 
-        if (typeof showLoading === 'function') showLoading("BƯỚC 3/3: Đang lưu bản vẽ đã đóng dấu & hoàn tất phê duyệt...");
+        showApprovalLoading("BƯỚC 3/3: Đang lưu bản vẽ đã đóng dấu & hoàn tất phê duyệt...");
 
-        // Gửi Base64 file đã đóng dấu lên server để lưu
-        await new Promise((resolve, reject) => {
+        // Gửi Base64 file đã đóng dấu lên server để lưu và nhận lại URL mới
+        const signedPdfUrl = await new Promise((resolve, reject) => {
           google.script.run
             .withSuccessHandler(resolve)
             .withFailureHandler(reject)
@@ -967,9 +1128,14 @@
             .approveDrawingOnServer(rowId, level);
         });
 
-        if (typeof hideLoading === 'function') hideLoading();
+        hideApprovalLoading();
         if (typeof Swal !== 'undefined') {
-          Swal.fire('Thành công!', `Bản vẽ <b>${dwNo}</b> đã được đóng dấu tại tọa độ [${x}, ${y}, ${width}] và phê duyệt cấp <b>${level}</b>.`, 'success');
+          const viewBtn = signedPdfUrl ? `<br><br><a href="${signedPdfUrl}" target="_blank" class="btn btn-primary fw-bold text-white px-3 py-2 shadow-sm"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Xem ngay bản vẽ PDF vừa ký</a>` : '';
+          Swal.fire({
+            title: 'Ký duyệt thành công!',
+            html: `Bản vẽ <b>${dwNo}</b> đã được đóng dấu chữ ký và phê duyệt cấp <b>${level}</b>.${viewBtn}`,
+            icon: 'success'
+          });
         }
 
         const el = document.getElementById('dw-card-' + rowId);
@@ -979,11 +1145,20 @@
         if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
 
       } catch (err) {
-        if (typeof hideLoading === 'function') hideLoading();
+        console.error('handleApprove error:', err);
+        hideApprovalLoading();
         if (typeof Swal !== 'undefined') {
-          Swal.fire('Lỗi Đóng Dấu / Ký Duyệt', err.message, 'error');
+          const msg = (err && err.message) ? err.message : String(err);
+          Swal.fire('Lỗi Đóng Dấu / Ký Duyệt', msg, 'error');
         } else {
-          alert('Lỗi Đóng Dấu: ' + err.message);
+          alert('Lỗi Đóng Dấu: ' + ((err && err.message) ? err.message : String(err)));
+        }
+      } finally {
+        _isApprovingSingle = false;
+        hideApprovalLoading();
+        if (triggerBtn) {
+          triggerBtn.disabled = false;
+          triggerBtn.innerHTML = originalBtnHtml;
         }
       }
     };
@@ -991,7 +1166,7 @@
     if (typeof Swal !== 'undefined') {
       Swal.fire({
         title: 'Xác nhận Ký Phê Duyệt?',
-        html: `Bạn đang ký duyệt cấp <b class="text-primary">${level}</b> (Tọa độ: [x:${x}, y:${y}, w:${width}]) cho bản vẽ: <b>${dwNo}</b>`,
+        html: `Bạn đang ký duyệt cấp <b class="text-primary">${level}</b> cho bản vẽ: <b>${dwNo}</b>`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#10b981',
@@ -1000,13 +1175,14 @@
         cancelButtonText: 'Hủy'
       }).then(r => { if (r.isConfirmed) doIt(); });
     } else {
-      if (confirm(`Xác nhận Ký duyệt ${level} [x:${x}, y:${y}, w:${width}] cho ${dwNo}?`)) doIt();
+      if (confirm(`Xác nhận Ký duyệt ${level} cho ${dwNo}?`)) doIt();
     }
   }
 
   /* ---- Modal Từ chối ---- */
   let _rId = null, _rDw = null;
   function openRejectModal(rowId, dwNo, level) {
+    if (_isRejectingDrawing) return;
     _rId = rowId; _rDw = dwNo;
     document.getElementById('rejectModalSubtitle').textContent = `Bản vẽ: ${dwNo} — Cấp: ${level}`;
     document.getElementById('rejectReasonInput').value = '';
@@ -1016,11 +1192,14 @@
   }
 
   function closeRejectModal() {
+    if (_isRejectingDrawing) return;
     document.getElementById('rejectModal').style.display = 'none';
     _rId = null;
   }
 
   function submitReject() {
+    if (_isRejectingDrawing) return;
+
     const reason = document.getElementById('rejectReasonInput').value.trim();
     if (!reason) {
       document.getElementById('rejectReasonError').style.display = 'block';
@@ -1029,11 +1208,24 @@
     }
     document.getElementById('rejectReasonError').style.display = 'none';
     const rowId = _rId, dwNo = _rDw;
-    closeRejectModal();
-    if (typeof showLoading === 'function') showLoading('Đang gửi phản hồi từ chối...');
+    const btnConfirm = document.getElementById('btnConfirmReject');
+
+    _isRejectingDrawing = true;
+    if (btnConfirm) {
+      btnConfirm.disabled = true;
+      btnConfirm.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang gửi...';
+    }
+    showApprovalLoading('Đang gửi phản hồi từ chối bản vẽ...');
+
     google.script.run
       .withSuccessHandler(() => {
-        if (typeof hideLoading === 'function') hideLoading();
+        _isRejectingDrawing = false;
+        if (btnConfirm) {
+          btnConfirm.disabled = false;
+          btnConfirm.innerHTML = '<i class="bi bi-x-circle-fill"></i> Xác Nhận Từ Chối';
+        }
+        closeRejectModal();
+        hideApprovalLoading();
         if (typeof Swal !== 'undefined') Swal.fire('Đã từ chối!', `Bản vẽ <b>${dwNo}</b> đã bị trả lại.<br><br><b>Lý do:</b> <i>"${reason}"</i>`, 'success');
         const el = document.getElementById('dw-card-' + rowId);
         const detailEl = document.getElementById('detail-row-' + rowId);
@@ -1042,14 +1234,19 @@
         if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
       })
       .withFailureHandler(err => {
-        if (typeof hideLoading === 'function') hideLoading();
+        _isRejectingDrawing = false;
+        if (btnConfirm) {
+          btnConfirm.disabled = false;
+          btnConfirm.innerHTML = '<i class="bi bi-x-circle-fill"></i> Xác Nhận Từ Chối';
+        }
+        hideApprovalLoading();
         if (typeof Swal !== 'undefined') Swal.fire('Lỗi', 'Không thể gửi phản hồi: ' + err.message, 'error');
       })
       .rejectDrawingOnServer(rowId, reason);
   }
 
   document.getElementById('rejectModal').addEventListener('click', function (e) {
-    if (e.target === this) closeRejectModal();
+    if (e.target === this && !_isRejectingDrawing) closeRejectModal();
   });
 
   // ========================================================================
@@ -1059,18 +1256,26 @@
 
   function toggleSelectAllApprovals() {
     const checkbox = document.getElementById('selectAllApprovals') || document.getElementById('headerApprovalCheckbox');
-    const allCheckboxes = document.querySelectorAll('.approval-row-checkbox');
-    
+    const allCheckboxes = Array.from(document.querySelectorAll('.approval-row-checkbox'));
+
     approvalBulkState.selectedRows.clear();
+
     if (checkbox && checkbox.checked) {
       allCheckboxes.forEach(cb => {
-        cb.checked = true;
         const rowId = cb.getAttribute('data-row-id');
-        if (rowId) approvalBulkState.selectedRows.add(rowId);
+        const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
+
+        if (isReleaseEligibleRow(row)) {
+          cb.checked = true;
+          if (rowId) approvalBulkState.selectedRows.add(rowId);
+        } else {
+          cb.checked = false;
+        }
       });
     } else {
       allCheckboxes.forEach(cb => cb.checked = false);
     }
+
     updateBulkApproveButtonVisibility();
   }
 
@@ -1128,10 +1333,7 @@
       const rowId = cb.getAttribute('data-row-id');
       if (!rowId) return;
       const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
-      if (!row) return;
-      const status = String(row[COL_MAP.STATUS] || '');
-      const st = cleanStr(status);
-      if (st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')) {
+      if (isReleaseEligibleRow(row)) {
         releaseCount += 1;
       }
     });
@@ -1192,6 +1394,28 @@
     }
   }
 
+  function inferReleaseDepartmentFromRow(row) {
+    if (!row) return 'Không rõ bộ phận';
+
+    const actualDept =
+      row.department ||
+      row.dept ||
+      row.deptLq ||
+      row.deptName ||
+      row.departmentName ||
+      row.bp ||
+      row.bophan ||
+      '';
+
+    if (String(actualDept || '').trim()) {
+      return String(actualDept).trim();
+    }
+
+    // Không được lấy Group/Type đang là BARSALE/OEM/WE SASH làm tên bộ phận.
+    // Đây là category / tab của bản vẽ, không phải bộ phận thực tế để ban hành.
+    return 'Không rõ bộ phận';
+  }
+
   function openBulkReleaseFormForRow(rowId, dwNo) {
     const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
     if (!row) return;
@@ -1201,76 +1425,217 @@
       dwNo: String(dwNo || row[COL_MAP.DW_NO] || ''),
       type: String(row[COL_MAP.TYPE] || row[COL_MAP.GROUP] || ''),
       customer: String(row[COL_MAP.CUSTOMER] || ''),
+      drawingRevise: String(row[COL_MAP.DRAWING_REVISE] || row[COL_MAP.VERSION] || '0').trim(),
       version: String(row[COL_MAP.VERSION] || ''),
       reqNo: String(row[COL_MAP.REQ_NO] || ''),
       project: String(row[COL_MAP.PROJECT] || ''),
-      status: String(row[COL_MAP.STATUS] || '')
+      status: String(row[COL_MAP.STATUS] || ''),
+      department: inferReleaseDepartmentFromRow(row)
     }];
 
     openBulkReleaseForm(selectedRows);
   }
 
   function openBulkReleaseForm(selectedRowsOverride) {
-    const selectedRowIds = selectedRowsOverride ? selectedRowsOverride.map(r => r.rowId) : Array.from(approvalBulkState.selectedRows);
-    const rowsToRelease = selectedRowsOverride || Array.from(approvalBulkState.selectedRows)
-      .map(id => {
-        const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(id));
+    const checkedRows = Array.from(document.querySelectorAll('.approval-row-checkbox'))
+      .filter(checkbox => checkbox.checked)
+      .map(checkbox => {
+        const rowIndex = Number(checkbox.getAttribute('data-row-index'));
+        return {
+          id: String(checkbox.getAttribute('data-row-id') || '').trim(),
+          row: Number.isInteger(rowIndex) && rowIndex >= 0 ? approvalRowsData[rowIndex] : null
+        };
+      })
+      .filter(item => item.id && item.row);
+    const bulkIds = checkedRows.length > 0
+      ? checkedRows.map(item => item.id)
+      : Array.from(approvalBulkState.selectedRows);
+    const bulkRows = checkedRows.length > 0
+      ? checkedRows.map(item => {
+        const id = item.id;
+        const row = item.row;
         if (!row) return null;
         const st = cleanStr(String(row[COL_MAP.STATUS] || ''));
-        if (!(st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh'))) return null;
+        if (st !== 'cho ban hanh') return null;
         return {
           rowId: String(id),
           dwNo: String(row[COL_MAP.DW_NO] || ''),
           type: String(row[COL_MAP.TYPE] || row[COL_MAP.GROUP] || ''),
           customer: String(row[COL_MAP.CUSTOMER] || ''),
+          drawingRevise: String(row[COL_MAP.DRAWING_REVISE] || row[COL_MAP.VERSION] || '0').trim(),
           version: String(row[COL_MAP.VERSION] || ''),
           reqNo: String(row[COL_MAP.REQ_NO] || ''),
           project: String(row[COL_MAP.PROJECT] || ''),
-          status: String(row[COL_MAP.STATUS] || '')
+          status: String(row[COL_MAP.STATUS] || ''),
+          department: inferReleaseDepartmentFromRow(row)
         };
       })
-      .filter(Boolean);
+      .filter(Boolean)
+      : bulkIds
+        .map(id => {
+          const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(id));
+          if (!row) return null;
+          const st = cleanStr(String(row[COL_MAP.STATUS] || ''));
+          if (st !== 'cho ban hanh') return null;
+          return {
+            rowId: String(id),
+            dwNo: String(row[COL_MAP.DW_NO] || ''),
+            type: String(row[COL_MAP.TYPE] || row[COL_MAP.GROUP] || ''),
+            customer: String(row[COL_MAP.CUSTOMER] || ''),
+            drawingRevise: String(row[COL_MAP.DRAWING_REVISE] || row[COL_MAP.VERSION] || '0').trim(),
+            version: String(row[COL_MAP.VERSION] || ''),
+            reqNo: String(row[COL_MAP.REQ_NO] || ''),
+            project: String(row[COL_MAP.PROJECT] || ''),
+            status: String(row[COL_MAP.STATUS] || ''),
+            department: inferReleaseDepartmentFromRow(row)
+          };
+        })
+        .filter(Boolean);
+
+    // Quy tắc bảo toàn: nếu chọn thực sự nhiều dòng qua bulkState, ưu tiên bulkRows.
+    // Chỉ dùng explicitRows trong luồng 1 dòng (không có nhiều checkbox được chọn).
+    const explicitRows = Array.isArray(selectedRowsOverride) && selectedRowsOverride.length > 0
+      ? selectedRowsOverride
+      : [];
+
+    const rowsToRelease = bulkIds.length > 1 ? bulkRows : (explicitRows.length > 0 ? explicitRows : bulkRows);
 
     if (!rowsToRelease || rowsToRelease.length === 0) {
       if (typeof Swal !== 'undefined') Swal.fire('Thông báo', 'Không có bản vẽ nào ở trạng thái Chờ ban hành để ban hành.', 'warning');
       return;
     }
 
+    // =========================================================
+    // ĐỊNH NGHĨA CÁC BỘ PHẬN NH À MÁY (THEO HÌNH 2)
+    // =========================================================
+    // Bộ phận độc lập (8 cột) + nhóm FAB (5 sub) + QA = 14 cột dept
+    const DEPT_STANDALONE = [
+      { key: 'EX',    label: 'EX' },
+      { key: 'ST',    label: 'ST' },
+      { key: 'ALBar', label: 'AL Bar' },
+      { key: 'PC',    label: 'PC' },
+      { key: 'PP',    label: 'PP' },
+      { key: 'MRDC',  label: 'MRDC' },
+      { key: 'QCDI',  label: 'QCDI' },
+      { key: 'QCFAB', label: 'QCFAB' }
+    ];
+    const DEPT_FAB = [
+      { key: 'Fab-NP',     label: 'NP' },
+      { key: 'Fab-MT',     label: 'MT' },
+      { key: 'Fab-PC',     label: 'PC' },
+      { key: 'Fab-DADORI', label: 'DADORI' },
+      { key: 'Fab-PVC',    label: 'PVC' }
+    ];
+    const DEPT_QA = [{ key: 'QA', label: 'QA' }];
+    const ALL_DEPTS = [...DEPT_STANDALONE, ...DEPT_FAB, ...DEPT_QA];
+    const TOTAL_DEPT_COLS = ALL_DEPTS.length; // 14
+    const commonReleaseRowId = '__common_release_selection__';
+
+    // State lưu trạng thái ô chung cho toàn bộ bản vẽ đã chọn, vì người dùng xác nhận
+    // sẽ gửi các bản vẽ với lựa chọn bộ phận chung và không cần phân tách theo từng bản vẽ.
+    const deptMatrix = {};
+    deptMatrix[commonReleaseRowId] = {};
+    ALL_DEPTS.forEach(d => { deptMatrix[commonReleaseRowId][d.key] = false; });
+
+    // Tự động gợi ý dựa theo loại bản vẽ (tương tự Hình 1)
+    const combinedTypeText = rowsToRelease.map(row => String(row.type || '').toUpperCase()).join(' ');
+    if (combinedTypeText.includes('PART') || combinedTypeText.includes('ASSEMBLY')) {
+      ['EX','ST','ALBar'].forEach(k => { deptMatrix[commonReleaseRowId][k] = true; });
+    } else if (combinedTypeText.includes('INDEX')) {
+      ['PC','PP'].forEach(k => { deptMatrix[commonReleaseRowId][k] = true; });
+    }
+
+    // =========================================================
+    // RENDER HTML MA TRẬN
+    // =========================================================
+    const renderMatrixTable = () => {
+      // Hàng header tầng 1
+      const th1Standalone = DEPT_STANDALONE.map(d =>
+        `<th class="th-dept" rowspan="2" data-col-key="${d.key}" title="Click để chọn/bỏ cả cột ${d.label}" style="min-width:36px;">${d.label}</th>`
+      ).join('');
+      const th1FabGroup = `<th class="th-fab-group" colspan="${DEPT_FAB.length}">FAB</th>`;
+      const th1QA = `<th class="th-dept" rowspan="2" data-col-key="QA" title="Click để chọn/bỏ cả cột QA" style="min-width:36px;">QA</th>`;
+
+      // Hàng header tầng 2 (chỉ các sub FAB)
+      const th2FabSubs = DEPT_FAB.map(d =>
+        `<th class="th-fab-sub" data-col-key="${d.key}" title="Click để chọn/bỏ cả cột ${d.label}" style="min-width:44px;">${d.label}</th>`
+      ).join('');
+
+      // Một dòng dữ liệu chung cho toàn bộ bản vẽ được chọn
+      const deptCells = ALL_DEPTS.map(d => {
+        const isOn = deptMatrix[commonReleaseRowId][d.key];
+        return `<td class="td-dept${isOn ? ' active' : ''}" data-row-id="${commonReleaseRowId}" data-dept-key="${d.key}">${isOn ? 'O' : ''}</td>`;
+      }).join('');
+
+      const dataRows = `
+        <tr class="release-dept-row" data-row-id="${commonReleaseRowId}">
+          ${deptCells}
+        </tr>`;
+
+      return `
+        <table class="dw-matrix-table" id="dwMatrixTable">
+          <thead>
+            <tr>
+              ${th1Standalone}
+              ${th1FabGroup}
+              ${th1QA}
+            </tr>
+            <tr>
+              ${th2FabSubs}
+            </tr>
+          </thead>
+          <tbody>${dataRows}</tbody>
+        </table>`;
+    };
+
     if (typeof Swal !== 'undefined') {
       Swal.fire({
-        title: `Ban hành hàng loạt (${rowsToRelease.length} bản vẽ)`,
+        title: `<span style="font-size:1.05rem;">🚀 Ban hành hàng loạt <span style="color:#2563eb;">(${rowsToRelease.length} bản vẽ)</span></span>`,
         html: `
           <div style="text-align:left;">
-            <p class="mb-3">Bạn đang ban hành các bản vẽ đã được Approval ký duyệt.</p>
-            <div class="mb-3">
-              <label class="form-label fw-semibold mb-1">Loại yêu cầu</label>
-              <select id="releaseRequestType" class="form-select">
-                <option value="Normal">Normal</option>
-                <option value="Urgent">Urgent</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold mb-1">Ngày gửi yêu cầu</label>
-              <input id="releaseRequestDate" type="date" class="form-control" value="${new Date().toISOString().split('T')[0]}" readonly>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold mb-1">Ngày yêu cầu hoàn thành</label>
-              <input id="releaseDueDate" type="date" class="form-control" readonly>
+            <p class="mb-2" style="font-size:0.82rem;color:#475569;">Chọn bộ phận ban hành cho các bản vẽ đã chọn. <strong>Click vào ô</strong> để bật/tắt &bull; <strong>Click tiêu đề cột</strong> để chọn cả cột.</p>
+
+            <div class="dw-matrix-wrap">${renderMatrixTable()}</div>
+
+            <div class="row g-2 mt-2">
+              <div class="col-sm-4">
+                <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;">Loại yêu cầu</label>
+                <select id="releaseRequestType" class="form-select form-select-sm">
+                  <option value="Normal">Normal</option>
+                  <option value="Urgent">Urgent</option>
+                </select>
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;">Ngày gửi yêu cầu</label>
+                <input id="releaseRequestDate" type="date" class="form-control form-control-sm" value="${new Date().toISOString().split('T')[0]}" readonly>
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label fw-semibold mb-1" style="font-size:0.78rem;">Ngày hoàn thành</label>
+                <input id="releaseDueDate" type="date" class="form-control form-control-sm" readonly>
+              </div>
             </div>
           </div>
         `,
-        icon: 'question',
+        width: 'min(98vw, 1350px)',
         showCancelButton: true,
         confirmButtonColor: '#2563eb',
         cancelButtonColor: '#94a3b8',
-        confirmButtonText: 'Xác nhận ban hành',
-        cancelButtonText: 'Hủy'
+        confirmButtonText: '<i class="fa fa-rocket me-1"></i> Xác nhận ban hành',
+        cancelButtonText: 'Hủy',
+        customClass: { popup: 'swal2-release-matrix-popup' }
       }).then(result => {
         if (result.isConfirmed) {
           const selectedType = document.getElementById('releaseRequestType').value;
           const requestDate = document.getElementById('releaseRequestDate').value || new Date().toISOString().split('T')[0];
           const dueDate = document.getElementById('releaseDueDate').value;
-          handleBulkRelease(rowsToRelease, selectedType, requestDate, dueDate);
+          const selectedDeptKeys = ALL_DEPTS.filter(d => deptMatrix[commonReleaseRowId] && deptMatrix[commonReleaseRowId][d.key])
+            .map(d => d.key);
+          // Gắn department từ ma trận thống nhất cho toàn bộ các bản vẽ được chọn.
+          const finalRows = rowsToRelease.map(row => ({
+            ...row,
+            department: selectedDeptKeys.join(', ') || row.department || ''
+          }));
+          handleBulkRelease(finalRows, selectedType, requestDate, dueDate);
         }
       });
 
@@ -1296,15 +1661,67 @@
         requestTypeInput.addEventListener('change', syncReleaseDates);
         requestDateInput.addEventListener('change', syncReleaseDates);
         syncReleaseDates();
+
+        // =============================================
+        // SỰ KIỆN CLICK Ô BỘ PHẬN - TOGGLE O
+        // =============================================
+        const matrixWrap = document.querySelector('.dw-matrix-wrap');
+        if (!matrixWrap) return;
+
+        matrixWrap.addEventListener('click', function(e) {
+          // Click ô data (td-dept)
+          const cell = e.target.closest('.td-dept');
+          if (cell) {
+            const rowId = cell.dataset.rowId;
+            const deptKey = cell.dataset.deptKey;
+            if (rowId && deptKey && deptMatrix[rowId] !== undefined) {
+              const newVal = !deptMatrix[rowId][deptKey];
+              deptMatrix[rowId][deptKey] = newVal;
+              cell.textContent = newVal ? 'O' : '';
+              cell.classList.toggle('active', newVal);
+            }
+            return;
+          }
+
+          // Click tiêu đề cột (th-dept hoặc th-fab-sub) → toggle cả cột theo hàng chỉ số chung.
+          const colHeader = e.target.closest('[data-col-key]');
+          if (colHeader) {
+            const deptKey = colHeader.dataset.colKey;
+            if (!deptKey) return;
+            const allOn = ALL_DEPTS.every(d => d.key !== deptKey || !!deptMatrix[commonReleaseRowId][d.key]);
+            const newVal = !allOn;
+            deptMatrix[commonReleaseRowId][deptKey] = newVal;
+            matrixWrap.querySelectorAll(`.td-dept[data-dept-key="${deptKey}"]`).forEach(td => {
+              td.textContent = newVal ? 'O' : '';
+              td.classList.toggle('active', newVal);
+            });
+          }
+        });
       }, 0);
     }
   }
 
   function handleBulkRelease(rowsToRelease, requestType, requestDate, dueDate) {
     if (!rowsToRelease || rowsToRelease.length === 0) return;
+    if (_isBulkReleasing) return;
+    _isBulkReleasing = true;
+
+    const btn = document.getElementById('bulkReleaseBtn');
+    if (btn) btn.disabled = true;
+
+    const selectedDepartments = rowsToRelease
+      .map(row => String(row.department || '').trim())
+      .filter(Boolean)
+      .reduce((acc, cur) => {
+        const list = cur.split(',').map(x => x.trim()).filter(Boolean);
+        list.forEach(item => {
+          if (!acc.includes(item)) acc.push(item);
+        });
+        return acc;
+      }, []);
 
     const payload = [
-      '',
+      selectedDepartments.join(', ') || '',
       (typeof user !== 'undefined' && user && user.name) ? user.name : 'System',
       requestType || 'Normal',
       '',
@@ -1313,22 +1730,29 @@
       '',
       '',
       '',
-      rowsToRelease.map(row => [
-        row.rowId,
-        row.dwNo,
-        row.version,
-        row.type,
-        row.customer,
-        row.reqNo,
-        row.project
-      ])
+      rowsToRelease.map(row => {
+        const rawRevise = String(row.drawingRevise || row.version || '0').trim();
+        const drawingRevise = rawRevise.length > 0 ? rawRevise : '0';
+        return [
+          row.rowId,
+          row.dwNo,
+          drawingRevise,
+          row.type,
+          row.customer,
+          row.reqNo || row.reqNo || '',
+          row.project,
+          row.department || inferReleaseDepartmentFromRow({[COL_MAP.GROUP]: row.type})
+        ];
+      })
     ];
 
-    if (typeof showLoading === 'function') showLoading(`Đang ban hành ${rowsToRelease.length} bản vẽ...`);
+    showApprovalLoading(`Đang ban hành ${rowsToRelease.length} bản vẽ lên hệ thống...`);
 
     google.script.run
       .withSuccessHandler(function (res) {
-        if (typeof hideLoading === 'function') hideLoading();
+        _isBulkReleasing = false;
+        if (btn) btn.disabled = false;
+        hideApprovalLoading();
         const msg = res || 'Đã thực hiện ban hành thành công.';
         if (typeof Swal !== 'undefined') Swal.fire('Thành công', msg, 'success');
         approvalBulkState.selectedRows.clear();
@@ -1336,13 +1760,17 @@
         initSubmitApproval();
       })
       .withFailureHandler(function (err) {
-        if (typeof hideLoading === 'function') hideLoading();
+        _isBulkReleasing = false;
+        if (btn) btn.disabled = false;
+        hideApprovalLoading();
         if (typeof Swal !== 'undefined') Swal.fire('Lỗi ban hành', err && err.message ? err.message : 'Không thể ban hành danh mục đã chọn.', 'error');
       })
       .requestReleaseDW(payload);
   }
 
   async function handleBulkApprove(level) {
+    if (_isBulkApproving) return;
+
     if (isChargeUserBulkApproveBlocked()) {
       if (typeof Swal !== 'undefined') {
         Swal.fire('Thông báo', 'Charge không được phép ký duyệt hàng loạt.', 'warning');
@@ -1353,38 +1781,46 @@
     const selectedRowIds = Array.from(approvalBulkState.selectedRows);
     if (selectedRowIds.length === 0) return;
 
-    if (typeof showLoading === 'function') showLoading(`Đang ký hàng loạt ${selectedRowIds.length} bản vẽ (Cấp ${level})...`);
+    _isBulkApproving = true;
+    const bulkBtn = document.getElementById('bulkApproveBtn');
+    if (bulkBtn) bulkBtn.disabled = true;
+
+    showApprovalLoading(`Đang ký hàng loạt ${selectedRowIds.length} bản vẽ (Cấp ${level})...`);
 
     let successCount = 0;
     let failCount = 0;
 
-    for (const rowId of selectedRowIds) {
-      try {
-        const targetRow = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
-        if (!targetRow) {
-          failCount++;
-          continue;
-        }
-
-        const dwNo = targetRow[COL_MAP.DW_NO] || 'Unknown';
-        const pdfUrl = String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '');
-
-        // Gọi handleApprove nhưng bỏ Swal confirm
-        await new Promise(resolve => {
-          handleApproveInternal(rowId, dwNo, level, pdfUrl, () => {
-            successCount++;
-            resolve();
-          }, () => {
+    try {
+      for (const rowId of selectedRowIds) {
+        try {
+          const targetRow = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
+          if (!targetRow) {
             failCount++;
-            resolve();
-          });
-        });
-      } catch (err) {
-        failCount++;
-      }
-    }
+            continue;
+          }
 
-    if (typeof hideLoading === 'function') hideLoading();
+          const dwNo = targetRow[COL_MAP.DW_NO] || 'Unknown';
+          const pdfUrl = String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '');
+
+          // Gọi handleApprove nhưng bỏ Swal confirm
+          await new Promise(resolve => {
+            handleApproveInternal(rowId, dwNo, level, pdfUrl, () => {
+              successCount++;
+              resolve();
+            }, () => {
+              failCount++;
+              resolve();
+            });
+          });
+        } catch (err) {
+          failCount++;
+        }
+      }
+    } finally {
+      _isBulkApproving = false;
+      if (bulkBtn) bulkBtn.disabled = false;
+      hideApprovalLoading();
+    }
     
     if (typeof Swal !== 'undefined') {
       Swal.fire('Hoàn thành!', `Đã ký thành công: ${successCount}/${selectedRowIds.length} bản vẽ.${failCount > 0 ? `\nLỗi: ${failCount}` : ''}`, 'success');
@@ -1401,16 +1837,6 @@
     if (posKey.indexOf('checker1') !== -1 || posKey.indexOf('c1') !== -1) posKey = 'checker1';
     else if (posKey.indexOf('checker2') !== -1 || posKey.indexOf('c2') !== -1) posKey = 'checker2';
     else if (posKey.indexOf('approval') !== -1 || posKey.indexOf('approver') !== -1) posKey = 'approver';
-
-    const signObj = window.sign || {
-      chager: [790, 465, 40],
-      checker1: [735, 465, 40],
-      checker2: [715, 480, 40],
-      approver: [640, 465, 40]
-    };
-
-    const coords = signObj[posKey] || signObj['checker1'];
-    const [x, y, width] = coords;
 
     const targetRow = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
     const pdfUrl = (passedPdfUrl && passedPdfUrl.includes('http')) ? passedPdfUrl : (targetRow ? String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '') : '');
@@ -1437,12 +1863,11 @@
       const pdfBlob = await fetch("data:application/pdf;base64," + fileData.pdfBase64).then(res => res.blob());
       const stampBlob = await fetch("data:image/png;base64," + fileData.stampBase64).then(res => res.blob());
 
+      // Gửi cho Python Backend: Chỉ truyền level để tự động định vị
       const formData = new FormData();
       formData.append("pdf_file", pdfBlob, "document.pdf");
       formData.append("stamp_file", stampBlob, "stamp.png");
-      formData.append("x", x);
-      formData.append("y", y);
-      formData.append("width", width);
+      formData.append("level", level);
 
       const localApiUrl = "http://10.156.42.195:8000/quan-ly-ban-ve/signToPDW";
       const apiResponse = await fetch(localApiUrl, { method: "POST", body: formData });
@@ -1451,7 +1876,17 @@
         throw new Error(`Local API lỗi HTTP ${apiResponse.status}`);
       }
 
+      const contentType = String(apiResponse.headers.get('content-type') || '').toLowerCase();
+      if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
+        const errorText = await apiResponse.text();
+        throw new Error(`Local API không trả file PDF ký. ${errorText ? 'Chi tiết: ' + errorText : ''}`);
+      }
+
       const signedPdfBlob = await apiResponse.blob();
+      if (!signedPdfBlob || signedPdfBlob.size < 64) {
+        throw new Error('Local API trả về PDF đã ký nhưng file rỗng hoặc quá nhỏ.');
+      }
+
       const base64SignedPdf = await new Promise((resolve) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result.split(',')[1]);

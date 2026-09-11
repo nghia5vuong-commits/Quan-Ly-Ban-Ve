@@ -1444,12 +1444,35 @@
         if (picker.files && picker.files[0]) previewImageFile(picker.files[0]);
       });
       container.appendChild(picker);
+      var isPointerOverPreview = false;
+      container.addEventListener('mouseenter', function () { isPointerOverPreview = true; });
+      container.addEventListener('mouseleave', function () { isPointerOverPreview = false; });
       container.addEventListener('click', function () { picker.click(); });
       container.addEventListener('dragover', function (event) { event.preventDefault(); });
       container.addEventListener('drop', function (event) {
         event.preventDefault();
         var file = event.dataTransfer && event.dataTransfer.files[0];
         if (file && file.type.indexOf('image/') === 0) previewImageFile(file);
+      });
+      document.addEventListener('paste', function (event) {
+        var target = event.target;
+        var isEditableTarget = target && (
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable
+        );
+        if (!isPointerOverPreview || isEditableTarget) return;
+        if (!event || !event.clipboardData || !event.clipboardData.items) return;
+        var items = event.clipboardData.items;
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          if (item && item.kind === 'file' && item.type.indexOf('image/') === 0) {
+            event.preventDefault();
+            var file = item.getAsFile();
+            if (file) previewImageFile(file);
+            return;
+          }
+        }
       });
     })();
   </script>

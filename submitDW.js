@@ -122,11 +122,12 @@ const getBusinessDateFromToday = (workingDays) => _getBusinessDateAfterDays(new 
 
 const getReleaseDueDate = (requestDate, requestType) => {
   var type = String(requestType || 'Normal');
-  var businessDays = /^urgent$/i.test(type) ? 3 : 5;
+  var businessDays = /^normal$/i.test(type) ? 3 : 1;
   return _getBusinessDateAfterDays(requestDate || new Date(), businessDays);
 };
 
 const sendMailFromDeptToCharge = (dataToNotify, deptName) => {
+  deptName = "QA G2G";
   const sheetUser = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE").getSheetByName("User");
   const userLastRow = sheetUser.getLastRow();
   if (userLastRow < 2) return;
@@ -174,67 +175,70 @@ const sendMailFromDeptToCharge = (dataToNotify, deptName) => {
   body += "Trân trọng,\n";
   body += "Hệ thống quản lý bản vẽ";
 
-  const rowsHtml = Object.keys(requests).map(reqId => {
-    const reqInfo = requests[reqId];
-    const dwString = reqInfo.dwList.join(", ");
-    return `
-      <tr>
-        <td style="padding: 12px 14px; border: 1px solid #e5e7eb; font-size: 13px; color: #374151;">${reqId}</td>
-        <td style="padding: 12px 14px; border: 1px solid #e5e7eb; font-size: 13px; color: #374151;">${reqInfo.name}</td>
-        <td style="padding: 12px 14px; border: 1px solid #e5e7eb; font-size: 13px; color: #374151;">${reqInfo.dept}</td>
-        <td style="padding: 12px 14px; border: 1px solid #e5e7eb; font-size: 13px; color: #374151;">${dwString}</td>
-      </tr>`;
-  }).join("");
+  const reqId = Object.keys(requests)[0] || '';
+  const reqInfo = Object.keys(requests).length > 0 ? requests[reqId] : { name: 'Không rõ', dept: deptName, dwList: [] };
+  const dwString = reqInfo.dwList.join(", ");
+  const webAppBaseUrl = 'https://script.google.com/a/macros/lixil.com/s/AKfycbyEBaqWQ_UHTu1eahFFx4xdcpteLV93DkLZM50nYGHzCcYVdeNfVuCxXxdRqPpiVHhXzA/exec';
+  const requestWebUrl = reqId ? `${webAppBaseUrl}?requestId=${encodeURIComponent(reqId)}` : webAppBaseUrl;
 
   const htmlBody = `
-    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7fb; padding: 24px;">
-      <div style="max-width: 760px; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08); border: 1px solid #e5e7eb;">
-        <div style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); padding: 28px 24px; text-align: center; color: #ffffff;">
-          <div style="font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; opacity: 0.8; margin-bottom: 8px;">Hệ thống quản lý bản vẽ</div>
-          <h2 style="margin: 0; font-size: 24px; font-weight: 700;">Yêu cầu phát hành bản vẽ mới</h2>
-          <div style="margin-top: 10px; font-size: 13px; color: #dbeafe;">Bộ phận: <strong style="color: #facc15;">${deptName}</strong></div>
+    <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eef4f8; padding: 20px;">
+      <div style="max-width: 780px; margin: 0 auto; background: #ffffff; border: 1px solid #d1d5db; border-radius: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.1); overflow: hidden;">
+        <div style="background: linear-gradient(135deg, #13b8ae 0%, #0f8d93 100%); color: #ffffff; padding: 14px 18px; font-size: 24px; font-weight: 700; line-height: 1.4;">
+          Yêu Cầu Phát Hành Bản Vẽ Lên QA System
         </div>
 
-        <div style="padding: 24px;">
-          <p style="margin: 0 0 18px; font-size: 15px; line-height: 1.7; color: #374151;">
-            Xin chào,<br><br>
-            Có <strong>yêu cầu phát hành bản vẽ mới</strong> cần bạn xử lý trong hệ thống QA.
+        <div style="padding: 22px 26px 26px; background: #ffffff;">
+          <p style="margin: 0 0 12px; font-size: 16px; color: #1f2937; line-height: 1.6;">
+            Xin chào Ms. Nhung,<br>
+            Hệ thống ghi nhận có một yêu cầu bạn phát hành bản vẽ mới vừa được tạo từ bộ phận ${deptName}. Thông tin chi tiết được thể hiện dưới đây:
           </p>
 
-          <div style="background: #f8fafc; border-left: 4px solid #2563eb; padding: 14px 16px; border-radius: 8px; margin-bottom: 18px;">
-            <strong style="color: #1d4ed8; font-size: 14px;">Thông tin chi tiết</strong>
+          <div style="background: #eef4f6; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; margin: 12px 0 14px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="font-size: 15px; color: #374151; font-weight: 600; text-align: left; vertical-align: middle;">
+                  Mã yêu cầu (Request ID): <span style="font-weight: 700; color: #0f766e;">${reqId}</span>
+                </td>
+                <td style="text-align: right; vertical-align: middle;">
+                  <a href="${requestWebUrl}" style="background: #2563eb; color: #ffffff; text-decoration: none; padding: 8px 14px; border-radius: 4px; font-size: 13px; font-weight: 700; white-space: nowrap; display: inline-block;">
+                    Tới Web App →
+                  </a>
+                </td>
+              </tr>
+            </table>
           </div>
 
-          <table style="width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden;">
-            <thead>
-              <tr style="background: #eff6ff;">
-                <th style="padding: 12px 14px; text-align: left; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #1e3a8a;">Mã yêu cầu</th>
-                <th style="padding: 12px 14px; text-align: left; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #1e3a8a;">Người gửi</th>
-                <th style="padding: 12px 14px; text-align: left; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #1e3a8a;">Bộ phận</th>
-                <th style="padding: 12px 14px; text-align: left; border: 1px solid #e5e7eb; font-size: 12px; text-transform: uppercase; color: #1e3a8a;">Danh sách bản vẽ</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-            </tbody>
+          <table style="width: 100%; border-collapse: collapse; border: 1px solid #d1d5db; background: #ffffff; margin-top: 10px;">
+            <tr>
+              <td style="width: 50%; padding: 10px 12px; border: 1px solid #d1d5db; font-size: 14px; color: #334155; background: #f8fafc; font-weight: 700;">
+                Người gửi yêu cầu
+              </td>
+              <td style="width: 50%; padding: 10px 12px; border: 1px solid #d1d5db; font-size: 14px; color: #334155; background: #f8fafc; font-weight: 700;">
+                Nghĩa (Bộ phận: ${deptName})
+              </td>
+            </tr>
+            <tr>
+              <td style="width: 50%; padding: 10px 12px; border: 1px solid #d1d5db; font-size: 14px; color: #334155; background: #ffffff; font-weight: 700;">
+                Danh sách bản vẽ
+              </td>
+              <td style="width: 50%; padding: 10px 12px; border: 1px solid #d1d5db; font-size: 14px; color: #334155; background: #ffffff;">
+                ${dwString}
+              </td>
+            </tr>
           </table>
 
-          <div style="margin-top: 22px; text-align: center;">
-            <a href="https://script.google.com/a/macros/listing.com/s/AKfycbw2MPLHbLNrNn3PhvU0Zr7V8D1-ouzWVTQDxW/usercache" style="display: inline-block; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">
-              → Vào hệ thống xử lý
-            </a>
-          </div>
+          <p style="margin: 18px 0 8px; font-size: 15px; color: #374151; line-height: 1.7;">
+            Vui lòng truy cập hệ thống để tiến hành kiểm tra và xử lý yêu cầu.
+          </p>
 
-          <div style="margin-top: 22px; border-top: 1px solid #e5e7eb; padding-top: 18px; font-size: 13px; color: #6b7280; line-height: 1.8;">
-            Trạng thái: <strong style="color: #0f172a;">Chờ ban hành</strong><br>
-            Vui lòng truy cập hệ thống để xác nhận và xử lý yêu cầu.<br><br>
-            Trân trọng,<br>
-            <strong>Hệ thống quản lý bản vẽ</strong>
+          <div style="margin-top: 12px; font-size: 15px; color: #374151; line-height: 1.7;">
+            <div>Trân trọng,</div>
+            <div><strong>Hệ thống Web App Ban Hành Bản Vẽ</strong></div>
           </div>
         </div>
       </div>
-    </div>
-  `;
+    </div>`;
 
   GmailApp.sendEmail(
     emailList,
@@ -446,9 +450,18 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
 const _findRowByIdInColA = (sheet, drawingId) => {
   var lastRow = sheet.getLastRow();
   if (lastRow < 2) return -1;
-  var ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
-  for (var i = 0; i < ids.length; i++) {
-    if (String(ids[i][0]).trim() === String(drawingId).trim()) return i + 2;
+  var dId = String(drawingId || '').trim().toLowerCase();
+  if (!dId) return -1;
+
+  var lastCol = Math.min(sheet.getLastColumn(), 34);
+  var vals = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  for (var i = 0; i < vals.length; i++) {
+    var rId = String(vals[i][0] || '').trim().toLowerCase();
+    var rDw = String(vals[i][11] || '').trim().toLowerCase();
+    var rTo = String(vals[i][8] || '').trim().toLowerCase();
+    if (rId === dId || (rDw && rDw === dId) || (rTo && rTo === dId)) {
+      return i + 2;
+    }
   }
   return -1;
 };
@@ -586,18 +599,23 @@ const rejectDrawingOnServer = (drawingId, reason) => {
 
 
 
-function  requestReleaseDW(arr) {
+function requestReleaseDW(arr) {
+  if (!Array.isArray(arr)) {
+    throw new Error('Du lieu ban hanh khong hop le.');
+  }
+
   const ss = SpreadsheetApp.openById("1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE");
-  const sheet = ss.getSheetByName("data");
+  const sheet = ss.getSheetByName("data") || ss.getSheetByName("Data");
+  if (!sheet) {
+    throw new Error('Khong tim thay sheet Data de luu du lieu ban hanh.');
+  }
 
-  const sheetSoure = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM").getSheetByName("Data");
-
-  const lastrow = sheet.getLastRow();
   const lastcol = sheet.getLastColumn();
   let data = [];
 
-  if (lastrow > 1) {
-    data = sheet.getRange(2, 1, lastrow - 1, lastcol).getValues();
+  const currentLastRow = sheet.getLastRow();
+  if (currentLastRow > 1) {
+    data = sheet.getRange(2, 1, currentLastRow - 1, lastcol).getValues();
   }
 
   const existingIds = new Set();
@@ -643,7 +661,13 @@ function  requestReleaseDW(arr) {
   const orderNo = "WI-DW-" + strMonth + strYear + "-" + strCount;
   let mailValue = [];
 
-  const list = arr[9];
+  const list = Array.isArray(arr[9])
+    ? arr[9].filter(row => Array.isArray(row) && String(row[0] || '').trim())
+    : [];
+  if (list.length === 0) {
+    throw new Error('Khong co ban ve nao duoc chon de ban hanh.');
+  }
+
   let output = [];
   let ids = [];
   list.forEach(row => {
@@ -651,14 +675,18 @@ function  requestReleaseDW(arr) {
     do {
       newID = generateRandomString(6);
     } while (existingIds.has(newID));
-    ids.push(row[0]);
+    ids.push(String(row[0]).trim());
+
+    const drawingReviseRaw = String(row[8] || '').trim();
+    const drawingRevise = drawingReviseRaw || '0';
+    const depName = String(arr[0] || '').trim();
 
     existingIds.add(newID);
      mailValue.push({
               requestId: orderNo,
               dw: row[1],
               status:"Yêu Cầu Ban Hàng Bản Vẽ Mới",
-              dept: arr[0],
+              dept: depName,
               name: arr[1],
             });
 
@@ -668,37 +696,53 @@ function  requestReleaseDW(arr) {
       row[4],
       "",
       row[1],
-      row[2],
+      drawingRevise,
       row[3],
       "",
       orderNo,
       "",
       "QA-G2G",
-      "",
+      String(row[7] || ''), 
       arr[1],
       requestDateRaw,
       requestType,
       finalDueDate,
       "",
-      row[5],
+      "",
       "",
       requestType === 'Urgent' ? '' : releaseReason,
       "",
+      "OK",
       "",
-      "",
-      "Đã tạo",
+      "Hoàn thành",
     ]);
   });
 
-  if (output.length > 0) {
-    sheet.getRange(lastrow + 1, 1, output.length, output[0].length).setValues(output);
-    sendMailFromDeptToCharge(mailValue, arr[0]);
-  }
-  if(ids.length>0){
-    updateBulkStatusByIds(ids,"Đang ban hành")
+  if (output.length === 0) {
+    throw new Error('Khong tao duoc du lieu ban hanh tu danh sach da chon.');
   }
 
-  return "Đã tạo thành công: " + orderNo + " | Hạn hoàn thành: " + finalDueDate;
+  // Khóa thao tác để hai yêu cầu ban hành đồng thời không dùng chung lastRow.
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    let writeRow = sheet.getLastRow() + 1;
+    const batchSize = 100;
+    for (let start = 0; start < output.length; start += batchSize) {
+      const batch = output.slice(start, start + batchSize);
+      sheet.getRange(writeRow, 1, batch.length, batch[0].length).setValues(batch);
+      writeRow += batch.length;
+    }
+  } finally {
+    lock.releaseLock();
+  }
+
+  sendMailFromDeptToCharge(mailValue, arr[0]);
+  if (ids.length > 0) {
+    updateBulkStatusByIds(ids, "Đang ban hành");
+  }
+
+  return "Đã tạo thành công " + output.length + " bản vẽ: " + orderNo + " | Hạn hoàn thành: " + finalDueDate;
 }
 
 
@@ -719,12 +763,12 @@ function updateBulkStatusByIds(targetIds, stt) {
   const statusValues = statusRange.getValues(); // Đọc toàn bộ cột C
   
   // Chuyển mảng targetIds thành Set để tìm kiếm với tốc độ siêu tốc (O(1))
-  const idSet = new Set(targetIds); 
+  const idSet = new Set(targetIds.map(id => String(id || '').trim()));
   let hasChanges = false;
 
   // 2. XỬ LÝ TRONG RAM: Vòng lặp này chạy bằng tốc độ của CPU/RAM, gần như tức thời
   for (let i = 0; i < idValues.length; i++) {
-    const currentId = idValues[i][0];
+    const currentId = String(idValues[i][0] || '').trim();
     
     // Nếu ID ở dòng hiện tại nằm trong mảng cần thay đổi
     if (idSet.has(currentId)) {

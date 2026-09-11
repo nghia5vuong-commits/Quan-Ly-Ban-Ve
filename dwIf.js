@@ -1,5 +1,5 @@
 var MAIL_CONFIG = {
-  SUBJECT_FILTERS: ['MANUFACTURING ORDER', 'NEW PROJECT', 'THÔNG BÁO TỰ ĐỘNG'],
+  SUBJECT_FILTERS: ['MANUFACTURING ORDER', 'NEW PROJECT', 'THÔNG BÁO TỰ ĐỘNG', 'DIE REQUEST', 'NEW CUSTOMER', 'NEW CUSTOMER + NEW PROJECT'],
   MAX_THREADS: 25,
   LIST_CACHE_SECONDS: 30,
   TIMEZONE: 'Asia/Ho_Chi_Minh'
@@ -51,7 +51,7 @@ function normalizeImageSource(value) {
 }
 
 function buildQuery(keyword) {
-  var query = 'subject:("MANUFACTURING ORDER" OR "NEW PROJECT" OR "THÔNG BÁO TỰ ĐỘNG")';
+  var query = 'subject:("MANUFACTURING ORDER" OR "NEW PROJECT" OR "THÔNG BÁO TỰ ĐỘNG" OR "DIE REQUEST" OR "NEW CUSTOMER" OR "NEW CUSTOMER + NEW PROJECT")';
   if (keyword && keyword.trim() !== '') {
     query = '(' + query + ') ' + keyword.trim();
   }
@@ -155,10 +155,19 @@ function getManufacturingEmails(page, keyword) {
 // 🚀 TỐI ƯU 2: HÀM LẤY CHI TIẾT EMAIL (Giữ nguyên phần đính kèm ở đây vì người dùng thực sự đang xem nó)
 function getEmailDetail(threadId) {
   try {
+    var cache = CacheService.getScriptCache();
+    var cacheKey = 'MAIL_DETAIL_' + String(threadId);
+    var cached = cache.get(cacheKey);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+
     var thread = GmailApp.getThreadById(threadId);
     var messages = thread.getMessages();
 
     var messageList = messages.map(function (msg, idx) {
+      var plainBody = String(msg.getPlainBody() || '');
+      var safePlainBody = sanitizePlainBody(plainBody);
       return {
         index: idx,
         messageId: msg.getId(),
@@ -170,8 +179,7 @@ function getEmailDetail(threadId) {
         cc: msg.getCc(),
         date: formatDate(msg.getDate()),
         dateRaw: msg.getDate().getTime(),
-        body: sanitizeHtml(msg.getBody()),
-        plainBody: msg.getPlainBody(),
+        plainBody: safePlainBody,
         isUnread: msg.isUnread(),
         attachments: getAttachmentInfo(msg) // Chỉ parse file khi click mở email
       };
@@ -180,15 +188,26 @@ function getEmailDetail(threadId) {
     thread.markRead();
     var lastMsg = messages[messages.length - 1];
 
-    return {
+    var detail = {
       success: true,
       threadId: threadId,
       subject: lastMsg.getSubject(),
       messageCount: messages.length,
       messages: messageList
     };
+
+    cache.put(cacheKey, JSON.stringify(detail), 300);
+    return detail;
   } catch (err) {
     return { success: false, error: err.toString() };
+  }
+}
+
+function sanitizePlainBody(text) {
+  try {
+    return String(text || '').replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').slice(0, 12000);
+  } catch (e) {
+    return String(text || '');
   }
 }
 
@@ -210,11 +229,23 @@ function getAttachmentParsedData(threadId, msgIndex, attIndex) {
     }
 
     var attachment = attachments[attIndex];
+    var name = String(attachment.getName() || 'attachment');
+    var mimeType = attachment.getContentType() || guessMimeType(name);
+    var size = attachment.getSize() || 0;
+    if (size > 5 * 1024 * 1024) {
+      return {
+        success: false,
+        error: 'File đính kèm quá lớn để parse trên trình duyệt. Vui lòng dùng file nhỏ hơn 5MB.'
+      };
+    }
+
     var base64Data = Utilities.base64Encode(attachment.getBytes());
 
     return {
       success: true,
-      dataBase64: base64Data
+      dataBase64: base64Data,
+      fileName: name,
+      mimeType: mimeType
     };
   } catch (err) {
     return {
@@ -308,51 +339,6 @@ function getEmailReceptionStats() {
 }
 
 
-function toggleDrawingForm(rowIdx, subject, customer, to, so) {
-  var container = document.getElementById('form-container-' + rowIdx);
-  var form = document.getElementById('drawingForm');
-  var btn = document.getElementById('btn-toggle-' + rowIdx);
-
-  // Chốt chặn an toàn: Tránh lỗi "Cannot read properties of null"
-  if (!form) {
-    showToast('Hệ thống đang tải form, vui lòng thử lại!', 'error');
-    return;
-  }
-
-  if (pendingState.selectedLogIdx === rowIdx && !container.classList.contains('d-none')) {
-    closeDrawingForm(); return;
-  }
-
-  if (pendingState.selectedLogIdx) {
-    var oldBtn = document.getElementById('btn-toggle-' + pendingState.selectedLogIdx);
-    if (oldBtn) {
-      oldBtn.innerHTML = '<i class="fa fa-pen me-2"></i>Nhập dữ liệu';
-      oldBtn.classList.replace('btn-primary', 'btn-outline-primary');
-      oldBtn.classList.remove('text-secondary');
-    }
-    var oldContainer = document.getElementById('form-container-' + pendingState.selectedLogIdx);
-    if (oldContainer) oldContainer.classList.add('d-none');
-  }
-
-  pendingState.selectedLogIdx = rowIdx;
-  pendingState.subject = subject;
-
-  form.reset();
-  var rDate = document.getElementById('formReceivedDate');
-  if (rDate) rDate.value = new Date().toISOString().split('T')[0];
-  if (document.getElementById('formCustomer')) document.getElementById('formCustomer').value = customer || '';
-  if (document.getElementById('formTO')) document.getElementById('formTO').value = to || '';
-  if (document.getElementById('formSO')) document.getElementById('formSO').value = so || '';
-
-  generateDwCode();
-
-  container.appendChild(form);
-  container.classList.remove('d-none');
-
-  btn.innerHTML = '<i class="fa fa-chevron-up me-2"></i>Đóng form';
-  btn.classList.replace('btn-outline-primary', 'btn-primary');
-  btn.classList.add('text-secondary');
-}
 
 function markEmail(threadId, markAsRead) {
   try {
@@ -372,8 +358,12 @@ function getAttachmentInfo(message) {
   try {
     return message.getAttachments().map(function (att, idx) {
       return {
-        index: idx, name: att.getName(), contentType: att.getContentType(),
-        size: formatFileSize(att.getSize()), isSheet: isSpreadsheetType(att.getName(), att.getContentType())
+        index: idx,
+        name: att.getName(),
+        contentType: att.getContentType(),
+        size: formatFileSize(att.getSize()),
+        isSheet: isSpreadsheetType(att.getName(), att.getContentType()),
+        isPdf: isPdfType(att.getName(), att.getContentType())
       };
     });
   } catch (e) { return []; }
@@ -382,6 +372,11 @@ function getAttachmentInfo(message) {
 function isSpreadsheetType(name, contentType) {
   var n = (name || '').toLowerCase(), t = (contentType || '').toLowerCase();
   return !!(n.match(/\.(xlsx|xls|csv|ods|xlsm|xlsb)$/) || t.indexOf('spreadsheet') !== -1 || t.indexOf('excel') !== -1 || t.indexOf('csv') !== -1);
+}
+
+function isPdfType(name, contentType) {
+  var n = (name || '').toLowerCase(), t = (contentType || '').toLowerCase();
+  return !!(n.match(/\.pdf$/) || t.indexOf('pdf') !== -1);
 }
 
 function formatFileSize(bytes) {
@@ -398,7 +393,69 @@ function getAttachmentForDownload(threadId, messageIndex, attachmentIndex) {
     var messages = thread.getMessages();
     if (messageIndex >= messages.length) return { success: false, error: 'Không tìm thấy tin nhắn.' };
     var att = messages[messageIndex].getAttachments()[attachmentIndex];
-    return { success: true, dataBase64: Utilities.base64Encode(att.getBytes()), fileName: att.getName() };
+    var bytes = att.getBytes();
+    if (bytes.length > 5 * 1024 * 1024) {
+      return { success: false, error: 'File đính kèm quá lớn để xem/preview trên trình duyệt. Vui lòng dùng file nhỏ hơn 5MB.' };
+    }
+    return {
+      success: true,
+      dataBase64: Utilities.base64Encode(bytes),
+      fileName: att.getName(),
+      mimeType: att.getContentType() || guessMimeType(att.getName())
+    };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
+function guessMimeType(fileName) {
+  try {
+    var name = String(fileName || '').toLowerCase();
+    if (name.endsWith('.pdf')) return 'application/pdf';
+    if (name.endsWith('.png')) return 'image/png';
+    if (name.endsWith('.jpg') || name.endsWith('.jpeg')) return 'image/jpeg';
+    if (name.endsWith('.gif')) return 'image/gif';
+    if (name.endsWith('.webp')) return 'image/webp';
+    if (name.endsWith('.xlsx')) return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    if (name.endsWith('.xls')) return 'application/vnd.ms-excel';
+    if (name.endsWith('.csv')) return 'text/csv';
+    if (name.endsWith('.zip')) return 'application/zip';
+    return 'application/octet-stream';
+  } catch (e) {
+    return 'application/octet-stream';
+  }
+}
+
+function getAttachmentForDownloadByUrl(fileUrl) {
+  try {
+    if (!fileUrl) return { success: false, error: 'Thiếu đường link tải file.' };
+
+    var url = String(fileUrl).trim();
+    var response = UrlFetchApp.fetch(url, {
+      method: 'get',
+      muteHttpExceptions: true,
+      followRedirects: true
+    });
+
+    var status = response.getResponseCode();
+    if (status < 200 || status >= 300) {
+      return { success: false, error: 'Không tải được file từ link: HTTP ' + status };
+    }
+
+    var blob = response.getBlob();
+    var fileName = blob.getName() || url.split('/').pop() || 'remote-file';
+    var mimeType = blob.getContentType() || guessMimeType(fileName);
+    var bytes = blob.getBytes();
+    if (bytes.length > 5 * 1024 * 1024) {
+      return { success: false, error: 'File từ link quá lớn để preview trên trình duyệt. Vui lòng dùng file nhỏ hơn 5MB.' };
+    }
+
+    return {
+      success: true,
+      dataBase64: Utilities.base64Encode(bytes),
+      fileName: fileName,
+      mimeType: mimeType
+    };
   } catch (err) {
     return { success: false, error: err.toString() };
   }
@@ -627,26 +684,18 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
     var formRow = matrixData[0];
     var imageObj = formRow.pop();
-    var uploadedImageUrl = '';
+    var cellImageObj = null;
 
     if (imageObj && imageObj.base64) {
       try {
-        var imageBytes = Utilities.base64Decode(imageObj.base64);
         var imageMimeType = imageObj.mimeType || 'image/png';
-        var imageBlob = Utilities.newBlob(imageBytes, imageMimeType, imageObj.name || 'section-image');
-        var sectionImageFolder = DriveApp.getFolderById(sectionImageFolderId);
-        var imageFile = sectionImageFolder.createFile(imageBlob);
-
-        // Cho phép người dùng trong cùng miền mở ảnh từ liên kết Drive.
-        try {
-          imageFile.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
-        } catch (sharingErr) {
-          Logger.log('Không thể cập nhật quyền chia sẻ ảnh mặt cắt: ' + sharingErr.toString());
-        }
-        uploadedImageUrl = imageFile.getUrl();
-
+        var dataUri = 'data:' + imageMimeType + ';base64,' + imageObj.base64;
+        cellImageObj = SpreadsheetApp.newCellImage()
+          .setSourceUrl(dataUri)
+          .setAltTextTitle(imageObj.name || 'Hinh mat cat')
+          .build();
       } catch (imgErr) {
-        throw new Error('Không thể lưu hình ảnh mặt cắt vào Drive: ' + imgErr.toString());
+        Logger.log('Lỗi tạo CellImage: ' + imgErr.toString());
       }
     }
 
@@ -725,10 +774,17 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     mappedRowData[8] = toCode;             // I: TO
     mappedRowData[9] = project;            // J: Dự án
     mappedRowData[10] = customerName;       // K: Customer
+    if (isUpgradeMode) {
+      var currentDwInSheet = String(mappedRowData[11] || '');
+      if (currentDwInSheet && currentDwInSheet !== dwCode) {
+        mappedRowData[14] = currentDwInSheet; // Cột O: DW Code trước khi thay đổi
+      }
+    } else {
+      mappedRowData[14] = "";
+    }
     mappedRowData[11] = dwCode;             // L: Drawing code
     mappedRowData[12] = typeDw;            // M: Version Drawing
-    mappedRowData[13] = "";                 // N: Nội dung thay đổi
-    mappedRowData[14] = "";                 // O: File Drawing (PDF)
+    mappedRowData[13] = noteVal;           // N: Nội dung thay đổi
     mappedRowData[15] = assignee;           // P: Người đảm trách
     mappedRowData[16] = "";   // Q: Ngày người đảm trách hoàn thành
     mappedRowData[17] = "";                 // R: Checker
@@ -746,13 +802,16 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     mappedRowData[29] = heightVal;          // AD: H
     mappedRowData[30] = "";                 // AE: Sample File Excel
     mappedRowData[31] = "";                 // AF: Sample File PDF
-    if (uploadedImageUrl) mappedRowData[32] = uploadedImageUrl; // AG: Hình ảnh mặt cắt
+    if (cellImageObj) mappedRowData[32] = cellImageObj; // AG: Hình ảnh mặt cắt (chèn trực tiếp vào ô)
     mappedRowData[33] = soNo;              // AH: Mã SO
 
     // Chỉ kiểm tra TO+Customer trong chế độ INSERT (không upgrade)
     if (isUpgradeMode) {
       // Chế độ UPDATE: luôn ghi lại dữ liệu vào hàng hiện có
       sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
+      if (cellImageObj) {
+        try { sheetData.getRange(targetRow, 33).setValue(cellImageObj); } catch (e) { }
+      }
     } else {
       // Chế độ INSERT: kiểm tra TO+Customer trước khi ghi
       // ========================================================================
@@ -793,6 +852,9 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
       // Chỉ lưu vào sheet "Data" nếu TO + Customer chưa tồn tại
       if (!toCustomerExists) {
         sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
+        if (cellImageObj) {
+          try { sheetData.getRange(targetRow, 33).setValue(cellImageObj); } catch (e) { }
+        }
       } else {
       }
     }
@@ -945,8 +1007,32 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 }
 
 // ========================================================================
-// HỆ THỐNG QUẢN LÍ BẢN VẼ - MANAGED DRAWINGS
+// HỆ THỐNG MÃ KHÁCH HÀNG & QUẢN LÍ BẢN VẼ - CUSTOMER MAP & MANAGED DRAWINGS
 // ========================================================================
+
+function getCustomerMap() {
+  try {
+    var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
+    var ss = SpreadsheetApp.openById(sheetId);
+    var sheet = ss.getSheetByName('Customer');
+    if (!sheet) return { success: false, error: 'Sheet Customer không tồn tại' };
+
+    var data = sheet.getDataRange().getValues();
+    // Cột A (index 0): Mã khách hàng (ví dụ BACT)
+    // Cột B (index 1): Tên khách hàng (ví dụ BACH TUNG)
+    var map = {};
+    for (var i = 1; i < data.length; i++) {
+      var code = String(data[i][0] || '').trim().toUpperCase();
+      var name = String(data[i][1] || '').trim().toUpperCase();
+      if (name && code) {
+        map[name] = code;
+      }
+    }
+    return { success: true, data: map };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
 
 function getManagedDrawings() {
   try {
@@ -977,11 +1063,14 @@ function getManagedDrawings() {
         var toVal = row[8] || 'N/A';          // I: TO
         var dwCodeVal = row[11] || '';        // L: DW Code
         var customerVal = row[10] || 'Unknown'; // K: Customer
+        var oldDwCodeVal = row[14] || '';     // O: DW Code cũ trước khi thay đổi
 
         managed.push({
+          status: String(row[2] || ''),       // C: Status
           type: String(typeVal),
           to: String(toVal),
           dwCode: String(dwCodeVal),
+          oldDwCode: String(oldDwCodeVal),    // O: DW Code cũ trước thay đổi
           customer: String(customerVal),
           group: String(row[3] || ''),
           project: String(row[9] || ''),
@@ -1017,6 +1106,14 @@ function removeManagedDrawing(rowId) {
 
     if (!dataSheet || rowId < 2) {
       return { success: false, error: 'Invalid row ID' };
+    }
+
+    // Kiểm tra trạng thái: Chỉ cho phép xóa khi "Đang thực hiện" hoặc "Trả về charger"
+    var statusVal = String(dataSheet.getRange(rowId, 3).getValue() || '');
+    var cleanSt = statusVal.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').trim();
+    var isEditable = cleanSt.includes('dang thuc hien') || cleanSt.includes('tra ve') || cleanSt.includes('tra lai') || cleanSt.includes('tu choi');
+    if (!isEditable && cleanSt !== '') {
+      return { success: false, error: 'Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả về charger" mới được xóa!' };
     }
 
     // Dữ liệu thực tế lưu ở AC, AD, AG => cột 29, 30, 33 (1-based)
@@ -1058,6 +1155,7 @@ function getDrawingByRowIdx(rowIdx) {
     return {
       success: true,
       data: {
+        status: String(rowData[2] || ''),            // C: Status
         group: String(rowData[3] || ''),             // D: Group
         type: String(rowData[4] || ''),              // E: Type
         version: String(rowData[5] || ''),           // F: Version / Revise
@@ -1067,6 +1165,7 @@ function getDrawingByRowIdx(rowIdx) {
         project: String(rowData[9] || ''),           // J: Dự án
         customer: String(rowData[10] || ''),         // K: Customer
         dwCode: String(rowData[11] || ''),           // L: Drawing Code
+        oldDwCode: String(rowData[14] || ''),        // O: DW Code cũ trước khi thay đổi
         typeDw: String(rowData[12] || rowData[24] || ''), // M / Y: Type DW
         assignee: String(rowData[15] || ''),         // P: Người đảm trách
         actualDoneDate: String(rowData[18] || ''),   // S: Ngày hoàn thành thực tế
@@ -1228,6 +1327,21 @@ function updateDrawingData(rowIdx, formRow) {
     if (!sheet || !rowIdx || rowIdx < 2 || !formRow) return { success: false, error: 'Dữ liệu cập nhật không hợp lệ' };
 
     var row = sheet.getRange(rowIdx, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+    // Kiểm tra trạng thái: Chỉ cho phép sửa khi "Đang thực hiện" hoặc "Trả về charger"
+    var currentStatus = String(row[2] || '');
+    var cleanSt = currentStatus.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').trim();
+    var isEditable = cleanSt.includes('dang thuc hien') || cleanSt.includes('tra ve') || cleanSt.includes('tra lai') || cleanSt.includes('tu choi');
+    if (!isEditable && cleanSt !== '') {
+      return { success: false, error: 'Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả về charger" mới được sửa dữ liệu!' };
+    }
+
+    var currentDwInSheet = String(row[11] || '');
+    var newDwCode = formRow[6] ? String(formRow[6]).trim() : '';
+    if (currentDwInSheet && newDwCode && currentDwInSheet !== newDwCode) {
+      row[14] = currentDwInSheet; // Cột O: lưu lại DW Code trước khi thay đổi
+    }
+
     var fields = [
       [3, formRow[0]], [4, formRow[1]], [10, formRow[2]], [8, formRow[3]],
       [9, formRow[4]], [33, formRow[5]], [11, formRow[6]], [5, formRow[7]],
@@ -1237,15 +1351,25 @@ function updateDrawingData(rowIdx, formRow) {
     fields.forEach(function (field) { row[field[0]] = field[1] === undefined ? '' : field[1]; });
 
     var imageObj = formRow[17];
+    var cellImageObj = null;
     if (imageObj && imageObj.base64) {
-      var folder = DriveApp.getFolderById('19Faip8STiBLJ58aVLiqwVs4SaotKb1bm');
-      var blob = Utilities.newBlob(Utilities.base64Decode(imageObj.base64), imageObj.mimeType || 'image/png', imageObj.name || 'section-image');
-      var file = folder.createFile(blob);
-      try { file.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW); } catch (sharingErr) {}
-      row[32] = file.getUrl();
+      try {
+        var imageMimeType = imageObj.mimeType || 'image/png';
+        var dataUri = 'data:' + imageMimeType + ';base64,' + imageObj.base64;
+        cellImageObj = SpreadsheetApp.newCellImage()
+          .setSourceUrl(dataUri)
+          .setAltTextTitle(imageObj.name || 'Hinh mat cat')
+          .build();
+        row[32] = cellImageObj;
+      } catch (e) {
+        Logger.log('Lỗi tạo CellImage: ' + e.toString());
+      }
     }
 
     sheet.getRange(rowIdx, 1, 1, row.length).setValues([row]);
+    if (cellImageObj) {
+      try { sheet.getRange(rowIdx, 33).setValue(cellImageObj); } catch (e) { }
+    }
     return { success: true };
   } catch (err) {
     return { success: false, error: err.toString() };

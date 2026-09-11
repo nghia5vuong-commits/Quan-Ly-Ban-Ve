@@ -742,6 +742,12 @@
   var initialPage = "<?= initialPage ?>";
 </script>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+  if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1061,7 +1067,16 @@
             _inFlight[key] = false;
             if (key === 'mainData') {
               window.pageData = normalizedData;
+              pageData = normalizedData;
               updatePageDataIndex(normalizedData);
+
+              // Đẩy dữ liệu xuống tất cả các page render đang chứa cùng dữ liệu
+              if (typeof initThietKeBanVe === 'function') {
+                try { initThietKeBanVe(); } catch (e) { }
+              }
+              if (typeof initSubmitApproval === 'function') {
+                try { initSubmitApproval(); } catch (e) { }
+              }
             }
             _notify(key);
           })
@@ -1122,12 +1137,12 @@
 
     // Cấu hình tọa độ đóng dấu chữ ký theo vị trí/trạng thái (dùng chung cho dwDesign.html và submitDrawingsForApproval.html)
     window.sign = {
-      chager: [790, 465, 40],
-      charger: [790, 465, 40],
-      checker1: [735, 465, 40],
-      checker2: [715, 480, 40],
-      approver: [640, 465, 40],
-      approval: [640, 465, 40]
+      chager: [732, 462, 28],
+      charger: [732, 462, 28],
+      checker1: [672, 468, 20], // Checker 1 ở DƯỚI
+      checker2: [684, 455, 20], // Checker 2 ở TRÊN
+      approver: [625, 462, 28],
+      approval: [625, 462, 28]
     };
 
     window.pageDataSoSet = new Set();
@@ -1439,11 +1454,12 @@
             window.appTabLastRendered.submitDrawingsForApproval = mVer;
           }
         }
-        if (pageName === 'dwDesign' && typeof initThietKeBanVe === 'function') {
-          if (window.appTabLastRendered.dwDesign !== mVer) {
-            initThietKeBanVe();
-            window.appTabLastRendered.dwDesign = mVer;
+        if (pageName === 'dwDesign') {
+          var dwDesignFn = (typeof initThietKeBanVe === 'function') ? initThietKeBanVe : window.initThietKeBanVe;
+          if (typeof dwDesignFn === 'function') {
+            try { dwDesignFn(); } catch (e) { console.error('Lỗi chạy initThietKeBanVe:', e); }
           }
+          window.appTabLastRendered.dwDesign = mVer;
         }
         if (pageName === 'release' && typeof history_loadData === 'function') {
           if (window.appTabLastRendered.release !== rVer) {
@@ -1583,20 +1599,23 @@
       // Đăng ký các page lắng nghe khi mainData sẵn sàng / cập nhật
       AppDataStore.onReady('mainData', function (data) {
         pageData = data; // Đồng bộ alias cũ
+        window.pageData = data;
         var mVer = window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0;
+
         if (activePageName === 'dashboard' && typeof updateDashboardStats === 'function') {
           updateDashboardStats();
           window.appTabLastRendered.dashboard = mVer;
-        } else if (activePageName === 'submitDrawingsForApproval' && typeof initSubmitApproval === 'function') {
-          initSubmitApproval();
-          window.appTabLastRendered.submitDrawingsForApproval = mVer;
-        } else if (activePageName === 'dwDesign' && typeof initThietKeBanVe === 'function') {
-          initThietKeBanVe();
-          window.appTabLastRendered.dwDesign = mVer;
         }
 
-        if (typeof initThietKeBanVe === 'function' && window.__dwDesignPreloaded) {
-          initThietKeBanVe();
+        if (typeof initSubmitApproval === 'function') {
+          try { initSubmitApproval(); } catch (e) { }
+          window.appTabLastRendered.submitDrawingsForApproval = mVer;
+        }
+
+        var dwFn = (typeof initThietKeBanVe === 'function') ? initThietKeBanVe : window.initThietKeBanVe;
+        if (typeof dwFn === 'function') {
+          try { dwFn(); } catch (e) { console.error('Lỗi initThietKeBanVe onReady:', e); }
+          window.appTabLastRendered.dwDesign = mVer;
         }
 
         _initialLoadedParts.mainData = true;

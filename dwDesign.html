@@ -20,6 +20,7 @@
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
   }
+
   .page-dwDesign .design-preview-dialog {
     display: flex;
     flex-direction: column;
@@ -31,6 +32,7 @@
     background: var(--liquid-glass-elevated);
     box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow);
   }
+
   .page-dwDesign .design-preview-head {
     display: flex;
     align-items: center;
@@ -40,15 +42,46 @@
     border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     background: rgba(255, 255, 255, 0.78);
   }
-  .page-dwDesign .design-preview-head h5 { margin: 0; color: var(--liquid-text); font-weight: 800; }
-  .page-dwDesign .design-preview-head small { color: var(--liquid-text-muted); }
-  .page-dwDesign .design-preview-body { flex: 1; min-height: 0; background: #f8fafc; }
-  .page-dwDesign .design-preview-frame { width: 100%; height: 100%; border: 0; background: #fff; }
-  .page-dwDesign .design-preview-fallback { height: 100%; display: grid; place-content: center; justify-items: center; gap: 10px; color: var(--liquid-text-muted); }
-  .page-dwDesign .design-preview-fallback i { font-size: 2.5rem; color: var(--liquid-primary); }
-  
+
+  .page-dwDesign .design-preview-head h5 {
+    margin: 0;
+    color: var(--liquid-text);
+    font-weight: 800;
+  }
+
+  .page-dwDesign .design-preview-head small {
+    color: var(--liquid-text-muted);
+  }
+
+  .page-dwDesign .design-preview-body {
+    flex: 1;
+    min-height: 0;
+    background: #f8fafc;
+  }
+
+  .page-dwDesign .design-preview-frame {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #fff;
+  }
+
+  .page-dwDesign .design-preview-fallback {
+    height: 100%;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 10px;
+    color: var(--liquid-text-muted);
+  }
+
+  .page-dwDesign .design-preview-fallback i {
+    font-size: 2.5rem;
+    color: var(--liquid-primary);
+  }
+
   /* App Cards & Glass Cards */
-  .page-dwDesign .app-card, 
+  .page-dwDesign .app-card,
   .page-dwDesign .glass-card {
     position: relative;
     overflow: hidden;
@@ -61,6 +94,7 @@
     padding: 22px;
     transition: var(--liquid-spring);
   }
+
   .page-dwDesign .app-card:hover,
   .page-dwDesign .glass-card:hover {
     box-shadow: var(--liquid-shadow-lg);
@@ -87,16 +121,19 @@
     transition: var(--liquid-spring);
     cursor: pointer;
   }
+
   .page-dwDesign .upload-zone:hover {
     border-color: var(--liquid-primary);
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(209, 250, 229, 0.8) 100%);
     transform: translateY(-2px) scale(1.01);
     box-shadow: 0 8px 18px rgba(16, 185, 129, 0.15);
   }
+
   .page-dwDesign .upload-zone p {
     font-size: 0.78rem;
     font-weight: 600;
   }
+
   .page-dwDesign .upload-zone input[type="file"] {
     position: absolute;
     inset: 0;
@@ -107,7 +144,10 @@
   }
 
   /* Search Select Dropdown Liquid Glass */
-  .page-dwDesign .search-select-wrapper { position: relative; }
+  .page-dwDesign .search-select-wrapper {
+    position: relative;
+  }
+
   .page-dwDesign .search-select-input {
     display: flex;
     align-items: center;
@@ -121,11 +161,13 @@
     overflow: hidden;
     transition: var(--liquid-spring-fast);
   }
+
   .page-dwDesign .search-select-input:focus-within {
     border-color: var(--liquid-primary);
     box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.18);
     background: #ffffff;
   }
+
   .page-dwDesign .search-select-field {
     width: 100%;
     border: 0;
@@ -135,6 +177,7 @@
     padding: 8px 14px;
     outline: none;
   }
+
   .page-dwDesign .search-select-dropdown {
     position: absolute;
     top: calc(100% + 8px);
@@ -152,6 +195,7 @@
     box-shadow: var(--liquid-shadow-lg);
     padding: 6px;
   }
+
   .page-dwDesign .search-select-wrapper.open .search-select-dropdown {
     display: block;
     animation: liquidFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -174,24 +218,30 @@
     gap: 8px;
     transition: var(--liquid-spring);
   }
+
   .page-dwDesign .btn-submit:hover {
     background: linear-gradient(135deg, #34d399 0%, #059669 100%) !important;
     transform: translateY(-2px) scale(1.02);
     box-shadow: 0 14px 28px rgba(16, 185, 129, 0.45) !important;
   }
+
   .page-dwDesign .btn-submit:active {
     transform: scale(0.96);
   }
 
   /* Compact Table Rows */
   .page-dwDesign .table-custom,
-  .page-dwDesign table { font-size: 0.74rem !important; }
+  .page-dwDesign table {
+    font-size: 0.74rem !important;
+  }
+
   .page-dwDesign table th {
     padding: 6px 8px !important;
     font-size: 0.68rem !important;
     white-space: nowrap !important;
     font-weight: 700 !important;
   }
+
   .page-dwDesign table td {
     padding: 5px 8px !important;
     font-size: 0.74rem !important;
@@ -209,6 +259,7 @@
     border: 1px solid transparent;
     transition: var(--liquid-spring);
   }
+
   .page-dwDesign .nav-pills .nav-link.active {
     background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
     border-color: rgba(255, 255, 255, 0.3);
@@ -235,29 +286,35 @@
     margin-bottom: 3px !important;
     font-weight: 700;
   }
-  .page-dwDesign .form-control,
-  .page-dwDesign .form-select { font-size: 0.8rem !important; padding: 6px 10px !important; }
-</style>
-  <div class="page-dwDesign" style="width: 100%; margin: 0 !important; min-height: 100%; height: auto; overflow-y: auto;">
-    <div class="design-preview-modal d-none" id="designPreviewModal" role="dialog" aria-modal="true" aria-labelledby="designPreviewTitle">
-      <div class="design-preview-dialog">
-        <div class="design-preview-head">
-          <div>
-            <h5 id="designPreviewTitle">Xem trước bản vẽ</h5>
-            <small id="designPreviewMeta">PDF preview</small>
-          </div>
-          <button type="button" class="btn btn-light border" onclick="closeDesignPreview()" aria-label="Đóng xem trước"><i class="bi bi-x-lg"></i></button>
-        </div>
-        <div class="design-preview-body" id="designPreviewBody"></div>
-      </div>
-    </div>
-    <div class="row g-4">
 
-      <!-- LEFT PANEL: TẢI FILE -->
-      <div class="col-lg-4 col-xl-4">
+  .page-dwDesign .form-control,
+  .page-dwDesign .form-select {
+    font-size: 0.8rem !important;
+    padding: 6px 10px !important;
+  }
+</style>
+<div class="page-dwDesign" style="width: 100%; margin: 0 !important; min-height: 100%; height: auto; overflow-y: auto;">
+  <div class="design-preview-modal d-none" id="designPreviewModal" role="dialog" aria-modal="true"
+    aria-labelledby="designPreviewTitle">
+    <div class="design-preview-dialog">
+      <div class="design-preview-head">
+        <div>
+          <h5 id="designPreviewTitle">Xem trước bản vẽ</h5>
+          <small id="designPreviewMeta">PDF preview</small>
+        </div>
+        <button type="button" class="btn btn-light border" onclick="closeDesignPreview()" aria-label="Đóng xem trước"><i
+            class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="design-preview-body" id="designPreviewBody"></div>
+    </div>
+  </div>
+  <div class="row g-4">
+
+    <!-- LEFT PANEL: TẢI FILE -->
+    <div class="col-lg-4 col-xl-4">
       <div class="app-card">
         <h5 class="fw-bold mb-4 text-primary"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Tải lên bản vẽ</h5>
-        
+
         <form id="designUploadForm" onsubmit="handleDesignUpload(event)">
           <!-- ẨN ID ĐI NHƯNG VẪN GIỮ TRONG FORM ĐỂ CODE ĐỌC ĐƯỢC -->
           <input type="hidden" id="uploadDwId" required>
@@ -265,12 +322,17 @@
           <div class="row g-3 mb-4">
             <div class="col-12">
               <label class="form-label fw-semibold small text-muted">Drawing Code</label>
-              
+
               <!-- DROPDOWN TÌM KIẾM MỚI -->
               <div class="search-select-wrapper" id="toWrapper">
-                <div class="search-select-input" onclick="toggleDropdownTo()">
-                  <input type="text" id="uploadDwTo" class="search-select-field fw-bold text-primary" placeholder="Nhập / Chọn mã Drawing..." autocomplete="off" oninput="filterToList()" onfocus="openDropdownTo()" required>
-                  <i class="bi bi-chevron-down search-select-arrow" onclick="toggleDropdownTo(); event.stopPropagation();"></i>
+                <div class="search-select-input" id="searchSelectInputContainer"
+                  onclick="if(typeof toggleDropdownTo==='function')toggleDropdownTo()">
+                  <input type="text" id="uploadDwTo" class="search-select-field fw-bold text-primary"
+                    placeholder="Nhập / Chọn mã Drawing..." autocomplete="off"
+                    oninput="if(typeof filterToList==='function')filterToList()"
+                    onfocus="if(typeof openDropdownTo==='function')openDropdownTo()" required>
+                  <i class="bi bi-chevron-down search-select-arrow" id="searchSelectArrow"
+                    onclick="if(typeof toggleDropdownTo==='function'){toggleDropdownTo(); event.stopPropagation();}"></i>
                 </div>
                 <div class="search-select-dropdown custom-scrollbar" id="toDropdown">
                   <!-- Dữ liệu render từ JS -->
@@ -280,27 +342,20 @@
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold small text-muted">Group</label>
-              <input type="text" class="form-control bg-light" id="uploadCategory" placeholder="Tự động điền..." readonly required>
-            </div>
-          </div>
-
-          <!-- Upload PDF (Lưu lên Drive) -->
-          <div class="mb-3">
-            <label class="form-label fw-bold text-danger small mb-1"><i class="bi bi-file-earmark-pdf-fill me-1"></i> File PDF (Bản vẽ)</label>
-            <div class="upload-zone" id="pdfZone">
-              <i class="bi bi-file-pdf fs-4 text-danger"></i>
-              <p class="mb-0 fw-medium" id="pdfFileName">Kéo thả hoặc bấm để chọn PDF</p>
-              <input type="file" id="pdfFileInput" accept=".pdf" required onchange="updateFileName('pdfFileInput', 'pdfFileName', 'text-danger')">
+              <input type="text" class="form-control bg-light" id="uploadCategory" placeholder="Tự động điền..."
+                readonly required>
             </div>
           </div>
 
           <!-- Upload EXCEL (Lưu lên Local Server) -->
           <div class="mb-3">
-            <label class="form-label fw-bold text-success small mb-1"><i class="bi bi-file-earmark-excel-fill me-1"></i> File EXCEL (Bản vẽ)</label>
+            <label class="form-label fw-bold text-success small mb-1"><i class="bi bi-file-earmark-excel-fill me-1"></i>
+              File EXCEL (Bản vẽ)</label>
             <div class="upload-zone" id="excelZone">
               <i class="bi bi-file-excel fs-4 text-success"></i>
               <p class="mb-0 fw-medium" id="excelFileName">Kéo thả hoặc bấm để chọn Excel</p>
-              <input type="file" id="excelFileInput" accept=".xlsx, .xls, .xlsm" required onchange="updateFileName('excelFileInput', 'excelFileName', 'text-success')">
+              <input type="file" id="excelFileInput" accept=".xlsx, .xls, .xlsm" required
+                onchange="updateFileName('excelFileInput', 'excelFileName', 'text-success')">
             </div>
             <small class="text-muted" style="font-size: 10.5px;">*Tự động lưu trữ vào ổ NAS QA.</small>
           </div>
@@ -315,21 +370,24 @@
     <!-- RIGHT PANEL: DANH SÁCH BẢN VẼ -->
     <div class="col-lg-8 col-xl-8">
       <div class="app-card">
-        
+
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Danh sách bản vẽ chờ thiết kế</h5>
-          
+          <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-list-task me-2 text-primary"></i>Danh sách bản vẽ chờ thiết
+            kế</h5>
+
           <!-- Thanh tìm kiếm TO -->
           <div class="input-group shadow-sm" style="width: 250px;">
             <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control border-start-0 ps-0" id="searchToInput" placeholder="Tìm kiếm..." oninput="onSearchDesignInput()">
+            <input type="text" class="form-control border-start-0 ps-0" id="searchToInput" placeholder="Tìm kiếm..."
+              oninput="onSearchDesignInput()">
           </div>
         </div>
 
         <!-- TABS (ĐÃ THÊM ID ĐỂ JS CÓ THỂ TỰ ĐỘNG BẤM) -->
         <ul class="nav nav-pills mb-3 border-bottom pb-2" id="dwCategoryTabs" role="tablist">
           <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="tab-btn-barsale" data-bs-toggle="pill" type="button" role="tab">Barsale</button>
+            <button class="nav-link active" id="tab-btn-barsale" data-bs-toggle="pill" type="button"
+              role="tab">Barsale</button>
           </li>
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="tab-btn-oem" data-bs-toggle="pill" type="button" role="tab">OEM</button>
@@ -338,17 +396,19 @@
             <button class="nav-link" id="tab-btn-we" data-bs-toggle="pill" type="button" role="tab">WE SASH</button>
           </li>
           <li class="nav-item ms-auto">
-             <button class="btn btn-sm btn-light border fw-medium text-secondary mt-1" data-refresh-design="true"><i class="bi bi-arrow-clockwise me-1"></i> Làm mới Data</button>
+            <button class="btn btn-sm btn-light border fw-medium text-secondary mt-1" data-refresh-design="true"><i
+                class="bi bi-arrow-clockwise me-1"></i> Làm mới Data</button>
           </li>
         </ul>
 
         <!-- BẢNG DỮ LIỆU (Đã set sẵn chiều rộng các cột) -->
-        <div class="table-responsive custom-scrollbar border rounded-3" style="max-height: calc(100vh - 290px); overflow-y: auto;">
+        <div class="table-responsive custom-scrollbar border rounded-3"
+          style="max-height: calc(100vh - 290px); overflow-y: auto;">
           <table class="table-custom">
             <thead class="position-sticky top-0 z-1 shadow-sm">
               <tr>
                 <th class="text-center" style="width: 3%">#</th>
-                <th class="d-none">ID</th> 
+                <th class="d-none">ID</th>
                 <th class="d-none">Group</th>
                 <th style="width: 8%">Type</th>
                 <th style="width: 10%">To</th>
@@ -368,14 +428,17 @@
         </div>
 
         <!-- PAGINATION TOOLBAR -->
-        <div id="dwDesignPaginationToolbar" class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 border-top gap-2">
+        <div id="dwDesignPaginationToolbar"
+          class="d-flex flex-wrap justify-content-between align-items-center mt-3 pt-2 border-top gap-2">
           <div class="text-muted small" id="dwDesignPaginationInfo">Hiển thị 0 - 0 / 0 bản vẽ</div>
           <div class="d-flex align-items-center gap-2">
-            <button class="btn btn-sm btn-outline-secondary rounded-2" id="dwDesignPrevBtn" onclick="changeDwDesignPage(-1)">
+            <button class="btn btn-sm btn-outline-secondary rounded-2" id="dwDesignPrevBtn"
+              onclick="changeDwDesignPage(-1)">
               <i class="bi bi-chevron-left me-1"></i> Trang trước
             </button>
             <span class="fw-bold small px-2 text-dark" id="dwDesignPageIndicator">1 / 1</span>
-            <button class="btn btn-sm btn-outline-secondary rounded-2" id="dwDesignNextBtn" onclick="changeDwDesignPage(1)">
+            <button class="btn btn-sm btn-outline-secondary rounded-2" id="dwDesignNextBtn"
+              onclick="changeDwDesignPage(1)">
               Trang sau <i class="bi bi-chevron-right ms-1"></i>
             </button>
           </div>
@@ -393,6 +456,48 @@
   let dwDesignTabsInitialized = false;
   let dwDesignInitGuard = false;
 
+  function cleanDesignStr(val) {
+    if (!val) return '';
+    return String(val)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .trim();
+  }
+
+  function isDesignPendingStatus(statusRaw) {
+    if (!statusRaw) return false;
+    const st = cleanDesignStr(statusRaw);
+    return st.includes('dang thuc hien')
+      || st.includes('cho thiet ke')
+      || st.includes('tra ve charger')
+      || st.includes('tra ve')
+      || st.includes('tra lai')
+      || st.includes('tu choi');
+  }
+
+  function isDesignRejectedStatus(statusRaw) {
+    if (!statusRaw) return false;
+    const st = cleanDesignStr(statusRaw);
+    return st.includes('tra ve') || st.includes('tra lai') || st.includes('tu choi');
+  }
+
+  function getDesignPageData() {
+    var raw = [];
+    if (Array.isArray(window.pageData) && window.pageData.length > 0) raw = window.pageData;
+    else if (typeof pageData !== 'undefined' && Array.isArray(pageData) && pageData.length > 0) raw = pageData;
+    else if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.get === 'function') {
+      var storeData = AppDataStore.get('mainData');
+      if (Array.isArray(storeData) && storeData.length > 0) raw = storeData;
+    }
+    if (!Array.isArray(raw) || raw.length === 0) return [];
+    if (raw.length > 0 && Array.isArray(raw[0]) && String(raw[0][0] || '').toLowerCase().trim() === 'id') {
+      return raw.slice(1);
+    }
+    return raw;
+  }
+
   document.querySelector('.page-dwDesign').addEventListener('click', function (event) {
     var previewButton = event.target.closest('[data-dw-preview]');
     if (previewButton) {
@@ -403,7 +508,29 @@
     }
     var refreshButton = event.target.closest('[data-refresh-design]');
     if (refreshButton) {
-      initThietKeBanVe();
+      var tbody = document.getElementById('dwDesignTableBody');
+      if (tbody) {
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span>Đang làm mới dữ liệu...</td></tr>';
+      }
+      if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.invalidate === 'function') {
+        AppDataStore.invalidate('mainData');
+      }
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function (res) {
+            if (Array.isArray(res)) {
+              window.pageData = res;
+              if (typeof pageData !== 'undefined') pageData = res;
+              initThietKeBanVe();
+            }
+          })
+          .withFailureHandler(function () {
+            initThietKeBanVe();
+          })
+          .getMainData();
+      } else {
+        initThietKeBanVe();
+      }
       return;
     }
   });
@@ -443,40 +570,73 @@
   // XỬ LÝ DROPDOWN TÌM KIẾM MÃ TO
   // ==========================================
   function buildToDropdownList() {
-    if (typeof pageData === 'undefined' || pageData.length === 0) return;
-    const dwDesignData = pageData.filter(row=>row[2]==="Đang thực hiện")
-    
+    const data = getDesignPageData();
+    if (!Array.isArray(data) || data.length === 0) {
+      renderToDropdown([]);
+      return;
+    }
+    const dwDesignData = data.filter(row => Array.isArray(row) && isDesignPendingStatus(row[2]));
+
+    // Khởi tạo map
+    window._dwDesignRowMap = window._dwDesignRowMap || {};
+
     // Tạo mảng từ pageData
-    globalToList = dwDesignData.map(row => {
-        const id = row[0];
-        const phanLoai = row[3]; // Lấy tạm cột chứa Group
-        const dwNo = row[11];
-        const reqNo = row[8];
-        const display = dwNo || reqNo || id; // Ưu tiên DwNo -> ReqNo -> ID
-        return { id, phanLoai, display };
+    globalToList = dwDesignData.map((row, idx) => {
+      const rawId = String(row[0] || '').trim();
+      const rawDw = String(row[11] || '').trim(); // Cột L: Drawing code
+      const rawTo = String(row[8] || '').trim();  // Cột I: TO
+      const phanLoai = String(row[3] || '');      // Cột D: Group
+      // Nếu row[0] trống, dùng DW Code hoặc TO làm định danh
+      const id = rawId || rawDw || rawTo || String(idx + 2);
+      const display = rawDw || rawTo || id; // Ưu tiên DwNo -> TO -> ID
+      // Lưu vào map để auto-find lúc submit
+      const mapEntry = { id, dwCode: rawDw, to: rawTo, cat: phanLoai };
+      window._dwDesignRowMap[id] = mapEntry;
+      if (rawDw) window._dwDesignRowMap[rawDw.toLowerCase()] = mapEntry;
+      if (rawTo) window._dwDesignRowMap[rawTo.toLowerCase()] = mapEntry;
+      return { id, phanLoai, display };
     });
     renderToDropdown(globalToList);
   }
 
-  function toggleDropdownTo() { document.getElementById('toWrapper').classList.toggle('open'); }
-  function openDropdownTo() { document.getElementById('toWrapper').classList.add('open'); }
-  function closeDropdownTo() { document.getElementById('toWrapper').classList.remove('open'); }
+  function toggleDropdownTo() {
+    var el = document.getElementById('toWrapper');
+    if (el) el.classList.toggle('open');
+  }
+  function openDropdownTo() {
+    var el = document.getElementById('toWrapper');
+    if (el) el.classList.add('open');
+  }
+  function closeDropdownTo() {
+    var el = document.getElementById('toWrapper');
+    if (el) el.classList.remove('open');
+  }
+
+  // Gắn trực tiếp lên window để HTML inline luôn gọi được
+  window.toggleDropdownTo = toggleDropdownTo;
+  window.openDropdownTo = openDropdownTo;
+  window.closeDropdownTo = closeDropdownTo;
 
   function renderToDropdown(list) {
     const dropdown = document.getElementById('toDropdown');
-    if (list.length === 0) {
-        dropdown.innerHTML = '<div class="search-select-empty">Không tìm thấy mã nào!</div>';
-        return;
+    if (!dropdown) return;
+    if (!list || list.length === 0) {
+      dropdown.innerHTML = '<div class="search-select-empty">Không tìm thấy mã nào!</div>';
+      return;
     }
-    dropdown.innerHTML = list.map(item => 
-        `<div class="search-select-item" onclick="selectDrawingToUpload('${item.id}', '${item.phanLoai}', '${item.display}')">
+    dropdown.innerHTML = list.map(item => {
+      var safeId = String(item.id || '').replace(/'/g, "\\'");
+      var safeCat = String(item.phanLoai || '').replace(/'/g, "\\'");
+      var safeDisp = String(item.display || '').replace(/'/g, "\\'");
+      return `<div class="search-select-item" onclick="selectDrawingToUpload('${safeId}', '${safeCat}', '${safeDisp}')">
             <strong>${item.display}</strong> <small class="text-muted ms-2">(${item.phanLoai})</small>
-        </div>`
-    ).join('');
+        </div>`;
+    }).join('');
   }
 
   function filterToList() {
-    const keyword = document.getElementById('uploadDwTo').value.trim().toLowerCase();
+    const inputEl = document.getElementById('uploadDwTo');
+    const keyword = inputEl ? inputEl.value.trim().toLowerCase() : '';
     openDropdownTo();
     clearTimeout(window.dwDesignToFilterTimer);
     window.dwDesignToFilterTimer = setTimeout(function () {
@@ -488,12 +648,41 @@
       renderToDropdown(filtered.slice(0, 100));
     }, 160);
   }
+  window.filterToList = filterToList;
+
+  function initDropdownEvents() {
+    var inputEl = document.getElementById('uploadDwTo');
+    var inputContainer = document.getElementById('searchSelectInputContainer');
+    var arrowEl = document.getElementById('searchSelectArrow');
+
+    if (inputEl && !inputEl.__dwBound) {
+      inputEl.__dwBound = true;
+      inputEl.addEventListener('focus', function () { openDropdownTo(); });
+      inputEl.addEventListener('input', function () { filterToList(); });
+    }
+    if (inputContainer && !inputContainer.__dwBound) {
+      inputContainer.__dwBound = true;
+      inputContainer.addEventListener('click', function (e) {
+        if (e.target !== inputEl) toggleDropdownTo();
+      });
+    }
+    if (arrowEl && !arrowEl.__dwBound) {
+      arrowEl.__dwBound = true;
+      arrowEl.addEventListener('click', function (e) {
+        e.stopPropagation();
+        toggleDropdownTo();
+      });
+    }
+  }
 
   // Đóng dropdown khi click ra ngoài
-  document.querySelector('.page-dwDesign').addEventListener('click', function(e) {
-    const wrapper = document.getElementById('toWrapper');
-    if (wrapper && !wrapper.contains(e.target)) closeDropdownTo();
-  });
+  var dwDesignContainer = document.querySelector('.page-dwDesign');
+  if (dwDesignContainer) {
+    dwDesignContainer.addEventListener('click', function (e) {
+      const wrapper = document.getElementById('toWrapper');
+      if (wrapper && !wrapper.contains(e.target)) closeDropdownTo();
+    });
+  }
 
 
   // ==========================================
@@ -504,7 +693,7 @@
     document.getElementById('uploadDwId').value = id; // Gắn ID ngầm
     document.getElementById('uploadCategory').value = category;
     document.getElementById('uploadDwTo').value = toVal;
-    
+
     closeDropdownTo(); // Tắt dropdown nếu đang mở
 
     // 2. Tạo hiệu ứng chớp tắt ở Form
@@ -524,25 +713,29 @@
 
     // Kiểm tra nếu Tab của dòng vừa chọn KHÁC với Tab đang mở
     if (currentTabDesign !== targetTab) {
-        // Tự động bấm sang Tab tương ứng
-        let tabIdToClick = '';
-        if (targetTab === 'BARSALE') tabIdToClick = 'tab-btn-barsale';
-        else if (targetTab === 'OEM') tabIdToClick = 'tab-btn-oem';
-        else tabIdToClick = 'tab-btn-we';
+      // Tự động bấm sang Tab tương ứng
+      let tabIdToClick = '';
+      if (targetTab === 'BARSALE') tabIdToClick = 'tab-btn-barsale';
+      else if (targetTab === 'OEM') tabIdToClick = 'tab-btn-oem';
+      else tabIdToClick = 'tab-btn-we';
 
-        const tabBtn = document.getElementById(tabIdToClick);
-        if (tabBtn) {
-           const tabInstance = new bootstrap.Tab(tabBtn);
-           tabInstance.show(); // Lệnh này sẽ kích hoạt 'shown.bs.tab' và vẽ lại bảng
+      const tabBtn = document.getElementById(tabIdToClick);
+      if (tabBtn) {
+        if (typeof bootstrap !== 'undefined' && bootstrap && bootstrap.Tab) {
+          const tabInstance = bootstrap.Tab.getInstance(tabBtn) || new bootstrap.Tab(tabBtn);
+          tabInstance.show();
+        } else {
+          tabBtn.click();
         }
-        
-        // Chờ bảng vẽ xong mới tô đậm và scroll
-        setTimeout(() => {
-           highlightSelectedRow(id);
-        }, 200);
-    } else {
-        // Đang ở đúng Tab rồi thì cứ highlight và scroll tới thôi
+      }
+
+      // Chờ bảng vẽ xong mới tô đậm và scroll
+      setTimeout(() => {
         highlightSelectedRow(id);
+      }, 200);
+    } else {
+      // Đang ở đúng Tab rồi thì cứ highlight và scroll tới thôi
+      highlightSelectedRow(id);
     }
   }
 
@@ -566,17 +759,17 @@
   // Logic tính toán màu sắc cho Deadline
   function getDeadlineStatus(deadlineStr) {
     if (!deadlineStr || deadlineStr === '') return { html: '-', class: '' };
-    
+
     const deadline = new Date(deadlineStr);
     if (isNaN(deadline)) return { html: deadlineStr, class: 'text-secondary' };
-    
+
     const now = new Date();
-    now.setHours(0,0,0,0);
-    deadline.setHours(0,0,0,0);
+    now.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0);
 
     const diffTime = deadline - now;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     let statusClass = 'text-success fw-bold'; // Mặc định xanh (Còn hạn)
     let icon = '<i class="bi bi-clock"></i>';
 
@@ -587,7 +780,7 @@
       statusClass = 'text-warning text-dark fw-bold'; // Gấp (Còn 0-1 ngày) -> Vàng
       icon = '<i class="bi bi-exclamation-triangle-fill"></i>';
     }
-    
+
     const dateFormatted = deadline.toLocaleDateString('vi-VN');
     return { html: `<div class="${statusClass} mb-1" style="font-size: 11px;">${icon} ${dateFormatted}</div>` };
   }
@@ -639,34 +832,60 @@
   // Lưu PDF URL theo ID bản vẽ để tránh nhúng URL vào onclick HTML (URL Drive bị break)
   window._dwDesignPdfMap = window._dwDesignPdfMap || {};
 
+  var isFetchingDesignData = false;
   function loadDrawingList() {
     const tbody = document.getElementById('dwDesignTableBody');
+    if (!tbody) return;
     const searchTo = (document.getElementById('searchToInput')?.value || '').toLowerCase().trim();
-    
-    if (typeof pageData === 'undefined' || pageData.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-3"></i>Đang chờ tải dữ liệu...</td></tr>';
+    const data = getDesignPageData();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span>Đang chờ tải dữ liệu bản vẽ...</td></tr>';
       updateDwDesignPaginationUI(0, 0, 0, 1, 1);
+
+      // Nếu chưa có dữ liệu trong RAM, tự động gọi backend tải ngay lập tức
+      if (!isFetchingDesignData && typeof google !== 'undefined' && google.script && google.script.run) {
+        isFetchingDesignData = true;
+        google.script.run
+          .withSuccessHandler(function (res) {
+            isFetchingDesignData = false;
+            if (Array.isArray(res) && res.length > 0) {
+              window.pageData = res;
+              if (typeof pageData !== 'undefined') pageData = res;
+              buildToDropdownList();
+              loadDrawingList();
+            } else {
+              tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-3"></i>Không có dữ liệu trong hệ thống.</td></tr>';
+            }
+          })
+          .withFailureHandler(function (err) {
+            isFetchingDesignData = false;
+            console.error('Lỗi tải dữ liệu dwDesign:', err);
+            tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Lỗi tải dữ liệu: ' + (err.message || err) + '</td></tr>';
+          })
+          .getMainData();
+      }
       return;
     }
-    
-    let dataRows = pageData.filter(row => row[2] === "Đang thực hiện");
-    
+
+    let dataRows = data.filter(row => Array.isArray(row) && isDesignPendingStatus(row[2]));
+
     // Lọc theo Tab (Phân loại - Dùng Cột D index 3: Group - Barsale, OEM, WE SASH)
     dataRows = dataRows.filter(r => {
-      const cat = (String(r[3] || '') + " " + String(r[1] || '')).toUpperCase();
+      const cat = String(r[3] || '').trim().toUpperCase();
       if (currentTabDesign === 'BARSALE' && cat.includes('BARSALE')) return true;
       if (currentTabDesign === 'OEM' && cat.includes('OEM')) return true;
       if (currentTabDesign === 'WE SASH') {
-          if (!cat.includes('BARSALE') && !cat.includes('OEM')) return true;
+        if (!cat.includes('BARSALE') && !cat.includes('OEM')) return true;
       }
       return false;
     });
-    
+
     // Lọc theo Ô tìm kiếm bảng
     if (searchTo) {
       dataRows = dataRows.filter(r => {
-         const toVal = String(r[8] || '').toLowerCase() + " " + String(r[4] || '').toLowerCase() + " " + String(r[11] || '').toLowerCase();
-         return toVal.includes(searchTo);
+        const toVal = (String(r[8] || '') + " " + String(r[4] || '') + " " + String(r[11] || '') + " " + String(r[10] || '') + " " + String(r[9] || '')).toLowerCase();
+        return toVal.includes(searchTo);
       });
     }
 
@@ -675,7 +894,7 @@
       updateDwDesignPaginationUI(0, 0, 0, 1, 1);
       return;
     }
-    
+
     // Phân trang
     const totalItems = dataRows.length;
     const totalPages = Math.ceil(totalItems / dwDesignPageSize) || 1;
@@ -686,56 +905,84 @@
     const endIdx = startIdx + dwDesignPageSize;
     const pageRows = dataRows.slice(startIdx, endIdx);
 
+    // Khởi tạo map lưu dw/to theo id (để auto-find khi submit)
+    window._dwDesignRowMap = window._dwDesignRowMap || {};
+
     let html = '';
     pageRows.forEach((row, idx) => {
-       const i = startIdx + idx;
-       const id = row[0];
-       const phanLoai = row[3]; // Thay vì row[3] tôi chỉnh lại row[1] cho đúng với data gốc
-       const project = row[9];
-       const to = row[8];   
-       const ver = row[12];
-       const type = row[4];
-       const dwNo = row[11];  
-       const deadlineStr = row[7];
-       const excelThamKhao = row[30]; 
-       const pdfGuiKy = row[31];
-       const customer = row[10];
-       
-       // Nút Xem Tham Khảo
-       const btnExcelTK = (excelThamKhao && String(excelThamKhao).includes('http')) 
-          ? `<a href="${excelThamKhao}" target="_blank" class="btn btn-sm btn-light border py-0 px-2 text-success" title="Xem Excel"><i class="bi bi-file-excel-fill"></i></a>` : '-';
-       
-       // Nút PDF Gửi Ký       
-       let btnPdfGuiKy = '';
-       let canSubmit = false;
-       if (pdfGuiKy && String(pdfGuiKy).includes('http')) {
-           btnPdfGuiKy = `<a href="${pdfGuiKy}" target="_blank" data-dw-preview="true" data-preview-url="${String(pdfGuiKy).replace(/"/g, '&quot;')}" class="btn btn-sm btn-primary py-0 px-2"><i class="bi bi-eye"></i> Xem</a>`;
-           canSubmit = true;
-       } else {
-           btnPdfGuiKy = `<span class="badge bg-warning text-dark">Chưa có link</span>`;
-       }
-       
-       // Lưu PDF URL vào map để guiKyDuyetById đọc lại
-       if (id) window._dwDesignPdfMap[id] = String(pdfGuiKy || '');
+      const i = startIdx + idx;
+      // Nếu row[0] (Cột A = ID) trống, tự dùng DW Code hoặc TO làm định danh
+      const rawId = String(row[0] || '').trim();
+      const rawDw = String(row[11] || '').trim();
+      const rawTo = String(row[8] || '').trim();
+      const id = rawId || rawDw || rawTo || String(i + 2); // fallback: dòng spreadsheet
+      const phanLoai = row[3];
+      const project = row[9];
+      const to = row[8];
+      const ver = row[12];
+      const type = row[4];
+      const dwNo = row[11];
+      const deadlineStr = row[7];
+      const excelThamKhao = row[30];
+      const pdfGuiKy = row[31];
+      const customer = row[10];
+      const statusRaw = String(row[2] || '').trim();
+      const isRejected = isDesignRejectedStatus(statusRaw);
 
-       // Nút Gửi Ký & Deadline
-       const dStatus = getDeadlineStatus(deadlineStr);
-       const btnGuiKy = canSubmit 
-            ? `<button class="btn btn-sm btn-success w-100 fw-bold" data-dw-id="${id}" onclick="event.stopPropagation(); guiKyDuyetById(this)"><i class="bi bi-send"></i> Gửi ký</button>`
-            : `<span class="badge bg-secondary w-100">Đang thực hiện</span>`;
-       
-       // Tự động Add class 'selected-row' nếu dòng này trùng với dòng đang được chọn
-       const isSelected = (id === currentlySelectedId) ? 'selected-row' : '';
+      // Nút Xem Tham Khảo
+      const btnExcelTK = (excelThamKhao && String(excelThamKhao).includes('http'))
+        ? `<a href="${excelThamKhao}" target="_blank" class="btn btn-sm btn-light border py-0 px-2 text-success" title="Xem Excel"><i class="bi bi-file-excel-fill"></i></a>` : '-';
 
-       // Tạo HTML dòng
-       html += `
-       <tr id="row-${id}" class="dw-table-row ${isSelected}" onclick="selectDrawingToUpload('${id}', '${phanLoai}', '${dwNo || to}')" title="Nhấp để tải file cho bản vẽ này">
-         <td class="text-center text-muted fw-bold">${i+1}</td>
+      // Nút PDF Gửi Ký       
+      let btnPdfGuiKy = '';
+      let canSubmit = false;
+      if (pdfGuiKy && String(pdfGuiKy).includes('http')) {
+        btnPdfGuiKy = `<a href="${pdfGuiKy}" target="_blank" data-dw-preview="true" data-preview-url="${String(pdfGuiKy).replace(/"/g, '&quot;')}" class="btn btn-sm btn-primary py-0 px-2"><i class="bi bi-eye"></i> Xem</a>`;
+        canSubmit = true;
+      } else {
+        btnPdfGuiKy = `<span class="badge bg-warning text-dark">Chưa có link</span>`;
+      }
+
+      // Lưu PDF URL và thông tin dòng vào map để guiKyDuyetById & auto-find đọc lại
+      if (id) {
+        window._dwDesignPdfMap[id] = String(pdfGuiKy || '');
+        // Lưu map: dwCode -> id và to -> id để auto-find khi submit
+        window._dwDesignRowMap[id] = { id, dwCode: rawDw, to: rawTo, cat: String(row[3] || '') };
+        if (rawDw) window._dwDesignRowMap[rawDw.toLowerCase()] = window._dwDesignRowMap[id];
+        if (rawTo) window._dwDesignRowMap[rawTo.toLowerCase()] = window._dwDesignRowMap[id];
+      }
+
+      // Nút Gửi Ký & Deadline
+      const dStatus = getDeadlineStatus(deadlineStr);
+      let btnGuiKy = '';
+      if (canSubmit) {
+        btnGuiKy = `<button class="btn btn-sm btn-success w-100 fw-bold" data-dw-id="${id}" onclick="event.stopPropagation(); guiKyDuyetById(this)"><i class="bi bi-send"></i> ${isRejected ? 'Gửi ký lại' : 'Gửi ký'}</button>`;
+      } else if (isRejected) {
+        btnGuiKy = `<span class="badge bg-danger w-100 py-1" title="${statusRaw}"><i class="bi bi-exclamation-triangle-fill me-1"></i>Trả về charger</span>`;
+      } else {
+        btnGuiKy = `<span class="badge bg-secondary w-100 py-1">Đang thực hiện</span>`;
+      }
+
+      // Tự động Add class 'selected-row' nếu dòng này trùng với dòng đang được chọn
+      const isSelected = (id === currentlySelectedId) ? 'selected-row' : '';
+      const rowWarningClass = isRejected ? 'bg-danger bg-opacity-10' : '';
+
+      var safeId = String(id || '').replace(/'/g, "\\'");
+      var safeCat = String(phanLoai || '').replace(/'/g, "\\'");
+      var safeDisp = String(rawDw || rawTo || '').replace(/'/g, "\\'");
+
+      // Tạo HTML dòng
+      html += `
+       <tr id="row-${id}" class="dw-table-row ${isSelected} ${rowWarningClass}" onclick="selectDrawingToUpload('${safeId}', '${safeCat}', '${safeDisp}')" title="Nhấp để tải file cho bản vẽ này">
+         <td class="text-center text-muted fw-bold">${i + 1}</td>
          <td class="d-none">${id}</td> 
          <td class="d-none"><span class="badge bg-secondary bg-opacity-10 text-secondary border">${phanLoai}</span></td>
          <td>${type}</td>
          <td>${to}</td>
-         <td class="fw-bold text-dark">${dwNo}</td>
+         <td class="fw-bold text-dark">
+           ${dwNo}
+           ${isRejected ? '<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 10px;">Bị trả lại</span>' : ''}
+         </td>
          <td class="text-center">${ver}</td>
          <td>${project}</td>
          <td>${customer}</td>
@@ -748,23 +995,59 @@
        </tr>
        `;
     });
-    tbody.innerHTML = html; 
+    tbody.innerHTML = html;
     updateDwDesignPaginationUI(totalItems, startIdx, endIdx, dwDesignCurrentPage, totalPages);
   }
 
+  // Cờ chống nhấn đúp / submit 2 lần
+  var _isSigningDesign = false;
+  var _isUploadingDesign = false;
+
+  // UI Loading chuẩn hệ thống (iOS Liquid Glass Overlay)
+  function showDwDesignLoading(msg) {
+    if (typeof Swal !== 'undefined') {
+      Swal.fire({
+        title: 'Đang lưu dữ liệu...',
+        html: `
+          <div style="padding: 10px 0; text-align: center;">
+            <div class="spinner-border text-success mb-3" style="width: 3.2rem; height: 3.2rem;" role="status"></div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #0f172a; margin-bottom: 6px;">${msg || 'Hệ thống đang xử lý, vui lòng chờ...'}</div>
+            <small style="color: #64748b; font-size: 0.8rem;"><i class="bi bi-shield-lock-fill me-1"></i>Thao tác đang được thực hiện an toàn. Vui lòng không thao tác thêm.</small>
+          </div>
+        `,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false
+      });
+    }
+  }
+
+  function hideDwDesignLoading() {
+    if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+      Swal.close();
+    }
+  }
+
+  // Đăng ký toàn cục
+  window.showLoading = showDwDesignLoading;
+  window.hideLoading = hideDwDesignLoading;
+
   // Wrapper đọc pdfUrl từ map thay vì inject URL vào onclick (tránh URL Google Drive bị break)
   function guiKyDuyetById(btnEl) {
+    if (_isSigningDesign) return;
     const id = btnEl.getAttribute('data-dw-id');
     const pdfUrl = (window._dwDesignPdfMap && window._dwDesignPdfMap[id]) || '';
     if (!pdfUrl || !pdfUrl.includes('http')) {
       Swal.fire('Thiếu file PDF', 'Bản vẽ này chưa có đường dẫn PDF để đóng dấu chữ ký. Hãy tải file PDF lên trước!', 'warning');
       return;
     }
-    guiKyDuyet(id, pdfUrl);
+    guiKyDuyet(id, pdfUrl, btnEl);
   }
 
   // Sự kiện gửi trình ký
-  async function guiKyDuyet(id, pdfUrl) {
+  async function guiKyDuyet(id, pdfUrl, triggerBtn) {
+    if (_isSigningDesign) return;
+
     Swal.fire({
       title: 'Xác nhận Gửi ký?',
       text: `Hệ thống sẽ tự động đóng dấu và gửi duyệt bản vẽ này.`,
@@ -774,9 +1057,16 @@
       cancelButtonText: 'Hủy'
     }).then(async (result) => {
       if (result.isConfirmed) {
-        
+        if (_isSigningDesign) return;
+        _isSigningDesign = true;
+
+        if (triggerBtn) {
+          triggerBtn.disabled = true;
+          triggerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Đang gửi...';
+        }
+
         try {
-          if (typeof showLoading === 'function') showLoading("BƯỚC 1/3: Đang lấy dữ liệu từ Google Drive...");
+          showDwDesignLoading("BƯỚC 1/3: Đang lấy dữ liệu từ Google Drive...");
 
           // 1. Lấy Base64 của PDF và Chữ ký từ GAS
           const fileData = await new Promise((resolve, reject) => {
@@ -790,39 +1080,19 @@
             throw new Error(fileData ? fileData.message : "Không thể lấy dữ liệu từ Google Drive.");
           }
 
-          if (typeof showLoading === 'function') showLoading("BƯỚC 2/3: Local API đang đóng dấu bản vẽ...");
+          showDwDesignLoading("BƯỚC 2/3: Local API đang đóng dấu bản vẽ...");
 
           const pdfBlob = await fetch("data:application/pdf;base64," + fileData.pdfBase64).then(res => res.blob());
           const stampBlob = await fetch("data:image/png;base64," + fileData.stampBase64).then(res => res.blob());
 
-          // ========================================================
-          // 2. XỬ LÝ TỌA ĐỘ CHỮ KÝ THEO CHỨC VỤ CỦA USER
-          // ========================================================
-          // Chuyển chức vụ thành chữ thường, xóa khoảng trắng (Ví dụ: "Checker 1" -> "checker1")
-          let posKey = String(user.position).toLowerCase().replace(/\s+/g, '');
-          
-          // Khắc phục sai chính tả ở object sign (charger thành chager)
-          let signObj = window.sign || (typeof sign !== 'undefined' ? sign : {});
-          let coords = signObj[posKey] || signObj['chager']; // Lấy mảng [x, y, width] tương ứng
-          
-          if (!coords) {
-            throw new Error(`Hệ thống chưa được cài đặt tọa độ đóng dấu cho chức vụ: ${user.position}`);
-          }
-
-          const x = coords[0];
-          const y = coords[1];
-          const width = coords[2];
-          // ========================================================
-
-          // 3. Gửi cho Local FastAPI
+          // 2. Gửi cho Local FastAPI (Python Backend tự động tìm ô và đóng dấu theo chức vụ level)
+          let posKey = String(user.position || 'chager').toLowerCase().replace(/\s+/g, '');
           const formData = new FormData();
           formData.append("pdf_file", pdfBlob, "document.pdf");
           formData.append("stamp_file", stampBlob, "stamp.png");
-          formData.append("x", x); 
-          formData.append("y", y);
-          formData.append("width", width);
+          formData.append("level", posKey);
 
-          const localApiUrl = "http://10.156.42.195:8000/signToPDW";
+          const localApiUrl = "http://10.156.42.195:8000/quan-ly-ban-ve/signToPDW";
           const apiResponse = await fetch(localApiUrl, {
             method: "POST",
             body: formData
@@ -830,15 +1100,14 @@
 
           if (!apiResponse.ok) throw new Error("Local API trả về lỗi HTTP " + apiResponse.status);
 
-          if (typeof showLoading === 'function') showLoading("BƯỚC 3/3: Đang lưu bản vẽ đã ký lên hệ thống...");
+          showDwDesignLoading("BƯỚC 3/3: Đang lưu bản vẽ đã ký lên hệ thống...");
 
           // 4. Lấy file PDF đã ký về và chuyển sang Base64
           const signedPdfBlob = await apiResponse.blob();
           const base64SignedPdf = await new Promise((resolve) => {
             const reader = new FileReader();
             reader.onloadend = () => {
-              // Cắt bỏ phần "data:application/pdf;base64," chỉ lấy chuỗi mã hóa gốc
-              const base64String = reader.result.split(',')[1]; 
+              const base64String = reader.result.split(',')[1];
               resolve(base64String);
             };
             reader.readAsDataURL(signedPdfBlob);
@@ -849,25 +1118,32 @@
             google.script.run
               .withSuccessHandler(resolve)
               .withFailureHandler(reject)
-              .submitForApproval(id, base64SignedPdf); 
+              .submitForApproval(id, base64SignedPdf);
           });
 
           // Thành công
+          hideDwDesignLoading();
           Swal.fire({
             title: 'Thành công',
-            html: `Bản vẽ đã được đóng dấu và chuyển sang Chờ Duyệt!<br><br><a href="${saveRes}" target="_blank">👉 Xem bản vẽ đã gửi đi</a>`,
+            html: `Bản vẽ đã được đóng dấu và chuyển sang Chờ Duyệt!<br><br><a href="${saveRes}" target="_blank" class="btn btn-sm btn-primary fw-bold text-white px-3 py-2 mt-2 shadow-sm"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Xem ngay bản vẽ vừa ký</a>`,
             icon: 'success'
           });
 
           if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
 
           // Tải lại bảng để mất bản vẽ vừa gửi
-          if(typeof loadDrawingList === 'function') loadDrawingList();
+          if (typeof loadDrawingList === 'function') loadDrawingList();
 
         } catch (error) {
+          hideDwDesignLoading();
           Swal.fire('Lỗi Ký Duyệt', error.message, 'error');
         } finally {
-          if(typeof hideLoading === 'function') hideLoading();
+          _isSigningDesign = false;
+          hideDwDesignLoading();
+          if (triggerBtn) {
+            triggerBtn.disabled = false;
+            triggerBtn.innerHTML = '<i class="bi bi-send"></i> Gửi ký';
+          }
         }
 
       }
@@ -875,12 +1151,7 @@
   }
   // Khởi tạo tab event và load data ban đầu
   function initThietKeBanVe() {
-    if (dwDesignInitGuard && document.readyState !== 'loading') {
-      loadDrawingList();
-      return;
-    }
-
-    dwDesignInitGuard = true;
+    initDropdownEvents();
     buildToDropdownList();
 
     if (!dwDesignTabsInitialized) {
@@ -889,11 +1160,108 @@
           currentTabDesign = e.target.innerText.trim().toUpperCase();
           loadDrawingList();
         });
+        btn.addEventListener('click', function (e) {
+          currentTabDesign = e.currentTarget.innerText.trim().toUpperCase();
+          loadDrawingList();
+        });
       });
       dwDesignTabsInitialized = true;
     }
-    
+
+    dwDesignInitGuard = true;
     loadDrawingList();
+  }
+
+  // Gắn lên window toàn bộ các hàm để index.html và inline event luôn gọi được
+  window.initThietKeBanVe = initThietKeBanVe;
+  window.loadDrawingList = loadDrawingList;
+  window.buildToDropdownList = buildToDropdownList;
+  window.selectDrawingToUpload = selectDrawingToUpload;
+  window.highlightSelectedRow = highlightSelectedRow;
+  window.guiKyDuyetById = guiKyDuyetById;
+  window.guiKyDuyet = guiKyDuyet;
+  window.handleDesignUpload = handleDesignUpload;
+  window.updateFileName = updateFileName;
+  window.openDesignPreview = openDesignPreview;
+  window.closeDesignPreview = closeDesignPreview;
+  window.changeDwDesignPage = changeDwDesignPage;
+  window.onSearchDesignInput = onSearchDesignInput;
+
+  // Lắng nghe AppDataStore cập nhật (AppDataStore được định nghĩa sau dwDesign trong index.html nên cần cơ chế retry)
+  function attachAppDataStoreListener() {
+    if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.onReady === 'function') {
+      AppDataStore.onReady('mainData', function (data) {
+        if (Array.isArray(data) && data.length > 0) {
+          window.pageData = data;
+          if (typeof pageData !== 'undefined') pageData = data;
+        }
+        initThietKeBanVe();
+      });
+      return true;
+    }
+    return false;
+  }
+
+  if (!attachAppDataStoreListener()) {
+    var storeTimer = setInterval(function () {
+      if (attachAppDataStoreListener()) {
+        clearInterval(storeTimer);
+      }
+    }, 200);
+    setTimeout(function () { clearInterval(storeTimer); }, 5000);
+  }
+
+  // Tự động kiểm tra và vẽ lại khi tab dwDesign hiển thị
+  (function setupDesignTabAutoObserver() {
+    var checkAndRender = function () {
+      var container = document.getElementById('index-page-dwDesign');
+      if (container && container.classList.contains('active')) {
+        var tbody = document.getElementById('dwDesignTableBody');
+        if (!tbody || tbody.children.length === 0 || tbody.innerText.includes('Đang chờ tải')) {
+          initThietKeBanVe();
+        }
+      }
+    };
+
+    var pageEl = document.getElementById('index-page-dwDesign');
+    if (pageEl && typeof MutationObserver !== 'undefined') {
+      var observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (m) {
+          if (m.attributeName === 'class') {
+            checkAndRender();
+          }
+        });
+      });
+      observer.observe(pageEl, { attributes: true });
+    }
+
+    // Polling nhẹ phòng ngừa trường hợp chuyển tab không qua switchTab
+    var intervalCount = 0;
+    var initInterval = setInterval(function () {
+      intervalCount++;
+      var container = document.getElementById('index-page-dwDesign');
+      var tbody = document.getElementById('dwDesignTableBody');
+      if (container && container.classList.contains('active')) {
+        if (!tbody || tbody.children.length === 0) {
+          initThietKeBanVe();
+        }
+      }
+      if (intervalCount >= 10 && tbody && tbody.children.length > 0) {
+        clearInterval(initInterval);
+      }
+      if (intervalCount >= 20) {
+        clearInterval(initInterval);
+      }
+    }, 500);
+  })();
+
+  // Tự động chạy sau khi DOM sẵn sàng hoặc nếu đã có data
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(initThietKeBanVe, 150);
+  } else {
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(initThietKeBanVe, 150);
+    });
   }
 
   // ==========================================
@@ -908,99 +1276,236 @@
     });
   }
 
+  function blobToBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = () => resolve(String(reader.result || '').split(',')[1] || '');
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  async function signUploadedPdfAsCharge(rowId, pdfUrl) {
+    if (!pdfUrl || !pdfUrl.includes('http')) {
+      throw new Error('Bản vẽ chưa có đường dẫn PDF để ký ở vị trí Charge.');
+    }
+
+    const userMail = (typeof user !== 'undefined' && user && user.mail) ? user.mail : 'System';
+    const fileData = await new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .getFilesFromDrive(pdfUrl, userMail);
+    });
+
+    if (!fileData || !fileData.success || !fileData.pdfBase64 || !fileData.stampBase64) {
+      throw new Error(fileData ? (fileData.message || fileData.error || 'Không lấy được PDF/Chữ ký từ Drive.') : 'Không lấy được PDF/Chữ ký từ Drive.');
+    }
+
+    const pdfBlob = await fetch('data:application/pdf;base64,' + fileData.pdfBase64).then(res => res.blob());
+    const stampBlob = await fetch('data:image/png;base64,' + fileData.stampBase64).then(res => res.blob());
+
+    const formData = new FormData();
+    formData.append('pdf_file', pdfBlob, 'document.pdf');
+    formData.append('stamp_file', stampBlob, 'stamp.png');
+    formData.append('level', 'charger');
+
+    const localApiUrl = 'http://10.156.42.195:8000/quan-ly-ban-ve/signToPDW';
+    const apiResponse = await fetch(localApiUrl, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!apiResponse.ok) {
+      throw new Error(`Local API ký Charge lỗi HTTP ${apiResponse.status}.`);
+    }
+
+    const contentType = String(apiResponse.headers.get('content-type') || '').toLowerCase();
+    if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
+      const errorText = await apiResponse.text();
+      throw new Error(`Local API ký Charge không trả đúng PDF. ${errorText ? 'Chi tiết: ' + errorText : ''}`);
+    }
+
+    const signedPdfBlob = await apiResponse.blob();
+    if (!signedPdfBlob || signedPdfBlob.size < 64) {
+      throw new Error('Local API ký Charge trả về PDF rỗng hoặc quá nhỏ.');
+    }
+
+    const base64SignedPdf = await blobToBase64(signedPdfBlob);
+    const signedPdfUrl = await new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .submitForApproval(rowId, base64SignedPdf);
+    });
+
+    return signedPdfUrl || pdfUrl;
+  }
+
 
   async function handleDesignUpload(event) {
     event.preventDefault();
-    
-    const id = document.getElementById('uploadDwId').value;
-    const pdfFile = document.getElementById('pdfFileInput').files[0];
+    if (_isUploadingDesign) return;
+
+    let id = document.getElementById('uploadDwId').value;
     const excelFile = document.getElementById('excelFileInput').files[0];
-    const fileName = document.getElementById("uploadDwTo").value;
+    const fileName = (document.getElementById("uploadDwTo").value || '').trim();
     const btnSubmit = document.getElementById('btnSubmitDesign');
 
-    if (!id || !pdfFile || !excelFile || !fileName) {
-      return Swal.fire('Cảnh báo', 'Vui lòng chọn Mã TO và tải đủ PDF, Excel!', 'warning');
+    if (!id && fileName) {
+      const mapEntry = window._dwDesignRowMap && window._dwDesignRowMap[fileName.toLowerCase()];
+      if (mapEntry) {
+        id = mapEntry.id;
+        document.getElementById('uploadDwId').value = id;
+        if (!document.getElementById('uploadCategory').value) {
+          document.getElementById('uploadCategory').value = mapEntry.cat || '';
+        }
+      } else {
+        const data = getDesignPageData();
+        const matched = data.find(row => {
+          if (!Array.isArray(row)) return false;
+          const dwNo = String(row[11] || '').trim();
+          const toNo = String(row[8] || '').trim();
+          const rowId = String(row[0] || '').trim();
+          return (dwNo && dwNo.toLowerCase() === fileName.toLowerCase())
+            || (toNo && toNo.toLowerCase() === fileName.toLowerCase())
+            || (rowId && rowId.toLowerCase() === fileName.toLowerCase());
+        });
+        if (matched) {
+          const rawId = String(matched[0] || '').trim();
+          const rawDw = String(matched[11] || '').trim();
+          const rawTo = String(matched[8] || '').trim();
+          id = rawId || rawDw || rawTo;
+          document.getElementById('uploadDwId').value = id;
+          if (!document.getElementById('uploadCategory').value) {
+            document.getElementById('uploadCategory').value = String(matched[3] || '');
+          }
+        }
+      }
+    }
+
+    if (!fileName) {
+      return Swal.fire('Cảnh báo', 'Vui lòng chọn hoặc nhập Mã bản vẽ / Mã TO!', 'warning');
+    }
+    if (!id) {
+      return Swal.fire('Cảnh báo', 'Không xác định được ID bản vẽ tương ứng với mã "' + fileName + '". Vui lòng nhấp chọn dòng bản vẽ từ bảng bên phải!', 'warning');
+    }
+    if (!excelFile) {
+      return Swal.fire('Cảnh báo', 'Vui lòng chọn File EXCEL bản vẽ!', 'warning');
     }
 
     try {
-      btnSubmit.disabled = true;
-      if(typeof showLoading === 'function') showLoading('Đang tải file lên hệ thống...');
+      _isUploadingDesign = true;
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>ĐANG TẢI LÊN...';
+      }
+      showDwDesignLoading('Đang upload Excel và chuyển đổi PDF bằng backend...');
 
-      // 1. TỐI ƯU 1: Convert cả 2 file sang Base64 CÙNG LÚC (Song song)
-      const [pdfBase64, excelBase64] = await Promise.all([
-          fileToBase64(pdfFile),
-          fileToBase64(excelFile)
-      ]);
-
-      // 2. Chuẩn bị dữ liệu cho Local Server luôn (Không cần đợi Drive nữa)
       const formData = new FormData();
       formData.append('id', id);
-      formData.append('filename', fileName); // Local server hiện tại chỉ lưu file, không cần dùng URL này nữa
-      formData.append('excel_file', excelFile); 
-      const LOCAL_SERVER_URL = "http://10.156.42.195:8000/upload-design-excel"; 
+      formData.append('filename', fileName);
+      formData.append('file', excelFile);
 
-      // 3. TỐI ƯU 2: Gửi lên Google Drive VÀ Local Server CÙNG 1 LÚC!
-      const [driveLinks, localResponse] = await Promise.all([
-          // Tác vụ 1: Gửi lên Google Apps Script
-          new Promise((resolve, reject) => {
-            google.script.run
-              .withSuccessHandler(resolve)
-              .withFailureHandler(reject)
-              .uploadPdfDesignToDrive(pdfBase64, excelBase64, `${id}.pdf`, `${id}.xlsx`, id);
-          }),
-          
-          // Tác vụ 2: Gửi xuống Local Server
-          fetch(LOCAL_SERVER_URL, {
-            method: 'POST',
-            body: formData
-          })
-      ]);
+      const LOCAL_SERVER_URL = "http://10.156.42.195:8000/quan-ly-ban-ve/xlsx_to_pdf";
+      const localResponse = await fetch(LOCAL_SERVER_URL, {
+        method: 'POST',
+        body: formData
+      });
 
-      // 4. KIỂM TRA LỖI SAU KHI CẢ 2 ĐÃ CHẠY XONG
-      if (!driveLinks || !driveLinks.pdfUrl) throw new Error("Không nhận được Link Drive từ Google Apps Script.");
-      
-      if (!localResponse.ok) throw new Error(`Lỗi máy chủ Local: HTTP ${localResponse.status}`);
-      const localData = await localResponse.json();
-      if (localData.status !== "success") {
-        throw new Error(localData.message || "Lỗi không xác định từ Local Server");
+      if (!localResponse.ok) {
+        throw new Error(`Lỗi máy chủ Local: HTTP ${localResponse.status}`);
       }
 
-      // ========================================================
-      // 🚀 CẬP NHẬT GIAO DIỆN (FRONTEND) NGAY LẬP TỨC
-      // ========================================================
+      const contentType = String(localResponse.headers.get('content-type') || '').toLowerCase();
+      if (!contentType.includes('application/pdf')) {
+        throw new Error('Backend chưa trả đúng PDF binary với content-type application/pdf.');
+      }
+
+      const pdfBlob = await localResponse.blob();
+      const pdfBase64 = await blobToBase64(pdfBlob);
+      const excelBase64 = await fileToBase64(excelFile);
+
+      const rowEntry = (window._dwDesignRowMap && window._dwDesignRowMap[id])
+        || (window._dwDesignRowMap && window._dwDesignRowMap[fileName.toLowerCase()])
+        || null;
+      const sendDwCode = (rowEntry && rowEntry.dwCode) || fileName || '';
+      const sendToCode = (rowEntry && rowEntry.to) || '';
+
+      const driveLinks = await new Promise((resolve, reject) => {
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          .uploadPdfDesignToDrive(pdfBase64, excelBase64, `${sendDwCode || id}.pdf`, `${sendDwCode || id}.xlsx`, id, sendDwCode, sendToCode);
+      });
+
+      if (!driveLinks || !driveLinks.pdfUrl || !driveLinks.excelUrl) {
+        throw new Error('Backend PDF/Excel đã convert nhưng Apps Script chưa trả về link Drive cần thiết.');
+      }
+
+      const pdfUrl = driveLinks.pdfUrl;
+      const excelUrl = driveLinks.excelUrl;
+
+      // Khi Excel upload xong, vừa sinh PDF ở Drive vừa tự ký ở vị trí Charge trong dwDesign,
+      // không cần chờ vào màn hình submitDW.js.
+      let chargeSignedPdfUrl = pdfUrl;
+      try {
+        chargeSignedPdfUrl = await signUploadedPdfAsCharge(id, pdfUrl);
+      } catch (sigErr) {
+        console.error('Charge signing after upload failed:', sigErr);
+        // Không block upload chính nếu backend ký phụ này thất bại, nhưng cảnh báo rõ.
+        Swal.fire('Cảnh báo ký Charge', (sigErr && sigErr.message) ? sigErr.message : String(sigErr), 'warning');
+      }
+
       if (typeof pageData !== 'undefined') {
-        const rowIndex = pageData.findIndex(row => String(row[0]) === String(id));
+        const rowIndex = pageData.findIndex(row => {
+          if (!Array.isArray(row)) return false;
+          const rId = String(row[0] || '').trim();
+          const rDw = String(row[11] || '').trim();
+          const rTo = String(row[8] || '').trim();
+          return (id && rId && rId === String(id).trim())
+            || (sendDwCode && rDw && rDw.toLowerCase() === sendDwCode.toLowerCase())
+            || (sendToCode && rTo && rTo.toLowerCase() === sendToCode.toLowerCase());
+        });
         if (rowIndex !== -1) {
-          pageData[rowIndex][30] = driveLinks.excelUrl;
-          pageData[rowIndex][31] = driveLinks.pdfUrl;
+          pageData[rowIndex][2] = 'Chờ Checker 1';
+          pageData[rowIndex][30] = excelUrl;
+          pageData[rowIndex][31] = pdfUrl;
         }
       }
-      if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
-      // ========================================================
 
+      if (id) {
+        window._dwDesignPdfMap = window._dwDesignPdfMap || {};
+        window._dwDesignPdfMap[id] = chargeSignedPdfUrl || pdfUrl;
+      }
+      if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
+
+      hideDwDesignLoading();
       Swal.fire({
-        title: 'Thành công!', 
-        html: `Đã lưu PDF lên Drive và Excel vào Local Server.<br><br><b>Link PDF:</b> <a href="${driveLinks.pdfUrl}" target="_blank">Xem ngay</a>`, 
+        title: 'Thành công!',
+        html: `Đã lưu file lên hệ thống, sinh PDF và ký ở vị trí Charge trong dwDesign.<br><br><b>Link PDF:</b> <a href="${chargeSignedPdfUrl || pdfUrl}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">Xem ngay</a>`,
         icon: 'success'
       });
 
-      // Reset form
       document.getElementById('designUploadForm').reset();
       document.getElementById('uploadDwId').value = '';
       document.getElementById('uploadCategory').value = '';
       document.getElementById('uploadDwTo').value = '';
-      document.getElementById('pdfFileName').innerText = "Kéo thả hoặc bấm để chọn PDF";
-      document.getElementById('excelFileName').innerText = "Kéo thả hoặc bấm để chọn Excel";
-      
-      // Bỏ tô đậm ở bảng và Vẽ lại bảng
+      document.getElementById('excelFileName').innerText = 'Kéo thả hoặc bấm để chọn Excel';
+
       currentlySelectedId = null;
       loadDrawingList();
 
     } catch (error) {
+      hideDwDesignLoading();
       Swal.fire('Lỗi Tải lên', error.message, 'error');
     } finally {
-      btnSubmit.disabled = false;
-      if(typeof hideLoading === 'function') hideLoading();
+      _isUploadingDesign = false;
+      if (btnSubmit) {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="bi bi-send-fill me-2"></i>TẢI FILE';
+      }
+      hideDwDesignLoading();
     }
-}
+  }
 </script>

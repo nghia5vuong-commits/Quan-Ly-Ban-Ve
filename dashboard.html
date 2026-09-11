@@ -37,6 +37,29 @@
     font-size: 1.2rem;
     box-shadow: var(--liquid-shadow-sm);
   }
+
+  .page-dashboard .fye-select-group,
+  .page-dashboard .month-select-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border-radius: var(--liquid-radius-pill);
+    background: rgba(236, 253, 245, 0.78);
+    border: 1px solid rgba(16, 185, 129, 0.26);
+    box-shadow: var(--liquid-shadow-sm);
+  }
+
+  .page-dashboard .fye-select-group .form-select,
+  .page-dashboard .month-select-group .form-select {
+    min-width: 118px;
+    background: transparent !important;
+    color: var(--liquid-text-strong, #0f172a);
+    font-weight: 700;
+    border: 0 !important;
+    box-shadow: none !important;
+    padding-left: 0.1rem;
+  }
   
   /* Segmented Switch Control dạng viên thuốc iOS */
   .page-dashboard .segmented-control {
@@ -319,6 +342,27 @@
             <option value="FYE17">FYE17</option>
             <option value="FYE16">FYE16</option>
             <option value="FYE15">FYE15</option>
+          </select>
+        </div>
+
+        <!-- Lọc tháng tài chính T4→T3 Select Dropdown -->
+        <div class="d-flex align-items-center month-select-group shadow-sm">
+          <i class="bi bi-calendar4-range text-success me-2 ms-1" style="font-size: 0.9rem;"></i>
+          <select class="form-select form-select-sm border-0 bg-transparent fw-semibold text-dark shadow-none pe-4" id="dashMonthFilter"
+            onchange="updateDashboardStats()" style="cursor: pointer; font-size: 0.82rem;">
+            <option value="ALL">📆 Tất cả tháng</option>
+            <option value="T4">T4</option>
+            <option value="T5">T5</option>
+            <option value="T6">T6</option>
+            <option value="T7">T7</option>
+            <option value="T8">T8</option>
+            <option value="T9">T9</option>
+            <option value="T10">T10</option>
+            <option value="T11">T11</option>
+            <option value="T12">T12</option>
+            <option value="T1">T1</option>
+            <option value="T2">T2</option>
+            <option value="T3">T3</option>
           </select>
         </div>
 
@@ -682,6 +726,8 @@
     globalFilters = { fye: 'ALL', type: 'ALL', kpi: 'all', project: null, month: null, isNew: null, search: '', creator: '', status: 'ALL', dateFrom: '', dateTo: '' };
     var dashFyeFilter = document.getElementById('dashFyeFilter');
     if (dashFyeFilter) dashFyeFilter.value = 'ALL';
+    var dashMonthFilter = document.getElementById('dashMonthFilter');
+    if (dashMonthFilter) dashMonthFilter.value = 'ALL';
     ['dashSearchInput'].forEach(function (id) {
       var input = document.getElementById(id);
       if (input) input.value = '';
@@ -698,6 +744,8 @@
     globalFilters.search = '';
     var searchInput = document.getElementById('dashSearchInput');
     if (searchInput) searchInput.value = '';
+    var dashMonthFilter = document.getElementById('dashMonthFilter');
+    if (dashMonthFilter) dashMonthFilter.value = 'ALL';
     requestDashboardRefresh();
   }
 
@@ -917,6 +965,11 @@
       globalFilters.fye = dashFyeFilter.value || 'ALL';
     }
 
+    var dashMonthFilter = document.getElementById('dashMonthFilter');
+    if (dashMonthFilter) {
+      globalFilters.month = (dashMonthFilter.value && dashMonthFilter.value !== 'ALL') ? dashMonthFilter.value : null;
+    }
+
     var searchInput = document.getElementById('dashSearchInput');
     globalFilters.search = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
@@ -1128,6 +1181,9 @@
         onClick: function(e, elements, chart) {
           if(elements.length > 0) {
             globalFilters.month = chart.data.labels[elements[0].index];
+            var dashMonthFilter = document.getElementById('dashMonthFilter');
+            if (dashMonthFilter) dashMonthFilter.value = globalFilters.month;
+
             globalFilters.project = chart.data.datasets[elements[0].datasetIndex].label;
             var searchInput = document.getElementById('dashSearchInput');
             globalFilters.search = globalFilters.project.toLowerCase();
@@ -1166,6 +1222,9 @@
         onClick: function(e, elements, chart) {
           if(elements.length > 0) {
             globalFilters.month = chart.data.labels[elements[0].index];
+            var dashMonthFilter = document.getElementById('dashMonthFilter');
+            if (dashMonthFilter) dashMonthFilter.value = globalFilters.month;
+
             globalFilters.isNew = (elements[0].datasetIndex === 0); // index 0 là NEW, 1 là REVISE
             updateDashboardStats();
           }
