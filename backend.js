@@ -64,6 +64,83 @@ const getSheetDataByConfig = (spreadsheetId, sheetName) => {
 
 const getAllData = () => getMainData();
 
+const normalizeComparisonSo = (value) => {
+  const text = String(value || '').trim().toUpperCase();
+  const match = text.match(/(?:SO\s*)?(\d{6,})/);
+  return match ? `SO${match[1]}` : '';
+};
+
+const getSoDrawingComparison = () => {
+  const checkAdjustSpreadsheetId = '1sXSge8vRINt2x8PNjmxSUKMbX4nvVfBl1SBHmaOrUNI';
+  const resultBySo = {};
+
+  const addSource = (rawSo, source, details, flags) => {
+    const so = normalizeComparisonSo(rawSo);
+    if (!so) return;
+    if (!resultBySo[so]) {
+      resultBySo[so] = { so, email: false, drawing: false, isNew: false, isOld: false, details: [] };
+    }
+    resultBySo[so][source] = true;
+    if (flags) {
+      resultBySo[so].isNew = resultBySo[so].isNew || flags.isNew;
+      resultBySo[so].isOld = resultBySo[so].isOld || flags.isOld;
+    }
+    if (details) resultBySo[so].details.push(details);
+  };
+
+  const checkAdjustSheet = getSheetByIdAndName(checkAdjustSpreadsheetId, 'Check adjust');
+  if (checkAdjustSheet && checkAdjustSheet.getLastRow() >= 3) {
+    const values = checkAdjustSheet.getRange(3, 2, checkAdjustSheet.getLastRow() - 2, Math.max(1, checkAdjustSheet.getLastColumn() - 1)).getDisplayValues();
+    values.forEach((row) => {
+      const newText = row.some((cell) => String(cell).trim().toUpperCase() === 'NEW');
+      const oldText = row.some((cell) => String(cell).trim().toUpperCase() === 'OLD');
+      addSource(row[0], 'checkAdjust', '', { isNew: newText, isOld: oldText });
+    });
+  }
+
+  const mainSpreadsheet = SpreadsheetApp.openById(sheetConfig.mainSpreadsheetId);
+  const logSheet = mainSpreadsheet.getSheetByName('Log');
+  if (logSheet && logSheet.getLastRow() >= 2) {
+    const logValues = logSheet.getRange(2, 1, logSheet.getLastRow() - 1, Math.max(7, logSheet.getLastColumn())).getDisplayValues();
+    logValues.forEach((row) => addSource(row[5], 'email', row[2] ? String(row[2]) : ''));
+  }
+
+  const dataSheet = mainSpreadsheet.getSheetByName(sheetConfig.mainSheetName);
+  if (dataSheet && dataSheet.getLastRow() >= 2) {
+    const dataValues = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getDisplayValues();
+    dataValues.forEach((row) => addSource(row[33] || row[5], 'drawing', row[11] ? String(row[11]) : ''));
+  }
+
+  const rows = Object.keys(resultBySo).map((so) => resultBySo[so]);
+  rows.sort((a, b) => a.so.localeCompare(b.so, undefined, { numeric: true }));
+  return { success: true, data: rows };
+};
+
+const getCheckAdjustSoSet = () => {
+  const checkAdjustSpreadsheetId = '1sXSge8vRINt2x8PNjmxSUKMbX4nvVfBl1SBHmaOrUNI';
+  const checkAdjustSheet = getSheetByIdAndName(checkAdjustSpreadsheetId, 'Check adjust');
+  const soSet = new Set();
+  if (!checkAdjustSheet || checkAdjustSheet.getLastRow() < 3) return soSet;
+
+  const values = checkAdjustSheet.getRange(3, 2, checkAdjustSheet.getLastRow() - 2, Math.max(1, checkAdjustSheet.getLastColumn() - 1)).getDisplayValues();
+  values.forEach((row) => {
+    const normalizedSo = normalizeComparisonSo(row[0]);
+    if (normalizedSo) soSet.add(normalizedSo);
+  });
+  return soSet;
+};
+
+const getDrawingStatusBySo = (rawSo) => {
+  const normalizedSo = normalizeComparisonSo(rawSo);
+  const isDrawingDone = !!(normalizedSo && getCheckAdjustSoSet().has(normalizedSo));
+  return {
+    success: true,
+    so: normalizedSo,
+    isDrawingDone,
+    drawingStatus: isDrawingDone ? 'Check SO OK' : 'Không có SO'
+  };
+};
+
 const getMainData = () => getSheetDataByConfig(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName);
 
 const getReleaseData = () => {

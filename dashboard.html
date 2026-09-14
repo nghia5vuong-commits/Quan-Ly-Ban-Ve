@@ -24,6 +24,22 @@
     box-shadow: var(--liquid-shadow-lg) !important;
     border-color: rgba(16, 185, 129, 0.3) !important;
   }
+
+  .page-dashboard .filter-card > .d-flex {
+    flex-wrap: nowrap !important;
+    min-width: max-content;
+  }
+
+  .page-dashboard .filter-card > .d-flex > .d-flex:last-child {
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    white-space: nowrap;
+  }
+
+  .page-dashboard .filter-card > .d-flex > .d-flex:first-child {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
   .page-dashboard .filter-icon-box {
     width: 44px;
     height: 44px;
@@ -59,6 +75,13 @@
     border: 0 !important;
     box-shadow: none !important;
     padding-left: 0.1rem;
+  }
+
+  .page-dashboard .fye-select-group,
+  .page-dashboard .month-select-group,
+  .page-dashboard .segmented-control,
+  .page-dashboard .btn-reset-filter {
+    flex: 0 0 auto;
   }
   
   /* Segmented Switch Control dạng viên thuốc iOS */
@@ -257,6 +280,14 @@
     }
   }
   @media (max-width: 640px) {
+    .page-dashboard .filter-card {
+      overflow-x: auto;
+    }
+
+    .page-dashboard .filter-card > .d-flex {
+      width: max-content;
+    }
+
     .page-dashboard .dashboard-detail-search {
       width: 100%;
     }
@@ -382,10 +413,6 @@
           </button>
         </div>
 
-        <!-- Nút Reset Filter -->
-        <button class="btn-reset-filter shadow-sm" data-reset-filter="dashboard" title="Đặt lại bộ lọc">
-          <i class="bi bi-arrow-clockwise"></i>
-        </button>
       </div>
     </div>
   </div>

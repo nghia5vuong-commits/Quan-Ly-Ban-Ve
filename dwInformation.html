@@ -355,10 +355,274 @@
     }
 
     .page-dwIf #manual-section,
-    .page-dwIf #manage-section {
+    .page-dwIf #manage-section,
+    .page-dwIf #frequency-section,
+    .page-dwIf #so-compare-section {
       height: calc(100vh - 130px);
     }
   }
+
+  /* Frequency & SO Compare Tabs CSS */
+  .page-dwIf .stat-card {
+    padding: 12px 14px;
+    border: var(--liquid-border-soft);
+    border-left: 3px solid var(--liquid-primary);
+    border-radius: var(--liquid-radius-md);
+    background: var(--liquid-glass-elevated);
+    box-shadow: var(--liquid-shadow-sm);
+  }
+
+  .page-dwIf .stat-card strong {
+    display: block;
+    color: var(--liquid-text);
+    font-size: 1.25rem;
+    margin-top: 4px;
+  }
+
+  .page-dwIf .stat-card small {
+    color: var(--liquid-text-muted);
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .page-dwIf .frequency-table,
+  .page-dwIf .so-compare-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--liquid-glass-elevated);
+  }
+
+  .page-dwIf .frequency-table th,
+  .page-dwIf .frequency-table td,
+  .page-dwIf .so-compare-table th,
+  .page-dwIf .so-compare-table td {
+    padding: 9px 12px;
+    border-bottom: var(--liquid-border-subtle);
+    text-align: left;
+    font-size: .76rem;
+  }
+
+  .page-dwIf .frequency-table th,
+  .page-dwIf .so-compare-table th {
+    color: var(--liquid-text-muted);
+    background: rgba(240, 253, 244, .78);
+    font-size: .67rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .page-dwIf .frequency-table tbody tr:hover td,
+  .page-dwIf .so-compare-table tbody tr:hover td {
+    background: rgba(209, 250, 229, .55);
+  }
+
+  .page-dwIf .so-compare-panel {
+    padding: 14px;
+    overflow: auto;
+  }
+
+  .page-dwIf .so-compare-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+
+  .page-dwIf .so-compare-toolbar input,
+  .page-dwIf .so-compare-toolbar select {
+    min-height: 36px;
+    border: var(--liquid-border-subtle);
+    border-radius: var(--liquid-radius-sm);
+    padding: 6px 10px;
+    background: var(--liquid-glass-elevated);
+    color: var(--liquid-text);
+    box-shadow: var(--liquid-shadow-sm);
+    font-size: .78rem;
+  }
+
+  .page-dwIf .so-compare-toolbar input:focus,
+  .page-dwIf .so-compare-toolbar select:focus {
+    border-color: rgba(16, 185, 129, .5);
+    outline: 0;
+    box-shadow: 0 0 0 3px var(--liquid-primary-soft);
+  }
+
+  .page-dwIf .so-compare-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .page-dwIf .so-stat {
+    padding: 12px 14px;
+    border: var(--liquid-border-soft);
+    border-left: 3px solid var(--liquid-primary);
+    border-radius: var(--liquid-radius-md);
+    background: var(--liquid-glass-elevated);
+    box-shadow: var(--liquid-shadow-sm);
+  }
+
+  .page-dwIf .so-stat strong {
+    display: block;
+    color: var(--liquid-text);
+    font-size: 1.25rem;
+  }
+
+  .page-dwIf .so-stat small {
+    color: var(--liquid-text-muted);
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .page-dwIf .so-compare-table {
+    min-width: 700px;
+  }
+
+  .page-dwIf .so-code {
+    color: var(--liquid-text);
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-weight: 800;
+  }
+
+  .page-dwIf .so-badge {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    border-radius: var(--liquid-radius-pill);
+    padding: 4px 8px;
+    font-size: .66rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .page-dwIf .so-badge.yes {
+    color: #047857;
+    background: rgba(209, 250, 229, .8);
+    border: 1px solid #a7f3d0;
+  }
+
+  .page-dwIf .so-badge.no {
+    color: #b45309;
+    background: rgba(254, 243, 199, .8);
+    border: 1px solid #fde68a;
+  }
+
+  .page-dwIf .frequency-header-filter {
+    display: block;
+    width: 100%;
+    min-width: 72px;
+    margin-top: 6px;
+    padding: 4px 7px;
+    border: 1px solid rgba(203, 213, 225, 0.85);
+    border-radius: var(--liquid-radius-xs);
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--liquid-text);
+    font-size: .7rem;
+    font-weight: 500;
+    text-transform: none;
+  }
+
+  .page-dwIf .frequency-header-filter:focus {
+    outline: 0;
+    border-color: var(--liquid-primary);
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.16);
+  }
+
+  .page-dwIf .glass-panel,
+  .page-dwIf .manual-panel,
+  .page-dwIf .so-compare-panel {
+    border: var(--liquid-border) !important;
+    border-radius: var(--liquid-radius-lg) !important;
+    background: var(--liquid-glass-elevated) !important;
+    box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
+  }
+
+  .page-dwIf .custom-tabs {
+    box-shadow: var(--liquid-shadow-md);
+  }
+
+  .page-dwIf .custom-tabs .nav-link,
+  .page-dwIf .btn {
+    transition: var(--liquid-spring-fast);
+  }
+
+  .page-dwIf .btn-primary,
+  .page-dwIf .btn-success {
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    border-radius: var(--liquid-radius-sm) !important;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+  }
+
+  .page-dwIf .btn-primary:hover,
+  .page-dwIf .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 18px rgba(16, 185, 129, 0.38);
+  }
+
+  .page-dwIf .btn-light,
+  .page-dwIf .btn-outline-secondary {
+    border: var(--liquid-border) !important;
+    border-radius: var(--liquid-radius-sm) !important;
+    background: var(--liquid-glass-elevated) !important;
+    color: var(--liquid-text-soft) !important;
+    box-shadow: var(--liquid-shadow-sm);
+  }
+
+  .page-dwIf .btn-light:hover,
+  .page-dwIf .btn-outline-secondary:hover {
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    color: var(--liquid-primary-dark) !important;
+    background: #ffffff !important;
+    box-shadow: var(--liquid-shadow-md);
+  }
+
+  .page-dwIf .table-responsive,
+  .page-dwIf .frequency-table,
+  .page-dwIf .so-compare-table {
+    border-color: rgba(226, 232, 240, 0.85) !important;
+    background: rgba(255, 255, 255, 0.62);
+    box-shadow: var(--liquid-shadow-sm);
+  }
+
+  .page-dwIf .custom-table th,
+  .page-dwIf .frequency-table th,
+  .page-dwIf .so-compare-table th {
+    background: rgba(240, 253, 244, 0.78) !important;
+    color: var(--liquid-text-muted) !important;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.2) !important;
+  }
+
+  .page-dwIf .custom-table tbody tr:hover td,
+  .page-dwIf .frequency-table tbody tr:hover td,
+  .page-dwIf .so-compare-table tbody tr:hover td {
+    background: rgba(209, 250, 229, 0.7) !important;
+    transform: none;
+  }
+
+  .page-dwIf .form-control:focus,
+  .page-dwIf .form-select:focus,
+  .page-dwIf .so-compare-toolbar input:focus,
+  .page-dwIf .so-compare-toolbar select:focus {
+    border-color: var(--liquid-primary) !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18) !important;
+  }
+
+  @media (max-width: 768px) {
+    .page-dwIf .glass-panel,
+    .page-dwIf .manual-panel,
+    .page-dwIf .so-compare-panel {
+      border-radius: var(--liquid-radius-md) !important;
+    }
+  }
+
 </style>
 
 <div class="page-dwIf" style="width: 100%; height: 100%; margin: 0 !important; padding: 0 !important;">
@@ -459,27 +723,21 @@
         <!-- Thanh công cụ: Tìm kiếm & Thêm mới + Chọn lộc -->
         <div
           class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 mb-3 border-bottom">
-          <div class="d-flex align-items-center gap-2">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="selectAllDrawings" onchange="toggleSelectAll()">
-              <label class="form-check-label" for="selectAllDrawings" style="font-size: 0.9rem; margin: 0;">Chọn tất
-                cả</label>
-            </div>
-            <button id="bulkEditBtn" class="btn btn-warning btn-sm fw-bold" onclick="openBulkEditForm()"
-              style="display: none;">
-              <i class="fa fa-edit me-1"></i>Sửa hàng loạt
-            </button>
-          </div>
-
-          <div class="input-group" style="max-width: 350px;">
+          <div class="input-group order-1" style="max-width: 350px;">
             <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
             <input type="text" id="searchDrawingInput" class="form-control border-start-0 bg-light shadow-none"
               placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchDrawingData()">
           </div>
 
-          <button class="btn btn-primary fw-bold px-4 rounded-pill" onclick="openAddDrawingForm()">
-            <i class="fa fa-plus me-2"></i>Thêm mới
-          </button>
+          <div class="d-flex align-items-center gap-2 order-2">
+            <button id="bulkEditBtn" class="btn btn-warning btn-sm fw-bold" onclick="openBulkEditForm()"
+              style="display: none;">
+              <i class="fa fa-edit me-1"></i>Sửa hàng loạt
+            </button>
+            <button class="btn btn-primary fw-bold px-4 rounded-pill" onclick="openAddDrawingForm()">
+              <i class="fa fa-plus me-2"></i>Thêm mới
+            </button>
+          </div>
         </div>
 
         <!-- Bảng DataGridView -->
@@ -568,6 +826,7 @@
         </div>
       </div>
     </div>
+
   </div>
 
   <!-- ================= POPUP FORM (MODAL) ================= -->
@@ -814,9 +1073,12 @@
       loadEmailsAndStats(newPage);
     }
 
-    function updateSidebarStatus(threadId, isReceived) {
+    function updateSidebarStatus(threadId, isReceived, progress) {
       var emailObj = state.emails.find(function (e) { return e.id === threadId; });
-      if (emailObj) emailObj.isReceived = isReceived;
+      if (emailObj) {
+        emailObj.isReceived = isReceived;
+        if (progress) emailObj.receivedProgress = progress;
+      }
 
       var items = document.querySelectorAll('#emailList .email-item');
       for (var i = 0; i < items.length; i++) {
@@ -871,7 +1133,9 @@
         var sender = escHtml(String(email.senderName || email.senderEmail));
         var dateText = escHtml(String(email.date));
         var subjectText = escHtml(String(email.subject));
-        var statusLabel = email.isReceived ? '<span class="badge rounded-pill bg-success-subtle text-success border border-success ms-2 px-2 py-1" style="font-size:0.68rem;">Đã nhận</span>' : '<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning ms-2 px-2 py-1" style="font-size:0.68rem;">Chưa nhận</span>';
+        var progress = email.receivedProgress || {};
+        var statusLabel = email.isReceived ? '<span class="badge rounded-pill bg-success-subtle text-success border border-success ms-2 px-2 py-1" style="font-size:0.68rem;">Đã nhận</span>' : progress.total ? '<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning ms-2 px-2 py-1" style="font-size:0.68rem;">' + escHtml(progress.received + '/' + progress.total) + '</span>' : '<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning ms-2 px-2 py-1" style="font-size:0.68rem;">Chưa nhận</span>';
+        var drawingStatusLabel = email.isDrawingDone ? '<span class="badge rounded-pill bg-primary-subtle text-primary border border-primary ms-2 px-2 py-1" style="font-size:0.68rem;"><i class="fa fa-check me-1"></i>Check SO OK</span>' : '<span class="badge rounded-pill bg-light text-secondary border ms-2 px-2 py-1" style="font-size:0.68rem;"><i class="fa fa-circle-xmark me-1"></i>Không có SO</span>';
 
         item.innerHTML = dot +
           '<div class="d-flex justify-content-between align-items-center mb-1">' +
@@ -879,7 +1143,7 @@
           '<small class="text-muted text-nowrap" style="font-size:0.75rem;">' + dateText + '</small>' +
           '</div>' +
           '<div class="email-subject text-secondary text-truncate" style="font-size:0.85rem;">' + subjectText + '</div>' +
-          '<div class="mt-1 text-end">' + statusLabel + '</div>';
+          '<div class="mt-1 text-end">' + statusLabel + drawingStatusLabel + '</div>';
 
         fragment.appendChild(item);
       }
@@ -927,10 +1191,101 @@
         }
 
         renderEmailDetail(detailRes);
+        resolveEmailDrawingStatus(detailRes);
 
       } catch (err) {
         showToast('Lỗi xử lý email: ' + err.message, 'error');
       }
+    }
+
+    function extractSoFromExcelBase64(base64Data) {
+      if (typeof XLSX === 'undefined') return '';
+      var workbook = XLSX.read(base64Data, { type: 'base64', cellDates: true });
+      var sheet = workbook.Sheets[workbook.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+      for (var r = 0; r < rows.length; r++) {
+        var row = rows[r] || [];
+        for (var c = 0; c < row.length; c++) {
+          var header = String(row[c] || '').trim().toLowerCase();
+          if (header === 'sales document' && rows[r + 1] && rows[r + 1][c]) {
+            return 'SO' + String(rows[r + 1][c]).replace(/[^0-9]/g, '');
+          }
+        }
+      }
+      return '';
+    }
+
+    function extractTosFromExcelBase64(base64Data) {
+      if (typeof XLSX === 'undefined') return [];
+      var workbook = XLSX.read(base64Data, { type: 'base64', cellDates: true });
+      var sheet = workbook.Sheets[workbook.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+      var tos = [];
+      for (var r = 0; r < rows.length; r++) {
+        var row = rows[r] || [];
+        for (var c = 0; c < row.length; c++) {
+          if (String(row[c] || '').trim().toLowerCase() !== 'material') continue;
+          for (var dataRowIndex = r + 1; dataRowIndex < rows.length; dataRowIndex++) {
+            var rawMaterial = String((rows[dataRowIndex] || [])[c] || '').trim();
+            if (!rawMaterial) continue;
+            var toValue = rawMaterial;
+            if (toValue && tos.indexOf(toValue) === -1) tos.push(toValue);
+          }
+          return tos;
+        }
+      }
+      return tos;
+    }
+
+    function findEmailAttachment(data) {
+      for (var messageIndex = 0; messageIndex < (data.messages || []).length; messageIndex++) {
+        var attachments = data.messages[messageIndex].attachments || [];
+        for (var attachmentIndex = 0; attachmentIndex < attachments.length; attachmentIndex++) {
+          if (attachments[attachmentIndex].isSheet || attachments[attachmentIndex].isPdf) {
+            return { messageIndex: messageIndex, attachmentIndex: attachments[attachmentIndex].index, isPdf: !!attachments[attachmentIndex].isPdf };
+          }
+        }
+      }
+      return null;
+    }
+
+    function updateEmailDrawingStatus(threadId, isDrawingDone, drawingStatus) {
+      var emailObj = state.emails.find(function (email) { return email.id === threadId; });
+      if (!emailObj) return;
+      emailObj.isDrawingDone = !!isDrawingDone;
+      emailObj.drawingStatus = drawingStatus || (isDrawingDone ? 'Check SO OK' : 'Không có SO');
+      renderEmailList(state.emails);
+      document.querySelectorAll('#emailList .email-item').forEach(function (item) {
+        item.classList.toggle('active', String(item.dataset.threadId) === String(threadId));
+      });
+    }
+
+    function resolveEmailDrawingStatus(data) {
+      var currentEmail = state.emails.find(function (email) { return email.id === data.threadId; });
+      if (!currentEmail || currentEmail.isDrawingDone) return;
+
+      var attachment = findEmailAttachment(data);
+      if (!attachment) return;
+
+      google.script.run.withSuccessHandler(function (fileResult) {
+        if (!fileResult || !fileResult.success || !fileResult.dataBase64) return;
+        var parsePromise;
+        try {
+          if (attachment.isPdf) {
+            parsePromise = extractPdfTextFromBase64(fileResult.dataBase64).then(extractParsedDataFromPdfText);
+          } else {
+            parsePromise = Promise.resolve({ so: extractSoFromExcelBase64(fileResult.dataBase64) });
+          }
+        } catch (error) {
+          return;
+        }
+        parsePromise.then(function (parsedData) {
+          if (!parsedData || !parsedData.so) return;
+          google.script.run.withSuccessHandler(function (statusResult) {
+            if (statusResult && statusResult.success) updateEmailDrawingStatus(data.threadId, statusResult.isDrawingDone, statusResult.drawingStatus);
+          }).getDrawingStatusBySo(parsedData.so);
+        }).catch(function () { });
+      }).getAttachmentParsedData(data.threadId, attachment.messageIndex, attachment.attachmentIndex);
     }
 
     function renderEmailDetail(data) {
@@ -941,10 +1296,11 @@
       // Kiểm tra nhanh trạng thái tiếp nhận từ danh sách email
       var currentEmail = state.emails.find(function (e) { return e.id === data.threadId; });
       var isReceived = currentEmail ? currentEmail.isReceived : false;
+      var receiptProgress = currentEmail && currentEmail.receivedProgress ? currentEmail.receivedProgress : null;
 
       // Render Huy hiệu & Nút bấm dựa trên trạng thái
       var badgeHtml = '<span id="receivedBadge">' +
-        (isReceived ? '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>' : '') +
+        (isReceived ? '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>' : receiptProgress && receiptProgress.total ? '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-clock me-1"></i>' + escHtml(receiptProgress.received + '/' + receiptProgress.total) + '</span>' : '') +
         '</span>';
 
       var btnHtml = isReceived ? '' :
@@ -1204,7 +1560,7 @@
     }
 
     function extractParsedDataFromPdfText(pdfText) {
-      var out = { so: '', customer: '', to: '' };
+      var out = { so: '', customer: '', to: '', tos: [] };
       var text = String(pdfText || '').replace(/\u00a0/g, ' ').replace(/\r\n/g, '\n').replace(/\s+/g, ' ');
       var lines = String(pdfText || '').replace(/\r\n/g, '\n').split(/\n+/);
 
@@ -1256,7 +1612,7 @@
       var materialMatch = text.match(/material\s*[:\-]?\s*([^\n\r]+)/i);
       if (materialMatch && materialMatch[1]) {
         var rawMat = String(materialMatch[1]).trim();
-        out.to = rawMat.length > 1 ? rawMat.substring(1) : rawMat;
+        out.to = rawMat;
       }
       if (!out.to && toLine) {
         var toMatch = toLine.match(/\bto\s*[:#-]?\s*([^\n\r]+)/i);
@@ -1270,6 +1626,14 @@
         var projectMatch = text.match(/project\s*[-:]\s*([^\n\r]+)/i);
         if (projectMatch && projectMatch[1]) out.to = String(projectMatch[1]).trim();
       }
+
+      var toMatches = text.match(/\bTO\s*-?\s*[A-Z0-9][A-Z0-9._/-]*/gi) || [];
+      toMatches.forEach(function (value) {
+        var normalizedTo = String(value).replace(/\s+/g, '').toUpperCase().replace(/^TO-?/i, '');
+        if (normalizedTo && out.tos.indexOf(normalizedTo) === -1) out.tos.push(normalizedTo);
+      });
+      if (!out.tos.length && out.to) out.tos.push(String(out.to).replace(/^TO-?/i, '').replace(/\s+/g, '').toUpperCase());
+      if (out.tos.length) out.to = out.tos[0];
 
       if (!out.customer) {
         var itemDescrMatch = text.match(/item descr\.?\s*[:\-]?\s*([^\n\r]+)/i);
@@ -1332,9 +1696,20 @@
           if (!sRes) { resetBtnTiepNhan(); return; }
           if (sRes.success) {
             showToast('Tiếp nhận dữ liệu thành công!' + (isPdf ? ' (PDF)' : ' (Excel)'), 'success');
-            document.getElementById('receivedBadge').innerHTML = '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>';
-            if (btn) btn.classList.add('d-none');
-            updateSidebarStatus(data.threadId, true);
+            var progress = sRes.progress || { complete: true };
+            var badge = document.getElementById('receivedBadge');
+            if (progress.complete) {
+              if (badge) badge.innerHTML = '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>';
+              if (btn) btn.classList.add('d-none');
+            } else {
+              if (badge) badge.innerHTML = '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-clock me-1"></i>' + escHtml(progress.received + '/' + progress.total) + '</span>';
+              if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa fa-file-signature me-2"></i>Tiếp nhận thiết kế';
+              }
+            }
+            updateSidebarStatus(data.threadId, progress.complete, progress);
+            refreshDwIfUiAfterDataChange();
             if (typeof appLogSystem === 'function') {
               var notiMsg = 'Đã tiếp nhận bản vẽ ' + (parsedData.so || '') + (parsedData.customer ? ' của khách hàng ' + parsedData.customer : '');
               appLogSystem(notiMsg);
@@ -1410,7 +1785,7 @@
               return showToast('Lỗi đọc file đính kèm: ' + (res ? res.error : ''), 'error');
             }
             try {
-              var parsedData = { so: '', customer: '', to: '' };
+              var parsedData = { so: '', customer: '', to: '', tos: [] };
               var rows = [];
 
               if (attachmentType === 'pdf') {
@@ -1443,8 +1818,9 @@
                   if (colSO !== -1 && dataRow[colSO]) parsedData.so = 'SO' + String(dataRow[colSO]).replace(/[^0-9]/g, '');
                   if (colCustomer !== -1 && dataRow[colCustomer]) parsedData.customer = String(dataRow[colCustomer]).trim().toUpperCase();
                   if (colMaterial !== -1 && dataRow[colMaterial]) {
-                    var rawMat = String(dataRow[colMaterial]).trim();
-                    parsedData.to = rawMat.length > 1 ? rawMat.substring(1) : rawMat;
+                    parsedData.tos = extractTosFromExcelBase64(res.dataBase64);
+                    parsedData.materialTos = parsedData.tos.slice();
+                    parsedData.to = parsedData.tos[0] || '';
                   }
                 }
                 sendParsedEmailLog(parsedData, data, rows, res, false, btn, resetBtnTiepNhan, JSON.stringify(rows || []));
@@ -1471,6 +1847,7 @@
 
               if (btn) btn.classList.add('d-none');
               updateSidebarStatus(data.threadId, true);
+              refreshDwIfUiAfterDataChange();
 
               // THÊM LOGIC ĐẨY THÔNG BÁO Ở ĐÂY
               if (typeof appLogSystem === 'function') {
@@ -1492,7 +1869,7 @@
     /* ==========================================================================
        MODULE 1.2: NHẬP DỮ LIỆU BẢN VẼ
        ========================================================================== */
-    var pendingState = { selectedLogIdx: null, subject: '', isUpgradeMode: false, isFullEditMode: false };
+    var pendingState = { selectedLogIdx: null, subject: '', isUpgradeMode: false, isFullEditMode: false, isBulkMode: false };
     var drawingDataList = [];
     var drawingModalInstance = null; // Quản lý instance của Modal
 
@@ -1559,23 +1936,21 @@
 
     // Fallback - gọi hàm cũ nếu getDrawingsWithoutImage không sẵn dùng
     function initPendingDataFallback(isBackground) {
-      google.script.run
-        .withSuccessHandler(function (res) {
-          if (!isBackground) hideLoading();
-          if (res && res.success) {
-            renderPendingList(res.data);
-          }
-        })
-        .withFailureHandler(function (err) {
-          if (!isBackground) hideLoading();
-          showToast('Lỗi tải dữ liệu: ' + err.message, 'error');
-        })
-        .getPendingLogData();
+      if (!isBackground) hideLoading();
+      renderPendingList([]);
     }
 
     function renderPendingList(logs) {
       drawingDataList = logs || [];
       renderDrawingTable(drawingDataList);
+    }
+
+    function refreshDwIfUiAfterDataChange() {
+      pendingDrawingsLoaded = false;
+      managedDrawingsLoaded = false;
+      initNhapDuLieuBanVe(true);
+      loadManagedDrawings(true);
+      loadEmailsAndStats(0, true);
     }
 
     function checkSoExists(soRaw) {
@@ -1619,23 +1994,10 @@
           var subject = escHtml(String(item.subject || '')).replace(/'/g, "\\'");
           var soRaw = String(item.so || '');
 
-          // Kiểm tra xem Mã SO đã tồn tại trong sheet Data hay chưa (O(1) Set Lookup)
-          var exists = !!item.existsInData || checkSoExists(soRaw);
-
-          var actionHtml = '';
-          if (exists) {
-            // Đã tồn tại trong Data -> Ẩn nút Sửa/Xóa, Hiện nút Tìm kiếm bản vẽ đóng gói
-            var imgUrl = escHtml(String(item.imageUrl || ''));
-            var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
-            actionHtml = '<div class="managed-action-group"><button class="managed-action-btn managed-search-btn" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
-              '<i class="fa fa-search"></i>Tìm kiếm</button></div>';
-          } else {
-            // Chưa có trong Data -> Hiện nút Sửa & Xóa
-            actionHtml = '<div class="managed-action-group">' +
-              '<button class="managed-action-btn managed-edit-btn" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen"></i>Sửa</button>' +
-              '<button class="managed-action-btn managed-delete-btn" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash"></i>Xóa</button>' +
-              '</div>';
-          }
+          var actionHtml = '<div class="managed-action-group">' +
+            '<button class="managed-action-btn managed-edit-btn" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen"></i>Sửa</button>' +
+            '<button class="managed-action-btn managed-delete-btn" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash"></i>Xóa</button>' +
+            '</div>';
 
           return '<tr class="bg-white">' +
             '<td class="ps-4 fw-bold text-dark">' + type + '</td>' +
@@ -1879,6 +2241,7 @@
       pendingState.selectedLogIdx = null;
       pendingState.isUpgradeMode = false;
       pendingState.isFullEditMode = false;
+      pendingState.isBulkMode = false;
     }
 
     // Chức năng Xóa với thông báo mới và chặn bấm 2 lần
@@ -1902,7 +2265,7 @@
               hideLoading();
               if (res && res.success) {
                 showToast('Xóa thành công!', 'success');
-                initNhapDuLieuBanVe(); // Load lại bảng
+                refreshDwIfUiAfterDataChange();
               } else {
                 showToast('Lỗi xóa: ' + (res ? res.error : 'Không rõ'), 'error');
               }
@@ -2015,10 +2378,7 @@
       if (!dwCodeEl) return;
 
       if (pendingState && pendingState.isUpgradeMode) {
-        var ver = getSelectedVersion() || '1';
-        if (dwCodeEl.value) {
-          dwCodeEl.value = updateDwCodeVersion(dwCodeEl.value, ver);
-        }
+        // Update Version chỉ cho phép thay đổi Version, giữ nguyên DW Code.
         return;
       }
 
@@ -2072,6 +2432,26 @@
         return customVersion ? customVersion.value.trim() : '';
       }
       return versionSelect ? versionSelect.value : '';
+    }
+
+    function setVersionFieldValue(value) {
+      var versionSelect = document.getElementById('formVersion');
+      var customVersion = document.getElementById('formCustomVersion');
+      if (!versionSelect) return;
+
+      var versionValue = value === null || value === undefined ? '' : String(value).trim();
+      var hasOption = Array.prototype.some.call(versionSelect.options, function (option) {
+        return option.value === versionValue;
+      });
+
+      if (hasOption) {
+        versionSelect.value = versionValue;
+        if (customVersion) customVersion.value = '';
+      } else {
+        versionSelect.value = 'Other';
+        if (customVersion) customVersion.value = versionValue;
+      }
+      setVersionOtherVisibility();
     }
 
     function selectNextVersion(currentVersion) {
@@ -2130,13 +2510,7 @@
         if (currentRow && currentRow.to) toValue = String(currentRow.to);
       }
 
-      // Khi upgrade, sử dụng "Nội dung thay đổi" (formChangeLog) thay vì formNote
-      if (pendingState && pendingState.isUpgradeMode && !getVal('formChangeLog').trim()) {
-        showToast('Vui lòng nhập nội dung thay đổi khi Update Version.', 'warning');
-        return;
-      }
-
-      var noteValue = (pendingState && (pendingState.isUpgradeMode || pendingState.isFullEditMode)) ? getVal('formChangeLog') : getVal('formNote');
+      var noteValue = (pendingState && pendingState.isFullEditMode) ? getVal('formChangeLog') : getVal('formNote');
       var selectedVersion = getSelectedVersion();
       if (!selectedVersion) {
         showToast('Vui lòng nhập Version.', 'warning');
@@ -2181,7 +2555,8 @@
           rowData.push(imageObj);
           window.__pastedCutImageObject = null;
           if (pendingState.isFullEditMode) sendManagedEditToGas(rowData);
-          else sendDataToGas(rowData);
+          else if (pendingState.isBulkMode) sendBulkDataToGas(rowData);
+          else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null);
         };
         reader.onerror = function () {
           window.__isSubmittingDrawing = false;
@@ -2194,12 +2569,14 @@
         rowData.push({ base64: pastedImage.base64, mimeType: pastedImage.mimeType || 'image/png', name: pastedImage.name || 'pasted-cut-image.png' });
         window.__pastedCutImageObject = null;
         if (pendingState.isFullEditMode) sendManagedEditToGas(rowData);
-        else sendDataToGas(rowData);
+        else if (pendingState.isBulkMode) sendBulkDataToGas(rowData);
+        else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null);
       } else {
         rowData.push(null);
         window.__pastedCutImageObject = null;
         if (pendingState.isFullEditMode) sendManagedEditToGas(rowData);
-        else sendDataToGas(rowData);
+        else if (pendingState.isBulkMode) sendBulkDataToGas(rowData);
+        else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null);
       }
     }
 
@@ -2211,7 +2588,7 @@
       }
     }
 
-    function sendDataToGas(rowData) {
+    function sendDataToGas(rowData, dataRowIdx) {
       google.script.run
         .withSuccessHandler(function (res) {
           window.__isSubmittingDrawing = false;
@@ -2226,8 +2603,7 @@
             if (pendingState.isUpgradeMode) {
               pendingState.isUpgradeMode = false;  // Reset flag
               setTimeout(function () {
-                // Reload dữ liệu manage drawings
-                loadManagedDrawings();
+                refreshDwIfUiAfterDataChange();
                 // Nhảy sang tab 3 (Quản lí bản vẽ)
                 var manageTabBtn = document.getElementById('manage-tab');
                 if (manageTabBtn) {
@@ -2237,7 +2613,7 @@
               }, 500);
             } else {
               // Chế độ bình thường: reload tab 2
-              initNhapDuLieuBanVe();
+              refreshDwIfUiAfterDataChange();
             }
 
             if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
@@ -2252,7 +2628,40 @@
           unlockModalSubmit();
           showToast('Lỗi hệ thống: ' + err.message, 'error');
         })
-        .saveDataToTestSheet(pendingState.subject, [rowData], pendingState.selectedLogIdx);
+        .saveDataToTestSheet(pendingState.subject, [rowData], dataRowIdx);
+    }
+
+    function sendBulkDataToGas(rowData) {
+      var selectedItems = Array.from(bulkState.selectedRows || []).map(function (key) {
+        return bulkState.selectedItems[key];
+      }).filter(function (item) { return !!item; });
+      if (selectedItems.length === 0) {
+        window.__isSubmittingDrawing = false;
+        hideLoading();
+        unlockModalSubmit();
+        showToast('Vui lòng chọn ít nhất 1 bản vẽ.', 'warning');
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function (res) {
+          window.__isSubmittingDrawing = false;
+          hideLoading();
+          unlockModalSubmit();
+          if (res && res.success) {
+            showToast('Đã lưu ' + res.count + ' bản vẽ!', 'success');
+            closeDrawingForm();
+            refreshDwIfUiAfterDataChange();
+          } else {
+            showToast('Lỗi sửa hàng loạt: ' + (res ? res.error : 'Không rõ'), 'error');
+          }
+        })
+        .withFailureHandler(function (err) {
+          window.__isSubmittingDrawing = false;
+          hideLoading();
+          unlockModalSubmit();
+          showToast('Lỗi hệ thống: ' + err.message, 'error');
+        })
+        .saveBulkDrawingData(pendingState.subject, rowData, selectedItems);
     }
 
     function sendManagedEditToGas(rowData) {
@@ -2264,8 +2673,7 @@
           if (res && res.success) {
             showToast('Đã cập nhật dữ liệu!', 'success');
             closeDrawingForm();
-            managedDrawingsLoaded = false;
-            loadManagedDrawings(true);
+            refreshDwIfUiAfterDataChange();
             if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
           } else {
             showToast('Lỗi cập nhật: ' + (res ? res.error : 'Không rõ'), 'error');
@@ -2281,7 +2689,7 @@
     }
 
     // ========== HỆ THỐNG CHECKBOX & BULK EDIT ==========
-    var bulkState = { selectedRows: new Set() };
+    var bulkState = { selectedRows: new Set(), selectedItems: {} };
 
     function toggleSelectAll() {
       var checkbox = document.getElementById('selectAllDrawings');
@@ -2290,12 +2698,16 @@
         document.querySelectorAll('.drawing-checkbox').forEach(cb => {
           cb.checked = true;
           var rowId = cb.getAttribute('data-row-id');
-          if (rowId) bulkState.selectedRows.add(rowId);
+          if (rowId) {
+            bulkState.selectedRows.add(rowId);
+            if (bulkState.selectionCatalog && bulkState.selectionCatalog[rowId]) bulkState.selectedItems[rowId] = bulkState.selectionCatalog[rowId];
+          }
         });
       } else {
         // Bỏ chọn tất cả
         document.querySelectorAll('.drawing-checkbox').forEach(cb => cb.checked = false);
         bulkState.selectedRows.clear();
+        bulkState.selectedItems = {};
       }
       updateBulkEditButtonVisibility();
     }
@@ -2306,11 +2718,15 @@
         document.querySelectorAll('.drawing-checkbox').forEach(cb => {
           cb.checked = true;
           var rowId = cb.getAttribute('data-row-id');
-          if (rowId) bulkState.selectedRows.add(rowId);
+          if (rowId) {
+            bulkState.selectedRows.add(rowId);
+            if (bulkState.selectionCatalog && bulkState.selectionCatalog[rowId]) bulkState.selectedItems[rowId] = bulkState.selectionCatalog[rowId];
+          }
         });
       } else {
         document.querySelectorAll('.drawing-checkbox').forEach(cb => cb.checked = false);
         bulkState.selectedRows.clear();
+        bulkState.selectedItems = {};
       }
       updateBulkEditButtonVisibility();
     }
@@ -2319,8 +2735,12 @@
       var checkbox = document.getElementById('checkbox-' + rowId);
       if (checkbox && checkbox.checked) {
         bulkState.selectedRows.add(rowId);
+        if (bulkState.selectionCatalog && bulkState.selectionCatalog[rowId]) {
+          bulkState.selectedItems[rowId] = bulkState.selectionCatalog[rowId];
+        }
       } else {
         bulkState.selectedRows.delete(rowId);
+        delete bulkState.selectedItems[rowId];
       }
       updateBulkEditButtonVisibility();
     }
@@ -2383,6 +2803,7 @@
         var field = document.getElementById(id);
         if (field) { field.value = values[id] || ''; field.disabled = !!isUpgrade; }
       });
+      if (!isUpgrade) setVersionFieldValue(data.version);
 
       if (isUpgrade) {
         var versionField = document.getElementById('formVersion');
@@ -2390,26 +2811,20 @@
           versionField.disabled = false;
           selectNextVersion(data.version);
         }
-        ['formWidth', 'formHeight', 'formImageFile', 'formChangeLog'].forEach(function (id) {
-          var field = document.getElementById(id);
-          if (field) field.disabled = false;
-        });
         var changeLog = document.getElementById('formChangeLog');
         if (changeLog) {
-          changeLog.value = data.note || '';
-          changeLog.required = true;
+          changeLog.disabled = true;
+          changeLog.required = false;
         }
-        document.getElementById('formWidth').value = '';
-        document.getElementById('formHeight').value = '';
-        document.getElementById('formImageFile').value = '';
-        document.getElementById('formImagePreview').style.display = 'none';
-        document.getElementById('formImagePreview').src = '';
+        var changeLogContainer = document.getElementById('changeLogContainer');
+        if (changeLogContainer) changeLogContainer.style.display = 'none';
       } else {
-        var typeField = document.getElementById('formType');
-        if (typeField) {
-          typeField.value = 'Revise';
-          typeField.disabled = false;
-        }
+        var editableFields = ['formProject', 'formCustomer', 'formTO', 'formSO', 'formType',
+          'formTypeDw', 'formDwCode', 'formWidth', 'formHeight', 'formImageFile'];
+        Object.keys(values).forEach(function (id) {
+          var field = document.getElementById(id);
+          if (field) field.disabled = editableFields.indexOf(id) === -1;
+        });
         var versionField = document.getElementById('formVersion');
         if (versionField) versionField.disabled = true;
         setVersionOtherVisibility();
@@ -2436,6 +2851,12 @@
     function openUpgradeDrawingForm(drawingItem) {
       if (!drawingItem) {
         showToast('Không tìm thấy dữ liệu bản vẽ', 'warning');
+        return;
+      }
+
+      var upgradeStatus = cleanDesignStr(drawingItem.status || getManagedItemStatus(drawingItem));
+      if (!upgradeStatus.includes('da ban hanh')) {
+        showToast('Chỉ có bản vẽ ở trạng thái "Đã ban hành" mới được Update Version.', 'warning');
         return;
       }
 
@@ -2544,28 +2965,29 @@
             document.getElementById('formFYE').disabled = true;
           }
 
-          // Chỉ mở các trường được phép cập nhật trong chế độ Update Version.
+          // Update Version chỉ cho phép thay đổi Version; các giá trị còn lại giữ nguyên.
           if (document.getElementById('formWidth')) {
-            document.getElementById('formWidth').value = '';
-            document.getElementById('formWidth').disabled = false;
+            document.getElementById('formWidth').value = fullData.width || '';
+            document.getElementById('formWidth').disabled = true;
           }
           if (document.getElementById('formHeight')) {
-            document.getElementById('formHeight').value = '';
-            document.getElementById('formHeight').disabled = false;
+            document.getElementById('formHeight').value = fullData.height || '';
+            document.getElementById('formHeight').disabled = true;
           }
           if (document.getElementById('formImageFile')) {
             document.getElementById('formImageFile').value = '';
-            document.getElementById('formImageFile').disabled = false;
+            document.getElementById('formImageFile').disabled = true;
           }
           if (document.getElementById('formImagePreview')) {
-            document.getElementById('formImagePreview').style.display = 'none';
-            document.getElementById('formImagePreview').src = '';
+            document.getElementById('formImagePreview').src = fullData.image || '';
+            document.getElementById('formImagePreview').style.display = fullData.image ? 'block' : 'none';
           }
           if (document.getElementById('formChangeLog')) {
             document.getElementById('formChangeLog').value = fullData.note || '';
-            document.getElementById('formChangeLog').disabled = false;
-            document.getElementById('formChangeLog').required = true;
+            document.getElementById('formChangeLog').disabled = true;
+            document.getElementById('formChangeLog').required = false;
           }
+          if (changeLogContainer) changeLogContainer.style.display = 'none';
 
           if (!document.getElementById('formAssigneeDoneDate').value) {
             autoFillAssigneeDoneDate();
@@ -2625,6 +3047,7 @@
             var field = document.getElementById(id);
             if (field) { field.value = values[id] || ''; field.disabled = false; }
           });
+          setVersionFieldValue(data.version);
           var oldNotice = document.getElementById('formOldDwCodeNotice');
           var oldText = document.getElementById('formOldDwCodeText');
           if (oldNotice && oldText) {
@@ -2642,6 +3065,8 @@
           }
           var versionField = document.getElementById('formVersion');
           if (versionField) versionField.disabled = true;
+          var customVersion = document.getElementById('formCustomVersion');
+          if (customVersion) customVersion.disabled = true;
           setVersionOtherVisibility();
           var changeLog = document.getElementById('formChangeLog');
           if (changeLog) { changeLog.value = data.note || ''; changeLog.disabled = true; }
@@ -2661,6 +3086,7 @@
 
       pendingState.selectedLogIdx = 'BULK_' + Array.from(bulkState.selectedRows).join('_');
       pendingState.subject = 'Sửa hàng loạt (' + bulkState.selectedRows.size + ' mục)';
+      pendingState.isBulkMode = true;
       document.getElementById('modalFormTitle').textContent = 'Sửa Hàng Loạt - ' + bulkState.selectedRows.size + ' Bản Vẽ';
 
       setToFieldVisibility(false);
@@ -2706,6 +3132,8 @@
     window.renderDrawingTable = function (data) {
       pendingState.selectedLogIdx = null;
       bulkState.selectedRows.clear();
+      bulkState.selectedItems = {};
+      bulkState.selectionCatalog = {};
 
       var tbody = document.getElementById('drawingTableBody');
       var emptyState = document.getElementById('emptyTableState');
@@ -2716,32 +3144,24 @@
         emptyState.classList.remove('d-none');
       } else {
         emptyState.classList.add('d-none');
-        var html = data.map(function (item) {
+        var html = data.map(function (item, itemIndex) {
           var type = escHtml(String(item.type || 'New'));
           var to = escHtml(String(item.to || 'N/A'));
           var dwCode = escHtml(String(item.dwCode || 'DW-V2-01V'));
           var customer = escHtml(String(item.customer || 'Unknown'));
           var id = item.rowIdx;
+          var selectionKey = String(id) + '-' + itemIndex;
+          bulkState.selectionCatalog[selectionKey] = item;
           var subject = escHtml(String(item.subject || '')).replace(/'/g, "\\'");
           var soRaw = String(item.so || '');
 
-          var exists = !!item.existsInData || checkSoExists(soRaw);
-
-          var actionHtml = '';
-          if (exists) {
-            var imgUrl = /googleusercontent\.com|CellImage/i.test(String(item.imageUrl || '')) ? '' : escHtml(String(item.imageUrl || ''));
-            var safeSo = escHtml(soRaw).replace(/'/g, "\\'");
-            actionHtml = '<div class="managed-action-group"><button class="managed-action-btn managed-search-btn" onclick="handleSearchPackagingDrawing(\'' + imgUrl + '\', \'' + safeSo + '\')" title="Tìm kiếm bản vẽ đóng gói">' +
-              '<i class="fa fa-search"></i>Tìm kiếm</button></div>';
-          } else {
-            actionHtml = '<div class="managed-action-group">' +
-              '<button class="managed-action-btn managed-edit-btn" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen"></i>Sửa</button>' +
-              '<button class="managed-action-btn managed-delete-btn" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash"></i>Xóa</button>' +
-              '</div>';
-          }
+          var actionHtml = '<div class="managed-action-group">' +
+            '<button class="managed-action-btn managed-edit-btn" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen"></i>Sửa</button>' +
+            '<button class="managed-action-btn managed-delete-btn" onclick="deleteDrawing(' + id + ')" title="Xóa"><i class="fa fa-trash"></i>Xóa</button>' +
+            '</div>';
 
           return '<tr class="bg-white">' +
-            '<td class="ps-4"><div class="form-check"><input class="form-check-input drawing-checkbox" type="checkbox" id="checkbox-' + id + '" data-row-id="' + id + '" onchange="toggleDrawingCheckbox(' + id + ')"></div></td>' +
+            '<td class="ps-4"><div class="form-check"><input class="form-check-input drawing-checkbox" type="checkbox" id="checkbox-' + selectionKey + '" data-row-id="' + selectionKey + '" onchange="toggleDrawingCheckbox(\'' + selectionKey + '\')"></div></td>' +
             '<td class="fw-bold text-dark">' + type + '</td>' +
             '<td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1">' + to + '</span></td>' +
             '<td><code class="text-danger bg-light px-2 py-1 rounded fw-bold border">' + dwCode + '</code></td>' +
@@ -2890,7 +3310,10 @@
           var editBtnHtml = canEditOrDelete
             ? '<button class="managed-action-btn managed-edit-btn edit-managed-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Sửa dữ liệu"><i class="fa fa-pen"></i>Sửa dữ liệu</button>'
             : '';
-          var upgradeBtnHtml = '<button class="managed-action-btn managed-upgrade-btn upgrade-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Update Version"><i class="fa fa-arrow-up-right-dots"></i>Update Version</button>';
+          var isPublished = cleanDesignStr(statusRaw).includes('da ban hanh');
+          var upgradeBtnHtml = isPublished
+            ? '<button class="managed-action-btn managed-upgrade-btn upgrade-btn" data-item=\'' + JSON.stringify(item).replace(/'/g, "\\'") + '\' title="Update Version"><i class="fa fa-arrow-up-right-dots"></i>Update Version</button>'
+            : '';
           var deleteBtnHtml = canEditOrDelete
             ? '<button class="managed-action-btn managed-delete-btn" onclick="event.stopPropagation(); removeManagedDrawing(' + id + ')" title="Delete"><i class="fa fa-trash"></i>Xóa</button>'
             : '';
@@ -2997,7 +3420,7 @@
               hideLoading();
               if (res && res.success) {
                 showToast('Xóa thành công!', 'success');
-                loadManagedDrawings();
+                refreshDwIfUiAfterDataChange();
               } else {
                 showToast('Lỗi: ' + (res ? res.error : 'Không rõ'), 'error');
               }
@@ -3032,10 +3455,12 @@
         return;
       }
 
-      if (targetId === 'manage-tab' && !window.__dwInfoInitialLoadGuard.manage) {
+      if (targetId === 'manage-tab') {
         window.__dwInfoInitialLoadGuard.manage = true;
+        managedDrawingsLoaded = false;
         loadManagedDrawings();
       }
+
     });
 
     // ========== XỬ LÝ PREVIEW HÌNH ẢNH ==========
@@ -3112,6 +3537,8 @@
 
       renderDrawingTable(filtered);
     }
+
+
 
   </script>
 </div> <!-- End page-dwIf -->

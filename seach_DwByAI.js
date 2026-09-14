@@ -16,8 +16,18 @@ const CONFIG = {
 function getInitialData() {
   try {
     const sheet = SpreadsheetApp.openById(CONFIG.SHEET_SOURCE).getSheetByName("Data");
+    const customerSheet = SpreadsheetApp.openById(CONFIG.SHEET_SOURCE).getSheetByName("Customer");
     const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return { dataMap: {}, customers: [], dwList: [] };
+    let customers = [];
+    if (customerSheet && customerSheet.getLastRow() >= 2) {
+      customers = customerSheet.getRange(2, 2, customerSheet.getLastRow() - 1, 1)
+        .getDisplayValues()
+        .map(row => String(row[0] || '').trim())
+        .filter(Boolean)
+        .filter((value, index, values) => values.indexOf(value) === index)
+        .sort();
+    }
+    if (lastRow < 2) return { dataMap: {}, customers: customers, dwList: [] };
 
     const rawData = sheet.getRange(2, 1, lastRow - 1, 31).getValues();
     const dataMap = {};
@@ -54,7 +64,7 @@ function getInitialData() {
 
     return {
       dataMap: dataMap,
-      customers: Array.from(uniqueCust).sort(),
+      customers: customers,
       dwList: Object.values(dwListMap)
     };
   } catch (e) {

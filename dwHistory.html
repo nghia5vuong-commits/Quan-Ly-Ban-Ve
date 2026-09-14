@@ -1,0 +1,208 @@
+<div id="page-dwHistory" class="custom-scroll" style="width:100%;height:100%;overflow-y:auto;background:transparent;padding:4px;">
+  <style>
+    #page-dwHistory { color: var(--liquid-text); }
+    #page-dwHistory .history-shell,
+    #page-dwHistory .history-panel {
+      border: var(--liquid-border);
+      border-radius: var(--liquid-radius-lg);
+      background: var(--liquid-glass-elevated);
+      box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255,255,255,.95);
+    }
+    #page-dwHistory .history-shell { padding: 16px 20px; }
+    #page-dwHistory .history-header {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      flex-wrap:wrap; margin-bottom:14px;
+    }
+    #page-dwHistory .history-title { margin:0; font-size:.98rem; font-weight:800; }
+    #page-dwHistory .history-subtitle { margin:4px 0 0; color:var(--liquid-text-muted); font-size:.76rem; }
+    #page-dwHistory .history-tabs {
+      display:inline-flex; gap:5px; padding:4px; margin-bottom:14px;
+      border:1px solid rgba(16,185,129,.2); border-radius:var(--liquid-radius-pill);
+      background:rgba(240,253,244,.7); box-shadow:var(--liquid-shadow-sm);
+    }
+    #page-dwHistory .history-tabs button {
+      border:0; border-radius:var(--liquid-radius-pill); padding:7px 14px;
+      background:transparent; color:var(--liquid-text-soft); font-size:.76rem; font-weight:700;
+    }
+    #page-dwHistory .history-tabs button.active {
+      color:#fff; background:linear-gradient(135deg,#10b981,#059669);
+      box-shadow:0 4px 12px rgba(16,185,129,.3);
+    }
+    #page-dwHistory .history-panel { padding:16px; }
+    #page-dwHistory .history-toolbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+    #page-dwHistory .history-toolbar input,
+    #page-dwHistory .history-toolbar select {
+      min-height:36px; padding:6px 10px; border:var(--liquid-border-subtle);
+      border-radius:var(--liquid-radius-sm); background:rgba(255,255,255,.82);
+      color:var(--liquid-text); font-size:.78rem; box-shadow:var(--liquid-shadow-sm);
+    }
+    #page-dwHistory .history-toolbar input:focus,
+    #page-dwHistory .history-toolbar select:focus { outline:0; border-color:var(--liquid-primary); box-shadow:0 0 0 3px rgba(16,185,129,.18); }
+    #page-dwHistory .history-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+    #page-dwHistory .history-stat {
+      padding:12px 14px; border:var(--liquid-border-soft); border-left:3px solid var(--liquid-primary);
+      border-radius:var(--liquid-radius-md); background:rgba(255,255,255,.78); box-shadow:var(--liquid-shadow-sm);
+    }
+    #page-dwHistory .history-stat small { display:block; color:var(--liquid-text-muted); font-size:.68rem; font-weight:800; text-transform:uppercase; }
+    #page-dwHistory .history-stat strong { display:block; margin-top:4px; color:var(--liquid-text); font-size:1.25rem; }
+    #page-dwHistory .history-table-wrap { overflow:auto; max-height:calc(100vh - 270px); border:var(--liquid-border); border-radius:var(--liquid-radius-md); background:rgba(255,255,255,.68); }
+    #page-dwHistory table { width:100%; border-collapse:separate; border-spacing:0; min-width:760px; }
+    #page-dwHistory th { position:sticky; top:0; z-index:1; padding:8px 10px; color:var(--liquid-text-muted); background:rgba(240,253,244,.9); border-bottom:1px solid rgba(16,185,129,.2); font-size:.68rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; }
+    #page-dwHistory td { padding:8px 10px; border-bottom:var(--liquid-border-subtle); font-size:.76rem; vertical-align:middle; }
+    #page-dwHistory tbody tr:hover td { background:rgba(209,250,229,.65); }
+    #page-dwHistory .history-filter { display:block; width:100%; min-width:76px; margin-top:6px; padding:4px 7px; border:1px solid rgba(203,213,225,.85); border-radius:6px; background:#fff; font-size:.7rem; font-weight:500; text-transform:none; }
+    #page-dwHistory .so-code { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-weight:800; }
+    #page-dwHistory .so-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:999px; font-size:.66rem; font-weight:700; white-space:nowrap; }
+    #page-dwHistory .so-badge.yes { color:#047857; background:rgba(209,250,229,.8); border:1px solid #a7f3d0; }
+    #page-dwHistory .so-badge.no { color:#b45309; background:rgba(254,243,199,.8); border:1px solid #fde68a; }
+    #page-dwHistory .history-empty { padding:32px!important; text-align:center; color:var(--liquid-text-muted); }
+    @media (max-width:768px) {
+      #page-dwHistory { padding:2px; }
+      #page-dwHistory .history-shell { padding:12px; }
+      #page-dwHistory .history-stats { grid-template-columns:1fr; }
+      #page-dwHistory .history-tabs { width:100%; overflow-x:auto; }
+      #page-dwHistory .history-tabs button { min-width:max-content; }
+      #page-dwHistory .history-table-wrap { max-height:calc(100vh - 300px); }
+    }
+  </style>
+
+  <div class="history-shell">
+    <div class="history-header">
+      <div>
+        <h5 class="history-title"><i class="fa fa-chart-line me-2 text-success"></i>Lịch sử và đối chiếu bản vẽ</h5>
+        <p class="history-subtitle">Theo dõi tần suất TO và kiểm tra trạng thái SO giữa email, dữ liệu bản vẽ và Check adjust.</p>
+      </div>
+      <button id="dwHistoryReloadBtn" class="btn btn-sm btn-success fw-bold" type="button" onclick="dwHistoryReloadActiveTab()"><i class="fa fa-rotate me-1"></i>Cập nhật</button>
+    </div>
+
+    <div class="history-tabs" role="tablist">
+      <button type="button" class="active" data-history-tab="frequency" onclick="dwHistorySwitchTab('frequency')"><i class="fa fa-chart-bar me-1"></i>Tần suất TO</button>
+      <button type="button" data-history-tab="comparison" onclick="dwHistorySwitchTab('comparison')"><i class="fa fa-code-compare me-1"></i>Đối chiếu SO</button>
+    </div>
+
+    <section id="dwHistoryFrequencyPanel" class="history-panel" role="tabpanel">
+      <div class="history-table-wrap">
+        <table>
+          <thead><tr>
+            <th>TO<input class="history-filter" data-history-filter="to" placeholder="Lọc TO..." oninput="dwHistoryFilterFrequency()"></th>
+            <th>Tần suất<input class="history-filter" data-history-filter="frequency" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+            <th>Số lần xuất hiện<input class="history-filter" data-history-filter="totalOccurrences" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+            <th>Số màu<input class="history-filter" data-history-filter="colorCount" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+            <th>Số khách<input class="history-filter" data-history-filter="customerCount" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+            <th>Các màu<input class="history-filter" data-history-filter="colors" placeholder="Lọc màu..." oninput="dwHistoryFilterFrequency()"></th>
+            <th>Khách hàng<input class="history-filter" data-history-filter="customers" placeholder="Lọc khách..." oninput="dwHistoryFilterFrequency()"></th>
+          </tr></thead>
+          <tbody id="dwHistoryFrequencyBody"><tr><td colspan="7" class="history-empty">Đang tải dữ liệu...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="dwHistoryComparisonPanel" class="history-panel" role="tabpanel" style="display:none;">
+      <div class="history-toolbar">
+        <input id="dwHistorySoSearch" type="search" placeholder="Tìm mã SO..." oninput="dwHistoryFilterComparison()">
+        <select id="dwHistorySoFilter" onchange="dwHistoryFilterComparison()">
+          <option value="ALL">Tất cả</option><option value="RECEIVED">Đã tiếp nhận</option><option value="UNRECEIVED">Chưa tiếp nhận</option><option value="NEW">NEW</option><option value="OLD">OLD</option>
+        </select>
+      </div>
+      <div class="history-stats">
+        <div class="history-stat"><small>Tổng SO</small><strong id="dwHistorySoTotal">0</strong></div>
+        <div class="history-stat"><small>Đã tiếp nhận</small><strong id="dwHistorySoReceived">0</strong></div>
+        <div class="history-stat"><small>Chưa tiếp nhận</small><strong id="dwHistorySoUnreceived">0</strong></div>
+      </div>
+      <div class="history-table-wrap">
+        <table style="min-width:700px;">
+          <thead><tr><th>Mã SO</th><th>Email</th><th>Bản vẽ</th><th>NEW</th><th>OLD</th></tr></thead>
+          <tbody id="dwHistoryComparisonBody"><tr><td colspan="5" class="history-empty">Chọn tab để tải dữ liệu.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var frequencyAll = [];
+      var frequencyFiltered = [];
+      var comparisonAll = [];
+      var activeTab = 'frequency';
+
+      function esc(value) {
+        return String(value === undefined || value === null ? '' : value)
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function badge(value) {
+        return value ? '<span class="so-badge yes"><i class="fa fa-check"></i>Có</span>' : '<span class="so-badge no"><i class="fa fa-xmark"></i>Không</span>';
+      }
+
+      function renderFrequency() {
+        var body = document.getElementById('dwHistoryFrequencyBody');
+        if (!body) return;
+        if (!frequencyFiltered.length) { body.innerHTML = '<tr><td colspan="7" class="history-empty">Không có dữ liệu tần suất.</td></tr>'; return; }
+        body.innerHTML = frequencyFiltered.map(function (row) {
+          return '<tr><td><strong>' + esc(row.to) + '</strong></td><td><span class="badge bg-primary">' + esc(row.frequency) + '</span></td><td>' + esc(row.totalOccurrences) + '</td><td>' + esc(row.colorCount) + '</td><td>' + esc(row.customerCount) + '</td><td><small>' + esc(row.colors) + '</small></td><td><small>' + esc(row.customers) + '</small></td></tr>';
+        }).join('');
+      }
+
+      window.dwHistoryFilterFrequency = function () {
+        var filters = {};
+        document.querySelectorAll('#dwHistoryFrequencyPanel .history-filter').forEach(function (input) { filters[input.dataset.historyFilter] = String(input.value || '').trim().toLowerCase(); });
+        frequencyFiltered = frequencyAll.filter(function (row) { return Object.keys(filters).every(function (key) { return !filters[key] || String(row[key] === undefined ? '' : row[key]).toLowerCase().indexOf(filters[key]) !== -1; }); });
+        renderFrequency();
+      };
+
+      function renderComparison(rows) {
+        var body = document.getElementById('dwHistoryComparisonBody');
+        if (!body) return;
+        document.getElementById('dwHistorySoTotal').textContent = rows.length;
+        document.getElementById('dwHistorySoReceived').textContent = rows.filter(function (row) { return row.email; }).length;
+        document.getElementById('dwHistorySoUnreceived').textContent = rows.filter(function (row) { return !row.email; }).length;
+        if (!rows.length) { body.innerHTML = '<tr><td colspan="5" class="history-empty">Không có mã SO phù hợp.</td></tr>'; return; }
+        body.innerHTML = rows.map(function (row) { return '<tr><td class="so-code">' + esc(row.so) + '</td><td>' + badge(row.email) + '</td><td>' + badge(row.drawing) + '</td><td>' + badge(row.isNew) + '</td><td>' + badge(row.isOld) + '</td></tr>'; }).join('');
+      }
+
+      window.dwHistoryFilterComparison = function () {
+        var search = String(document.getElementById('dwHistorySoSearch').value || '').trim().toUpperCase().replace(/\s+/g, '');
+        var filter = document.getElementById('dwHistorySoFilter').value;
+        renderComparison(comparisonAll.filter(function (row) {
+          if (search && String(row.so || '').indexOf(search) === -1) return false;
+          if (filter === 'RECEIVED' && !row.email) return false;
+          if (filter === 'UNRECEIVED' && row.email) return false;
+          if (filter === 'NEW' && !row.isNew) return false;
+          if (filter === 'OLD' && !row.isOld) return false;
+          return true;
+        }));
+      };
+
+      function loadFrequency() {
+        var body = document.getElementById('dwHistoryFrequencyBody');
+        if (body) body.innerHTML = '<tr><td colspan="7" class="history-empty"><i class="fa fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>';
+        google.script.run.withSuccessHandler(function (response) {
+          frequencyAll = response && response.success ? (response.data || []) : [];
+          frequencyFiltered = frequencyAll.slice();
+          renderFrequency();
+        }).withFailureHandler(function () { if (body) body.innerHTML = '<tr><td colspan="7" class="history-empty text-danger">Không thể tải dữ liệu.</td></tr>'; }).getToFrequencyData();
+      }
+
+      function loadComparison() {
+        var body = document.getElementById('dwHistoryComparisonBody');
+        if (body) body.innerHTML = '<tr><td colspan="5" class="history-empty"><i class="fa fa-spinner fa-spin me-2"></i>Đang đối chiếu...</td></tr>';
+        google.script.run.withSuccessHandler(function (response) {
+          comparisonAll = response && response.success ? (response.data || []) : [];
+          dwHistoryFilterComparison();
+        }).withFailureHandler(function () { if (body) body.innerHTML = '<tr><td colspan="5" class="history-empty text-danger">Không thể tải dữ liệu.</td></tr>'; }).getSoDrawingComparison();
+      }
+
+      window.dwHistorySwitchTab = function (tab) {
+        activeTab = tab;
+        document.querySelectorAll('#page-dwHistory .history-tabs button').forEach(function (button) { button.classList.toggle('active', button.dataset.historyTab === tab); });
+        document.getElementById('dwHistoryFrequencyPanel').style.display = tab === 'frequency' ? '' : 'none';
+        document.getElementById('dwHistoryComparisonPanel').style.display = tab === 'comparison' ? '' : 'none';
+        if (tab === 'frequency' && !frequencyAll.length) loadFrequency();
+        if (tab === 'comparison' && !comparisonAll.length) loadComparison();
+      };
+
+      window.dwHistoryReloadActiveTab = function () { if (activeTab === 'frequency') loadFrequency(); else loadComparison(); };
+      loadFrequency();
+    })();
+  </script>
+</div>

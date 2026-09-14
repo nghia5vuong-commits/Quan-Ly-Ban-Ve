@@ -342,31 +342,140 @@ function _getUserEmailByRole(roleNames) {
   return '';
 }
 
-function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus, actorName) {
+function _escapeApprovalEmailHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function _formatApprovalEmailDate(value) {
+  if (!value) return '';
+  var date = value instanceof Date ? value : new Date(value);
+  if (isNaN(date.getTime())) {
+    var raw = String(value).trim();
+    var match = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+    if (match) date = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  }
+  if (isNaN(date.getTime())) return String(value);
+  return Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy/MM/dd');
+}
+
+function _getApprovalWebUrl(drawingId, action) {
+  var baseUrl = 'https://script.google.com/a/macros/lixil.com/s/AKfycbyEBaqWQ_UHTu1eahFFx4xdcpteLV93DkLZM50nYGHzCcYVdeNfVuCxXxdRqPpiVHhXzA/exec';
+  var query = '?drawingId=' + encodeURIComponent(drawingId || '');
+  if (action) query += '&action=' + encodeURIComponent(action);
+  return baseUrl + query;
+}
+
+function _approvalEmailButton(url, label, background) {
+  return '<a href="' + _escapeApprovalEmailHtml(url) + '" style="display:inline-block;margin:4px 4px;padding:11px 16px;background:' + background + ';color:#ffffff;text-decoration:none;border-radius:7px;font-weight:700;font-size:13px;">' + label + '</a>';
+}
+
+function _getApprovalDrawingDetails(sheet, sheetRow, drawingId) {
+  var details = {
+    id: drawingId,
+    group: '',
+    type: '',
+    version: '',
+    to: '',
+    project: '',
+    customer: '',
+    dwNo: '',
+    typeDw: '',
+    assignee: '',
+    receivedDate: '',
+    dueDate: '',
+    actualDoneDate: '',
+    fye: '',
+    width: '',
+    height: '',
+    so: '',
+    excelUrl: '',
+    pdfUrl: '',
+    cutDrawingBlob: null
+  };
+
+  if (!sheet || !sheetRow) return details;
+
+  var row = sheet.getRange(sheetRow, 1, 1, Math.max(34, sheet.getLastColumn())).getValues()[0];
+  details.group = row[3] || '';
+  details.type = row[4] || '';
+  details.version = row[5] || '';
+  details.receivedDate = row[6] || '';
+  details.dueDate = row[7] || '';
+  details.to = row[8] || '';
+  details.project = row[9] || '';
+  details.customer = row[10] || '';
+  details.dwNo = row[11] || drawingId || '';
+  details.typeDw = row[12] || row[24] || '';
+  details.assignee = row[15] || '';
+  details.actualDoneDate = row[18] || '';
+  details.fye = row[23] || '';
+  details.width = row[28] || '';
+  details.height = row[29] || '';
+  details.excelUrl = row[30] || '';
+  details.pdfUrl = row[31] || row[14] || '';
+  details.so = row[33] || '';
+
+  try {
+    var imageValue = row[32];
+    if (imageValue && typeof imageValue.getBlob === 'function') {
+      details.cutDrawingBlob = imageValue.getBlob();
+    }
+  } catch (error) {
+    Logger.log('Không thể lấy hình mặt cắt cho email ký duyệt: ' + error.toString());
+  }
+
+  return details;
+}
+
+function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus, actorName, details) {
   if (!targetEmail) {
     return false;
   }
 
-  var subject = '[TRÌNH KÝ] Yêu cầu xác nhận bản vẽ ' + dwNo + ' - ' + nextStatus;
+  details = details || {};
+  var displayDwNo = details.dwNo || dwNo || '';
+  var receivedDate = _formatApprovalEmailDate(details.receivedDate);
+  var dueDate = _formatApprovalEmailDate(details.dueDate);
+  var systemUrl = _getApprovalWebUrl(details.id || displayDwNo, 'view');
+  var approvalButtons = _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'approve'), 'Approval', '#16a34a')
+    + _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'reject'), 'Reject', '#dc2626');
+  var drawingUrl = details.pdfUrl || systemUrl;
+  var actionButtons = approvalButtons
+    + _approvalEmailButton(drawingUrl, 'Xem bản vẽ', '#2563eb')
+    + _approvalEmailButton(systemUrl, 'Vào hệ thống', '#475569');
+
+  var subject = '[TRÌNH KÝ] Yêu cầu xác nhận bản vẽ ' + displayDwNo + ' - ' + nextStatus;
   var bodyText = '';
   var titleText = '';
 
   if (currentLevel === 'Checker 1') {
-    bodyText = 'Bản vẽ ' + dwNo + ' vừa được ' + actorName + ' ký duyệt ở cấp Checker 1.\n'
+    bodyText = 'Bản vẽ ' + displayDwNo + ' vừa được ' + actorName + ' ký duyệt ở cấp Checker 1.\n'
       + 'Hiện tại cần bạn xác nhận ở cấp Checker 2 để tiếp tục quy trình.';
     titleText = 'Xác Nhận Bản Vẽ - Cấp Checker 2';
   } else if (currentLevel === 'Checker 2') {
-    bodyText = 'Bản vẽ ' + dwNo + ' đã được ' + actorName + ' xác nhận ở cấp Checker 2.\n'
+    bodyText = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' xác nhận ở cấp Checker 2.\n'
       + 'Hiện tại cần bạn ký duyệt ở cấp Approval để tiếp tục quy trình.';
     titleText = 'Phê Duyệt Bản Vẽ - Cấp Approval';
   } else if (currentLevel === 'Approval') {
-    bodyText = 'Bản vẽ ' + dwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Approval.\n'
+    bodyText = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Approval.\n'
       + 'Đã chuyển sang trạng thái Chờ ban hành và đang chờ Charge xử lý ban hành.';
     titleText = 'Bản Vẽ Đã Phê Duyệt - Chờ Ban Hành';
   } else {
-    bodyText = 'Bản vẽ ' + dwNo + ' đã cập nhật trạng thái: ' + nextStatus;
+    bodyText = 'Bản vẽ ' + displayDwNo + ' đã cập nhật trạng thái: ' + nextStatus;
     titleText = 'Cập Nhật Trạng Thái Bản Vẽ';
   }
+
+  var imageHtml = details.cutDrawingBlob
+    ? '<p style="margin:24px 0 8px;font-weight:700;color:#334155;">Hình mặt cắt</p><div style="padding:12px;text-align:center;background:#f8fafc;border:1px solid #dbeafe;border-radius:8px;"><img src="cid:approvalCutDrawing" style="max-width:100%;max-height:280px;object-fit:contain;border-radius:6px;" alt="Hình mặt cắt" /></div>'
+    : '';
+  var linkHtml = details.pdfUrl
+    ? '<a href="' + _escapeApprovalEmailHtml(details.pdfUrl) + '" style="display:inline-block;margin:4px 6px 4px 0;color:#2563eb;">Mở file PDF</a>'
+    : '';
 
   var htmlBody = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; max-width: 700px; margin: 0 auto; color: #333;">
@@ -374,7 +483,7 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
       <div style="background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%); border-radius: 12px 12px 0 0; padding: 30px 25px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <div style="font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 12px; opacity: 0.9; text-transform: uppercase;">Hệ thống quản lý bản vẽ</div>
         <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px;">${titleText}</h1>
-        <div style="font-size: 13px; font-weight: 500; color: #b0d0f0; margin-top: 8px;">Bản vẽ: <span style="color: #ffc107; font-weight: 700;">${dwNo}</span></div>
+        <div style="font-size: 13px; font-weight: 500; color: #b0d0f0; margin-top: 8px;">Bản vẽ: <span style="color: #ffc107; font-weight: 700;">${_escapeApprovalEmailHtml(displayDwNo)}</span></div>
       </div>
 
       <!-- MAIN CONTENT -->
@@ -387,7 +496,7 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
         <div style="background: #f0f7ff; border-left: 4px solid #0d6efd; padding: 18px; border-radius: 6px; margin-bottom: 24px;">
           <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #0d6efd;">
             <strong>ℹ Thông tin cần xử lý:</strong><br>
-            ${bodyText.split('\n').join('<br>')}
+            ${_escapeApprovalEmailHtml(bodyText).split('\n').join('<br>')}
           </p>
         </div>
 
@@ -396,30 +505,42 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
           <tbody>
             <tr>
               <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; width: 35%; border-bottom: 1px solid #ddd; border-right: 1px solid #ddd;">Mã bản vẽ</td>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong style="color: #0d6efd; font-size: 15px;">${dwNo}</strong></td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong style="color: #0d6efd; font-size: 15px;">${_escapeApprovalEmailHtml(displayDwNo)}</strong></td>
             </tr>
             <tr>
               <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Cấp xét duyệt</td>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong>${currentLevel}</strong></td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong>${_escapeApprovalEmailHtml(currentLevel)}</strong></td>
             </tr>
             <tr>
               <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Trạng thái tiếp theo</td>
               <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;">
-                <span style="display: inline-block; background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px;">${nextStatus}</span>
+                <span style="display: inline-block; background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px;">${_escapeApprovalEmailHtml(nextStatus)}</span>
               </td>
             </tr>
             <tr>
               <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Người xử lý</td>
-              <td style="padding: 12px 15px;"><strong>${actorName}</strong></td>
+              <td style="padding: 12px 15px;"><strong>${_escapeApprovalEmailHtml(actorName)}</strong></td>
             </tr>
           </tbody>
         </table>
 
+        <table style="width:100%;border-collapse:collapse;background:#ffffff;margin-top:10px;">
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;width:35%;">TO</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.to)}</td></tr>
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Khách hàng</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.customer)}</td></tr>
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Dự án</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.project)}</td></tr>
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type / Version</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.type)} / ${_escapeApprovalEmailHtml(details.version)}</td></tr>
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type DW</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.typeDw)}</td></tr>
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Người đảm trách</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.assignee)}</td></tr>
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Ngày tiếp nhận / Deadline</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(receivedDate)} / ${_escapeApprovalEmailHtml(dueDate)}</td></tr>
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Width / Height</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.width)} / ${_escapeApprovalEmailHtml(details.height)} mm</td></tr>
+          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Số SO / FYE</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.so)} / ${_escapeApprovalEmailHtml(details.fye)}</td></tr>
+        </table>
+        <div style="margin-top:10px;">${linkHtml}</div>
+        ${imageHtml}
+
         <!-- CALL TO ACTION -->
         <div style="text-align: center; margin: 28px 0;">
-          <a href="https://script.google.com/a/macros/listing.com/s/AKfycbw2MPLHbLNrNn3PhvU0Zr7V8D1-ouzWVTQDxW/usercache" style="display: inline-block; background: linear-gradient(135deg, #0d6efd 0%, #0056b3 100%); color: white; padding: 12px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 8px rgba(13,110,253,0.3); transition: all 0.3s;">
-            → Vào hệ thống xử lý
-          </a>
+          ${actionButtons}
         </div>
 
         <!-- FOOTER -->
@@ -440,12 +561,73 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
   `;
 
   try {
-    GmailApp.sendEmail(targetEmail, subject, "", { htmlBody: htmlBody });
+    var mailOptions = { htmlBody: htmlBody };
+    if (details.cutDrawingBlob) mailOptions.inlineImages = { approvalCutDrawing: details.cutDrawingBlob };
+    GmailApp.sendEmail(targetEmail, subject, bodyText, mailOptions);
     return true;
   } catch (e) {
     return false;
   }
 };
+
+function _sendRejectWorkflowEmail(targetEmail, dwNo, rejectorName, previousStatus, reason, details) {
+  if (!targetEmail) return false;
+
+  details = details || {};
+  var displayDwNo = details.dwNo || dwNo || '';
+  var rejectDate = _formatApprovalEmailDate(new Date());
+  var subject = '[REJECT] Bản vẽ ' + displayDwNo + ' đã bị trả về';
+  var bodyText = 'Bản vẽ ' + displayDwNo + ' đã bị ' + rejectorName + ' từ chối.\n'
+    + 'Lý do: ' + reason + '\n'
+    + 'Vui lòng truy cập hệ thống để kiểm tra và xử lý lại.';
+  var systemUrl = _getApprovalWebUrl(details.id || displayDwNo, 'view');
+  var actionButtons = _approvalEmailButton(details.pdfUrl || systemUrl, 'Xem bản vẽ', '#2563eb');
+  actionButtons += _approvalEmailButton(systemUrl, 'Vào hệ thống', '#475569');
+  var imageHtml = details.cutDrawingBlob
+    ? '<p style="margin:24px 0 8px;font-weight:700;color:#334155;">Hình mặt cắt</p><div style="padding:12px;text-align:center;background:#f8fafc;border:1px solid #fecaca;border-radius:8px;"><img src="cid:rejectCutDrawing" style="max-width:100%;max-height:280px;object-fit:contain;border-radius:6px;" alt="Hình mặt cắt" /></div>'
+    : '';
+
+  var htmlBody = '<div style="font-family:Segoe UI,Tahoma,sans-serif;background:#f5f7fa;padding:20px;color:#1f2937;">'
+    + '<div style="max-width:700px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 15px rgba(0,0,0,.08);">'
+    + '<div style="background:linear-gradient(135deg,#991b1b,#dc2626);padding:28px 25px;color:#fff;text-align:center;">'
+    + '<div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:.9;">Hệ thống quản lý bản vẽ</div>'
+    + '<h1 style="margin:10px 0 6px;font-size:22px;">Bản vẽ bị từ chối</h1>'
+    + '<div style="font-size:14px;">Mã bản vẽ: <strong>' + _escapeApprovalEmailHtml(displayDwNo) + '</strong></div></div>'
+    + '<div style="padding:28px 25px;">'
+    + '<p style="font-size:15px;line-height:1.7;margin-top:0;">Xin chào,<br>Bản vẽ cần được kiểm tra và xử lý lại theo thông tin dưới đây.</p>'
+    + '<div style="background:#fff1f2;border-left:4px solid #dc2626;padding:16px;border-radius:6px;margin:18px 0;line-height:1.7;">'
+    + '<strong style="color:#991b1b;">Lý do từ chối</strong><br>' + _escapeApprovalEmailHtml(reason) + '</div>'
+    + '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;">'
+    + '<tr><td style="padding:9px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;width:35%;">Trạng thái trước</td><td style="padding:9px 10px;border:1px solid #d1d5db;">' + _escapeApprovalEmailHtml(previousStatus) + '</td></tr>'
+    + '<tr><td style="padding:9px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Người từ chối</td><td style="padding:9px 10px;border:1px solid #d1d5db;">' + _escapeApprovalEmailHtml(rejectorName) + '</td></tr>'
+    + '<tr><td style="padding:9px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Ngày xử lý</td><td style="padding:9px 10px;border:1px solid #d1d5db;">' + rejectDate + '</td></tr>'
+    + '<tr><td style="padding:9px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">TO / Khách hàng</td><td style="padding:9px 10px;border:1px solid #d1d5db;">' + _escapeApprovalEmailHtml(details.to) + ' / ' + _escapeApprovalEmailHtml(details.customer) + '</td></tr>'
+    + '</table>' + imageHtml
+    + '<div style="text-align:center;margin:26px 0;">' + actionButtons + '</div>'
+    + '<div style="border-top:1px solid #e5e7eb;padding-top:18px;text-align:center;color:#64748b;font-size:12px;">Email được gửi tự động từ Hệ thống Web App Quản Lý Bản Vẽ.</div>'
+    + '</div></div></div>';
+
+  try {
+    var mailOptions = { htmlBody: htmlBody };
+    if (details.cutDrawingBlob) mailOptions.inlineImages = { rejectCutDrawing: details.cutDrawingBlob };
+    GmailApp.sendEmail(targetEmail, subject, bodyText, mailOptions);
+    return true;
+  } catch (error) {
+    Logger.log('Lỗi gửi email Reject: ' + error.toString());
+    return false;
+  }
+}
+
+function _getRejectNotificationEmail(previousStatus) {
+  var st = _cleanStr(previousStatus);
+  if (st.indexOf('checker 2') !== -1 || st.indexOf('checker2') !== -1) {
+    return _getUserEmailByRole(['Checker 1', 'checker1']);
+  }
+  if (st.indexOf('approval') !== -1 || st.indexOf('trinh ky') !== -1 || st.indexOf('duyet') !== -1) {
+    return _getUserEmailByRole(['Checker 2', 'checker2']);
+  }
+  return _getUserEmailByRole(['Charger', 'Charge', 'QA Charge', 'Charge QA']);
+}
 
 const _findRowByIdInColA = (sheet, drawingId) => {
   var lastRow = sheet.getLastRow();
@@ -513,7 +695,7 @@ const approveDrawingOnServer = (drawingId, approvedLevel) => {
   var approverEmail = Session.getActiveUser().getEmail() || 'System'
   var approverName = _getUserNameByEmail(approverEmail);
   var timezone = Session.getScriptTimeZone();
-  var nowStr = Utilities.formatDate(new Date(), timezone, 'dd/MM/yyyy');
+  var nowStr = Utilities.formatDate(new Date(), timezone, 'yyyy/MM/dd');
 
   sheet.getRange(sheetRow, COL_STATUS + 1).setValue(step.nextStatus);
 
@@ -528,6 +710,7 @@ const approveDrawingOnServer = (drawingId, approvedLevel) => {
   }
 
   var dwNo = String(sheet.getRange(sheetRow, COL_DW_NO + 1).getValue() || drawingId);
+  var drawingDetails = _getApprovalDrawingDetails(sheet, sheetRow, drawingId);
   var notiMsg = '[TRÌNH KÝ] Bản vẽ: ' + dwNo +
     ' | Cấp: ' + step.level +
     ' | Trạng thái mới: ' + step.nextStatus +
@@ -546,7 +729,7 @@ const approveDrawingOnServer = (drawingId, approvedLevel) => {
   }
 
   if (notifyEmail) {
-    _sendApprovalWorkflowEmail(notifyEmail, dwNo, step.level, step.nextStatus, approverName);
+    _sendApprovalWorkflowEmail(notifyEmail, dwNo, step.level, step.nextStatus, approverName, drawingDetails);
   }
 
   return {
@@ -574,8 +757,9 @@ const rejectDrawingOnServer = (drawingId, reason) => {
   }
 
   var rejectorEmail = Session.getActiveUser().getEmail() || 'System';
+  var rejectorName = _getUserNameByEmail(rejectorEmail);
   var timezone = Session.getScriptTimeZone();
-  var nowStr = Utilities.formatDate(new Date(), timezone, 'dd/MM/yyyy HH:mm');
+  var nowStr = Utilities.formatDate(new Date(), timezone, 'yyyy/MM/dd HH:mm');
 
   var prevStatus = String(sheet.getRange(sheetRow, COL_STATUS + 1).getValue() || '');
   sheet.getRange(sheetRow, COL_STATUS + 1).setValue('Tra lai - ' + prevStatus);
@@ -587,12 +771,18 @@ const rejectDrawingOnServer = (drawingId, reason) => {
   );
 
   var dwNo = String(sheet.getRange(sheetRow, COL_DW_NO + 1).getValue() || drawingId);
+  var drawingDetails = _getApprovalDrawingDetails(sheet, sheetRow, drawingId);
   var notiMsg = '[REJECT] Bản vẽ: ' + dwNo +
     ' | Trạng thái cũ: ' + prevStatus +
     ' | Người từ chối: ' + rejectorEmail +
     ' | Lúc: ' + nowStr +
     ' | Lý do: ' + reason.trim();
   _writeNote(ss, notiMsg, rejectorEmail);
+
+  var rejectNotifyEmail = _getRejectNotificationEmail(prevStatus);
+  if (rejectNotifyEmail) {
+    _sendRejectWorkflowEmail(rejectNotifyEmail, dwNo, rejectorName, prevStatus, reason.trim(), drawingDetails);
+  }
 
   return { success: true };
 };
@@ -697,7 +887,7 @@ function requestReleaseDW(arr) {
       "",
       row[1],
       drawingRevise,
-      row[3],
+      row[3] === 'New' ? 'New' : 'Change',
       "",
       orderNo,
       "",

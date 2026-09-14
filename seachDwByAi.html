@@ -878,7 +878,7 @@
                 if (searchBtn) searchBtn.disabled = false;
                 if (aiLoader) aiLoader.style.display = 'none';
                 hideWelcomeCard();
-                if (statusDiv) statusDiv.innerHTML = t('no_data');
+                if (statusDiv) statusDiv.innerHTML = dwAiT('no_data');
                 return;
               }
 
@@ -902,9 +902,9 @@
                   var row = globalDataMap[code];
                   item.url = driveMap[item.id] || '';
                   if (row) { item.customer = row.customer; item.h = row.h; item.w = row.w; item.l = row.l; item.link = row.link; item.link_xlsx = row.link_xlsx; }
-                  else { item.customer = t('no_excel_data'); item.h = 0; item.w = 0; item.l = 0; item.link = '---'; item.link_xlsx = ''; }
+                  else { item.customer = dwAiT('no_excel_data'); item.h = 0; item.w = 0; item.l = 0; item.link = '---'; item.link_xlsx = ''; }
                 });
-                if (statusDiv) statusDiv.innerHTML = t('found_results').replace('{0}', results.length);
+                if (statusDiv) statusDiv.innerHTML = dwAiT('found_results').replace('{0}', results.length);
                 originalResults = results;
                 var fs2 = document.getElementById('filterSection');
                 if (fs2) fs2.style.display = results.length > 0 ? 'block' : 'none';
@@ -922,14 +922,14 @@
                 if (searchBtn) searchBtn.disabled = false;
                 if (aiLoader) aiLoader.style.display = 'none';
                 hideWelcomeCard();
-                if (statusDiv) statusDiv.innerHTML = t('error_msg') + err.message;
+                if (statusDiv) statusDiv.innerHTML = dwAiT('error_msg') + err.message;
               });
             })
             .catch(function (e) {
               if (aiLoader) aiLoader.style.display = 'none';
               if (searchBtn) searchBtn.disabled = false;
               hideWelcomeCard();
-              if (statusDiv) statusDiv.innerHTML = t('error_msg') + e.message;
+              if (statusDiv) statusDiv.innerHTML = dwAiT('error_msg') + e.message;
             });
         }, 'image/jpeg', 0.8);
       };
@@ -997,7 +997,7 @@
         executeSearchWithImage(previewImg.src);
         return;
       }
-      alert(t('no_image'));
+      alert(dwAiT('no_image'));
     }
 
 
@@ -1036,23 +1036,23 @@
       var grid = document.getElementById('resultsGrid');
       if (!grid) return;
       grid.innerHTML = '';
-      if (!results || results.length === 0) { grid.innerHTML = '<div class="col-12 text-center p-5">' + t('no_data') + '</div>'; return; }
+      if (!results || results.length === 0) { grid.innerHTML = '<div class="col-12 text-center p-5">' + dwAiT('no_data') + '</div>'; return; }
       var resultFragment = document.createDocumentFragment();
       results.forEach(function (item, index) {
         var col = document.createElement('div'); col.className = 'col';
         var cleanName = item.name ? (item.name.split('.').slice(0, -1).join('.') || item.name) : 'N/A';
         var toCode = /^TO-/i.test(cleanName) ? cleanName : 'TO-' + cleanName;
-        var scoreHtml = item.score ? ('<div class="fw-bold text-danger mb-1">#' + (index + 1) + ' - ' + t('match_rate') + ' ' + item.score + '%</div>') : ('<div class="fw-bold text-muted mb-1">#' + (index + 1) + '</div>');
-        col.innerHTML = '<div class="result-card ' + (index === 0 ? 'best-match' : '') + '" onclick="openLink(\'' + (item.link || '') + '\')" style="cursor:pointer;position:relative;">' +
+        var scoreHtml = item.score ? ('<div class="fw-bold text-danger mb-1">#' + (index + 1) + ' - ' + dwAiT('match_rate') + ' ' + item.score + '%</div>') : ('<div class="fw-bold text-muted mb-1">#' + (index + 1) + '</div>');
+        col.innerHTML = '<div class="result-card ' + (index === 0 ? 'best-match' : '') + '" style="position:relative;">' +
           '<img src="' + (item.url || '') + '" alt="' + cleanName + '" onerror="this.src=\'https://via.placeholder.com/200?text=No+Image\';">' +
           scoreHtml +
           '<div class="mb-2"><span class="filename-tag">' + toCode + '</span></div>' +
           '<div class="result-info-box mb-3">' +
-          '<div class="info-item"><span class="info-label">&#128207; ' + t('size_label') + '</span><span class="info-value">' + (item.h || '--') + ' x ' + (item.w || '--') + '</span></div>' +
-          '<div class="info-item"><span class="info-label">&#128100; ' + t('cust_label') + '</span><span class="info-value text-primary">' + (item.customer || t('general_cust')) + '</span></div>' +
+          '<div class="info-item"><span class="info-label">&#128207; ' + dwAiT('size_label') + '</span><span class="info-value">' + (item.h || '--') + ' x ' + (item.w || '--') + '</span></div>' +
+          '<div class="info-item"><span class="info-label">&#128100; ' + dwAiT('cust_label') + '</span><span class="info-value text-primary">' + (item.customer || dwAiT('general_cust')) + '</span></div>' +
           '</div>' +
           '<button type="button" class="btn btn-sm btn-success w-100 fw-bold shadow-sm rounded-pill" onclick="event.stopPropagation();openform(\'' + escapeInlineValue(item.link_xlsx || '') + '\',\'' + escapeInlineValue(toCode) + '\')">' +
-          '<i class="bi bi-file-earmark-check"></i> ' + t('action_to_link') +
+          '<i class="bi bi-file-earmark-check"></i> ' + dwAiT('action_to_link') +
           '</button></div>';
         resultFragment.appendChild(col);
       });
@@ -1184,15 +1184,13 @@
       send(payload)
     }
 
-    function openLink(url) { if (url && url !== '---') window.open(url, '_blank'); else alert(t('no_link')); }
-
     function toggleDropdown() { var w = document.getElementById('customerWrapper'); w.classList.contains('open') ? closeDropdown() : openDropdown(); }
     function openDropdown() { document.getElementById('customerWrapper').classList.add('open'); }
     function closeDropdown() { document.getElementById('customerWrapper').classList.remove('open'); }
 
     function renderDropdownItems(list, keyword) {
       var dropdown = document.getElementById('customerDropdown');
-      var html = '<div class="search-select-item all-option" onclick="selectCustomer(\'\',\'' + t('all_customers').replace(/'/g, "\\'") + '\')">' + t('all_customers') + '</div>';
+      var html = '<div class="search-select-item all-option" onclick="selectCustomer(\'\',\'' + dwAiT('all_customers').replace(/'/g, "\\'") + '\')">' + dwAiT('all_customers') + '</div>';
       (list || []).forEach(function (name) {
         var display = name;
         if (keyword) display = name.replace(new RegExp('(' + keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi'), '<span class="highlight">$1</span>');
@@ -1215,7 +1213,7 @@
       document.getElementById('customerSelect').value = value;
       document.getElementById('customerSearch').value = value ? label : '';
       var btn = document.getElementById('viewStandardBtn');
-      if (value) { btn.style.display = 'block'; btn.innerHTML = '<i class="bi bi-box-seam"></i> ' + t('view_standard_for') + ' ' + label; btn.onclick = function () { getcustomerSTD(value); }; }
+      if (value) { btn.style.display = 'block'; btn.innerHTML = '<i class="bi bi-box-seam"></i> ' + dwAiT('view_standard_for') + ' ' + label; btn.onclick = function () { getcustomerSTD(value); }; }
       else { btn.style.display = 'none'; }
       closeDropdown();
     }
@@ -1235,24 +1233,24 @@
       var tbody = document.getElementById('standardTableBody');
       var titleEl = document.getElementById('standardModalTitle');
       var subtitleEl = document.getElementById('standardModalSubtitle');
-      tbody.innerHTML = '<tr><td colspan="28" class="std-loading-state"><div class="spinner-border" role="status"></div><p class="mt-3 mb-0 text-muted">' + t('std_loading') + '</p></td></tr>';
-      titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
-      subtitleEl.textContent = t('retrieving_for') + ' ' + customerName + '...';
+      tbody.innerHTML = '<tr><td colspan="28" class="std-loading-state"><div class="spinner-border" role="status"></div><p class="mt-3 mb-0 text-muted">' + dwAiT('std_loading') + '</p></td></tr>';
+      titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
+      subtitleEl.textContent = dwAiT('retrieving_for') + ' ' + customerName + '...';
       var standardModal = new bootstrap.Modal(document.getElementById('standardModal'));
       standardModal.show();
       
       google.script.run
         .withSuccessHandler(function (rows) {
           if (!rows || rows.length === 0) {
-            titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
+            titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
             subtitleEl.textContent = customerName;
-            tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-inbox"></i><p class="mb-1 fw-bold" style="color:#64748b;">' + t('std_empty') + '</p><small>' + t('std_empty_desc') + ' <strong>' + customerName + '</strong></small></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-inbox"></i><p class="mb-1 fw-bold" style="color:#64748b;">' + dwAiT('std_empty') + '</p><small>' + dwAiT('std_empty_desc') + ' <strong>' + customerName + '</strong></small></td></tr>';
             // Auto-close modal khi không có dữ liệu sau 2 giây
             setTimeout(function () { standardModal.hide(); }, 2000);
             return;
           }
-          titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + t('std_modal_title');
-          subtitleEl.textContent = customerName + ' - ' + rows.length + ' ' + t('records');
+          titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
+          subtitleEl.textContent = customerName + ' - ' + rows.length + ' ' + dwAiT('records');
           var html = '';
           rows.forEach(function (r, i) {
             html += '<tr><td class="text-center fw-bold">' + (i + 1) + '</td><td><strong>' + (r[0] || '') + '</strong></td><td>' + badge('gray', r[1]) + '</td><td class="text-center">' + (r[2] || '-') + '</td><td style="color:#2563eb;font-weight:500;">' + (r[3] || '-') + '</td><td>' + (r[4] || '-') + '</td><td>' + (r[5] || '-') + '</td><td>' + (r[6] || '-') + '</td><td class="text-center">' + (r[7] || '-') + '</td><td>' + (r[8] || '-') + '</td><td>' + (r[9] || '-') + '</td><td>' + palletBadge(r[10]) + '</td><td class="text-center" style="font-family:monospace;">' + (r[11] || '-') + '</td><td class="text-center">' + (r[12] || '-') + '</td><td class="text-start">' + (r[13] || '-') + '</td><td class="text-start">' + (r[14] || '-') + '</td><td class="text-center">' + (r[15] || '-') + '</td><td class="text-center">' + (r[16] || '-') + '</td><td>' + badge('gray', r[17]) + '</td><td class="text-start text-muted">' + (r[18] || '-') + '</td><td class="text-center">' + (r[19] || '-') + '</td><td>' + changeBox(r[20]) + '</td><td class="text-start">' + (r[21] || '-') + '</td><td class="text-center">' + (r[22] || '-') + '</td><td class="text-center" style="font-family:monospace;">' + (r[23] || '-') + '</td><td class="text-center">' + kgBold(r[24]) + '</td><td class="text-center">' + (r[25] || '-') + '</td><td class="text-center">' + (r[26] || '-') + '</td></tr>';
@@ -1261,7 +1259,7 @@
           // Modal vẫn giữ mở để người dùng xem dữ liệu
         })
         .withFailureHandler(function (err) {
-          titleEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + t('std_error');
+          titleEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + dwAiT('std_error');
           subtitleEl.textContent = '';
           tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-exclamation-circle text-danger"></i><p class="text-danger fw-bold">' + err.message + '</p></td></tr>';
           // Auto-close modal khi có lỗi sau 3 giây
@@ -1297,6 +1295,8 @@
         error_msg: 'Lỗi: ',
         no_link: 'Chưa có link bản vẽ!',
         no_image: 'Vui lòng chọn ảnh!',
+        welcome_title: 'Tìm kiếm bản vẽ bằng AI',
+        welcome_desc: 'Tải lên hình ảnh bản vẽ, nhập kích thước và chọn khách hàng ở bảng bên trái, sau đó nhấn Phân tích & Tìm kiếm.',
         ai_loading: 'AI đang phân tích',
         view_standard_for: 'Xem tiêu chuẩn của',
         std_modal_title: 'Tiêu Chuẩn Đóng Gói',
@@ -1341,6 +1341,8 @@
         error_msg: 'Error: ',
         no_link: 'No drawing link!',
         no_image: 'Please select an image!',
+        welcome_title: 'Search drawings with AI',
+        welcome_desc: 'Upload a drawing image, enter dimensions, choose a customer on the left, then click Analyze & Search.',
         ai_loading: 'AI is analyzing',
         view_standard_for: 'View standard for',
         std_modal_title: 'Packaging Standard',
@@ -1362,20 +1364,31 @@
       }
     };
 
-    function t(key) { var l = i18n[currentLang] || i18n['vi']; return (l && l[key]) ? l[key] : key; }
+    function dwAiT(key) { var l = i18n[currentLang] || i18n['vi']; return (l && l[key]) ? l[key] : key; }
+
+    function applyTranslations() {
+      var lang = i18n[currentLang] ? currentLang : 'vi';
+      currentLang = lang;
+      var els = document.querySelectorAll('[data-i18n]');
+      for (var i = 0; i < els.length; i++) {
+        var key = els[i].getAttribute('data-i18n');
+        if (i18n[lang][key]) els[i].innerHTML = i18n[lang][key];
+      }
+      var placeholders = document.querySelectorAll('[data-i18n-placeholder]');
+      for (var j = 0; j < placeholders.length; j++) {
+        var placeholderKey = placeholders[j].getAttribute('data-i18n-placeholder');
+        if (i18n[lang][placeholderKey]) placeholders[j].placeholder = i18n[lang][placeholderKey];
+      }
+      var customerSearch = document.getElementById('customerSearch');
+      if (customerSearch) customerSearch.placeholder = dwAiT('search_placeholder');
+    }
 
     function changeLang(lang, btnEl) {
       currentLang = lang;
       var btns = document.querySelectorAll('.lang-btn');
       for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
       if (btnEl) btnEl.classList.add('active');
-      var els = document.querySelectorAll('[data-i18n]');
-      for (var j = 0; j < els.length; j++) { var k = els[j].getAttribute('data-i18n'); if (i18n[lang] && i18n[lang][k]) els[j].innerHTML = i18n[lang][k]; }
-      var cs = document.getElementById('customerSearch');
-      if (cs) {
-        var ph = t('search_placeholder');
-        cs.placeholder = (ph && ph !== 'search_placeholder') ? ph : 'Gõ để tìm khách hàng...';
-      }
+      applyTranslations();
       filterCustomerList();
     }
 
@@ -1388,13 +1401,14 @@
     function loadInitialData() {
       if (aiInitialDataLoaded) return;
       aiInitialDataLoaded = true;
+      applyTranslations();
       google.script.run.withSuccessHandler(function (response) {
         globalDataMap = response.dataMap || {};
         allCustomers = response.customers || [];
         globalDwList = response.dwList || [];
         var input = document.getElementById('customerSearch');
         if (input) {
-          var ph = t('search_placeholder');
+          var ph = dwAiT('search_placeholder');
           input.placeholder = (ph && ph !== 'search_placeholder') ? ph : 'Gõ để tìm khách hàng...';
           input.disabled = false;
         }
@@ -1413,7 +1427,6 @@
     window.resetFilters = resetFilters;
     window.applyFilters = applyFilters;
     window.openform = openform;
-    window.openLink = openLink;
     window.toggleDropdown = toggleDropdown;
     window.openDropdown = openDropdown;
     window.closeDropdown = closeDropdown;
@@ -1428,6 +1441,8 @@
     window.getcustomerSTD = getcustomerSTD;
     window.changeLang = changeLang;
     window.initSeachDwByAi = loadInitialData;
+
+    applyTranslations();
 
     // Attach searchBtn
     (function () { var btn = document.getElementById('searchBtn'); if (btn) btn.onclick = uploadAndSearch; })();

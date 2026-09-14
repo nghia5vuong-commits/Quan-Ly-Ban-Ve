@@ -216,12 +216,316 @@
 
   /* Allow outer wrapper to scroll */
   #stats-history { overflow-y: auto !important; max-height: 100% !important; }
+
+    #stats-history .app-card,
+    #stats-history .card-dashboard {
+        border-radius: var(--liquid-radius-lg) !important;
+        border: var(--liquid-border) !important;
+        background: var(--liquid-glass-elevated) !important;
+        box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
+    }
+
+    #stats-history .card-dashboard:hover,
+    #stats-history .app-card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(16, 185, 129, 0.3) !important;
+        box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow) !important;
+    }
+
+    #stats-history .card-dashboard.active-card {
+        border: 2px solid var(--liquid-primary) !important;
+        background: linear-gradient(135deg, #ffffff 0%, rgba(209, 250, 229, 0.82) 100%) !important;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14), var(--liquid-shadow-md) !important;
+    }
+
+    #stats-history .table-responsive {
+        border: var(--liquid-border) !important;
+        background: rgba(255, 255, 255, 0.62);
+        box-shadow: var(--liquid-shadow-sm);
+    }
+
+    #stats-history .table thead th {
+        background: rgba(240, 253, 244, 0.78) !important;
+        color: var(--liquid-text-muted) !important;
+        border-bottom: 1px solid rgba(16, 185, 129, 0.2) !important;
+    }
+
+    #stats-history .table tbody tr:hover td {
+        background: rgba(209, 250, 229, 0.7) !important;
+    }
+
+    #stats-history .btn-custom-light,
+    #stats-history .btn-outline-secondary {
+        border: var(--liquid-border) !important;
+        border-radius: var(--liquid-radius-sm) !important;
+        background: var(--liquid-glass-elevated) !important;
+        color: var(--liquid-text-soft) !important;
+        box-shadow: var(--liquid-shadow-sm);
+    }
+
+    #stats-history .btn-custom-light:hover,
+    #stats-history .btn-outline-secondary:hover {
+        border-color: rgba(16, 185, 129, 0.35) !important;
+        color: var(--liquid-primary-dark) !important;
+        background: #ffffff !important;
+        box-shadow: var(--liquid-shadow-md);
+    }
+
+    @media (max-width: 768px) {
+        #stats-history .app-card,
+        #stats-history .card-dashboard {
+            border-radius: var(--liquid-radius-md) !important;
+        }
+
+        #stats-history .table-responsive {
+            margin-inline: -2px;
+        }
+    }
+
+    #stats-history {
+        color: var(--liquid-text);
+        font-family: inherit;
+        padding: 4px !important;
+    }
+
+    #stats-history .page-heading {
+        min-width: 260px;
+    }
+
+    #stats-history .page-heading h6 {
+        color: var(--liquid-text) !important;
+        font-size: .95rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    #stats-history .page-heading small {
+        color: var(--liquid-text-muted) !important;
+        display: block;
+        font-size: .76rem;
+        margin-top: 4px;
+    }
+
+    #stats-history .release-toolbar {
+        padding: 14px 16px;
+        border: var(--liquid-border) !important;
+        border-radius: var(--liquid-radius-lg);
+        background: var(--liquid-glass-elevated);
+        box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255, 255, 255, 0.95);
+    }
+
+    #stats-history .release-toolbar,
+    #stats-history .app-card,
+    #stats-history .card-dashboard {
+        backdrop-filter: var(--liquid-blur);
+        -webkit-backdrop-filter: var(--liquid-blur);
+    }
+
+    #stats-history .release-toolbar:hover,
+    #stats-history .app-card:hover {
+        border-color: rgba(16, 185, 129, 0.3) !important;
+        box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow) !important;
+    }
+
+    #stats-history .card-dashboard {
+        min-height: 116px;
+        padding: 18px 20px !important;
+        transition: var(--liquid-spring);
+    }
+
+    #stats-history .card-dashboard:hover {
+        transform: translateY(-4px) scale(1.02);
+    }
+
+    #stats-history .card-dashboard.active-card {
+        border: 2px solid var(--liquid-primary) !important;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14), var(--liquid-shadow-md) !important;
+    }
+
+    #stats-history .icon-box {
+        border-radius: var(--liquid-radius-md);
+    }
+
+    #stats-history .app-card {
+        padding: 20px !important;
+        border: var(--liquid-border) !important;
+        background: rgba(255, 255, 255, 0.84) !important;
+        box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255, 255, 255, 0.95) !important;
+    }
+
+    #stats-history .table-responsive {
+        border-radius: var(--liquid-radius-md) !important;
+        overflow: auto !important;
+        background: rgba(255, 255, 255, 0.72) !important;
+    }
+
+    #stats-history .table thead th {
+        height: 42px;
+        vertical-align: middle;
+        text-transform: uppercase;
+    }
+
+    #stats-history .btn-emerald-gradient,
+    #stats-history .btn-custom-light {
+        min-height: 38px;
+    }
+
+    #stats-history .btn-emerald-gradient:focus-visible,
+    #stats-history .btn-custom-light:focus-visible,
+    #stats-history .form-select:focus-visible,
+    #stats-history .form-control:focus-visible {
+        outline: 3px solid rgba(14, 165, 233, 0.24);
+        outline-offset: 2px;
+    }
+
+    @media (max-width: 768px) {
+        #stats-history .release-toolbar {
+            padding: 12px;
+        }
+
+        #stats-history .page-heading {
+            width: 100%;
+        }
+
+        #stats-history .page-heading h6 {
+            font-size: .88rem;
+        }
+
+        #stats-history .app-card {
+            padding: 14px !important;
+        }
+    }
+
+    /* Đồng bộ với dashboard: cùng nhịp spacing, card, toolbar và bảng. */
+    #stats-history,
+    #stats-history * {
+        box-sizing: border-box;
+    }
+
+    #stats-history {
+        width: 100%;
+        min-height: 100%;
+        padding: 4px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        color: var(--liquid-text);
+    }
+
+    #stats-history .release-toolbar {
+        min-height: 76px;
+        margin: 0 0 12px !important;
+        padding: 14px 20px !important;
+        border-radius: var(--liquid-radius-lg) !important;
+        background: var(--liquid-glass-elevated) !important;
+        border: var(--liquid-border) !important;
+        box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255, 255, 255, .95) !important;
+    }
+
+    #stats-history .release-toolbar .page-heading {
+        min-width: 260px;
+    }
+
+    #stats-history .release-toolbar .page-heading h6 {
+        font-size: .95rem;
+        font-weight: 800;
+        margin: 0;
+    }
+
+    #stats-history .release-toolbar .page-heading small {
+        display: block;
+        margin-top: 4px;
+        color: var(--liquid-text-muted);
+        font-size: .76rem;
+    }
+
+    #stats-history .card-dashboard {
+        min-height: 116px;
+        padding: 18px 20px !important;
+        border-radius: var(--liquid-radius-lg) !important;
+        background: var(--liquid-glass-elevated) !important;
+        border: var(--liquid-border) !important;
+        box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255, 255, 255, .95) !important;
+    }
+
+    #stats-history .card-dashboard:hover {
+        transform: translateY(-4px) scale(1.02);
+        border-color: rgba(16, 185, 129, .4) !important;
+        box-shadow: var(--liquid-shadow-lg), var(--liquid-shadow-glow) !important;
+    }
+
+    #stats-history .app-card {
+        margin-bottom: 12px !important;
+        padding: 20px !important;
+        border-radius: var(--liquid-radius-lg) !important;
+        background: var(--liquid-glass-elevated) !important;
+        border: var(--liquid-border) !important;
+        box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255, 255, 255, .95) !important;
+    }
+
+    #stats-history .app-card:hover {
+        transform: none;
+        border-color: rgba(16, 185, 129, .3) !important;
+        box-shadow: var(--liquid-shadow-lg) !important;
+    }
+
+    #stats-history .table-responsive {
+        width: 100%;
+        max-height: calc(100vh - 350px) !important;
+        overflow: auto !important;
+        border: var(--liquid-border) !important;
+        border-radius: var(--liquid-radius-md) !important;
+        background: rgba(255, 255, 255, .72) !important;
+        box-shadow: var(--liquid-shadow-sm);
+    }
+
+    #stats-history .table {
+        min-width: 920px;
+    }
+
+    #stats-history .table thead th {
+        height: 42px;
+        padding: 8px 10px !important;
+        background: rgba(240, 253, 244, .85) !important;
+        color: var(--liquid-text-muted) !important;
+        font-size: .7rem !important;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        white-space: nowrap;
+        border-bottom: 1px solid rgba(16, 185, 129, .2) !important;
+    }
+
+    #stats-history .table tbody td {
+        height: 48px;
+        padding: 7px 10px !important;
+        font-size: .74rem !important;
+        vertical-align: middle;
+    }
+
+    #stats-history .table tbody tr:hover td {
+        background: rgba(209, 250, 229, .7) !important;
+        transform: none;
+    }
+
+    @media (max-width: 768px) {
+        #stats-history { padding: 2px !important; }
+        #stats-history .release-toolbar { padding: 12px !important; }
+        #stats-history .release-toolbar .page-heading { width: 100%; min-width: 0; }
+        #stats-history .release-toolbar > .d-flex { width: 100%; }
+        #stats-history .release-toolbar select,
+        #stats-history .release-toolbar button { flex: 1 1 auto; }
+        #stats-history .app-card { padding: 14px !important; }
+        #stats-history .table-responsive { max-height: calc(100vh - 390px) !important; }
+    }
 </style>
-  <div class="container-fluid p-0" style="width: 100%; margin: 0 !important; min-height: 100%; height: auto; overflow-y: auto;">
+  <div id="stats-history" class="page-dwRelease container-fluid p-0" style="width: 100%; margin: 0 !important; min-height: 100%; height: auto; overflow-y: auto;">
 
     <!-- HEADER ROW: filter left, title right -->
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-      <div></div>
+    <div class="release-toolbar d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="page-heading">
+                <h6><i class="bi bi-send-check text-success me-2"></i>Quản lý ban hành bản vẽ</h6>
+                <small>Theo dõi tiến độ kiểm tra và ban hành bản vẽ lên QA System.</small>
+            </div>
       <div class="d-flex gap-2 align-items-center flex-wrap">
           <button class="btn btn-custom-light btn-sm shadow-sm" style="min-width: 140px; text-align:left; pointer-events: none;">
              <span id="dept-name-display" class="fw-bold"><i class="spinner-border spinner-border-sm me-2"></i>Đang tải...</span>
@@ -240,44 +544,44 @@
        <div class="col-md-3">
            <div class="card card-dashboard h-100 rounded-4 p-3 active-card" id="dept-card-total" onclick="history_filterByCard('ALL')">
                <div class="d-flex align-items-center justify-content-between">
-                   <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="bi bi-files"></i></div>
-                   <div class="text-end">
+                   <div class="text-start">
                        <div class="text-secondary small fw-bold text-uppercase tracking-wide" data-i18n="his_kpi_total">Tổng yêu cầu</div>
                        <div class="fs-2 fw-bold text-dark mt-1" id="dept-kpi-total">0</div>
                    </div>
+                   <div class="icon-box bg-primary bg-opacity-10 text-primary"><i class="bi bi-files"></i></div>
                </div>
            </div>
        </div>
        <div class="col-md-3">
            <div class="card card-dashboard h-100 rounded-4 p-3" id="dept-card-approved" onclick="history_filterByCard('APPROVED')">
                <div class="d-flex align-items-center justify-content-between">
-                   <div class="icon-box bg-info bg-opacity-10 text-info"><i class="bi bi-check-circle-fill"></i></div>
-                   <div class="text-end">
+                   <div class="text-start">
                        <div class="text-secondary small fw-bold text-uppercase tracking-wide" data-i18n="his_kpi_approved">Đã ban hành</div>
                        <div class="fs-2 fw-bold text-info mt-1" id="dept-kpi-approved">0</div>
                    </div>
+                   <div class="icon-box bg-info bg-opacity-10 text-info"><i class="bi bi-check-circle-fill"></i></div>
                </div>
            </div>
        </div>
        <div class="col-md-3">
            <div class="card card-dashboard h-100 rounded-4 p-3" id="dept-card-checking" onclick="history_filterByCard('CHECKING')">
                <div class="d-flex align-items-center justify-content-between">
-                   <div class="icon-box bg-warning bg-opacity-10 text-warning"><i class="bi bi-hourglass-split"></i></div>
-                   <div class="text-end">
+                   <div class="text-start">
                        <div class="text-secondary small fw-bold text-uppercase tracking-wide" data-i18n="his_kpi_checking">QA Đang Kiểm Tra</div>
                        <div class="fs-2 fw-bold text-warning mt-1" id="dept-kpi-checking">0</div>
                    </div>
+                   <div class="icon-box bg-warning bg-opacity-10 text-warning"><i class="bi bi-hourglass-split"></i></div>
                </div>
            </div>
        </div>
        <div class="col-md-3">
            <div class="card card-dashboard h-100 rounded-4 p-3" id="dept-card-returned" onclick="history_filterByCard('RETURNED')">
                <div class="d-flex align-items-center justify-content-between">
-                   <div class="icon-box bg-danger bg-opacity-10 text-danger"><i class="bi bi-arrow-return-left"></i></div>
-                   <div class="text-end">
+                   <div class="text-start">
                        <div class="text-secondary small fw-bold text-uppercase tracking-wide" data-i18n="his_kpi_returned">Bị trả lại</div>
                        <div class="fs-2 fw-bold text-danger mt-1" id="dept-kpi-returned">0</div>
                    </div>
+                   <div class="icon-box bg-danger bg-opacity-10 text-danger"><i class="bi bi-arrow-return-left"></i></div>
                </div>
            </div>
        </div>

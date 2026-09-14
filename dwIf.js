@@ -58,6 +58,77 @@ function buildQuery(keyword) {
   return query;
 }
 
+function normalizeLogTo(value) {
+  return String(value || '').replace(/^TO-?/i, '').replace(/\s+/g, '').trim().toUpperCase();
+}
+
+function normalizeLogCustomer(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim().toUpperCase();
+}
+
+function normalizeMaterialTo(value) {
+  var material = String(value || '').trim();
+  if (material.length <= 7) return '';
+  // Ví dụ ATO-FV7C519 60000 -> TO-FV7C519.
+  return material.substring(1, material.length - 6).trim().toUpperCase();
+}
+
+function getLogToValues(value, stripMaterialCharacter) {
+  return splitDrawingToValues(value).map(function (toValue) {
+    var normalized = normalizeLogTo(toValue);
+    return stripMaterialCharacter && normalized.length > 1 ? normalized.substring(1) : normalized;
+  }).filter(Boolean);
+}
+
+function getLogReceiptProgress(logToValues, customer, dataRows) {
+  var toValues = Array.from(new Set((logToValues || []).map(normalizeLogTo).filter(Boolean)));
+  var customerValue = normalizeLogCustomer(customer);
+  var receivedSet = new Set();
+
+  (dataRows || []).forEach(function (row) {
+    if (normalizeLogCustomer(row[10]) !== customerValue) return;
+    getLogToValues(row[8], false).forEach(function (toValue) { receivedSet.add(toValue); });
+  });
+
+  var receivedCount = toValues.filter(function (toValue) { return receivedSet.has(toValue); }).length;
+  return {
+    total: toValues.length,
+    received: receivedCount,
+    complete: toValues.length > 0 && receivedCount >= toValues.length,
+    label: toValues.length > 0 && receivedCount >= toValues.length ? 'Đã tiếp nhận' : receivedCount + '/' + toValues.length
+  };
+}
+
+function getLogToClassification(toValues, customer, dataRows, isMaterialSource) {
+  var customerValue = normalizeLogCustomer(customer);
+  var dataToSet = new Set();
+  (dataRows || []).forEach(function (row) {
+    if (normalizeLogCustomer(row[10]) !== customerValue) return;
+    // TO OLD chỉ cần tồn tại trong Data cùng Customer, không phụ thuộc Width/Height/hình ảnh.
+    getLogToValues(row[8], false).forEach(function (toValue) { dataToSet.add(toValue); });
+  });
+
+  var newValues = [];
+  var oldValues = [];
+  Array.from(new Set((toValues || []).map(function (rawValue) {
+    var rawText = String(rawValue || '').trim();
+    var materialValue = isMaterialSource ? normalizeMaterialTo(rawText) : '';
+    var normalized = materialValue || normalizeLogTo(rawText);
+    var displayValue = /^TO-?/i.test(normalized) ? normalized : 'TO-' + normalized;
+    return {
+      displayValue: displayValue,
+      candidates: normalized ? [normalized, normalizeLogTo(normalized)] : []
+    };
+  }).filter(function (entry) { return entry.displayValue; }).map(function (entry) {
+    return JSON.stringify(entry);
+  }))).forEach(function (serializedValue) {
+    var value = JSON.parse(serializedValue);
+    var isOld = value.candidates.some(function (candidate) { return dataToSet.has(candidate); });
+    (isOld ? oldValues : newValues).push(value.displayValue);
+  });
+  return { newValues: newValues, oldValues: oldValues };
+}
+
 function getManufacturingEmails(page, keyword) {
   try {
     page = page || 0;
@@ -81,18 +152,32 @@ function getManufacturingEmails(page, keyword) {
     var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
     var ss = SpreadsheetApp.openById(sheetId);
     var logSheet = ss.getSheetByName('Log');
-    var receivedThreadIds = new Set();
+    var threadSoMap = {};
+    var drawingSoSet = new Set();
+    var checkAdjustSoSet = typeof getCheckAdjustSoSet === 'function' ? getCheckAdjustSoSet() : new Set();
+    var emailProgressMap = {};
+
+    var dataSheet = ss.getSheetByName('Data');
+    var dataRows = [];
+    if (dataSheet && dataSheet.getLastRow() >= 2) {
+      dataRows = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getValues();
+      var drawingRows = dataSheet.getRange(2, 34, dataSheet.getLastRow() - 1, 1).getDisplayValues();
+      drawingRows.forEach(function (row) {
+        var normalizedSo = typeof normalizeComparisonSo === 'function' ? normalizeComparisonSo(row[0]) : String(row[0] || '').trim().toUpperCase();
+        if (normalizedSo) drawingSoSet.add(normalizedSo);
+      });
+    }
 
     if (logSheet) {
       var data = logSheet.getDataRange().getValues();
-      for (var r = 0; r < data.length; r++) {
-        for (var c = 0; c < data[r].length; c++) {
-          var cellValue = String(data[r][c]).trim();
-          // Quét và nạp các giá trị giống định dạng ID (chuỗi dài) vào Set
-          if (cellValue.length > 10) {
-            receivedThreadIds.add(cellValue);
-          }
-        }
+      for (var r = 1; r < data.length; r++) {
+        var logRow = data[r];
+        var logThreadId = String(logRow[1] || '').trim();
+        if (!logThreadId) continue;
+        var progress = getLogReceiptProgress(getLogToValues(logRow[4], true), logRow[3], dataRows);
+        emailProgressMap[logThreadId] = progress;
+        var logSo = typeof normalizeComparisonSo === 'function' ? normalizeComparisonSo(logRow[5]) : String(logRow[5] || '').trim().toUpperCase();
+        if (logSo) threadSoMap[logThreadId] = logSo;
       }
     }
 
@@ -132,8 +217,10 @@ function getManufacturingEmails(page, keyword) {
           attachments: [],
           tag: detectTag(lastMsg.getSubject()),
 
-          // BỔ SUNG TRẠNG THÁI TIẾP NHẬN: Đối chiếu với Set vừa tạo ở trên
-          isReceived: receivedThreadIds.has(threadId)
+          receivedProgress: emailProgressMap[threadId] || { total: 0, received: 0, complete: false, label: 'Chưa tiếp nhận' },
+          isReceived: !!(emailProgressMap[threadId] && emailProgressMap[threadId].complete),
+          isDrawingDone: !!(threadSoMap[threadId] && checkAdjustSoSet.has(threadSoMap[threadId])),
+          drawingStatus: threadSoMap[threadId] && checkAdjustSoSet.has(threadSoMap[threadId]) ? 'Check SO OK' : 'Không có SO'
         });
       } catch (err) { }
     }
@@ -196,7 +283,16 @@ function getEmailDetail(threadId) {
       messages: messageList
     };
 
-    cache.put(cacheKey, JSON.stringify(detail), 300);
+    // CacheService giới hạn kích thước value khoảng 100 KB. Thread nhiều mail
+    // có thể vượt giới hạn dù nội dung từng message đã được rút gọn.
+    var detailJson = JSON.stringify(detail);
+    if (detailJson.length <= 90000) {
+      try {
+        cache.put(cacheKey, detailJson, 300);
+      } catch (cacheError) {
+        Logger.log('Bỏ qua cache chi tiết email quá lớn: ' + cacheError.toString());
+      }
+    }
     return detail;
   } catch (err) {
     return { success: false, error: err.toString() };
@@ -471,24 +567,41 @@ function saveToLogSheet(threadId, subject, parsedData, fullDataString) {
       logSheet = ss.insertSheet('Log');
     }
 
-    var timestamp = Utilities.formatDate(new Date(), MAIL_CONFIG.TIMEZONE, 'dd/MM/yyyy HH:mm:ss');
-    var rowData = [
-      timestamp,                  // A
-      threadId,                   // B
-      subject,                    // C
-      parsedData.customer || '',  // D
-      parsedData.to || '',        // E
-      parsedData.so || '',        // F
-      'Đã tiếp nhận',             // G
-      fullDataString || ''        // H
-    ];
+    var headers = logSheet.getRange(1, 1, 1, Math.max(8, logSheet.getLastColumn())).getValues()[0];
+    if (!headers[8]) logSheet.getRange(1, 9).setValue('TO NEW');
+    if (!headers[9]) logSheet.getRange(1, 10).setValue('TO OLD');
 
-    logSheet.appendRow(rowData);
+    var timestamp = Utilities.formatDate(new Date(), MAIL_CONFIG.TIMEZONE, 'dd/MM/yyyy HH:mm:ss');
+    var isMaterialSource = Array.isArray(parsedData.materialTos);
+    var sourceToValues = isMaterialSource ? parsedData.materialTos : (Array.isArray(parsedData.tos) ? parsedData.tos : [parsedData.to || '']);
+    var toValues = sourceToValues.map(function (value) {
+      return isMaterialSource ? normalizeMaterialTo(value) : normalizeLogTo(value);
+    }).filter(Boolean);
+    var toValue = toValues.join(', ');
+    var dataSheet = ss.getSheetByName('Data');
+    var dataRows = dataSheet && dataSheet.getLastRow() > 1
+      ? dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getValues()
+      : [];
+    var classification = getLogToClassification(toValues, parsedData.customer || '', dataRows, false);
+    var progress = getLogReceiptProgress(toValues, parsedData.customer || '', dataRows);
+    var rowData = [timestamp, threadId, subject, parsedData.customer || '', classification.newValues.join(', '), parsedData.so || '', progress.label, fullDataString || '', classification.newValues.join(', '), classification.oldValues.join(', ')];
+    var existingRow = -1;
+    if (logSheet.getLastRow() >= 2) {
+      var threadValues = logSheet.getRange(2, 2, logSheet.getLastRow() - 1, 1).getValues();
+      for (var threadIndex = 0; threadIndex < threadValues.length; threadIndex++) {
+        if (String(threadValues[threadIndex][0] || '').trim() === String(threadId || '').trim()) {
+          existingRow = threadIndex + 2;
+          break;
+        }
+      }
+    }
+    if (existingRow > 1) logSheet.getRange(existingRow, 1, 1, rowData.length).setValues([rowData]);
+    else logSheet.getRange(logSheet.getLastRow() + 1, 1, 1, rowData.length).setValues([rowData]);
     var cache = CacheService.getScriptCache();
     cache.remove("MAIL_STATS");
     cache.remove("MAIL_LIST_0_");
 
-    return { success: true, message: 'Đã lưu tiếp nhận thiết kế thành công!' };
+    return { success: true, message: 'Đã lưu tiếp nhận thiết kế thành công!', progress: progress };
   } catch (err) {
     return { success: false, error: err.toString() };
   }
@@ -506,13 +619,17 @@ function checkEmailReceived(threadId) {
     if (lastRow < 2) return { success: true, isReceived: false };
 
     // TỐI ƯU CỐT LÕI: Chỉ tải dữ liệu của CỘT B (ThreadID) về máy chủ. Nhanh hơn tải hàng ngàn cột chéo x10 lần.
-    var threadIds = logSheet.getRange(2, 2, lastRow - 1, 1).getValues();
+    var logRows = logSheet.getRange(2, 1, lastRow - 1, Math.max(10, logSheet.getLastColumn())).getValues();
+    var dataSheet = ss.getSheetByName('Data');
+    var dataRows = dataSheet && dataSheet.getLastRow() > 1
+      ? dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getValues()
+      : [];
 
-    for (var i = 0; i < threadIds.length; i++) {
-      if (String(threadIds[i][0]).trim() === String(threadId).trim()) {
-        // Chỉ lấy ngày khi khớp (tránh dùng getDisplayValues cho toàn bộ bảng làm chậm máy)
+    for (var i = 0; i < logRows.length; i++) {
+      if (String(logRows[i][1]).trim() === String(threadId).trim()) {
+        var progress = getLogReceiptProgress(getLogToValues(logRows[i][4], true), logRows[i][3], dataRows);
         var receivedDate = logSheet.getRange(i + 2, 1).getDisplayValue();
-        return { success: true, isReceived: true, receivedDate: receivedDate };
+        return { success: true, isReceived: progress.complete, progress: progress, receivedDate: receivedDate };
       }
     }
     return { success: true, isReceived: false };
@@ -530,9 +647,11 @@ function getPendingLogData() {
 
     // Đọc danh sách các Mã SO đã có trong sheet "Data"
     var dataSheet = ss.getSheetByName('Data');
+    var dataRows = [];
     var existingSoMap = {};
     if (dataSheet && dataSheet.getLastRow() > 1) {
       var dataVals = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn()).getValues();
+      dataRows = dataVals;
       for (var d = 0; d < dataVals.length; d++) {
         var r = dataVals[d];
         var soCode = "";
@@ -566,27 +685,24 @@ function getPendingLogData() {
     var logs = [];
 
     for (var i = 1; i < data.length; i++) {
-      if (String(data[i][6]).trim() === 'Đã tiếp nhận') {
-        var rawSo = (data[i][5] || "").toString().trim();
+      var rawSo = (data[i][5] || "").toString().trim();
+      var newToValues = getLogToClassification(splitDrawingToValues(data[i][4] || ''), data[i][3], dataRows).newValues;
+      newToValues.forEach(function (toValue) {
         var cleanRaw = rawSo.toUpperCase().replace(/\s+/g, "");
         var digitsRaw = cleanRaw.replace(/[^0-9]/g, "");
-
         var foundInfo = rawSo ? (existingSoMap[cleanRaw] || (digitsRaw ? existingSoMap[digitsRaw] : null)) : null;
-        var existsInData = !!foundInfo;
-        var imageUrl = (typeof foundInfo === 'string') ? foundInfo : "";
-
         logs.push({
           rowIdx: i + 1,
           date: String(data[i][0] || ''),
           threadId: String(data[i][1] || ''),
           subject: String(data[i][2] || ''),
           customer: String(data[i][3] || ''),
-          to: String(data[i][4] || ''),
+          to: String(toValue || ''),
           so: rawSo,
-          existsInData: existsInData,
-          imageUrl: imageUrl
+          existsInData: !!foundInfo,
+          imageUrl: typeof foundInfo === 'string' ? foundInfo : ''
         });
-      }
+      });
     }
     return { success: true, data: logs.reverse() };
   } catch (err) {
@@ -760,9 +876,16 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     var userEmail = getCurrentUserEmail();
 
     // 2. Ghi dữ liệu vào sheet "Data" (33 cột từ A -> AG)
+    // Khi Update Version, chỉ thay Version; các trường còn lại phải giữ nguyên.
     var mappedRowData = isUpgradeMode
       ? sheetData.getRange(rowIdx, 1, 1, Math.max(sheetData.getLastColumn(), 34)).getValues()[0]
       : new Array(34).fill("");
+    if (isUpgradeMode) {
+      mappedRowData[5] = version; // F: Version
+      sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
+      return { success: true };
+    }
+
     mappedRowData[0] = autoId;             // A: ID
     mappedRowData[1] = userEmail;          // B: Mail ID
     mappedRowData[2] = "Đang thực hiện";           // C: Status (không thay đổi nếu upgrade)
@@ -774,14 +897,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     mappedRowData[8] = toCode;             // I: TO
     mappedRowData[9] = project;            // J: Dự án
     mappedRowData[10] = customerName;       // K: Customer
-    if (isUpgradeMode) {
-      var currentDwInSheet = String(mappedRowData[11] || '');
-      if (currentDwInSheet && currentDwInSheet !== dwCode) {
-        mappedRowData[14] = currentDwInSheet; // Cột O: DW Code trước khi thay đổi
-      }
-    } else {
-      mappedRowData[14] = "";
-    }
+    mappedRowData[14] = "";
     mappedRowData[11] = dwCode;             // L: Drawing code
     mappedRowData[12] = typeDw;            // M: Version Drawing
     mappedRowData[13] = noteVal;           // N: Nội dung thay đổi
@@ -805,15 +921,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     if (cellImageObj) mappedRowData[32] = cellImageObj; // AG: Hình ảnh mặt cắt (chèn trực tiếp vào ô)
     mappedRowData[33] = soNo;              // AH: Mã SO
 
-    // Chỉ kiểm tra TO+Customer trong chế độ INSERT (không upgrade)
-    if (isUpgradeMode) {
-      // Chế độ UPDATE: luôn ghi lại dữ liệu vào hàng hiện có
-      sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
-      if (cellImageObj) {
-        try { sheetData.getRange(targetRow, 33).setValue(cellImageObj); } catch (e) { }
-      }
-    } else {
-      // Chế độ INSERT: kiểm tra TO+Customer trước khi ghi
+    // Chế độ INSERT: kiểm tra TO+Customer trước khi ghi
       // ========================================================================
       // KIỂM TRA: TO + Customer đã tồn tại trong sheet "Data" chưa?
       // Chỉ bỏ qua ghi Data khi cùng TO + Customer đã tồn tại, không phân biệt "TO-123" / "123" hay chữ hoa/thường.
@@ -855,19 +963,25 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
         if (cellImageObj) {
           try { sheetData.getRange(targetRow, 33).setValue(cellImageObj); } catch (e) { }
         }
-      } else {
       }
-    }
 
     // Luôn luôn lưu vào sheet "SO" (dù TO+Customer đã tồn tại hay chưa)
     if (sheetSO) {
       var colorCode = "";
-      var pureToCode = toCode;
-      var cleanTo = toCode.replace(/^TO-?/i, "").trim();
+      var cleanTo = String(toCode || "").replace(/^TO-?/i, "").replace(/\s+/g, "").trim().toUpperCase();
 
-      if (cleanTo.length >= 2) {
-        colorCode = cleanTo.substring(0, 2).toUpperCase();
-        pureToCode = cleanTo.substring(2).trim().split(" ")[0];
+      // Tách phần màu trước chữ số đầu tiên và bỏ hậu tố chữ của mã TO.
+      // Ví dụ: TO-FV7H748B -> màu FV, TO gốc 7H748.
+      var firstDigitMatch = cleanTo.match(/\d/);
+      var firstDigitIdx = firstDigitMatch ? firstDigitMatch.index : -1;
+      var pureToCode = "";
+      if (firstDigitIdx > 0) {
+        colorCode = cleanTo.substring(0, firstDigitIdx);
+      }
+      if (firstDigitIdx >= 0) {
+        pureToCode = cleanTo.substring(firstDigitIdx).replace(/[A-Z]+$/, "");
+      } else {
+        colorCode = cleanTo;
       }
 
       var toMau = "TO-" + colorCode + pureToCode;
@@ -888,104 +1002,72 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
       var toCustomerNormalized = toCustomer.trim().toUpperCase();
 
       // ========================================================================
-      // KIỂM TRA: (TO MÀU + TO theo khách hàng) có tồn tại trong SO chưa?
+      // LUÔN TẠO HÀNG MỚI: Không cập nhật dòng cũ, mà tạo dòng mới mỗi lần
       // ========================================================================
-      var soRowExists = -1;
       var soData = sheetSO.getDataRange().getValues();
       
-      for (var soIdx = 1; soIdx < soData.length; soIdx++) { // Bắt đầu từ row 2 (index 1)
-        var soRow = soData[soIdx];
-        var existingToMau = (soRow[5] || "").toString().trim().toUpperCase();      // Column F (index 5): TO MÀU
-        var existingToCustomer = (soRow[8] || "").toString().trim().toUpperCase();  // Column I (index 8): TO theo khách hàng
-        
-        if (existingToMau === toMauNormalized || existingToCustomer === toCustomerNormalized) {
-          soRowExists = soIdx + 1; // +1 vì hàng sheet bắt đầu từ 1, array index bắt đầu từ 0
-          break;
-        }
+      // Tìm tần suất lớn nhất nhưng luôn tạo dòng mới, không sửa dòng SO cũ.
+      var maxTanXuatTO = 0;
+      var toToFind = ("TO-" + pureToCode).toUpperCase();
+      var maxTanXuatMau = 0;
+      function normalizeSoBaseTo(value) {
+        var normalized = String(value || "").replace(/^TO-?/i, "").replace(/\s+/g, "").trim().toUpperCase();
+        var digitMatch = normalized.match(/\d/);
+        if (!digitMatch) return normalized ? "TO-" + normalized : "";
+        return "TO-" + normalized.substring(digitMatch.index).replace(/[A-Z]+$/, "");
       }
 
-      if (soRowExists !== -1) {
-        // ========================================================================
-        // CẬP NHẬT: Tần xuất TO, Tần xuất MÀU, Tần xuất theo khách
-        // ========================================================================
-        try {
-          var updateRow = soData[soRowExists - 1]; // Convert row number to array index
-          
-          // Column G (index 6): Tần xuất TO - luôn +1
-          var currentTanXuatTO = parseInt(updateRow[6] || 0) || 0;
-          var newTanXuatTO = currentTanXuatTO + 1;
-          sheetSO.getRange(soRowExists, 7).setValue(newTanXuatTO); // Column G
-          
-          // Column H (index 7): Tần xuất MÀU theo TO - nếu màu giống +1
-          var existingColorCode = (updateRow[2] || "").toString().trim().toUpperCase();
-          if (existingColorCode === colorCode) {
-            var currentTanXuatMau = parseInt(updateRow[7] || 0) || 0;
-            var newTanXuatMau = currentTanXuatMau + 1;
-            sheetSO.getRange(soRowExists, 8).setValue(newTanXuatMau); // Column H
+      for (var countIdx = 1; countIdx < soData.length; countIdx++) {
+        var countRow = soData[countIdx];
+        var existingTO = normalizeSoBaseTo(countRow[0]); // Column A: TO
+        if (existingTO === toToFind) {
+          var rowTanXuatTO = parseInt(countRow[6] || 0) || 0;
+          if (rowTanXuatTO > maxTanXuatTO) {
+            maxTanXuatTO = rowTanXuatTO;
           }
-          
-          // Column J (index 9): Tần xuất theo khách hàng - nếu khách giống +1
-          var existingToCustomer = (updateRow[8] || "").toString().trim().toUpperCase();
-          if (existingToCustomer === toCustomerNormalized) {
-            var currentTanXuatKhach = parseInt(updateRow[9] || 0) || 0;
-            var newTanXuatKhach = currentTanXuatKhach + 1;
-            sheetSO.getRange(soRowExists, 10).setValue(newTanXuatKhach); // Column J
-          }
-        } catch (updateErr) {
-        }
-      } else {
-        // ========================================================================
-        // TẠO HÀNG MỚI: (TO MÀU) chưa tồn tại trong SO
-        // Nhưng cần đếm: Tần xuất TO và Tần xuất theo khách
-        // ========================================================================
-        
-        // Tìm max Tần xuất TO (Column G) cho TO này (7Y090A)
-        var maxTanXuatTO = 0;
-        var toToFind = ("TO-" + pureToCode).toUpperCase();
-        for (var countIdx = 1; countIdx < soData.length; countIdx++) {
-          var countRow = soData[countIdx];
-          var existingTO = (countRow[0] || "").toString().trim().toUpperCase(); // Column A: TO
-          if (existingTO === toToFind) {
-            var rowTanXuatTO = parseInt(countRow[6] || 0) || 0;
-            if (rowTanXuatTO > maxTanXuatTO) {
-              maxTanXuatTO = rowTanXuatTO;
+
+          if ((countRow[2] || "").toString().trim().toUpperCase() === colorCode) {
+            var rowTanXuatMau = parseInt(countRow[7] || 0) || 0;
+            if (rowTanXuatMau > maxTanXuatMau) {
+              maxTanXuatMau = rowTanXuatMau;
             }
           }
         }
-        var newTanXuatTO = maxTanXuatTO + 1;
-        
-        // Tìm max Tần xuất theo khách (Column J) cho TO+khách này
-        var maxTanXuatKhach = 0;
-        var toCustomerToFind = toCustomerNormalized;
-        for (var countIdx2 = 1; countIdx2 < soData.length; countIdx2++) {
-          var countRow2 = soData[countIdx2];
-          var existingToCustomer = (countRow2[8] || "").toString().trim().toUpperCase(); // Column I: TO theo khách
-          if (existingToCustomer === toCustomerToFind) {
-            var rowTanXuatKhach = parseInt(countRow2[9] || 0) || 0;
-            if (rowTanXuatKhach > maxTanXuatKhach) {
-              maxTanXuatKhach = rowTanXuatKhach;
-            }
+      }
+      var newTanXuatTO = maxTanXuatTO + 1;
+      var newTanXuatMau = maxTanXuatMau + 1;
+      
+      // Tìm max Tần xuất theo khách (Column J) cho TO+khách này
+      var maxTanXuatKhach = 0;
+      var toCustomerToFind = toCustomerNormalized;
+      for (var countIdx2 = 1; countIdx2 < soData.length; countIdx2++) {
+        var countRow2 = soData[countIdx2];
+        var existingToCustomer = (countRow2[8] || "").toString().trim().toUpperCase(); // Column I: TO theo khách
+        if (existingToCustomer === toCustomerToFind) {
+          var rowTanXuatKhach = parseInt(countRow2[9] || 0) || 0;
+          if (rowTanXuatKhach > maxTanXuatKhach) {
+            maxTanXuatKhach = rowTanXuatKhach;
           }
         }
-        var newTanXuatKhach = maxTanXuatKhach + 1;
-        
-        // Tạo hàng mới với tần xuất được tính toán
-        var mappedRowSO = new Array(12).fill("");
-        mappedRowSO[0] = "TO-" + pureToCode; // A: TO
-        mappedRowSO[1] = version;            // B: Version
-        mappedRowSO[2] = colorCode;          // C: MÀU COLOR
-        mappedRowSO[3] = customerCode;       // D: Khách hàng CUSTOMER
-        mappedRowSO[4] = project;            // E: Dự án PROJECT
-        mappedRowSO[5] = toMau;              // F: TO MÀU
-        mappedRowSO[6] = newTanXuatTO;       // G: Tần xuất TO (đếm được)
-        mappedRowSO[7] = 1;                  // H: Tần xuất MÀU theo TO (lần đầu màu này)
-        mappedRowSO[8] = toCustomer;         // I: TO theo khách hàng
-        mappedRowSO[9] = newTanXuatKhach;    // J: Tần xuất theo khách (đếm được)
-        mappedRowSO[10] = soNo;               // K: Số SO
-        mappedRowSO[11] = "";                 // L: Tình trạng phát hành
-
-        sheetSO.appendRow(mappedRowSO);
       }
+      var newTanXuatKhach = maxTanXuatKhach + 1;
+      
+      // Tạo hàng mới
+      var mappedRowSO = new Array(12).fill("");
+      mappedRowSO[0] = "TO-" + pureToCode; // A: TO
+      mappedRowSO[1] = version;            // B: Version
+      mappedRowSO[2] = colorCode;          // C: MÀU COLOR
+      mappedRowSO[3] = customerCode;       // D: Khách hàng CUSTOMER
+      mappedRowSO[4] = project;            // E: Dự án PROJECT
+      mappedRowSO[5] = toMau;              // F: TO MÀU
+      mappedRowSO[6] = newTanXuatTO;       // G: Tần xuất TO (đếm được)
+      mappedRowSO[7] = newTanXuatMau;      // H: Tần xuất MÀU theo TO
+      mappedRowSO[8] = toCustomer;         // I: TO theo khách hàng
+      mappedRowSO[9] = newTanXuatKhach;    // J: Tần xuất theo khách (đếm được)
+      mappedRowSO[10] = soNo;               // K: Số SO
+      mappedRowSO[11] = "";                 // L: Tình trạng phát hành
+
+      sheetSO.appendRow(mappedRowSO);
     }
 
 
@@ -1044,21 +1126,37 @@ function getManagedDrawings() {
       return { success: true, data: [] };
     }
 
-    var data = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn()).getValues();
+    var data = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getValues();
+    var displayData = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getDisplayValues();
     var managed = [];
 
     for (var i = 0; i < data.length; i++) {
       var row = data[i] || [];
+      var displayRow = displayData[i] || [];
 
-      // Kiểm tra nếu có dữ liệu đủ (AC hoặc AG không rỗng)
+      // Dữ liệu cơ bản quyết định việc hiển thị; lỗi đọc hình ảnh không được loại bỏ dòng.
+      var hasDrawingData = [row[8], row[9], row[10], row[11], row[33]].some(function (value) {
+        return value !== null && value !== undefined && String(value).trim() !== '';
+      });
+
       var acValue = row[28];  // AC: Width
+      var adValue = row[29];  // AD: Height
       var agValue = row[32];  // AG: Hình mặt cắt
 
-      // Chuyển sang string an toàn để tránh CellImage object
-      var acStr = acValue ? String(acValue).trim() : '';
-      var agStr = normalizeImageSource(agValue);
+      // Chuyển sang string an toàn, vẫn coi số 0 và CellImage là dữ liệu hợp lệ.
+      var acStr = acValue === null || acValue === undefined ? '' : String(acValue).trim();
+      var adStr = adValue === null || adValue === undefined ? '' : String(adValue).trim();
+      var agStr = '';
+      try {
+        agStr = normalizeImageSource(agValue);
+      } catch (imageError) {
+        Logger.log('Không thể đọc hình mặt cắt dòng ' + (i + 2) + ': ' + imageError.toString());
+      }
+      var hasImageValue = agValue !== null && agValue !== undefined && agValue !== '';
+      var displayAcStr = String(displayRow[28] || '').trim();
+      var displayAdStr = String(displayRow[29] || '').trim();
 
-      if ((acStr !== '') || (agStr !== '')) {
+      if (hasDrawingData || (acStr !== '') || (adStr !== '') || (displayAcStr !== '') || (displayAdStr !== '') || (agStr !== '') || hasImageValue) {
         var typeVal = row[3] || 'New';        // D: Type
         var toVal = row[8] || 'N/A';          // I: TO
         var dwCodeVal = row[11] || '';        // L: DW Code
@@ -1074,7 +1172,7 @@ function getManagedDrawings() {
           customer: String(customerVal),
           group: String(row[3] || ''),
           project: String(row[9] || ''),
-          version: String(row[5] || ''),
+          version: row[5] === null || row[5] === undefined ? '' : String(row[5]),
           receivedDate: String(row[6] || ''),
           assigneeDoneDate: String(row[7] || ''),
           typeDw: String(row[12] || row[24] || ''),
@@ -1158,7 +1256,7 @@ function getDrawingByRowIdx(rowIdx) {
         status: String(rowData[2] || ''),            // C: Status
         group: String(rowData[3] || ''),             // D: Group
         type: String(rowData[4] || ''),              // E: Type
-        version: String(rowData[5] || ''),           // F: Version / Revise
+        version: rowData[5] === null || rowData[5] === undefined ? '' : String(rowData[5]), // F: Version / Revise
         receivedDate: String(rowData[6] || ''),     // G: Ngày tiếp nhận
         assigneeDoneDate: String(rowData[7] || ''), // H: Ngày HT dự kiến
         to: String(rowData[8] || ''),                // I: TO
@@ -1189,32 +1287,16 @@ function getDrawingsWithoutImage() {
     var logSheet = ss.getSheetByName('Log');
     var dataSheet = ss.getSheetByName('Data');
 
-    var existingSoMap = {};
+    // Cột E của Log là danh sách TO gốc. Chỉ ẩn TO sau khi đã có
+    // trong Data; cột I/J chỉ dùng để phân loại NEW/OLD.
+    var receivedToSet = new Set();
     if (dataSheet && dataSheet.getLastRow() > 1) {
-      var dataVals = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn()).getValues();
-      for (var d = 0; d < dataVals.length; d++) {
-        var r = dataVals[d] || [];
-        var soCode = '';
-        if (r[33]) soCode = toSafeString(r[33]);
-        else if (r[5]) soCode = toSafeString(r[5]);
-
-        if (!soCode) {
-          for (var c = 0; c < r.length; c++) {
-            var cellStr = toSafeString(r[c]);
-            if (/^SO\d+/i.test(cellStr)) {
-              soCode = cellStr;
-              break;
-            }
-          }
-        }
-
-        if (soCode) {
-          var cleanSo = soCode.toUpperCase().replace(/\s+/g, "");
-          var digitsSo = cleanSo.replace(/[^0-9]/g, "");
-          existingSoMap[cleanSo] = true;
-          if (digitsSo) existingSoMap[digitsSo] = true;
-        }
-      }
+      var dataRows = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getValues();
+      dataRows.forEach(function (row) {
+        getLogToValues(row[8], false).forEach(function (toValue) {
+          receivedToSet.add(normalizeLogTo(toValue));
+        });
+      });
     }
 
     if (logSheet && logSheet.getLastRow() > 1) {
@@ -1222,66 +1304,48 @@ function getDrawingsWithoutImage() {
       var pending = [];
 
       for (var i = 1; i < logValues.length; i++) {
-        if (String(logValues[i][6] || '').trim() !== 'Đã tiếp nhận') continue;
-
         var rawSo = String(logValues[i][5] || '').trim();
-        var cleanSo = rawSo.toUpperCase().replace(/\s+/g, "");
-        var digitsSo = cleanSo.replace(/[^0-9]/g, "");
+        var customer = String(logValues[i][3] || 'Unknown');
+        // Cột E là nguồn xử lý TO; cột I/J chỉ lưu kết quả phân loại NEW/OLD.
+        var logTos = splitDrawingToValues(logValues[i][4]).map(function (toValue) {
+          var normalizedTo = normalizeLogTo(toValue);
+          return normalizedTo ? 'TO-' + normalizedTo : '';
+        }).filter(Boolean);
+        logTos.forEach(function (toValue, toIndex) {
+          if (receivedToSet.has(normalizeLogTo(toValue))) return;
 
-        if ((rawSo && existingSoMap[cleanSo]) || (digitsSo && existingSoMap[digitsSo])) {
-          continue;
-        }
-
-        pending.push({
-          rowIdx: i + 1,
-          type: 'New',
-          to: String(logValues[i][4] || 'N/A'),
-          dwCode: '',
-          customer: String(logValues[i][3] || 'Unknown'),
-          subject: String(logValues[i][2] || ''),
-          so: rawSo,
-          existsInData: false,
-          imageUrl: ''
+          pending.push({
+            rowIdx: i + 1,
+            displayRowIdx: i + 1 + '-' + toIndex,
+            type: 'New',
+            to: toValue || 'N/A',
+            dwCode: '',
+            customer: customer,
+            subject: String(logValues[i][2] || ''),
+            so: rawSo,
+            existsInData: false,
+            imageUrl: ''
+          });
         });
       }
 
       return { success: true, data: pending.reverse() };
     }
 
-    if (!dataSheet || dataSheet.getLastRow() <= 1) {
-      return { success: true, data: [] };
-    }
-
-    var data = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn()).getValues();
-    var pending = [];
-
-    for (var i = 0; i < data.length; i++) {
-      var row = data[i] || [];
-      var width = row[28];
-      var height = row[29];
-      var widthStr = width ? String(width).trim() : '';
-      var heightStr = height ? String(height).trim() : '';
-
-      if ((widthStr === '') && (heightStr === '')) {
-        var type = row[3] || 'New';
-        var to = row[8] || 'N/A';
-        var dwCode = row[11] || '';
-        var customer = row[10] || 'Unknown';
-
-        pending.push({
-          rowIdx: i + 2,
-          type: String(type),
-          to: String(to),
-          dwCode: String(dwCode),
-          customer: String(customer)
-        });
-      }
-    }
-
-    return { success: true, data: pending.reverse() };
+    // Log không có TO NEW thì danh sách rỗng; tuyệt đối không lấy fallback từ Data.
+    return { success: true, data: [] };
   } catch (err) {
     return { success: false, error: err.toString() };
   }
+}
+
+function splitDrawingToValues(rawValue) {
+  var text = String(rawValue || '').trim();
+  if (!text) return [];
+
+  return text.split(/[;,\n|]+/).map(function (value) {
+    return String(value).trim();
+  }).filter(Boolean);
 }
 
 function updateBulkDrawing(rowIds, bulkData) {
@@ -1371,6 +1435,211 @@ function updateDrawingData(rowIdx, formRow) {
       try { sheet.getRange(rowIdx, 33).setValue(cellImageObj); } catch (e) { }
     }
     return { success: true };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
+function saveBulkDrawingData(subject, formRow, selectedItems) {
+  try {
+    if (!formRow || !Array.isArray(selectedItems) || selectedItems.length === 0) {
+      return { success: false, error: 'Chưa có bản vẽ được chọn để sửa hàng loạt.' };
+    }
+
+    selectedItems = selectedItems.filter(function (item) {
+      return item && item.rowIdx !== undefined && item.rowIdx !== null;
+    });
+    if (selectedItems.length === 0) {
+      return { success: false, error: 'Danh sách bản vẽ được chọn không hợp lệ.' };
+    }
+
+    var results = [];
+    selectedItems.forEach(function (item) {
+      var row = formRow.slice();
+      row[2] = item.customer || row[2] || '';
+      row[3] = item.to || row[3] || '';
+      row[5] = item.so || row[5] || '';
+      results.push(saveDataToTestSheet(item.subject || subject, [row], null));
+    });
+
+    var failed = results.filter(function (result) { return !result || !result.success; });
+    return failed.length
+      ? { success: false, error: 'Có ' + failed.length + '/' + results.length + ' bản vẽ lưu không thành công.', results: results }
+      : { success: true, count: results.length, results: results };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
+// ========================================================================
+// TẦN SUẤT TO - FREQUENCY STATISTICS
+// ========================================================================
+
+function getToFrequencyData() {
+  try {
+    var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
+    var ss = SpreadsheetApp.openById(sheetId);
+    var soSheet = ss.getSheetByName('SO');
+
+    if (!soSheet || soSheet.getLastRow() <= 1) {
+      return { success: true, data: [], summary: { total: 0, highestTO: '', highestFrequency: 0 } };
+    }
+
+    var soData = soSheet.getRange(2, 1, soSheet.getLastRow() - 1, soSheet.getLastColumn()).getValues();
+    var frequencyMap = {}; // {TO: {TO, colorCount, customerCount, maxFrequency}}
+
+    // Duyệt qua từng hàng trong sheet SO
+    soData.forEach(function (row) {
+      var to = String(row[0] || '').trim().toUpperCase();     // Column A: TO
+      var colorCode = String(row[2] || '').trim().toUpperCase(); // Column C: MÀU
+      var customer = String(row[3] || '').trim().toUpperCase(); // Column D: Khách hàng
+      var tanXuatTO = parseInt(row[6] || 0) || 0;             // Column G: Tần xuất TO
+      var tanXuatMau = parseInt(row[7] || 0) || 0;            // Column H: Tần xuất MÀU
+      var tanXuatKhach = parseInt(row[9] || 0) || 0;          // Column J: Tần xuất khách
+
+      if (!to) return;
+
+      if (!frequencyMap[to]) {
+        frequencyMap[to] = {
+          to: to,
+          colors: {},
+          customers: {},
+          maxFrequency: 0,
+          totalFrequency: 0,
+          colorCount: 0,
+          customerCount: 0
+        };
+      }
+
+      // Đếm số lần xuất hiện của TO
+      frequencyMap[to].maxFrequency = Math.max(frequencyMap[to].maxFrequency, tanXuatTO);
+      frequencyMap[to].totalFrequency = (frequencyMap[to].totalFrequency || 0) + 1;
+
+      // Đếm số màu khác nhau
+      if (colorCode && !frequencyMap[to].colors[colorCode]) {
+        frequencyMap[to].colors[colorCode] = tanXuatMau;
+        frequencyMap[to].colorCount++;
+      } else if (colorCode) {
+        frequencyMap[to].colors[colorCode] = Math.max(frequencyMap[to].colors[colorCode], tanXuatMau);
+      }
+
+      // Đếm số khách hàng khác nhau
+      if (customer && !frequencyMap[to].customers[customer]) {
+        frequencyMap[to].customers[customer] = tanXuatKhach;
+        frequencyMap[to].customerCount++;
+      } else if (customer) {
+        frequencyMap[to].customers[customer] = Math.max(frequencyMap[to].customers[customer], tanXuatKhach);
+      }
+    });
+
+    // Chuyển đổi map thành array và sắp xếp
+    var data = Object.keys(frequencyMap).map(function (toKey) {
+      var toObj = frequencyMap[toKey];
+      return {
+        to: toObj.to,
+        frequency: toObj.maxFrequency,
+        totalOccurrences: toObj.totalFrequency,
+        colorCount: toObj.colorCount,
+        customerCount: toObj.customerCount,
+        colors: Object.keys(toObj.colors).join(', '),
+        customers: Object.keys(toObj.customers).join(', ')
+      };
+    }).sort(function (a, b) {
+      return b.frequency - a.frequency; // Sắp xếp giảm dần theo tần suất
+    });
+
+    var summary = {
+      total: data.length,
+      highestTO: data.length > 0 ? data[0].to : '',
+      highestFrequency: data.length > 0 ? data[0].frequency : 0,
+      totalFrequencyCount: data.reduce(function (sum, item) { return sum + item.frequency; }, 0),
+      averageFrequency: data.length > 0 ? (data.reduce(function (sum, item) { return sum + item.frequency; }, 0) / data.length).toFixed(2) : 0
+    };
+
+    return { success: true, data: data, summary: summary };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
+// ========================================================================
+// LỊCH SỬ CHUYỂN TAB - TAB TRANSFER HISTORY
+// ========================================================================
+
+function getTabTransferHistory() {
+  try {
+    var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
+    var ss = SpreadsheetApp.openById(sheetId);
+    var dataSheet = ss.getSheetByName('Data');
+
+    if (!dataSheet || dataSheet.getLastRow() <= 1) {
+      return { success: true, data: [], summary: { totalTransfers: 0, uniqueDrawings: 0 } };
+    }
+
+    var data = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, dataSheet.getLastColumn()).getValues();
+    var transferHistory = [];
+    var transferMap = {}; // Để tránh duplicate
+
+    data.forEach(function (row, idx) {
+      var id = String(row[0] || '').trim();                  // Column A: ID
+      var to = String(row[8] || '').trim();                  // Column I: TO
+      var dwCode = String(row[11] || '').trim();             // Column L: Drawing Code
+      var customer = String(row[10] || '').trim();            // Column K: Customer
+      var status = String(row[2] || '').trim();              // Column C: Status
+      var receivedDate = String(row[6] || '').trim();        // Column G: Ngày tiếp nhận
+      var assigneeDoneDate = String(row[7] || '').trim();    // Column H: Ngày hoàn thành dự kiến
+      var actualDoneDate = String(row[18] || '').trim();     // Column S: Ngày HT thực tế
+      var assignee = String(row[15] || '').trim();           // Column P: Người đảm trách
+      var checker = String(row[17] || '').trim();            // Column R: Checker
+      var approver = String(row[19] || '').trim();           // Column T: Approver
+      var releaseStatus = String(row[21] || '').trim();      // Column V: Release Status
+      var oldDwCode = String(row[14] || '').trim();          // Column O: Old DW Code
+      var so = String(row[33] || '').trim();                 // Column AH: SO
+
+      if (!to || !dwCode) return;
+
+      var key = to + '|' + dwCode + '|' + customer;
+      if (transferMap[key]) return; // Bỏ qua duplicate
+
+      transferMap[key] = true;
+      transferHistory.push({
+        id: id,
+        to: to,
+        customer: customer,
+        dwCode: dwCode,
+        oldDwCode: oldDwCode,
+        status: status,
+        receivedDate: receivedDate,
+        assigneeDoneDate: assigneeDoneDate,
+        actualDoneDate: actualDoneDate,
+        assignee: assignee,
+        checker: checker,
+        approver: approver,
+        releaseStatus: releaseStatus,
+        so: so,
+        rowIdx: idx + 2,
+        isUpgraded: oldDwCode ? true : false
+      });
+    });
+
+    // Sắp xếp theo thứ tự mới nhất trước
+    transferHistory.sort(function (a, b) {
+      return (String(b.id || '')).localeCompare(String(a.id || ''), undefined, { numeric: true });
+    });
+
+    var summary = {
+      totalTransfers: transferHistory.length,
+      uniqueDrawings: Object.keys(transferMap).length,
+      upgradedDrawings: transferHistory.filter(function (t) { return t.isUpgraded; }).length,
+      statusDistribution: {}
+    };
+
+    // Đếm phân bố trạng thái
+    transferHistory.forEach(function (t) {
+      summary.statusDistribution[t.status] = (summary.statusDistribution[t.status] || 0) + 1;
+    });
+
+    return { success: true, data: transferHistory, summary: summary };
   } catch (err) {
     return { success: false, error: err.toString() };
   }

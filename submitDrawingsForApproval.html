@@ -9,7 +9,13 @@
     position: relative;
     background: transparent !important;
     padding: 0 !important;
+    box-sizing: border-box;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
   }
+  .page-submitDrawingsForApproval *,
+  .page-submitDrawingsForApproval *::before,
+  .page-submitDrawingsForApproval *::after { box-sizing: border-box; }
   #rejectModal > div {
     border: 1px solid rgba(16, 185, 129, 0.18);
     box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25) !important;
@@ -19,7 +25,9 @@
   /* Main Container Card */ 
   .page-submitDrawingsForApproval .app-card {
     position: relative;
-    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+    overflow: visible;
     background: var(--liquid-glass-elevated);
     backdrop-filter: var(--liquid-blur);
     -webkit-backdrop-filter: var(--liquid-blur);
@@ -80,6 +88,13 @@
   }
   .page-submitDrawingsForApproval .table-responsive {
     contain: content;
+    width: 100%;
+    overflow-x: auto !important;
+  }
+  .page-submitDrawingsForApproval .table-custom {
+    width: 100%;
+    min-width: 980px;
+    table-layout: fixed;
   }
   .page-submitDrawingsForApproval .table-custom tbody tr {
     contain: layout paint;
@@ -258,6 +273,20 @@
     border-radius: var(--liquid-radius-lg);
     overflow: visible !important;
   }
+  .page-submitDrawingsForApproval > .app-card > .d-flex:first-child {
+    min-width: 0;
+  }
+  .page-submitDrawingsForApproval #searchApprovalInput {
+    min-width: 0;
+  }
+  .page-submitDrawingsForApproval #approvalCategoryTabs {
+    flex-wrap: wrap;
+    row-gap: 6px;
+  }
+  .page-submitDrawingsForApproval #approvalCategoryTabs > .nav-item:last-child {
+    margin-left: auto !important;
+    flex-wrap: wrap;
+  }
   .page-submitDrawingsForApproval > .app-card > .table-responsive {
     max-height: calc(100vh - 215px) !important;
     overflow-y: auto !important;
@@ -428,7 +457,7 @@
       </div>
 
       <!-- Thanh tìm kiếm -->
-      <div class="input-group shadow-sm" style="width: 280px;">
+      <div class="input-group shadow-sm" style="width: min(280px, 100%); max-width: 100%;">
         <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
         <input type="text" class="form-control border-start-0 ps-0" id="searchApprovalInput"
           placeholder="Tìm theo TO, DW Code, KH..." oninput="onSearchApprovalInput()">
@@ -897,7 +926,7 @@
     };
 
     return `
-    <tr class="dw-row" onclick="toggleRowDetail('${id}')">
+    <tr id="dw-card-${id}" class="dw-row" onclick="toggleRowDetail('${id}')">
       <td class="text-center" onclick="event.stopPropagation();">
         <input type="checkbox" class="form-check-input approval-row-checkbox" data-row-id="${id}" data-row-index="${sourceRowIndex}" onchange="updateBulkApproveButtonVisibility(); updateBulkReleaseButtonVisibility();" style="cursor: pointer;">
       </td>

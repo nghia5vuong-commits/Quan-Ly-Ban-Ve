@@ -57,6 +57,68 @@ const findRowIndexById = (sheet, dataId, dwCode, toCode) => {
   return -1;
 };
 
+const escapeDesignEmailHtml = (value) => String(value ?? '')
+  .replace(/&/g, '&amp;')
+  .replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;')
+  .replace(/"/g, '&quot;')
+  .replace(/'/g, '&#39;');
+
+const getDesignCheckerEmails = () => {
+  try {
+    const userSheet = SpreadsheetApp.openById('1t5PWyoJHrxElWP3QgmB16BEMIvEC015NHq0tsxu_TpE').getSheetByName('User');
+    if (!userSheet || userSheet.getLastRow() < 2) return [];
+
+    const rows = userSheet.getRange(2, 1, userSheet.getLastRow() - 1, 5).getValues();
+    return [...new Set(rows
+      .filter((row) => ['checker1', 'checker'].includes(String(row[4] || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9]/g, '').toLowerCase()))
+      .map((row) => String(row[3] || '').trim().toLowerCase())
+      .filter((email) => email && email.includes('@')))]
+      .join(',');
+  } catch (error) {
+    Logger.log(`Lỗi lấy email Checker 1: ${error.toString()}`);
+    return '';
+  }
+};
+
+const sendDesignUploadedNotification = (details) => {
+  const recipients = getDesignCheckerEmails();
+  if (!recipients) return false;
+
+  const dwCode = String(details.dwCode || details.id || '').trim();
+  const toCode = String(details.toCode || '').trim();
+  const customer = String(details.customer || '').trim();
+  const project = String(details.project || '').trim();
+  const subject = `[THÔNG BÁO] Bản vẽ ${dwCode} đã chuyển sang Chờ Checker 1`;
+  const body = [
+    'Hệ thống đã ghi nhận bản vẽ mới và chuyển sang trạng thái Chờ Checker 1.',
+    `Drawing Code: ${dwCode}`,
+    `TO: ${toCode}`,
+    `Customer: ${customer}`,
+    `Project: ${project}`,
+    'Vui lòng truy cập hệ thống để kiểm tra và xử lý bản vẽ.'
+  ].join('\n');
+  const htmlBody = `<div style="font-family:Arial,sans-serif;color:#1f2937;line-height:1.6;max-width:680px;">
+    <h2 style="color:#0f766e;">Bản vẽ chờ Checker 1</h2>
+    <p>Hệ thống đã ghi nhận bản vẽ mới và chuyển sang trạng thái <strong>Chờ Checker 1</strong>.</p>
+    <table style="border-collapse:collapse;width:100%;">
+      <tr><td style="padding:8px;border:1px solid #d1d5db;font-weight:700;">Drawing Code</td><td style="padding:8px;border:1px solid #d1d5db;">${escapeDesignEmailHtml(dwCode)}</td></tr>
+      <tr><td style="padding:8px;border:1px solid #d1d5db;font-weight:700;">TO</td><td style="padding:8px;border:1px solid #d1d5db;">${escapeDesignEmailHtml(toCode)}</td></tr>
+      <tr><td style="padding:8px;border:1px solid #d1d5db;font-weight:700;">Customer</td><td style="padding:8px;border:1px solid #d1d5db;">${escapeDesignEmailHtml(customer)}</td></tr>
+      <tr><td style="padding:8px;border:1px solid #d1d5db;font-weight:700;">Project</td><td style="padding:8px;border:1px solid #d1d5db;">${escapeDesignEmailHtml(project)}</td></tr>
+    </table>
+    <p>Vui lòng truy cập hệ thống để kiểm tra và xử lý bản vẽ.</p>
+  </div>`;
+
+  try {
+    GmailApp.sendEmail(recipients, subject, body, { htmlBody });
+    return true;
+  } catch (error) {
+    Logger.log(`Lỗi gửi email thông báo upload bản vẽ: ${error.toString()}`);
+    return false;
+  }
+};
+
 const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelName, dataId, dwCode, toCode) => {
   try {
     const decodedPdfData = Utilities.base64Decode(pdfBase64);
@@ -78,6 +140,7 @@ const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelNa
     const excelUrl = excelFile.getUrl();
 
     let resolvedId = dataId;
+    let notificationSent = false;
     if (sheet) {
       const targetRowIndex = findRowIndexById(sheet, dataId, dwCode, toCode);
       if (targetRowIndex > 1) {
@@ -105,6 +168,14 @@ const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelNa
         } else {
           resolvedId = currentId;
         }
+
+        notificationSent = sendDesignUploadedNotification({
+          id: resolvedId,
+          dwCode: dwCode || sheet.getRange(targetRowIndex, 12).getDisplayValue(),
+          toCode: toCode || sheet.getRange(targetRowIndex, 9).getDisplayValue(),
+          customer: sheet.getRange(targetRowIndex, 11).getDisplayValue(),
+          project: sheet.getRange(targetRowIndex, 10).getDisplayValue()
+        });
       } else {
         throw new Error(`Đã tạo file Drive nhưng không tìm thấy dòng bản vẽ '${dataId || dwCode || toCode}' trong Sheet Data để ghi nhận link.`);
       }
@@ -114,7 +185,8 @@ const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelNa
       pdfUrl,
       excelUrl,
       id: resolvedId,
-      status: "Chờ Checker 1"
+      status: "Chờ Checker 1",
+      notificationSent
     };
   } catch (error) {
     throw new Error(`Lỗi khi lưu file lên Drive: ${error.message}`);

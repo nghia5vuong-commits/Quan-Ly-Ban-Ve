@@ -226,7 +226,7 @@
       -webkit-backdrop-filter: blur(30px);
     }
     .loader-card {
-      width: min(440px, 90vw);
+      width: min(680px, 92vw);
       padding: 38px 30px 30px;
       border-radius: var(--liquid-radius-xl);
       background: var(--liquid-glass-elevated);
@@ -273,8 +273,8 @@
     }
     .loader-steps {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
+      flex-wrap: nowrap;
+      justify-content: stretch;
       gap: 8px;
       margin-top: 18px;
       padding-top: 14px;
@@ -282,12 +282,18 @@
       font-size: 0.75rem;
       color: var(--liquid-text-muted);
       font-weight: 600;
+      overflow: visible;
     }
     .loader-step-item {
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
-      padding: 6px 12px;
+      flex: 1 1 0;
+      min-width: 0;
+      text-align: center;
+      line-height: 1.2;
+      padding: 6px 10px;
       border-radius: var(--liquid-radius-pill);
       background: rgba(255, 255, 255, 0.65);
       border: 1px solid rgba(16, 185, 129, 0.15);
@@ -851,7 +857,10 @@
               Thông tin bản vẽ 
             </span>
           </button>
-          
+
+        <button class="btn text-start w-100 border-0 fw-medium index-nav-item" onclick="switchTab('dwHistory', this)" id="nav-btn-dwHistory">
+          <i class="fa fa-chart-line"></i> <span class="nav-text">Lịch sử bản vẽ</span>
+        </button>
 
         <button class="btn text-start w-100 border-0 fw-medium index-nav-item" id="nav-btn-seachDwByAi"
           onclick="switchTab('seachDwByAi', this)">
@@ -950,6 +959,10 @@
           <?!= include('dwInformation') ?>
         </div>
 
+        <div id="index-page-dwHistory" class="index-page-view">
+          <?!= include('dwHistory') ?>
+        </div>
+
         <div id="index-page-seachDwByAi" class="index-page-view">
           <?!= include('seachDwByAi') ?>
         </div>
@@ -965,8 +978,6 @@
         <div id="index-page-release" class="index-page-view">
           <?!= include('dwRelease') ?>
         </div>
-
-
 
       </div>
     </main>
@@ -1397,6 +1408,10 @@
         'dwInformation': {
           title: 'Thông Tin Bản Vẽ',
           subtitle: 'Nhận thông tin yêu cầu bản vẽ khách hàng qua Email và Quản lý dữ liệu tập trung.'
+        },
+        'dwHistory': {
+          title: 'Lịch Sử Bản Vẽ',
+          subtitle: 'Theo dõi tần suất TO và đối chiếu trạng thái SO từ các nguồn dữ liệu.'
         },
         'seachDwByAi': {
           title: 'Tìm Kiếm Bản Vẽ Bằng AI',
