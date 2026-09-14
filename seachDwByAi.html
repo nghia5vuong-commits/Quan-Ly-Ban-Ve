@@ -1392,6 +1392,11 @@
       filterCustomerList();
     }
 
+    window.addEventListener('app-language-changed', function (event) {
+      var lang = event && event.detail ? event.detail.lang : 'vi';
+      changeLang(lang, null);
+    });
+
     document.getElementById('page-seachDwByAI').addEventListener('click', function (e) {
       var cw = document.getElementById('customerWrapper'); if (cw && !cw.contains(e.target)) closeDropdown();
       var dw = document.getElementById('dwWrapper'); if (dw && !dw.contains(e.target)) closeDropdownDw();

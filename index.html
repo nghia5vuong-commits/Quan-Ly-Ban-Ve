@@ -932,6 +932,16 @@
 
           <div style="width: 1px; height: 24px; background-color: #e2e8f0;"></div>
 
+          <label class="d-flex align-items-center gap-1 mb-0" for="appLanguageSelect" data-tooltip="Ngôn ngữ / Language / 言語">
+            <i class="bi bi-translate text-success"></i>
+            <select id="appLanguageSelect" class="form-select form-select-sm border-0 bg-transparent fw-bold shadow-none"
+              style="width:82px; cursor:pointer;" aria-label="Chọn ngôn ngữ" onchange="changeLanguage(this.value)">
+              <option value="vi">VI</option>
+              <option value="en">EN</option>
+              <option value="ja">日本語</option>
+            </select>
+          </label>
+
           <!-- ================= THÔNG TIN TÀI KHOẢN ================= -->
           <div class="d-flex align-items-center gap-2" style="cursor: pointer;">
             <div class="user-avatar shadow-sm" id="uiUserAvatar">
@@ -1988,19 +1998,116 @@
     };
 
 
-    function changeLanguage(langCode) {
-      localStorage.setItem('app_lang', langCode);
+    const appTextTranslations = {
+      en: {
+        'Tổng quan': 'Dashboard', 'Thông tin bản vẽ': 'Drawing Information', 'Lịch sử bản vẽ': 'Drawing History',
+        'Tìm kiếm AI': 'AI Search', 'Thiết kế bản vẽ': 'Drawing Design', 'Trình ký duyệt': 'Approval Workflow', 'Ban hành bản vẽ': 'Drawing Release',
+        'Dữ Liệu Bản Vẽ Đóng Gói G2G': 'G2G Packaging Drawing Data', 'Tìm nhanh theo mã, dự án, người tạo, trạng thái và thời gian cập nhật.': 'Search by code, project, creator, status, or update time.',
+        'Tất cả': 'All', 'Làm mới': 'Refresh', 'Xóa tất cả': 'Clear all', 'Tải lên bản vẽ': 'Upload drawing', 'Danh sách bản vẽ chờ thiết kế': 'Drawings pending design',
+        'Danh sách Trình ký Phê duyệt': 'Approval Workflow List', 'Quản lý ban hành bản vẽ': 'Drawing Release Management', 'Tần suất TO': 'TO Frequency', 'Đối chiếu SO': 'SO Comparison',
+        'Thêm bản vẽ': 'Add drawing', 'Quản lí bản vẽ': 'Drawing management', 'Hộp thư dự án bản vẽ từ khách hàng': 'Customer drawing project inbox',
+        'Chờ Thiết Kế': 'Pending Design', 'Chờ Ký Duyệt': 'Pending Approval', 'Chờ Ban Hành': 'Pending Release', 'Đã Ban Hành Lên QA System': 'Released to QA System',
+        'Tổng Số Bản Vẽ': 'Total Drawings', 'Đã ban hành': 'Released', 'QA Đang Kiểm Tra': 'QA Checking', 'Bị trả lại': 'Returned',
+        'Tìm kiếm...': 'Search...', 'Tìm kiếm email...': 'Search email...', 'Tìm kiếm Type, TO, Customer...': 'Search Type, TO, Customer...',
+        'Tìm theo TO, DW Code, KH...': 'Search TO, DW Code, Customer...', 'Tìm Request No. trong QA-G2G...': 'Search Request No. in QA-G2G...',
+        'Trạng thái': 'Status', 'Đã tiếp nhận': 'Received', 'Chưa tiếp nhận': 'Not received', 'Chọn email để xem nội dung': 'Select an email to view its content',
+        'Không tìm thấy dữ liệu': 'No data found', 'Không có dữ liệu': 'No data', 'Không có bản vẽ đủ dữ liệu': 'No complete drawings',
+        'Dự án': 'Project', 'Người đảm trách': 'Assignee', 'Ngày tiếp nhận': 'Received date', 'Customer': 'Customer', 'Số SO': 'SO number',
+        'Dw Code': 'Drawing code', 'Version': 'Version', 'Type DW': 'Drawing type', 'Width (mm)': 'Width (mm)', 'Height (mm)': 'Height (mm)',
+        'Hình ảnh mặt cắt (File / Ctrl+V)': 'Section image (File / Ctrl+V)', 'Ngày phát hành': 'Release date', 'Lưu Dữ Liệu': 'Save data',
+        'Thêm Mới Bản Vẽ': 'Add New Drawing', 'Chỉnh Sửa Dữ Liệu Bản Vẽ': 'Edit Drawing Data', 'Update Version': 'Update Version',
+        'Sửa dữ liệu': 'Edit data', 'Sửa hàng loạt': 'Bulk edit', 'Sửa': 'Edit', 'Xóa': 'Delete', 'Hủy': 'Cancel', 'Xác nhận': 'Confirm',
+        'Lọc TO...': 'Filter TO...', 'Các màu': 'Colors', 'Khách hàng': 'Customers', 'Số màu': 'Color count', 'Số khách': 'Customer count',
+        'Mã SO': 'SO number', 'Email': 'Email', 'Bản vẽ': 'Drawing', 'Có': 'Yes', 'Không': 'No', 'Cập nhật': 'Refresh',
+        'Đang tải...': 'Loading...', 'Đang tải dữ liệu...': 'Loading data...', 'Đang xử lý...': 'Processing...', 'Đang chờ ký': 'Waiting for approval',
+        'Đã ký': 'Signed', 'Chưa tới lượt': 'Not yet', 'Từ chối bản vẽ': 'Reject drawing', 'Lý do từ chối': 'Rejection reason',
+        'Vào hệ thống': 'Open system', 'Xem bản vẽ': 'View drawing', 'Approval': 'Approval', 'Reject': 'Reject', 'Gửi ký': 'Submit for approval',
+        'Gửi ký lại': 'Resubmit for approval', 'PDF': 'PDF', 'Xem': 'View', 'Tải file xuống': 'Download file', 'Đóng': 'Close',
+        'Phân tích & Tìm kiếm': 'Analyze & Search', 'Sử dụng': 'Use', 'Xem tiêu chuẩn đóng gói': 'View packaging standard',
+        'Chọn hoặc kéo thả ảnh bản vẽ vào đây': 'Choose or drag a drawing image here', 'Chiều cao': 'Height', 'Chiều rộng': 'Width',
+        'Theo HxW': 'By HxW', 'Theo khách': 'By customer', 'Làm mới Data': 'Refresh data', 'Gửi đến QA': 'Send to QA', 'Ban hành hàng loạt': 'Bulk release'
+      },
+      ja: {
+        'Tổng quan': 'ダッシュボード', 'Thông tin bản vẽ': '図面情報', 'Lịch sử bản vẽ': '図面履歴', 'Tìm kiếm AI': 'AI検索', 'Thiết kế bản vẽ': '図面設計', 'Trình ký duyệt': '承認ワークフロー', 'Ban hành bản vẽ': '図面発行',
+        'Dữ Liệu Bản Vẽ Đóng Gói G2G': 'G2G梱包図面データ', 'Tìm nhanh theo mã, dự án, người tạo, trạng thái và thời gian cập nhật.': 'コード、プロジェクト、作成者、状態、更新日時で検索',
+        'Tất cả': 'すべて', 'Làm mới': '更新', 'Xóa tất cả': 'すべてクリア', 'Tải lên bản vẽ': '図面をアップロード', 'Danh sách bản vẽ chờ thiết kế': '設計待ち図面', 'Danh sách Trình ký Phê duyệt': '承認申請一覧', 'Quản lý ban hành bản vẽ': '図面発行管理', 'Tần suất TO': 'TO頻度', 'Đối chiếu SO': 'SO照合',
+        'Thêm bản vẽ': '図面追加', 'Quản lí bản vẽ': '図面管理', 'Hộp thư dự án bản vẽ từ khách hàng': '顧客図面プロジェクト受信箱', 'Chờ Thiết Kế': '設計待ち', 'Chờ Ký Duyệt': '承認待ち', 'Chờ Ban Hành': '発行待ち', 'Đã Ban Hành Lên QA System': 'QAシステム発行済み', 'Tổng Số Bản Vẽ': '図面総数', 'Đã ban hành': '発行済み', 'QA Đang Kiểm Tra': 'QA確認中', 'Bị trả lại': '差戻し',
+        'Tìm kiếm...': '検索...', 'Tìm kiếm email...': 'メール検索...', 'Tìm kiếm Type, TO, Customer...': 'Type、TO、顧客を検索...', 'Trạng thái': '状態', 'Đã tiếp nhận': '受付済み', 'Chưa tiếp nhận': '未受付', 'Chọn email để xem nội dung': 'メールを選択して内容を表示', 'Không tìm thấy dữ liệu': 'データなし', 'Không có dữ liệu': 'データなし',
+        'Dự án': 'プロジェクト', 'Người đảm trách': '担当者', 'Ngày tiếp nhận': '受付日', 'Customer': '顧客', 'Số SO': 'SO番号', 'Dw Code': '図面コード', 'Version': 'バージョン', 'Type DW': '図面タイプ', 'Width (mm)': '幅 (mm)', 'Height (mm)': '高さ (mm)', 'Ngày phát hành': '発行日', 'Lưu Dữ Liệu': 'データ保存', 'Thêm Mới Bản Vẽ': '新規図面追加', 'Chỉnh Sửa Dữ Liệu Bản Vẽ': '図面データ編集', 'Update Version': 'バージョン更新', 'Sửa dữ liệu': 'データ編集', 'Sửa hàng loạt': '一括編集', 'Sửa': '編集', 'Xóa': '削除', 'Hủy': 'キャンセル', 'Xác nhận': '確認',
+        'Mã SO': 'SO番号', 'Email': 'メール', 'Bản vẽ': '図面', 'Có': 'あり', 'Không': 'なし', 'Cập nhật': '更新', 'Đang tải...': '読み込み中...', 'Đang xử lý...': '処理中...', 'Đang chờ ký': '承認待ち', 'Đã ký': '承認済み', 'Chưa tới lượt': '未処理', 'Lý do từ chối': '却下理由', 'Vào hệ thống': 'システムを開く', 'Xem bản vẽ': '図面を見る', 'Approval': '承認', 'Reject': '却下', 'Gửi ký': '承認申請', 'Gửi ký lại': '再申請', 'Đóng': '閉じる', 'Sử dụng': '使用', 'Xem tiêu chuẩn đóng gói': '梱包標準を表示', 'Chiều cao': '高さ', 'Chiều rộng': '幅', 'Theo HxW': 'H×Wで検索', 'Theo khách': '顧客で検索', 'Làm mới Data': 'データ更新', 'Gửi đến QA': 'QAへ送信', 'Ban hành hàng loạt': '一括発行'
+      }
+    };
 
-      // document.getElementById('current-lang-display').innerText = translations[langCode]['lang_name'];
-
-      const elements = document.querySelectorAll('[data-i18n]');
-      elements.forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (translations[langCode][key]) {
-          el.innerText = translations[langCode][key];
-        }
-      });
+    function _normalizeAppText(value) {
+      return String(value || '').replace(/\s+/g, ' ').trim();
     }
+
+    function _translateAppNode(node, lang) {
+      if (!node || node.nodeType !== 3) return;
+      if (node.__appI18nSource === undefined) node.__appI18nSource = node.nodeValue;
+      var source = _normalizeAppText(node.__appI18nSource);
+      if (!source || source.length < 2) return;
+      var dictionary = appTextTranslations[lang] || {};
+      var translated = dictionary[source];
+      if (translated && node.nodeValue !== node.__appI18nSource.replace(source, translated)) {
+        node.nodeValue = node.__appI18nSource.replace(source, translated);
+      }
+    }
+
+    var _appTranslationBusy = false;
+    function _translateAppDom(lang) {
+      if (_appTranslationBusy) return;
+      _appTranslationBusy = true;
+      var dictionary = appTextTranslations[lang] || {};
+      document.querySelectorAll('[data-i18n]').forEach(function (element) {
+        var key = element.getAttribute('data-i18n');
+        if (translations[lang] && translations[lang][key] && element.textContent !== translations[lang][key]) element.textContent = translations[lang][key];
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach(function (element) {
+        var key = element.getAttribute('data-i18n-placeholder');
+        if (translations[lang] && translations[lang][key] && element.placeholder !== translations[lang][key]) element.placeholder = translations[lang][key];
+      });
+      document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(function (element) {
+        if (!element.hasAttribute('data-app-i18n-source-placeholder')) element.setAttribute('data-app-i18n-source-placeholder', element.placeholder);
+        var value = _normalizeAppText(element.getAttribute('data-app-i18n-source-placeholder'));
+        if (dictionary[value] && element.placeholder !== dictionary[value]) element.placeholder = dictionary[value];
+      });
+      document.querySelectorAll('[title], [aria-label]').forEach(function (element) {
+        ['title', 'aria-label'].forEach(function (attribute) {
+          var sourceAttribute = 'data-app-i18n-source-' + attribute;
+          if (!element.hasAttribute(sourceAttribute)) element.setAttribute(sourceAttribute, element.getAttribute(attribute) || '');
+          var value = _normalizeAppText(element.getAttribute(sourceAttribute));
+          if (dictionary[value] && element.getAttribute(attribute) !== dictionary[value]) element.setAttribute(attribute, dictionary[value]);
+        });
+      });
+      var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      var textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+      textNodes.forEach(function (node) {
+        if (node.parentElement && !['SCRIPT', 'STYLE', 'OPTION'].includes(node.parentElement.tagName)) _translateAppNode(node, lang);
+      });
+      _appTranslationBusy = false;
+    }
+
+    function changeLanguage(langCode) {
+      langCode = ['vi', 'en', 'ja'].includes(langCode) ? langCode : 'vi';
+      localStorage.setItem('app_lang', langCode);
+      var selector = document.getElementById('appLanguageSelect');
+      if (selector) selector.value = langCode;
+      _translateAppDom(langCode);
+      window.dispatchEvent(new CustomEvent('app-language-changed', { detail: { lang: langCode } }));
+    }
+
+    var appLanguageObserverTimer = null;
+    var appLanguageObserver = new MutationObserver(function () {
+      if (appLanguageObserverTimer) return;
+      appLanguageObserverTimer = setTimeout(function () {
+        appLanguageObserverTimer = null;
+        var lang = localStorage.getItem('app_lang') || 'vi';
+        _translateAppDom(lang);
+      }, 0);
+    });
+    appLanguageObserver.observe(document.body, { childList: true, subtree: true });
 
     // 2. Hàm mở và tải danh sách thông báo
     function loadNotifications() {
