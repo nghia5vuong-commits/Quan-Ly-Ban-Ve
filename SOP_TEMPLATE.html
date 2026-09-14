@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOP - Hệ Thống Quản Lý Bản Vẽ & Sản Xuất</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* ============ PAGE BREAK ============ */
+    .sop-page {
+      background: white;
+      margin-bottom: 40px;
+      padding: 60px 50px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+      page-break-after: always;
+      min-height: 900px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media print {
+      .sop-page {
+        page-break-after: always;
+        box-shadow: none;
+        margin-bottom: 0;
+        padding: 40px;
+      }
+    }
+
+    /* ============ COVER PAGE ============ */
+    .page-cover {
+      text-align: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #f0fdf4 0%, #e6f7ef 100%);
+      border: 2px solid #10b981;
+    }
+
+    .page-cover h1 {
+      font-size: 48px;
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+
+    .page-cover p {
+      font-size: 20px;
+      color: #0ea5e9;
+      margin-bottom: 60px;
+      font-weight: 500;
+    }
+
+    .page-cover .logo-placeholder {
+      width: 200px;
+      height: 200px;
+      background: white;
+      border: 2px dashed #10b981;
+      border-radius: 12px;
+      margin: 40px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #10b981;
+      font-weight: 600;
+    }
+
+    .page-cover .meta-info {
+      margin-top: 60px;
+      text-align: left;
+      font-size: 14px;
+      color: #334155;
+    }
+
+    /* ============ CONTENT PAGE ============ */
+    .page-content h2 {
+      font-size: 32px;
+      font-weight: 700;
+      color: #065f46;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #10b981;
+      padding-bottom: 15px;
+    }
+
+    .page-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-top: 30px;
+      margin-bottom: 12px;
+    }
+
+    .section-text {
+      color: #334155;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .section-list {
+      margin: 15px 0 20px 20px;
+      list-style-type: none;
+    }
+
+    .section-list li {
+      margin-bottom: 10px;
+      padding-left: 24px;
+      position: relative;
+      color: #334155;
+      font-size: 14px;
+    }
+
+    .section-list li:before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: #10b981;
+      font-weight: bold;
+    }
+
+    /* ============ IMAGE PLACEHOLDER ============ */
+    .image-placeholder {
+      width: 100%;
+      height: 350px;
+      background: #f1f5f9;
+      border: 2px dashed #cbd5e1;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #64748b;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-placeholder::before {
+      content: "📷 DÁN HÌNH VÀO ĐÂY";
+      position: absolute;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    /* ============ STEP BOX ============ */
+    .step-box {
+      background: #ecfdf5;
+      border-left: 4px solid #10b981;
+      padding: 15px 15px;
+      margin: 15px 0;
+      border-radius: 6px;
+      font-size: 14px;
+      color: #065f46;
+    }
+
+    .step-number {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 28px;
+      font-weight: 700;
+      margin-right: 10px;
+      font-size: 12px;
+    }
+
+    /* ============ TABLE ============ */
+    .content-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+
+    .content-table th {
+      background: #ecfdf5;
+      color: #065f46;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid #10b981;
+    }
+
+    .content-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .content-table tr:hover {
+      background: #f0fdf4;
+    }
+
+    /* ============ NOTES ============ */
+    .note-box {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 12px 15px;
+      margin: 15px 0;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #78350f;
+    }
+
+    .note-box strong {
+      color: #b45309;
+    }
+
+    /* ============ PAGE NUMBER & FOOTER ============ */
+    .page-footer {
+      margin-top: auto;
+      padding-top: 30px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .page-number {
+      font-weight: 600;
+      color: #10b981;
+    }
+
+    /* ============ TABLE OF CONTENTS ============ */
+    .toc-list {
+      list-style: none;
+      margin: 20px 0;
+    }
+
+    .toc-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+      color: #0f172a;
+      font-size: 14px;
+    }
+
+    .toc-list li a {
+      color: #10b981;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* ============ PRINT STYLES ============ */
+    @media print {
+      body { background: white; }
+      .container { max-width: 100%; padding: 0; }
+      .sop-page { margin-bottom: 0; box-shadow: none; }
+      .page-footer { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- ========== PAGE 1: COVER ========== -->
+    <div class="sop-page page-cover">
+      <div class="logo-placeholder">LIXIL LOGO</div>
+      <h1>SOP - QUẢN LÝ BẢN VẼ & SẢN XUẤT</h1>
+      <p>Standard Operating Procedure</p>
+      
+      <div class="meta-info">
+        <p><strong>Phiên bản:</strong> 1.0</p>
+        <p><strong>Ngày phê duyệt:</strong> _______________</p>
+        <p><strong>Người phê duyệt:</strong> _______________</p>
+        <p><strong>Bộ phận:</strong> Kỹ Thuật & Sản Xuất</p>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 2: MỤC LỤC ========== -->
+    <div class="sop-page page-content">
+      <h2>📋 MỤC LỤC</h2>
+      <ul class="toc-list">
+        <li><strong>1. Giới thiệu Hệ Thống</strong> - Trang 3</li>
+        <li><strong>2. Đăng Nhập & Giao Diện Chính</strong> - Trang 4</li>
+        <li><strong>3. Thêm Bản Vẽ (Tab 2)</strong> - Trang 5-6</li>
+        <li><strong>4. Quản Lý Bản Vẽ (Tab 3)</strong> - Trang 7</li>
+        <li><strong>5. Upload Thiết Kế (Upload Bản Vẽ)</strong> - Trang 8</li>
+        <li><strong>6. Tìm Kiếm Bản Vẽ (AI Search)</strong> - Trang 9</li>
+        <li><strong>7. Phê Duyệt Bản Vẽ (Approval)</strong> - Trang 10-11</li>
+        <li><strong>8. Quản Lý Phát Hành (Release)</strong> - Trang 12</li>
+        <li><strong>9. Thống Kê Tần Suất TO (History)</strong> - Trang 13</li>
+        <li><strong>10. Xử Lý Sự Cố Thường Gặp</strong> - Trang 14</li>
+      </ul>
+    </div>
+
+    <!-- ========== PAGE 3: GIỚI THIỆU ========== -->
+    <div class="sop-page page-content">
+      <h2>1️⃣ GIỚI THIỆU HỆ THỐNG</h2>
+      
+      <h3>Mục Đích Hệ Thống</h3>
+      <p class="section-text">
+        Hệ thống Quản Lý Bản Vẽ & Sản Xuất được phát triển để:
+      </p>
+      <ul class="section-list">
+        <li>Tiếp nhận, lưu trữ và quản lý tất cả bản vẽ kỹ thuật</li>
+        <li>Tự động phân loại bản vẽ theo loại, TO, khách hàng</li>
+        <li>Quản lý quy trình phê duyệt (QA → QC → Manager → Phát hành)</li>
+        <li>Thống kê tần suất sử dụng của mỗi TO (Technical Outline)</li>
+        <li>Cung cấp các báo cáo phân tích nhanh chóng</li>
+      </ul>
+
+      <h3>Thành Phần Chính Của Hệ Thống</h3>
+      <table class="content-table">
+        <tr>
+          <th>Module</th>
+          <th>Chức Năng</th>
+          <th>Người Dùng</th>
+        </tr>
+        <tr>
+          <td><strong>Thêm Bản Vẽ</strong></td>
+          <td>Tiếp nhận bản vẽ mới, upload hình ảnh bản vẽ</td>
+          <td>Design, Checker, QA</td>
+        </tr>
+        <tr>
+          <td><strong>Quản Lý Bản Vẽ</strong></td>
+          <td>Xem, chỉnh sửa thông tin, lịch sử bản vẽ</td>
+          <td>Tất cả người dùng</td>
+        </tr>
+        <tr>
+          <td><strong>Upload Thiết Kế</strong></td>
+          <td>Upload file bản vẽ, CAD files</td>
+          <td>Design, Checker</td>
+        </tr>
+        <tr>
+          <td><strong>Phê Duyệt Bản Vẽ</strong></td>
+          <td>QA, QC, Manager ký duyệt bản vẽ</td>
+          <td>QA, QC, Manager</td>
+        </tr>
+        <tr>
+          <td><strong>Quản Lý Phát Hành</strong></td>
+          <td>Ghi nhận phát hành, thống kê SO</td>
+          <td>QA, Manager</td>
+        </tr>
+      </table>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh Dashboard chính tại đây</em>
+      </p>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 3</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 4: ĐĂNG NHẬP ========== -->
+    <div class="sop-page page-content">
+      <h2>2️⃣ ĐĂNG NHẬP & GIAO DIỆN CHÍNH</h2>
+      
+      <h3>Bước 1: Mở Ứng Dụng</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Sử dụng tài khoản Google của bạn để truy cập URL ứng dụng
+      </div>
+
+      <h3>Bước 2: Đăng Nhập</h3>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Nhập email Google và mật khẩu (nếu có dialog yêu cầu)
+      </div>
+
+      <h3>Bước 3: Cho Phép Quyền Truy Cập</h3>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Nhấn "Cho phép" để ứng dụng truy cập Google Drive & Sheet
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh màn hình đăng nhập</em>
+      </p>
+
+      <h3>Giao Diện Chính (Sau Khi Đăng Nhập)</h3>
+      <ul class="section-list">
+        <li><strong>Sidebar Trái:</strong> Menu điều hướng (Trang chủ, Thêm Bản Vẽ, Quản Lý BV, v.v.)</li>
+        <li><strong>Topbar Trên:</strong> Thông tin người dùng, tên bộ phận, thông báo</li>
+        <li><strong>Vùng Chính:</strong> Hiển thị nội dung theo menu được chọn</li>
+        <li><strong>Thanh Cuộn:</strong> Cuộn để xem thêm nội dung nếu cần</li>
+      </ul>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh giao diện chính (dashboard)</em>
+      </p>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 4</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 5: THÊM BẢN VẼ (Tab 2) ========== -->
+    <div class="sop-page page-content">
+      <h2>3️⃣ THÊM BẢN VẼ (Tab 2)</h2>
+      
+      <h3>Khi Nào Sử Dụng Tab Này?</h3>
+      <p class="section-text">
+        Tab "Thêm Bản Vẽ" được sử dụng khi bạn muốn <strong>tiếp nhận bản vẽ mới hoặc thêm thông tin bán vẽ mà chưa có hình ảnh</strong>.
+      </p>
+
+      <h3>Bước 1: Chuyển Sang Tab "Thêm Bản Vẽ"</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Nhấp vào menu "Quản Lí Bản Vẽ" (Sidebar Trái)
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Chọn tab thứ 2 có nhãn "Thêm Bản Vẽ"
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh tab "Thêm Bản Vẽ"</em>
+      </p>
+
+      <h3>Bước 2: Điền Thông Tin Bản Vẽ</h3>
+      <table class="content-table">
+        <tr>
+          <th>Trường</th>
+          <th>Mô Tả</th>
+          <th>Yêu Cầu</th>
+        </tr>
+        <tr>
+          <td><strong>Loại Bản Vẽ</strong></td>
+          <td>Chọn loại: Bản vẽ kỹ thuật, CAD, 3D, v.v.</td>
+          <td>Bắt buộc</td>
+        </tr>
+        <tr>
+          <td><strong>TO (Technical Outline)</strong></td>
+          <td>Mã TO của bản vẽ (VD: 7Y090A)</td>
+          <td>Bắt buộc</td>
+        </tr>
+        <tr>
+          <td><strong>Khách Hàng</strong></td>
+          <td>Tên khách hàng yêu cầu bản vẽ</td>
+          <td>Bắt buộc</td>
+        </tr>
+        <tr>
+          <td><strong>Mã Bản Vẽ</strong></td>
+          <td>Mã số bản vẽ (VD: DW-2024-001)</td>
+          <td>Tuỳ chọn</td>
+        </tr>
+        <tr>
+          <td><strong>Mô Tả</strong></td>
+          <td>Mô tả ngắn về bản vẽ</td>
+          <td>Tuỳ chọn</td>
+        </tr>
+      </table>
+
+      <h3>Bước 3: Nhấn Nút "Thêm Bản Vẽ"</h3>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Sau khi điền xong thông tin, nhấn nút <strong>"Thêm Bản Vẽ"</strong> để lưu
+      </div>
+
+      <div class="note-box">
+        <strong>⚠️ Ghi Chú:</strong> Nếu TO + Khách Hàng đã tồn tại trong hệ thống, bản vẽ sẽ được cập nhật vào sheet "SO" (Số SO), không thêm mới vào sheet "Data".
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh form "Thêm Bản Vẽ"</em>
+      </p>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 5</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 6: THÊM BẢN VẼ PHẦN 2 ========== -->
+    <div class="sop-page page-content">
+      <h2>3️⃣ THÊM BẢN VẼ (Tiếp Theo)</h2>
+      
+      <h3>Bước 4: Xác Nhận Thông Tin</h3>
+      <p class="section-text">
+        Sau khi nhấn "Thêm Bản Vẽ", hệ thống sẽ:
+      </p>
+      <ul class="section-list">
+        <li>✅ Kiểm tra TO + Khách Hàng có tồn tại chưa</li>
+        <li>✅ Nếu mới: Lưu vào sheet "Data" và "SO" cùng lúc</li>
+        <li>✅ Nếu đã tồn tại: Chỉ cập nhật tần suất trong sheet "SO"</li>
+        <li>✅ Hiển thị thông báo kết quả (Thành công / Lỗi)</li>
+      </ul>
+
+      <h3>Bước 5: Upload Hình Ảnh Bản Vẽ</h3>
+      <p class="section-text">
+        Sau khi thêm bản vẽ thành công, bạn có thể upload hình ảnh:
+      </p>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Nhấp vào nút <strong>"Chọn Hình"</strong> hoặc kéo thả hình vào vùng
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Chọn tệp hình ảnh từ máy tính (JPG, PNG, PDF)
+      </div>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Nhập chiều rộng (Width - W) và chiều cao (Height - H) của hình
+      </div>
+      <div class="step-box">
+        <span class="step-number">4</span>
+        Nhấn <strong>"Lưu Hình Ảnh"</strong> để tải lên
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh upload hình ảnh bản vẽ</em>
+      </p>
+
+      <h3>Bước 6: Kiểm Tra Kết Quả</h3>
+      <p class="section-text">
+        Sau khi upload thành công, bạn có thể:
+      </p>
+      <ul class="section-list">
+        <li>Xem lại hình ảnh vừa upload</li>
+        <li>Chỉnh sửa thông tin nếu cần (W, H)</li>
+        <li>Hình ảnh sẽ được lưu vào sheet "Data" column AG</li>
+      </ul>
+
+      <div class="note-box">
+        <strong>✨ Kết Quả:</strong> Bản vẽ sẽ được chuyển sang Tab 3 "Quản Lí Bản Vẽ" khi có hình ảnh + W + H hoàn chỉnh.
+      </div>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 6</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 7: QUẢN LÝ BẢN VẼ ========== -->
+    <div class="sop-page page-content">
+      <h2>4️⃣ QUẢN LÝ BẢN VẼ (Tab 3)</h2>
+      
+      <h3>Khi Nào Sử Dụng Tab Này?</h3>
+      <p class="section-text">
+        Tab "Quản Lí Bản Vẽ" hiển thị <strong>tất cả bản vẽ đã hoàn chỉnh</strong> (có hình ảnh + W + H). Tại đây bạn có thể xem, chỉnh sửa, và quản lý bản vẽ.
+      </p>
+
+      <h3>Bước 1: Xem Danh Sách Bản Vẽ</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Truy cập Tab 3 "Quản Lí Bản Vẽ"
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Xem danh sách tất cả bản vẽ trong bảng
+      </div>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Tìm kiếm bản vẽ bằng cách nhập TO, Khách Hàng, hoặc Mã Bản Vẽ
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh tab "Quản Lí Bản Vẽ"</em>
+      </p>
+
+      <h3>Bước 2: Chỉnh Sửa Bản Vẽ</h3>
+      <ul class="section-list">
+        <li>Nhấp vào nút <strong>"Sửa"</strong> trong hàng bản vẽ</li>
+        <li>Cửa sổ popup sẽ mở ra với thông tin chi tiết</li>
+        <li>Chỉnh sửa các trường theo nhu cầu</li>
+        <li>Nhấn <strong>"Lưu"</strong> để cập nhật thay đổi</li>
+      </ul>
+
+      <h3>Bước 3: Xóa Bản Vẽ</h3>
+      <div class="note-box">
+        <strong>⚠️ Cảnh Báo:</strong> Để xóa bản vẽ, bạn cần quyền Admin. Hãy liên hệ quản trị viên hệ thống.
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh form sửa bản vẽ</em>
+      </p>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 7</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 8: UPLOAD THIẾT KẾ ========== -->
+    <div class="sop-page page-content">
+      <h2>5️⃣ UPLOAD THIẾT KẾ (Upload Bản Vẽ)</h2>
+      
+      <h3>Khi Nào Sử Dụng?</h3>
+      <p class="section-text">
+        Sử dụng menu "Upload Bản Vẽ" để upload các file thiết kế (CAD, PDF, DWG) của bản vẽ đã được tiếp nhận.
+      </p>
+
+      <h3>Bước 1: Truy Cập Menu Upload</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Từ Sidebar Trái, nhấp vào <strong>"Upload Bản Vẽ"</strong>
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Giao diện trang upload sẽ hiển thị
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh giao diện upload bản vẽ</em>
+      </p>
+
+      <h3>Bước 2: Chọn Bản Vẽ & Upload File</h3>
+      <table class="content-table">
+        <tr>
+          <th>Bước</th>
+          <th>Hành Động</th>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>Chọn loại bản vẽ từ dropdown</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Chọn TO từ danh sách (hoặc nhập nếu là TO mới)</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Chọn Khách Hàng</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Kéo thả hoặc nhấp để chọn file thiết kế</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Nhấn <strong>"Upload"</strong> để gửi file</td>
+        </tr>
+      </table>
+
+      <h3>Bước 3: Xác Nhận Upload</h3>
+      <ul class="section-list">
+        <li>✅ Hệ thống sẽ hiển thị thông báo "Upload thành công"</li>
+        <li>✅ File sẽ được lưu vào Google Drive của dự án</li>
+        <li>✅ Link file sẽ được ghi vào sheet "Data" column tương ứng</li>
+      </ul>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh kết quả upload thành công</em>
+      </p>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 8</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 9: TÌM KIẾM BẢN VẼ ========== -->
+    <div class="sop-page page-content">
+      <h2>6️⃣ TÌM KIẾM BẢN VẼ (AI Search)</h2>
+      
+      <h3>Khi Nào Sử Dụng?</h3>
+      <p class="section-text">
+        Menu "Tìm Kiếm Bản Vẽ" cho phép bạn <strong>tìm kiếm bản vẽ nhanh chóng theo TO, Khách Hàng, hoặc các tiêu chí khác</strong>.
+      </p>
+
+      <h3>Bước 1: Mở Giao Diện Tìm Kiếm</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Từ Sidebar, nhấp vào <strong>"Tìm Kiếm Bản Vẽ"</strong>
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Giao diện tìm kiếm sẽ hiển thị với các bộ lọc
+      </div>
+
+      <h3>Bước 2: Nhập Tiêu Chí Tìm Kiếm</h3>
+      <ul class="section-list">
+        <li><strong>TO:</strong> Nhập mã TO (VD: 7Y090A)</li>
+        <li><strong>Khách Hàng:</strong> Chọn hoặc nhập tên khách</li>
+        <li><strong>Loại Bản Vẽ:</strong> Chọn loại (Kỹ Thuật, CAD, 3D)</li>
+        <li><strong>Trạng Thái:</strong> Chọn trạng thái (Mới, Đã Phê Duyệt, v.v.)</li>
+      </ul>
+
+      <h3>Bước 3: Thực Hiện Tìm Kiếm</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Nhấn nút <strong>"Tìm Kiếm"</strong> hoặc <strong>"Áp Dụng Lọc"</strong>
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Kết quả sẽ hiển thị trong bảng dưới
+      </div>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Nhấp vào bản vẽ để xem chi tiết
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh giao diện tìm kiếm bản vẽ</em>
+      </p>
+
+      <h3>Bước 4: Xuất Kết Quả (Tuỳ Chọn)</h3>
+      <ul class="section-list">
+        <li>Nhấp vào nút <strong>"Xuất Excel"</strong> để tải kết quả về máy</li>
+        <li>Hoặc nhấp <strong>"In"</strong> để in danh sách tìm kiếm</li>
+      </ul>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 9</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 10: PHÊ DUYỆT BẢN VẼ ========== -->
+    <div class="sop-page page-content">
+      <h2>7️⃣ PHÊ DUYỆT BẢN VẼ (Approval)</h2>
+      
+      <h3>Quy Trình Phê Duyệt 4 Cấp</h3>
+      <p class="section-text">
+        Mỗi bản vẽ phải qua 4 bước phê duyệt trước khi được phát hành:
+      </p>
+      <ul class="section-list">
+        <li><strong>Cấp 1 (QA):</strong> Kỹ sư QA kiểm tra bản vẽ</li>
+        <li><strong>Cấp 2 (QC):</strong> Nhân viên QC xác nhận chất lượng</li>
+        <li><strong>Cấp 3 (Manager):</strong> Quản lý phê duyệt chính thức</li>
+        <li><strong>Cấp 4 (Release):</strong> Phát hành và ghi nhận SO</li>
+      </ul>
+
+      <h3>Bước 1: Truy Cập Trang Phê Duyệt</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Từ Sidebar, nhấp vào <strong>"Phê Duyệt Bản Vẽ"</strong>
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Danh sách bản vẽ chờ phê duyệt sẽ hiển thị
+      </div>
+
+      <h3>Bước 2: Chọn Bản Vẽ & Phê Duyệt</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Nhấp vào nút <strong>"Ký Duyệt"</strong> trong hàng bản vẽ
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Cửa sổ popup sẽ hiển thị chi tiết bản vẽ
+      </div>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Xem lại hình ảnh, thông tin TO, Khách Hàng
+      </div>
+      <div class="step-box">
+        <span class="step-number">4</span>
+        Chọn cấp phê duyệt của bạn từ dropdown
+      </div>
+      <div class="step-box">
+        <span class="step-number">5</span>
+        Nhập ghi chú (nếu cần) và nhấn <strong>"Ký Duyệt"</strong>
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh giao diện phê duyệt bản vẽ</em>
+      </p>
+
+      <h3>Bước 3: Phê Duyệt Hàng Loạt (Bulk Approve)</h3>
+      <p class="section-text">
+        Để phê duyệt nhiều bản vẽ cùng lúc:
+      </p>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Nhấp vào checkbox bên trái để chọn từng bản vẽ
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Hoặc nhấp <strong>"Chọn Tất Cả"</strong> để chọn toàn bộ
+      </div>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Nhấn nút <strong>"Ký Hàng Loạt"</strong> (sẽ hiện khi có checkbox được chọn)
+      </div>
+      <div class="step-box">
+        <span class="step-number">4</span>
+        Chọn cấp phê duyệt và xác nhận
+      </div>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 10</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 11: PHÊ DUYỆT (TIẾP THEO) ========== -->
+    <div class="sop-page page-content">
+      <h2>7️⃣ PHÊ DUYỆT BẢN VẼ (Tiếp Theo)</h2>
+      
+      <h3>Quyền Hạn Phê Duyệt Theo Chức Vụ</h3>
+      <table class="content-table">
+        <tr>
+          <th>Chức Vụ</th>
+          <th>Cấp Phê Duyệt</th>
+          <th>Quyền</th>
+        </tr>
+        <tr>
+          <td>QA</td>
+          <td>Cấp 1</td>
+          <td>Ký duyệt cấp QA, có thể phê duyệt hàng loạt</td>
+        </tr>
+        <tr>
+          <td>QC</td>
+          <td>Cấp 2</td>
+          <td>Ký duyệt cấp QC, có thể phê duyệt hàng loạt</td>
+        </tr>
+        <tr>
+          <td>Manager</td>
+          <td>Cấp 3</td>
+          <td>Ký duyệt cấp Manager, có thể phê duyệt hàng loạt</td>
+        </tr>
+        <tr>
+          <td>Charge</td>
+          <td>N/A</td>
+          <td>Chỉ có thể ký từng bản vẽ một, không được ký hàng loạt</td>
+        </tr>
+      </table>
+
+      <div class="note-box">
+        <strong>⚠️ Ghi Chú Charge User:</strong> Nếu bạn là Charge User, bạn sẽ không thấy nút "Ký Hàng Loạt" nhưng vẫn có thể chọn checkbox để ký từng bản vẽ một.
+      </div>
+
+      <h3>Bước 4: Xác Nhận & Hoàn Tất</h3>
+      <ul class="section-list">
+        <li>✅ Hệ thống sẽ hiển thị thông báo "Ký duyệt thành công"</li>
+        <li>✅ Bản vẽ sẽ được đánh dấu là "Đã ký [Cấp X]"</li>
+        <li>✅ Email thông báo sẽ được gửi cho người liên quan</li>
+        <li>✅ Bản vẽ sẽ tự động ẩn khỏi danh sách phê duyệt sau khi ký</li>
+      </ul>
+
+      <h3>Bước 5: Kiểm Tra Lịch Sử Phê Duyệt</h3>
+      <p class="section-text">
+        Để xem ai đã phê duyệt bản vẽ:
+      </p>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Truy cập Tab 3 "Quản Lí Bản Vẽ"
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Tìm bản vẽ muốn xem lịch sử
+      </div>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Nhấp vào nút <strong>"Sửa"</strong> để xem chi tiết (column: Checker, Approver)
+      </div>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh chi tiết bản vẽ sau phê duyệt</em>
+      </p>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 11</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 12: QUẢN LÝ PHÁT HÀNH ========== -->
+    <div class="sop-page page-content">
+      <h2>8️⃣ QUẢN LÝ PHÁT HÀNH (Release)</h2>
+      
+      <h3>Mục Đích Của Trang Release</h3>
+      <p class="section-text">
+        Trang "Quản Lý Phát Hành" giúp bạn:
+      </p>
+      <ul class="section-list">
+        <li>📊 Xem thống kê tất cả bản vẽ đã phát hành</li>
+        <li>📈 Theo dõi số lượng phát hành theo TO, Khách Hàng</li>
+        <li>✏️ Ghi nhận SO (Sales Order) khi phát hành</li>
+        <li>📝 Cập nhật trạng thái phát hành của bản vẽ</li>
+      </ul>
+
+      <h3>Bước 1: Truy Cập Trang Release</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Từ Sidebar, nhấp vào <strong>"Quản Lý Phát Hành"</strong>
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Giao diện release dashboard sẽ hiển thị
+      </div>
+
+      <h3>Bước 2: Xem Thống Kê KPI</h3>
+      <p class="section-text">
+        Phía trên sẽ hiển thị các số liệu:
+      </p>
+      <ul class="section-list">
+        <li><strong>Tổng Bản Vẽ:</strong> Tổng số bản vẽ trong hệ thống</li>
+        <li><strong>Đã Phát Hành:</strong> Số bản vẽ đã được phát hành</li>
+        <li><strong>Chưa Phát Hành:</strong> Số bản vẽ chưa phát hành</li>
+        <li><strong>TO Hoạt Động:</strong> Số TO đang được sử dụng</li>
+        <li><strong>Khách Hàng Hoạt Động:</strong> Số khách hàng đang làm việc</li>
+      </ul>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh dashboard phát hành</em>
+      </p>
+
+      <h3>Bước 3: Ghi Nhận Phát Hành</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Tìm bản vẽ trong bảng phát hành
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Nhập Số SO (Sales Order) vào cột tương ứng
+      </div>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Nhấn <strong>"Lưu"</strong> để ghi nhận phát hành
+      </div>
+
+      <h3>Bước 4: Xuất Báo Cáo Phát Hành</h3>
+      <ul class="section-list">
+        <li>Nhấp vào nút <strong>"Xuất Excel"</strong> để tải báo cáo phát hành</li>
+        <li>Hoặc nhấp <strong>"In"</strong> để in báo cáo</li>
+      </ul>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 12</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 13: LỊCH SỬ & THỐNG KÊ ========== -->
+    <div class="sop-page page-content">
+      <h2>9️⃣ THỐNG KÊ TẦN SUẤT TO (History & Analytics)</h2>
+      
+      <h3>Mục Đích Của Trang History</h3>
+      <p class="section-text">
+        Trang "Lịch Sử & Thống Kê" cung cấp các báo cáo chi tiết:
+      </p>
+      <ul class="section-list">
+        <li>📊 Tần suất sử dụng của mỗi TO</li>
+        <li>🎨 Số lần xuất hiện của mỗi màu cho TO</li>
+        <li>👥 Số khách hàng sử dụng TO</li>
+        <li>📈 So sánh dữ liệu SO giữa các phiên bản bản vẽ</li>
+      </ul>
+
+      <h3>Bước 1: Truy Cập Trang History</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Từ Sidebar, nhấp vào <strong>"Lịch Sử & Thống Kê"</strong>
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Chọn Tab 1 <strong>"Tần Suất TO"</strong>
+      </div>
+
+      <h3>Bước 2: Xem Thống Kê Tần Suất TO (Tab 1)</h3>
+      <p class="section-text">
+        Phía trên sẽ hiển thị:
+      </p>
+      <ul class="section-list">
+        <li><strong>Tổng TO:</strong> Số lượng TO độc nhất</li>
+        <li><strong>TO Cao Nhất:</strong> TO được sử dụng nhiều nhất</li>
+        <li><strong>Tần Suất Cao Nhất:</strong> Lần sử dụng tối đa</li>
+        <li><strong>Trung Bình Tần Suất:</strong> Bình quân lần sử dụng</li>
+      </ul>
+
+      <h3>Bước 3: Xem Bảng Tần Suất Chi Tiết</h3>
+      <table class="content-table">
+        <tr>
+          <th>Cột</th>
+          <th>Ý Nghĩa</th>
+        </tr>
+        <tr>
+          <td><strong>TO</strong></td>
+          <td>Mã TO (VD: 7Y090A)</td>
+        </tr>
+        <tr>
+          <td><strong>Tần Suất</strong></td>
+          <td>Lần được sử dụng cao nhất</td>
+        </tr>
+        <tr>
+          <td><strong>Số Lần Xuất Hiện</strong></td>
+          <td>Tổng lần TO xuất hiện</td>
+        </tr>
+        <tr>
+          <td><strong>Số Màu</strong></td>
+          <td>Số loại màu khác nhau của TO</td>
+        </tr>
+        <tr>
+          <td><strong>Số Khách</strong></td>
+          <td>Số khách hàng khác nhau sử dụng TO</td>
+        </tr>
+        <tr>
+          <td><strong>Các Màu</strong></td>
+          <td>Danh sách các màu sắc (VD: FJ, AB)</td>
+        </tr>
+        <tr>
+          <td><strong>Khách Hàng</strong></td>
+          <td>Danh sách khách hàng sử dụng TO</td>
+        </tr>
+      </table>
+
+      <div class="image-placeholder"></div>
+      <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: -10px;">
+        <em>📷 Dán hình ảnh bảng tần suất TO</em>
+      </p>
+
+      <h3>Bước 4: Xem Tab 2 "Đối Chiếu SO"</h3>
+      <div class="step-box">
+        <span class="step-number">1</span>
+        Chọn Tab 2 <strong>"Đối Chiếu SO"</strong>
+      </div>
+      <div class="step-box">
+        <span class="step-number">2</span>
+        Xem so sánh bản vẽ mới vs bản vẽ cũ
+      </div>
+      <div class="step-box">
+        <span class="step-number">3</span>
+        Sử dụng bộ lọc để tìm SO cụ thể
+      </div>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 13</span>
+      </div>
+    </div>
+
+    <!-- ========== PAGE 14: XỬ LÝ SỰ CỐ ========== -->
+    <div class="sop-page page-content">
+      <h2>🔟 XỬ LÝ SỰ CỐ THƯỜNG GẶP</h2>
+      
+      <h3>Sự Cố 1: Bản Vẽ Không Hiển Thị Trong Tab 3 "Quản Lí Bản Vẽ"</h3>
+      <div class="step-box">
+        <strong>Nguyên Nhân:</strong> Bản vẽ chưa có hình ảnh hoặc thiếu chiều W/H
+      </div>
+      <div class="step-box">
+        <strong>Giải Pháp:</strong> Quay lại Tab 2, tìm bản vẽ và upload hình ảnh kèm W, H
+      </div>
+
+      <h3>Sự Cố 2: Upload Hình Ảnh Thất Bại</h3>
+      <div class="step-box">
+        <strong>Nguyên Nhân:</strong> Kích thước file quá lớn (>5MB) hoặc định dạng không hỗ trợ
+      </div>
+      <div class="step-box">
+        <strong>Giải Pháp:</strong> Nén hình ảnh hoặc chuyển định dạng sang JPG/PNG (khuyến nghị <3MB)
+      </div>
+
+      <h3>Sự Cố 3: Phê Duyệt Bản Vẽ Không Thành Công</h3>
+      <div class="step-box">
+        <strong>Nguyên Nhân:</strong> Bạn không có quyền phê duyệt hoặc bản vẽ không ở trạng thái đúng
+      </div>
+      <div class="step-box">
+        <strong>Giải Pháp:</strong> Kiểm tra chức vụ và quyền của mình, hoặc liên hệ Admin
+      </div>
+
+      <h3>Sự Cố 4: Không Thấy Bản Vẽ Cần Tìm</h3>
+      <div class="step-box">
+        <strong>Nguyên Nhân:</strong> Bản vẽ chưa được thêm vào hệ thống hoặc tên nhập sai
+      </div>
+      <div class="step-box">
+        <strong>Giải Pháp:</strong> Kiểm tra lại tên TO/Khách Hàng hoặc thêm bản vẽ mới (Tab 2)
+      </div>
+
+      <h3>Sự Cố 5: Không Thể Chỉnh Sửa Bản Vẽ</h3>
+      <div class="step-box">
+        <strong>Nguyên Nhân:</strong> Bản vẽ đã bị khóa hoặc bạn không có quyền chỉnh sửa
+      </div>
+      <div class="step-box">
+        <strong>Giải Pháp:</strong> Liên hệ Admin để mở khóa hoặc cấp quyền
+      </div>
+
+      <h3>Liên Hệ Hỗ Trợ</h3>
+      <div class="note-box">
+        <strong>📞 Nếu gặp sự cố khác:</strong> Liên hệ bộ phận Kỹ Thuật IT tại:
+        <ul style="margin: 10px 0 0 20px;">
+          <li>Email: it-support@lixil.com</li>
+          <li>Điện thoại: 0123-456-789</li>
+          <li>Nội bộ: Phòng IT, Tầng 3</li>
+        </ul>
+      </div>
+
+      <div class="page-footer">
+        <span>SOP - Quản Lý Bản Vẽ</span>
+        <span class="page-number">Trang 14</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Tính năng print/export
+    function printSOP() {
+      window.print();
+    }
+
+    // Tính năng chèn hình ảnh (dùng JavaScript để cho phép người dùng click vào placeholder)
+    document.querySelectorAll('.image-placeholder').forEach((placeholder, index) => {
+      placeholder.style.cursor = 'pointer';
+      placeholder.title = 'Click để chèn hình ảnh (hoặc paste)';
+      
+      placeholder.addEventListener('click', function() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.click();
+        
+        input.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              placeholder.style.background = `url(${event.target.result}) center/cover`;
+              placeholder.textContent = '';
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      });
+      
+      // Cho phép paste hình ảnh
+      placeholder.addEventListener('paste', function(e) {
+        const items = e.clipboardData.items;
+        for (let item of items) {
+          if (item.type.indexOf('image') !== -1) {
+            const blob = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = function(event) {
+              placeholder.style.background = `url(${event.target.result}) center/cover`;
+              placeholder.textContent = '';
+            };
+            reader.readAsDataURL(blob);
+          }
+        }
+      });
+    });
+
+    // Footer: Cộng trang
+    const pages = document.querySelectorAll('.sop-page');
+    pages.forEach((page, index) => {
+      const pageNum = index + 1;
+      // Cập nhật số trang nếu chưa có
+      const footer = page.querySelector('.page-footer');
+      if (footer && !footer.querySelector('.page-number')?.textContent.includes(pageNum.toString())) {
+        // Number is already set in HTML
+      }
+    });
+  </script>
+</body>
+</html>
