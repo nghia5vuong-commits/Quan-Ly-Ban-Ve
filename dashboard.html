@@ -981,6 +981,9 @@
   // =========================================================
   // TRÁI TIM HỆ THỐNG: CẬP NHẬT MỌI THỨ THEO BỘ LỌC
   // =========================================================
+ // =========================================================
+  // 1. CẬP NHẬT: HÀM TÍNH TOÁN DATA (Fix lỗi biểu đồ trống)
+  // =========================================================
   function updateDashboardStats() {
     var sourceData = (window.pageData && Array.isArray(window.pageData)) ? window.pageData : [];
     var rawData = sourceData;
@@ -1069,9 +1072,10 @@
         isNewRow = false;
       }
 
+      // SỬ DỤNG HÀM PARSE AN TOÀN ĐỂ FIX LỖI BIỂU ĐỒ TRỐNG DATA
       if (dateVal) {
-        var dateObject = new Date(dateVal);
-        if (!isNaN(dateObject.getTime())) {
+        var dateObject = parseDashboardDate(dateVal);
+        if (dateObject) {
           monthIdx = (dateObject.getMonth() + 1 >= 4) ? (dateObject.getMonth() - 3) : (dateObject.getMonth() + 9);
         }
       }
@@ -1120,6 +1124,140 @@
     renderDashRecentTable(finalData);
   }
 
+  // ==========================================
+  // 2. CẬP NHẬT: RENDER BẢNG DỮ LIỆU CUỐI CÙNG (Fix lỗi tô đỏ dòng)
+  // ==========================================
+  function renderDashRecentTable(dataList) {
+    var tbody = document.getElementById('dashRecentTableBody');
+    if (!tbody) return;
+
+    if (dataList.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-2 text-black-50"></i>Không có dữ liệu trùng khớp.</td></tr>';
+      return;
+    }
+
+    var fragment = document.createDocumentFragment();
+    var limitedRows = dataList.slice(0, 15);
+
+    limitedRows.forEach(function (row) {
+      var id = getRowValue(row, 'id');
+      var group = getRowValue(row, 'group') || '';
+      var dwNo = getRowValue(row, 'dwNo') || 'Chưa có mã';
+      var type = getRowValue(row, 'type') || '—';
+      var version = getRowValue(row, 'version') || '0';
+      var st = getRowValue(row, 'status') || 'Chưa xác định';
+      var to = getRowValue(row, 'to') || 'Chưa có mã';
+      var project = getRowValue(row, 'project') || '—';
+      var customer = getRowValue(row, 'customer') || '—';
+      var completionDate = getRowValue(row, 'completionDate') || '—';
+      var date = getRowValue(row, 'date') || '—';
+      var estimatedCompletionDate = getRowValue(row, 'estimatedCompletionDate') || '—';
+      var releaseDate = getRowValue(row, 'releaseDate') || '—';
+      var pdflink = getRowValue(row, 'pdfSample') || '';
+      var ngDamTrach = getRowValue(row, 'ngDamTrach') || '';
+      var checkerRaw = getRowValue(row, 'checker') || '';
+      var approve = getRowValue(row, 'approve') || '';
+      
+      // Tách checker an toàn
+      var checkerList = checkerRaw ? String(checkerRaw).split('\n') : [];
+      var checker1 = checkerList[0] || '';
+      var checker2 = checkerList[1] || '';
+
+      var pdf = (pdflink && String(pdflink).includes('http'))
+        ? '<button type="button" data-drawing-preview data-preview-url="' + String(pdflink).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" data-preview-title="' + String(dwNo).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" class="btn btn-sm btn-outline-danger border-0 py-1 px-2" title="Xem trước bản vẽ PDF"><i class="bi bi-file-earmark-pdf-fill fs-5"></i></button>'
+        : '<span class="text-muted small"><i class="bi bi-dash"></i></span>';
+
+      var signHtml = '<div class="mt-2 pt-2 border-top border-secondary border-opacity-25 text-start w-100" style="font-size: 0.75rem; line-height: 1.4;">';
+      if (ngDamTrach) signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">Chg:</span> <span class="fw-medium text-dark">' + String(ngDamTrach).replace(/</g, '&lt;') + '</span></div>';
+      if (checker1 || checker2) {
+        var chkValue = [checker1, checker2].filter(Boolean).join(', ');
+        signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">Chk:</span> <span class="fw-medium text-dark">' + String(chkValue).replace(/</g, '&lt;') + '</span></div>';
+      }
+      if (approve) signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">App:</span> <span class="fw-medium text-primary">' + String(approve).replace(/</g, '&lt;') + '</span></div>';
+      signHtml += '</div>';
+      if (!ngDamTrach && !checker1 && !checker2 && !approve) signHtml = '';
+
+      var dateHtml = '<div class="text-start d-flex flex-column gap-1 mx-auto" style="font-size: 0.75rem; width: fit-content;">';
+      dateHtml += '<div title="Ngày tiếp nhận"><i class="bi bi-box-arrow-in-right text-secondary me-1"></i> <span class="fw-medium text-dark">' + String(date).replace(/</g, '&lt;') + '</span></div>';
+
+      // XÉT ĐIỀU KIỆN TRỄ HẠN THÔNG MINH
+      var isLate = false;
+      if (estimatedCompletionDate !== '—' && completionDate === '—') {
+        var tmDate = parseDashboardDate(estimatedCompletionDate);
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (tmDate && !isNaN(tmDate.getTime()) && tmDate < today) {
+           isLate = true;
+        }
+      }
+      var tmColor = isLate ? 'text-danger fw-bold' : 'text-primary fw-medium';
+
+      dateHtml += '<div title="Hạn chót (TM)"><i class="bi bi-stopwatch text-warning me-1"></i> <span class="' + tmColor + '">' + String(estimatedCompletionDate).replace(/</g, '&lt;') + '</span></div>';
+      if (completionDate !== '—') dateHtml += '<div title="Ngày hoàn thành (ACT)"><i class="bi bi-check2-circle text-success me-1"></i> <span class="fw-medium text-success">' + String(completionDate).replace(/</g, '&lt;') + '</span></div>';
+      if (releaseDate !== '—') dateHtml += '<div title="Ngày ban hành"><i class="bi bi-send-check text-info me-1"></i> <span class="fw-medium text-info">' + String(releaseDate).replace(/</g, '&lt;') + '</span></div>';
+      dateHtml += '</div>';
+
+      var badgeClass = 'bg-secondary text-white';
+      var stt = 'Chưa xác định';
+      var stLower = st.toLowerCase();
+      var stIcon = 'bi-circle';
+
+      if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành')) {
+        badgeClass = 'bg-info text-dark border border-info';
+        stt = 'DW ban hành';
+        stIcon = 'bi-hourglass-split';
+      } else if (stLower.includes('đã ban hành') || stLower.includes('released')) {
+        badgeClass = 'bg-success text-white';
+        stt = 'Đã ban hành';
+        stIcon = 'bi-check-circle-fill';
+      } else if (stLower.includes('checker') || stLower.includes('approval')) {
+        badgeClass = 'bg-warning text-dark';
+        stt = 'Đang trình ký';
+        stIcon = 'bi-pencil-square';
+      } else if (stLower.includes('trả về charger') || stLower.includes('returned')) {
+        badgeClass = 'bg-danger text-white';
+        stt = 'Bị trả lại';
+        stIcon = 'bi-exclamation-triangle-fill';
+      } else if (stLower.includes('đang thực hiện')) {
+        badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25';
+        stt = (ngDamTrach ? ngDamTrach.split(' ')[0] : 'Charger') + ' đang thực hiện';
+        stIcon = 'bi-palette-fill';
+      } else if (stLower.includes('ban hành thất bại')) {
+        badgeClass = 'bg-danger text-white';
+        stt = 'Ban hành thất bại';
+        stIcon = 'bi-exclamation-triangle-fill';
+      }
+
+      // KÍCH HOẠT LỚP CSS TÔ ĐỎ DÒNG
+      var trClass = 'align-middle border-bottom border-light transition-all';
+      if (isLate && (stLower.includes('đang thực hiện') || stLower.includes('trả về charger') || stLower.includes('returned') || stLower.includes('bị trả lại'))) {
+          trClass += ' table-danger'; // Tô đỏ toàn dòng bằng class của Bootstrap
+      } else {
+          trClass += ' hover-bg-light';
+      }
+
+      var tr = document.createElement('tr');
+      tr.className = trClass;
+      tr.innerHTML = [
+        '<td class="d-none">' + String(id).replace(/</g, '&lt;') + '</td>',
+        '<td class="d-none">' + String(group).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center"><span class="badge bg-light text-dark border px-2 py-1 shadow-sm">' + String(type).replace(/</g, '&lt;') + '</span></td>',
+        '<td class="text-center fw-medium text-secondary">' + String(to).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center fw-bold text-dark" style="font-size: 0.9rem;">' + String(dwNo).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center text-muted" style="font-size: 0.85rem;">v' + String(version).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center fw-semibold text-dark text-truncate" style="max-width: 120px;" title="' + String(project).replace(/</g, '&lt;') + '">' + String(project).replace(/</g, '&lt;') + '</td>',
+        '<td class="text-center text-muted text-truncate" style="font-size: 0.85rem; max-width: 120px;" title="' + String(customer).replace(/</g, '&lt;') + '"><i class="bi bi-person-fill me-1"></i>' + String(customer).replace(/</g, '&lt;') + '</td>',
+        '<td class="py-2">' + dateHtml + '</td>',
+        '<td class="text-center">' + pdf + '</td>',
+        '<td class="text-center"><div class="d-flex flex-column h-100 justify-content-center align-items-center"><span class="badge ' + badgeClass + ' w-100 py-2 shadow-sm mb-1" style="font-size: 0.75rem;"><i class="bi ' + stIcon + ' me-1"></i>' + stt + '</span>' + signHtml + '</div></td>'
+      ].join('');
+
+      fragment.appendChild(tr);
+    });
+
+    tbody.innerHTML = '';
+    tbody.appendChild(fragment);
+  }
   // ==========================================
   // VẼ CÁC BIỂU ĐỒ VỚI SỰ KIỆN CLICK (CROSS-FILTER)
   // ==========================================

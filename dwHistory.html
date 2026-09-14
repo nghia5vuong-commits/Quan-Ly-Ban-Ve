@@ -64,6 +64,20 @@
       #page-dwHistory .history-tabs button { min-width:max-content; }
       #page-dwHistory .history-table-wrap { max-height:calc(100vh - 300px); }
     }
+
+    /* CSS hiệu ứng Click cho thẻ KPI */
+    #page-dwHistory .history-stat {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    #page-dwHistory .history-stat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    }
+    #page-dwHistory .history-stat.active-stat {
+      background: rgba(209, 250, 229, 0.6);
+      border-left: 4px solid var(--liquid-primary, #10b981);
+    }
   </style>
 
   <div class="history-shell">
@@ -104,12 +118,18 @@
           <option value="ALL">Tất cả</option><option value="RECEIVED">Đã tiếp nhận</option><option value="UNRECEIVED">Chưa tiếp nhận</option><option value="NEW">NEW</option><option value="OLD">OLD</option>
         </select>
       </div>
-      <div class="history-stats">
-        <div class="history-stat"><small>Tổng SO</small><strong id="dwHistorySoTotal">0</strong></div>
-        <div class="history-stat"><small>Đã tiếp nhận</small><strong id="dwHistorySoReceived">0</strong></div>
-        <div class="history-stat"><small>Chưa tiếp nhận</small><strong id="dwHistorySoUnreceived">0</strong></div>
-      </div>
-      <div class="history-table-wrap">
+        <div class="history-stats">
+        <!-- Thêm onclick và data-kpi vào từng thẻ -->
+        <div class="history-stat active-stat" data-kpi="ALL" onclick="dwHistoryQuickFilter('ALL')" title="Lọc tất cả SO">
+          <small>Tổng SO</small><strong id="dwHistorySoTotal">0</strong>
+        </div>
+        <div class="history-stat" data-kpi="RECEIVED" onclick="dwHistoryQuickFilter('RECEIVED')" title="Lọc SO đã tiếp nhận">
+          <small>Đã tiếp nhận</small><strong id="dwHistorySoReceived">0</strong>
+        </div>
+        <div class="history-stat" data-kpi="UNRECEIVED" onclick="dwHistoryQuickFilter('UNRECEIVED')" title="Lọc SO chưa tiếp nhận">
+          <small>Chưa tiếp nhận</small><strong id="dwHistorySoUnreceived">0</strong>
+        </div>
+      </div>      <div class="history-table-wrap">
         <table style="min-width:700px;">
           <thead><tr><th>Mã SO</th><th>Email</th><th>Bản vẽ</th><th>NEW</th><th>OLD</th></tr></thead>
           <tbody id="dwHistoryComparisonBody"><tr><td colspan="5" class="history-empty">Chọn tab để tải dữ liệu.</td></tr></tbody>
@@ -199,6 +219,41 @@
         document.getElementById('dwHistoryComparisonPanel').style.display = tab === 'comparison' ? '' : 'none';
         if (tab === 'frequency' && !frequencyAll.length) loadFrequency();
         if (tab === 'comparison' && !comparisonAll.length) loadComparison();
+      };
+
+
+      // 1. Hàm xử lý khi người dùng bấm vào thẻ KPI
+      window.dwHistoryQuickFilter = function(filterValue) {
+        var filterSelect = document.getElementById('dwHistorySoFilter');
+        if (filterSelect) {
+          filterSelect.value = filterValue; // Tự động đổi giá trị của dropdown cho khớp
+        }
+        dwHistoryFilterComparison(); // Gọi hàm lọc bảng
+      };
+
+      // 2. Cập nhật hàm lọc bảng để nó đổi luôn màu của thẻ KPI
+      window.dwHistoryFilterComparison = function () {
+        var search = String(document.getElementById('dwHistorySoSearch').value || '').trim().toUpperCase().replace(/\s+/g, '');
+        var filter = document.getElementById('dwHistorySoFilter').value;
+        
+        // Làm nổi bật (tô màu) thẻ KPI đang được chọn
+        document.querySelectorAll('#dwHistoryComparisonPanel .history-stat').forEach(function (card) {
+          if (card.dataset.kpi === filter) {
+            card.classList.add('active-stat');
+          } else {
+            card.classList.remove('active-stat');
+          }
+        });
+
+        // Lọc dữ liệu mảng
+        renderComparison(comparisonAll.filter(function (row) {
+          if (search && String(row.so || '').indexOf(search) === -1) return false;
+          if (filter === 'RECEIVED' && !row.email) return false;
+          if (filter === 'UNRECEIVED' && row.email) return false;
+          if (filter === 'NEW' && !row.isNew) return false;
+          if (filter === 'OLD' && !row.isOld) return false;
+          return true;
+        }));
       };
 
       window.dwHistoryReloadActiveTab = function () { if (activeTab === 'frequency') loadFrequency(); else loadComparison(); };

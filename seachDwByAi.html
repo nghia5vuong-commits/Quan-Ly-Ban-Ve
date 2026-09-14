@@ -489,6 +489,127 @@
   }
   #page-seachDwByAI .form-control,
   #page-seachDwByAI .form-select { font-size: 0.8rem !important; padding: 6px 10px !important; }
+
+
+
+ /* ==========================================================================
+     FIX LỖI MODAL BỊ RỚT CSS: GỌI ĐÍCH DANH ID MODAL BẰNG MỌI GIÁ
+     ========================================================================== */
+
+  /* 1. ÉP MODAL BUNG FULL MÀN HÌNH (Đề phòng Bootstrap cũ không nhận modal-fullscreen) */
+  #standardModal .modal-dialog {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  #standardModal .modal-content {
+    height: 100vh !important;
+    border-radius: 0 !important;
+    background: #f8fafc !important;
+    border: none !important;
+  }
+
+  /* 2. HEADER MODAL ĐỔ MÀU GRADIENT */
+  #standardModal .std-modal-header {
+    background: linear-gradient(135deg, #0f766e 0%, #0369a1 100%) !important;
+    color: #ffffff !important;
+    padding: 16px 24px !important;
+  }
+  #standardModal .std-modal-header .modal-title {
+    font-size: 1.25rem !important;
+    color: #ffffff !important;
+  }
+  #standardModal .std-modal-subtitle {
+    color: #e0f2fe !important;
+  }
+
+  /* 3. KHU VỰC CUỘN BẢNG BẮT BUỘC (KÍCH HOẠT THANH CUỘN NGANG) */
+  #standardModal .std-table-wrap {
+    width: 100vw !important;
+    height: calc(100vh - 130px) !important;
+    overflow-x: auto !important; 
+    overflow-y: auto !important;
+    display: block !important; 
+    background-color: #ffffff !important;
+  }
+
+  /* Tùy chỉnh thanh cuộn */
+  #standardModal .std-table-wrap::-webkit-scrollbar { width: 12px; height: 12px; }
+  #standardModal .std-table-wrap::-webkit-scrollbar-track { background: #f1f5f9; }
+  #standardModal .std-table-wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 3px solid #f1f5f9; }
+
+  /* 4. ÉP BẢNG BUNG DÀI THEO NỘI DUNG (CỨU TINH CHỐNG BÓP MÉO) */
+  #standardModal table.std-table {
+    width: max-content !important; 
+    min-width: 100% !important;
+    table-layout: auto !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+  }
+
+  /* 5. CẤM RỚT DÒNG VÀ SET KÍCH THƯỚC Ô */
+  #standardModal table.std-table th,
+  #standardModal table.std-table td {
+    white-space: nowrap !important; 
+    padding: 12px 18px !important;
+    vertical-align: middle !important;
+    border-right: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  /* 6. MÀU NỀN 3 NHÓM HEADER LỚN TRÊN CÙNG */
+  #standardModal table.std-table th.std-group-info { background-color: #bae6fd !important; color: #0369a1 !important; font-size: 0.9rem !important; } 
+  #standardModal table.std-table th.std-group-pack { background-color: #a7f3d0 !important; color: #047857 !important; font-size: 0.9rem !important; } 
+  #standardModal table.std-table th.std-group-history { background-color: #fde68a !important; color: #b45309 !important; font-size: 0.9rem !important; }
+  
+  /* 7. MÀU NỀN DÒNG TIÊU ĐỀ SỐ 2 */
+  #standardModal table.std-table tr.std-sub-header th { background-color: #f1f5f9 !important; color: #1e293b !important; font-weight: bold !important; text-align: center !important;}
+
+  /* 8. ĐỊNH DẠNG CỘT DỮ LIỆU BÊN DƯỚI */
+  #standardModal table.std-table tbody td {
+    font-size: 0.85rem !important; 
+    color: #1e293b !important;
+    background-color: #ffffff !important;
+  }
+  #standardModal table.std-table tbody tr:hover td { 
+    background-color: #ecfdf5 !important; 
+  }
+
+  /* 9. STICKY THEO CẢ CHIỀU DỌC LẪN CHIỀU NGANG */
+  #standardModal table.std-table thead th { position: sticky !important; z-index: 20 !important; }
+  /* Phân tầng Z-index tránh 2 dòng Header đè nhau */
+  #standardModal table.std-table thead tr:nth-child(1) th { top: 0 !important; z-index: 21 !important; }
+  #standardModal table.std-table thead tr:nth-child(2) th { top: 46px !important; z-index: 20 !important; } /* Nếu bị hở 1 vệt trắng nhỏ giữa 2 dòng tiêu đề, hãy tăng/giảm số 46px này */
+
+  /* Ép cột STT đứng im bên trái */
+  #standardModal table.std-table tbody td:first-child,
+  #standardModal table.std-table thead th.std-sticky-col {
+    position: sticky !important; 
+    left: 0 !important; 
+    z-index: 30 !important;
+    background-color: #f1f5f9 !important; 
+    font-weight: bold !important; 
+    box-shadow: inset -2px 0 0 rgba(0,0,0,0.1) !important;
+  }
+
+  /* 10. NGOẠI LỆ: CHỈ NHỮNG CỘT VĂN BẢN DÀI MỚI ĐƯỢC PHÉP RỚT DÒNG */
+  #standardModal table.std-table tbody td:nth-child(6),   /* Địa chỉ */
+  #standardModal table.std-table tbody td:nth-child(16),  /* Nguyên vật liệu */
+  #standardModal table.std-table tbody td:nth-child(17),  /* PP Đóng gói */
+  #standardModal table.std-table tbody td:nth-child(20),  /* Ghi chú 1 */
+  #standardModal table.std-table tbody td:nth-child(22),  /* ND thay đổi */
+  #standardModal table.std-table tbody td:nth-child(23),  /* Lý do thay đổi */
+  #standardModal table.std-table tbody td:nth-child(28)   /* Ghi chú 2 */
+  {
+    white-space: normal !important;
+    min-width: 250px !important;
+    max-width: 400px !important;
+    line-height: 1.6 !important;
+    text-align: left !important; 
+  }
 </style>
 
   <main class="container-fluid p-0" style="height: 100%; overflow: hidden;">
@@ -518,18 +639,23 @@
                 data-i18n-placeholder="w_placeholder">
             </div>
 
-            <label class="upload-title"><i class="bi bi-person-badge"></i> <span data-i18n="cust_title">Khách
-                hàng</span></label>
+            <label class="upload-title"><i class="bi bi-person-badge"></i> <span data-i18n="cust_title">Khách hàng</span></label>
             <div class="search-select-wrapper mb-4" id="customerWrapper">
-              <div class="search-select-input" onclick="toggleDropdown()">
+              
+              <!-- Đổi onclick thành openDropdown để click vào input chỉ MỞ chứ không ĐÓNG -->
+              <div class="search-select-input" onclick="openDropdown()">
+                
+                <!-- Bỏ onfocus, thêm tham số 'true' vào hàm oninput -->
                 <input type="text" id="customerSearch" class="search-select-field" placeholder="Gõ để tìm khách hàng..."
-                  autocomplete="off" oninput="filterCustomerList()" onfocus="openDropdown()">
-                <i class="bi bi-chevron-down search-select-arrow"></i>
+                  autocomplete="off" oninput="filterCustomerList(true)">
+                  
+                <!-- Bắt sự kiện riêng cho icon mũi tên để Toggle (Đóng/Mở) -->
+                <i class="bi bi-chevron-down search-select-arrow" onclick="event.stopPropagation(); toggleDropdown();" style="cursor: pointer; padding: 10px;"></i>
               </div>
-              <div class="search-select-dropdown" id="customerDropdown"></div>
+              
+              <div class="search-select-dropdown custom-scrollbar" id="customerDropdown"></div>
               <input type="hidden" id="customerSelect" value="">
             </div>
-
             <button id="viewStandardBtn" class="btn btn-outline-primary w-100 mb-4 mt-2 fw-bold"
               style="display:none; border-width: 2px;">
               <i class="bi bi-box-seam"></i> <span data-i18n="btn_standard">Xem tiêu chuẩn đóng gói</span>
@@ -702,29 +828,29 @@
                   </th>
                 </tr>
                 <tr class="std-sub-header">
-                  <th rowspan="2" class="std-sticky-col">STT</th>
-                  <th rowspan="2">Khách hàng</th>
-                  <th rowspan="2">Phân loại</th>
-                  <th rowspan="2">Bề mặt</th>
-                  <th rowspan="2">Dự án</th>
-                  <th rowspan="2">Địa chỉ</th>
-                  <th rowspan="2">Dự kiến<br>xuất hàng</th>
-                  <th rowspan="2">Mark</th>
-                  <th rowspan="2">Người gửi<br>thông tin</th>
-                  <th rowspan="2">QA Nhập<br>thông tin</th>
-                  <th rowspan="2">QA Đảm<br>trách</th>
-                  <th colspan="3" class="text-center">Pallet / Thùng Carton</th>
-                  <th rowspan="2">Tiêu chuẩn<br>bề mặt</th>
-                  <th rowspan="2">Nguyên<br>vật liệu</th>
-                  <th rowspan="2">Phương pháp<br>đóng gói</th>
-                  <th rowspan="2">Đóng gói<br>1 TO/Pallet</th>
-                  <th rowspan="2">Phương tiện<br>vận chuyển</th>
-                  <th rowspan="2">Ghi chú</th>
-                  <th rowspan="2">Ngày<br>áp dụng</th>
-                  <th rowspan="2">Nội dung<br>thay đổi</th>
-                  <th rowspan="2">Lý do<br>thay đổi</th>
-                  <th colspan="4" class="text-center">Thông tin Pallet mới</th>
-                  <th rowspan="2">Ghi chú</th>
+                <th rowspan="2" class="std-sticky-col">STT</th>
+                <th rowspan="2">Khách hàng</th>
+                <th rowspan="2">Phân loại</th>
+                <th rowspan="2">Bề mặt</th>
+                <th rowspan="2">Dự án</th>
+                <th rowspan="2">Địa chỉ</th>
+                <th rowspan="2">Dự kiến<br>xuất hàng</th>
+                <th rowspan="2">Mark</th>
+                <th rowspan="2">Người gửi<br>thông tin</th>
+                <th rowspan="2">QA Nhập<br>thông tin</th>
+                <th rowspan="2">QA Đảm<br>trách</th>
+                <th colspan="3" class="text-center">Pallet / Thùng Carton</th>
+                <th rowspan="2">Tiêu chuẩn<br>bề mặt</th>
+                <th rowspan="2">Nguyên<br>vật liệu</th>
+                <th rowspan="2">Phương pháp<br>đóng gói</th>
+                <th rowspan="2">Đóng gói<br>1 TO/Pallet</th>
+                <th rowspan="2">Phương tiện<br>vận chuyển</th>
+                <th rowspan="2">Ghi chú</th>
+                <th rowspan="2">Ngày<br>áp dụng</th>
+                <th rowspan="2">Nội dung<br>thay đổi</th>
+                <th rowspan="2">Lý do<br>thay đổi</th>
+                <th colspan="4" class="text-center">Thông tin Pallet mới</th>
+                <th rowspan="2">Ghi chú</th>
                 </tr>
                 <tr class="std-sub-header">
                   <th>Type</th>
@@ -1199,9 +1325,14 @@
       dropdown.innerHTML = html;
     }
 
-    function filterCustomerList() {
+   function filterCustomerList(isUserTyping) {
       var kw = document.getElementById('customerSearch').value.trim().toLowerCase();
-      openDropdown();
+      
+      // CHỈ MỞ DROPDOWN NẾU NGƯỜI DÙNG ĐANG CHỦ ĐỘNG GÕ PHÍM
+      if (isUserTyping) {
+        openDropdown();
+      }
+      
       clearTimeout(window.aiCustomerFilterTimer);
       window.aiCustomerFilterTimer = setTimeout(function () {
         if (!kw) { renderDropdownItems(allCustomers); return; }
@@ -1229,45 +1360,82 @@
     function changeBox(text) { if (!text || text === '0') return '-'; return '<div class="change-box">' + text + '</div>'; }
     function kgBold(val) { if (!val || val === '0') return '-'; return '<strong style="color:#dc2626;font-size:14px;">' + val + '</strong>'; }
 
-    function getcustomerSTD(customerName) {
+   function getcustomerSTD(customerName) {
       var tbody = document.getElementById('standardTableBody');
       var titleEl = document.getElementById('standardModalTitle');
       var subtitleEl = document.getElementById('standardModalSubtitle');
-      tbody.innerHTML = '<tr><td colspan="28" class="std-loading-state"><div class="spinner-border" role="status"></div><p class="mt-3 mb-0 text-muted">' + dwAiT('std_loading') + '</p></td></tr>';
+      
+      tbody.innerHTML = '<tr><td colspan="28" class="std-loading-state"><div class="spinner-border text-primary" role="status"></div><p class="mt-3 mb-0 text-muted">' + dwAiT('std_loading') + '</p></td></tr>';
       titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
       subtitleEl.textContent = dwAiT('retrieving_for') + ' ' + customerName + '...';
-      var standardModal = new bootstrap.Modal(document.getElementById('standardModal'));
+      
+      // FIX LỖI MODAL: Lấy modal cũ nếu đã có, không tạo thêm lớp mờ (backdrop) rác
+      var standardModalEl = document.getElementById('standardModal');
+      var standardModal = bootstrap.Modal.getInstance(standardModalEl) || new bootstrap.Modal(standardModalEl);
       standardModal.show();
+
+      // FIX LỖI HTML: Hàm tự động quét sạch các dấu ngoặc nhọn làm vỡ bảng
+      function esc(str) {
+        if (str === null || str === undefined || str === '') return '-';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
       
       google.script.run
         .withSuccessHandler(function (rows) {
           if (!rows || rows.length === 0) {
-            titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
             subtitleEl.textContent = customerName;
-            tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-inbox"></i><p class="mb-1 fw-bold" style="color:#64748b;">' + dwAiT('std_empty') + '</p><small>' + dwAiT('std_empty_desc') + ' <strong>' + customerName + '</strong></small></td></tr>';
-            // Auto-close modal khi không có dữ liệu sau 2 giây
-            setTimeout(function () { standardModal.hide(); }, 2000);
+            tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-inbox"></i><p class="mb-1 fw-bold" style="color:#64748b;">' + dwAiT('std_empty') + '</p><small>' + dwAiT('std_empty_desc') + ' <strong>' + esc(customerName) + '</strong></small></td></tr>';
+            setTimeout(function () { standardModal.hide(); }, 2500);
             return;
           }
+          
           titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
           subtitleEl.textContent = customerName + ' - ' + rows.length + ' ' + dwAiT('records');
+          
           var html = '';
           rows.forEach(function (r, i) {
-            html += '<tr><td class="text-center fw-bold">' + (i + 1) + '</td><td><strong>' + (r[0] || '') + '</strong></td><td>' + badge('gray', r[1]) + '</td><td class="text-center">' + (r[2] || '-') + '</td><td style="color:#2563eb;font-weight:500;">' + (r[3] || '-') + '</td><td>' + (r[4] || '-') + '</td><td>' + (r[5] || '-') + '</td><td>' + (r[6] || '-') + '</td><td class="text-center">' + (r[7] || '-') + '</td><td>' + (r[8] || '-') + '</td><td>' + (r[9] || '-') + '</td><td>' + palletBadge(r[10]) + '</td><td class="text-center" style="font-family:monospace;">' + (r[11] || '-') + '</td><td class="text-center">' + (r[12] || '-') + '</td><td class="text-start">' + (r[13] || '-') + '</td><td class="text-start">' + (r[14] || '-') + '</td><td class="text-center">' + (r[15] || '-') + '</td><td class="text-center">' + (r[16] || '-') + '</td><td>' + badge('gray', r[17]) + '</td><td class="text-start text-muted">' + (r[18] || '-') + '</td><td class="text-center">' + (r[19] || '-') + '</td><td>' + changeBox(r[20]) + '</td><td class="text-start">' + (r[21] || '-') + '</td><td class="text-center">' + (r[22] || '-') + '</td><td class="text-center" style="font-family:monospace;">' + (r[23] || '-') + '</td><td class="text-center">' + kgBold(r[24]) + '</td><td class="text-center">' + (r[25] || '-') + '</td><td class="text-center">' + (r[26] || '-') + '</td></tr>';
+            // Nạp từng cột an toàn tuyệt đối với esc()
+            html += '<tr class="align-middle">' +
+              '<td class="text-center fw-bold std-sticky-col">' + (i + 1) + '</td>' +
+              '<td><strong>' + esc(r[0]) + '</strong></td>' +
+              '<td>' + badge('gray', esc(r[1])) + '</td>' +
+              '<td class="text-center">' + esc(r[2]) + '</td>' +
+              '<td style="color:#2563eb;font-weight:600;">' + esc(r[3]) + '</td>' +
+              '<td>' + esc(r[4]) + '</td>' +
+              '<td>' + esc(r[5]) + '</td>' +
+              '<td>' + esc(r[6]) + '</td>' +
+              '<td class="text-center">' + esc(r[7]) + '</td>' +
+              '<td>' + esc(r[8]) + '</td>' +
+              '<td>' + esc(r[9]) + '</td>' +
+              '<td>' + palletBadge(esc(r[10])) + '</td>' +
+              '<td class="text-center" style="font-family:monospace;">' + esc(r[11]) + '</td>' +
+              '<td class="text-center">' + esc(r[12]) + '</td>' +
+              '<td class="text-start">' + esc(r[13]) + '</td>' +
+              '<td class="text-start">' + esc(r[14]) + '</td>' +
+              '<td class="text-start">' + esc(r[15]) + '</td>' +
+              '<td class="text-center">' + esc(r[16]) + '</td>' +
+              '<td>' + badge('gray', esc(r[17])) + '</td>' +
+              '<td class="text-start text-muted">' + esc(r[18]) + '</td>' +
+              '<td class="text-center">' + esc(r[19]) + '</td>' +
+              '<td>' + changeBox(esc(r[20])) + '</td>' +
+              '<td class="text-start">' + esc(r[21]) + '</td>' +
+              '<td class="text-center">' + esc(r[22]) + '</td>' +
+              '<td class="text-center" style="font-family:monospace;">' + esc(r[23]) + '</td>' +
+              '<td class="text-center">' + kgBold(esc(r[24])) + '</td>' +
+              '<td class="text-center">' + esc(r[25]) + '</td>' +
+              '<td class="text-center">' + esc(r[26]) + '</td>' +
+              '</tr>';
           });
           tbody.innerHTML = html;
-          // Modal vẫn giữ mở để người dùng xem dữ liệu
         })
         .withFailureHandler(function (err) {
           titleEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + dwAiT('std_error');
           subtitleEl.textContent = '';
           tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-exclamation-circle text-danger"></i><p class="text-danger fw-bold">' + err.message + '</p></td></tr>';
-          // Auto-close modal khi có lỗi sau 3 giây
           setTimeout(function () { standardModal.hide(); }, 3000);
         })
         .getCustomerStandard(customerName);
     }
-
     var currentLang = localStorage.getItem('app_lang') || 'vi';
     var i18n = {
       vi: {
@@ -1275,7 +1443,7 @@
         dim_title: 'Thông số kích thước',
         h_placeholder: 'Chiều cao',
         w_placeholder: 'Chiều rộng',
-        cust_title: 'Đối tượng khách hàng',
+        cust_title: 'Khách hàng',
         btn_standard: 'Xem tiêu chuẩn',
         btn_search: 'PHÂN TÍCH & TÌM KIẾM',
         btn_ai: 'ĐÁNH GIÁ TỪ AI',
@@ -1321,7 +1489,7 @@
         dim_title: 'Dimensions',
         h_placeholder: 'Height',
         w_placeholder: 'Width',
-        cust_title: 'Target Customer',
+        cust_title: 'Customer',
         btn_standard: 'View Standard',
         btn_search: 'ANALYZE & SEARCH',
         btn_ai: 'AI EVALUATION',
