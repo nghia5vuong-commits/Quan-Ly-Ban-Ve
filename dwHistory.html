@@ -64,55 +64,75 @@
       #page-dwHistory .history-tabs button { min-width:max-content; }
       #page-dwHistory .history-table-wrap { max-height:calc(100vh - 300px); }
     }
+
+    /* CSS hiệu ứng Click cho thẻ KPI */
+    #page-dwHistory .history-stat {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    #page-dwHistory .history-stat:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+    }
+    #page-dwHistory .history-stat.active-stat {
+      background: rgba(209, 250, 229, 0.6);
+      border-left: 4px solid var(--liquid-primary, #10b981);
+    }
   </style>
 
   <div class="history-shell">
     <div class="history-header">
       <div>
-        <h5 class="history-title"><i class="fa fa-chart-line me-2 text-success"></i>Lịch sử và đối chiếu bản vẽ</h5>
-        <p class="history-subtitle">Theo dõi tần suất TO và kiểm tra trạng thái SO giữa email, dữ liệu bản vẽ và Check adjust.</p>
+        <h5 class="history-title"><i class="fa fa-chart-line me-2 text-success"></i><span data-i18n="dw_history_title">Lịch sử và đối chiếu bản vẽ</span></h5>
+        <p class="history-subtitle" data-i18n="dw_history_subtitle">Theo dõi tần suất TO và kiểm tra trạng thái SO giữa email, dữ liệu bản vẽ và Check adjust.</p>
       </div>
-      <button id="dwHistoryReloadBtn" class="btn btn-sm btn-success fw-bold" type="button" onclick="dwHistoryReloadActiveTab()"><i class="fa fa-rotate me-1"></i>Cập nhật</button>
+      <button id="dwHistoryReloadBtn" class="btn btn-sm btn-success fw-bold" type="button" onclick="dwHistoryReloadActiveTab()"><i class="fa fa-rotate me-1"></i><span data-i18n="dw_history_reload">Cập nhật</span></button>
     </div>
 
     <div class="history-tabs" role="tablist">
-      <button type="button" class="active" data-history-tab="frequency" onclick="dwHistorySwitchTab('frequency')"><i class="fa fa-chart-bar me-1"></i>Tần suất TO</button>
-      <button type="button" data-history-tab="comparison" onclick="dwHistorySwitchTab('comparison')"><i class="fa fa-code-compare me-1"></i>Đối chiếu SO</button>
+      <button type="button" class="active" data-history-tab="frequency" onclick="dwHistorySwitchTab('frequency')"><i class="fa fa-chart-bar me-1"></i><span data-i18n="dw_history_tab_frequency">Tần suất TO</span></button>
+      <button type="button" data-history-tab="comparison" onclick="dwHistorySwitchTab('comparison')"><i class="fa fa-code-compare me-1"></i><span data-i18n="dw_history_tab_comparison">Đối chiếu SO</span></button>
     </div>
 
     <section id="dwHistoryFrequencyPanel" class="history-panel" role="tabpanel">
       <div class="history-table-wrap">
         <table>
           <thead><tr>
-            <th>TO<input class="history-filter" data-history-filter="to" placeholder="Lọc TO..." oninput="dwHistoryFilterFrequency()"></th>
-            <th>Tần suất<input class="history-filter" data-history-filter="frequency" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
-            <th>Số lần xuất hiện<input class="history-filter" data-history-filter="totalOccurrences" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
-            <th>Số màu<input class="history-filter" data-history-filter="colorCount" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
-            <th>Số khách<input class="history-filter" data-history-filter="customerCount" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
-            <th>Các màu<input class="history-filter" data-history-filter="colors" placeholder="Lọc màu..." oninput="dwHistoryFilterFrequency()"></th>
-            <th>Khách hàng<input class="history-filter" data-history-filter="customers" placeholder="Lọc khách..." oninput="dwHistoryFilterFrequency()"></th>
+            <th data-i18n="dw_history_th_to">TO<input class="history-filter" data-history-filter="to" data-i18n-placeholder="dw_history_ph_to" placeholder="Lọc TO..." oninput="dwHistoryFilterFrequency()"></th>
+            <th data-i18n="dw_history_th_frequency">Tần suất<input class="history-filter" data-history-filter="frequency" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+            <th data-i18n="dw_history_th_occurrences">Số lần xuất hiện<input class="history-filter" data-history-filter="totalOccurrences" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+            <th data-i18n="dw_history_th_colors_count">Số màu<input class="history-filter" data-history-filter="colorCount" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+            <th data-i18n="dw_history_th_customers_count">Số khách<input class="history-filter" data-history-filter="customerCount" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+            <th data-i18n="dw_history_th_colors">Các màu<input class="history-filter" data-history-filter="colors" data-i18n-placeholder="dw_history_ph_colors" placeholder="Lọc màu..." oninput="dwHistoryFilterFrequency()"></th>
+            <th data-i18n="dw_history_th_customers">Khách hàng<input class="history-filter" data-history-filter="customers" data-i18n-placeholder="dw_history_ph_customers" placeholder="Lọc khách..." oninput="dwHistoryFilterFrequency()"></th>
           </tr></thead>
-          <tbody id="dwHistoryFrequencyBody"><tr><td colspan="7" class="history-empty">Đang tải dữ liệu...</td></tr></tbody>
+          <tbody id="dwHistoryFrequencyBody"><tr><td colspan="7" class="history-empty" data-i18n="dw_history_loading">Đang tải dữ liệu...</td></tr></tbody>
         </table>
       </div>
     </section>
 
     <section id="dwHistoryComparisonPanel" class="history-panel" role="tabpanel" style="display:none;">
       <div class="history-toolbar">
-        <input id="dwHistorySoSearch" type="search" placeholder="Tìm mã SO..." oninput="dwHistoryFilterComparison()">
+        <input id="dwHistorySoSearch" type="search" data-i18n-placeholder="dw_history_ph_so" placeholder="Tìm mã SO..." oninput="dwHistoryFilterComparison()">
         <select id="dwHistorySoFilter" onchange="dwHistoryFilterComparison()">
-          <option value="ALL">Tất cả</option><option value="RECEIVED">Đã tiếp nhận</option><option value="UNRECEIVED">Chưa tiếp nhận</option><option value="NEW">NEW</option><option value="OLD">OLD</option>
+          <option value="ALL" data-i18n="dw_history_filter_all">Tất cả</option><option value="RECEIVED" data-i18n="dw_history_filter_received">Đã tiếp nhận</option><option value="UNRECEIVED" data-i18n="dw_history_filter_unreceived">Chưa tiếp nhận</option><option value="NEW">NEW</option><option value="OLD">OLD</option>
         </select>
       </div>
-      <div class="history-stats">
-        <div class="history-stat"><small>Tổng SO</small><strong id="dwHistorySoTotal">0</strong></div>
-        <div class="history-stat"><small>Đã tiếp nhận</small><strong id="dwHistorySoReceived">0</strong></div>
-        <div class="history-stat"><small>Chưa tiếp nhận</small><strong id="dwHistorySoUnreceived">0</strong></div>
-      </div>
-      <div class="history-table-wrap">
+        <div class="history-stats">
+        <!-- Thêm onclick và data-kpi vào từng thẻ -->
+        <div class="history-stat active-stat" data-kpi="ALL" onclick="dwHistoryQuickFilter('ALL')" title="Lọc tất cả SO">
+          <small data-i18n="dw_history_kpi_total">Tổng SO</small><strong id="dwHistorySoTotal">0</strong>
+        </div>
+        <div class="history-stat" data-kpi="RECEIVED" onclick="dwHistoryQuickFilter('RECEIVED')" title="Lọc SO đã tiếp nhận">
+          <small data-i18n="dw_history_kpi_received">Đã tiếp nhận</small><strong id="dwHistorySoReceived">0</strong>
+        </div>
+        <div class="history-stat" data-kpi="UNRECEIVED" onclick="dwHistoryQuickFilter('UNRECEIVED')" title="Lọc SO chưa tiếp nhận">
+          <small data-i18n="dw_history_kpi_unreceived">Chưa tiếp nhận</small><strong id="dwHistorySoUnreceived">0</strong>
+        </div>
+      </div>      <div class="history-table-wrap">
         <table style="min-width:700px;">
-          <thead><tr><th>Mã SO</th><th>Email</th><th>Bản vẽ</th><th>NEW</th><th>OLD</th></tr></thead>
-          <tbody id="dwHistoryComparisonBody"><tr><td colspan="5" class="history-empty">Chọn tab để tải dữ liệu.</td></tr></tbody>
+          <thead><tr><th data-i18n="dw_history_th_so">Mã SO</th><th>Email</th><th data-i18n="dw_history_th_drawing">Bản vẽ</th><th>NEW</th><th>ORDER DIE</th></tr></thead>
+          <tbody id="dwHistoryComparisonBody"><tr><td colspan="5" class="history-empty" data-i18n="dw_history_select_tab">Chọn tab để tải dữ liệu.</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -199,6 +219,41 @@
         document.getElementById('dwHistoryComparisonPanel').style.display = tab === 'comparison' ? '' : 'none';
         if (tab === 'frequency' && !frequencyAll.length) loadFrequency();
         if (tab === 'comparison' && !comparisonAll.length) loadComparison();
+      };
+
+
+      // 1. Hàm xử lý khi người dùng bấm vào thẻ KPI
+      window.dwHistoryQuickFilter = function(filterValue) {
+        var filterSelect = document.getElementById('dwHistorySoFilter');
+        if (filterSelect) {
+          filterSelect.value = filterValue; // Tự động đổi giá trị của dropdown cho khớp
+        }
+        dwHistoryFilterComparison(); // Gọi hàm lọc bảng
+      };
+
+      // 2. Cập nhật hàm lọc bảng để nó đổi luôn màu của thẻ KPI
+      window.dwHistoryFilterComparison = function () {
+        var search = String(document.getElementById('dwHistorySoSearch').value || '').trim().toUpperCase().replace(/\s+/g, '');
+        var filter = document.getElementById('dwHistorySoFilter').value;
+        
+        // Làm nổi bật (tô màu) thẻ KPI đang được chọn
+        document.querySelectorAll('#dwHistoryComparisonPanel .history-stat').forEach(function (card) {
+          if (card.dataset.kpi === filter) {
+            card.classList.add('active-stat');
+          } else {
+            card.classList.remove('active-stat');
+          }
+        });
+
+        // Lọc dữ liệu mảng
+        renderComparison(comparisonAll.filter(function (row) {
+          if (search && String(row.so || '').indexOf(search) === -1) return false;
+          if (filter === 'RECEIVED' && !row.email) return false;
+          if (filter === 'UNRECEIVED' && row.email) return false;
+          if (filter === 'NEW' && !row.isNew) return false;
+          if (filter === 'OLD' && !row.isOld) return false;
+          return true;
+        }));
       };
 
       window.dwHistoryReloadActiveTab = function () { if (activeTab === 'frequency') loadFrequency(); else loadComparison(); };

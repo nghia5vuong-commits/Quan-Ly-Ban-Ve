@@ -632,20 +632,20 @@
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="mail-tab" data-bs-toggle="pill" data-bs-target="#mail-section" type="button"
           role="tab">
-          <i class="fa fa-envelope-open-text me-2"></i> Hộp thư dự án bản vẽ từ khách hàng
+          <i class="fa fa-envelope-open-text me-2"></i> <span data-i18n="info_tab_mail">Hộp thư dự án bản vẽ từ khách hàng</span>
         </button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="manual-tab" data-bs-toggle="pill" data-bs-target="#manual-section" type="button"
           role="tab">
-          <i class="fa fa-file-signature me-2"></i> Thêm bản vẽ
+          <i class="fa fa-file-signature me-2"></i> <span data-i18n="info_tab_add">Thêm bản vẽ</span>
         </button>
       </li>
 
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="manage-tab" data-bs-toggle="pill" data-bs-target="#manage-section" type="button"
           role="tab">
-          <i class="fa fa-gear me-2"></i> Quản lí bản vẽ
+          <i class="fa fa-gear me-2"></i> <span data-i18n="info_tab_manage">Quản lí bản vẽ</span>
         </button>
       </li>
     </ul>
@@ -665,16 +665,16 @@
             <div class="input-group input-group-sm shadow-sm rounded-pill overflow-hidden border">
               <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="fa fa-search"></i></span>
               <input type="text" id="searchInput" class="form-control border-0 shadow-none bg-white"
-                placeholder="Tìm kiếm email..." onkeydown="if(event.key==='Enter') searchEmails()" />
+                data-i18n-placeholder="info_search_email" placeholder="Tìm kiếm email..." onkeydown="if(event.key==='Enter') searchEmails()" />
               <button class="btn btn-primary px-3 rounded-pill" onclick="searchEmails()"><i
                   class="fa fa-arrow-right"></i></button>
             </div>
             <div class="d-flex align-items-center gap-2 mt-3">
-              <label for="emailStatusFilter" class="form-label mb-0 small text-muted fw-bold">Trạng thái:</label>
+              <label for="emailStatusFilter" class="form-label mb-0 small text-muted fw-bold" data-i18n="info_status">Trạng thái:</label>
               <select id="emailStatusFilter" class="form-select form-select-sm rounded-pill shadow-sm" onchange="filterEmailsByStatus()">
-                <option value="ALL">Tất cả</option>
-                <option value="received">Đã tiếp nhận</option>
-                <option value="unreceived">Chưa tiếp nhận</option>
+                <option value="ALL" data-i18n="info_all">Tất cả</option>
+                <option value="received" data-i18n="info_received">Đã tiếp nhận</option>
+                <option value="unreceived" data-i18n="info_unreceived">Chưa tiếp nhận</option>
               </select>
             </div>
           </div>
@@ -702,8 +702,8 @@
               style="width: 80px; height: 80px;">
               <i class="fa fa-inbox fa-2x text-secondary"></i>
             </div>
-            <h5 class="fw-bold text-dark">Chọn email để xem nội dung</h5>
-            <small>Email có tiêu đề [MANUFACTURING ORDER] hoặc [NEW PROJECT] sẽ hiển thị ở đây</small>
+            <h5 class="fw-bold text-dark" data-i18n="info_empty_title">Chọn email để xem nội dung</h5>
+            <small data-i18n="info_empty_desc">Email có tiêu đề [MANUFACTURING ORDER] hoặc [NEW PROJECT] sẽ hiển thị ở đây</small>
           </div>
 
           <div id="detailContent" class="d-flex flex-column h-100 d-none">
@@ -726,16 +726,16 @@
           <div class="input-group order-1" style="max-width: 350px;">
             <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
             <input type="text" id="searchDrawingInput" class="form-control border-start-0 bg-light shadow-none"
-              placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchDrawingData()">
+              data-i18n-placeholder="info_search_drawing" placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchDrawingData()">
           </div>
 
           <div class="d-flex align-items-center gap-2 order-2">
             <button id="bulkEditBtn" class="btn btn-warning btn-sm fw-bold" onclick="openBulkEditForm()"
               style="display: none;">
-              <i class="fa fa-edit me-1"></i>Sửa hàng loạt
+              <i class="fa fa-edit me-1"></i><span data-i18n="info_bulk_edit">Sửa hàng loạt</span>
             </button>
             <button class="btn btn-primary fw-bold px-4 rounded-pill" onclick="openAddDrawingForm()">
-              <i class="fa fa-plus me-2"></i>Thêm mới
+              <i class="fa fa-plus me-2"></i><span data-i18n="info_add_new">Thêm mới</span>
             </button>
           </div>
         </div>
@@ -752,12 +752,12 @@
                         onchange="toggleTableSelectAll()">
                     </div>
                   </th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Type</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">TO</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Dw Code</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Customer</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_type">Type</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_to">TO</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_dw_code">Dw Code</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_customer">Customer</th>
                   <th scope="col" class="text-end pe-4 text-muted fw-semibold py-3 border-bottom-0"
-                    style="width: 120px;">Action</th>
+                    data-i18n="info_th_action" style="width: 120px;">Action</th>
                 </tr>
               </thead>
               <tbody id="drawingTableBody">
@@ -772,7 +772,7 @@
               style="width: 70px; height: 70px;">
               <i class="fa fa-folder-open fa-2x text-secondary opacity-50"></i>
             </div>
-            <h6 class="fw-bold text-secondary mb-0">Không có dữ liệu</h6>
+            <h6 class="fw-bold text-secondary mb-0" data-i18n="info_no_data">Không có dữ liệu</h6>
           </div>
         </div>
       </div>
@@ -788,7 +788,7 @@
           <div class="input-group" style="max-width: 350px;">
             <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
             <input type="text" id="searchManagedDrawingInput" class="form-control border-start-0 bg-light shadow-none"
-              placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchManagedDrawingData()">
+              data-i18n-placeholder="info_search_drawing" placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchManagedDrawingData()">
           </div>
         </div>
 
@@ -798,14 +798,14 @@
             <table class="table table-hover align-middle mb-0" id="managedDrawingTable">
               <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
                 <tr>
-                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0">Type</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">TO</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Dw Code</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Customer</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Trạng thái</th>
-                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">Hình mặt cắt</th>
+                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_type">Type</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_to">TO</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_dw_code">Dw Code</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_customer">Customer</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_status">Trạng thái</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_section">Hình mặt cắt</th>
                   <th scope="col" class="text-end pe-4 text-muted fw-semibold py-3 border-bottom-0"
-                    style="width: 140px;">Action</th>
+                    data-i18n="info_th_action" style="width: 140px;">Action</th>
                 </tr>
               </thead>
               <tbody id="managedDrawingTableBody">
@@ -821,7 +821,7 @@
               style="width: 70px; height: 70px;">
               <i class="fa fa-folder-open fa-2x text-secondary opacity-50"></i>
             </div>
-            <h6 class="fw-bold text-secondary mb-0">Không có bản vẽ đủ dữ liệu</h6>
+            <h6 class="fw-bold text-secondary mb-0" data-i18n="info_no_complete_data">Không có bản vẽ đủ dữ liệu</h6>
           </div>
         </div>
       </div>

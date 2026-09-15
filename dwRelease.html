@@ -523,8 +523,8 @@
     <!-- HEADER ROW: filter left, title right -->
     <div class="release-toolbar d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div class="page-heading">
-                <h6><i class="bi bi-send-check text-success me-2"></i>Quản lý ban hành bản vẽ</h6>
-                <small>Theo dõi tiến độ kiểm tra và ban hành bản vẽ lên QA System.</small>
+                <h6><i class="bi bi-send-check text-success me-2"></i><span data-i18n="release_title">Quản lý ban hành bản vẽ</span></h6>
+                <small data-i18n="release_subtitle">Theo dõi tiến độ kiểm tra và ban hành bản vẽ lên QA System.</small>
             </div>
       <div class="d-flex gap-2 align-items-center flex-wrap">
           <button class="btn btn-custom-light btn-sm shadow-sm" style="min-width: 140px; text-align:left; pointer-events: none;">
@@ -598,8 +598,8 @@
                 <small class="text-secondary" data-i18n="his_chart_subtitle">Số lượng Request No. theo bộ phận (Bấm vào cột biểu đồ để lọc chi tiết bảng)</small>
             </div>
             <div id="chart-active-filter-badge" class="d-none align-items-center gap-2 bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill border border-primary border-opacity-25">
-                <small class="fw-bold" id="chart-filter-label">Đang lọc</small>
-                <button class="btn btn-sm btn-link p-0 text-primary border-0" onclick="history_resetChartClickFilter()" title="Hủy lọc">
+                <small class="fw-bold" id="chart-filter-label" data-i18n="release_filtering">Đang lọc</small>
+                <button class="btn btn-sm btn-link p-0 text-primary border-0" data-i18n-title="release_clear_filter" onclick="history_resetChartClickFilter()" title="Hủy lọc">
                     <i class="bi bi-x-circle-fill"></i>
                 </button>
             </div>
@@ -613,7 +613,7 @@
     <div class="app-card mb-3 d-flex flex-wrap gap-3 align-items-center">
         <div class="input-group search-input-group overflow-hidden" style="max-width: 300px;">
             <span class="input-group-text"><i class="bi bi-search"></i></span>
-            <input type="text" class="form-control" id="dept-search-reqno" placeholder="Tìm Request No. trong QA-G2G..." oninput="_onSearchInput()" aria-label="Tìm Request No. trong QA-G2G">
+            <input type="text" class="form-control" id="dept-search-reqno" data-i18n-placeholder="release_search_placeholder" placeholder="Tìm Request No. trong QA-G2G..." oninput="_onSearchInput()" aria-label="Tìm Request No. trong QA-G2G">
         </div>
         <button class="btn btn-light border rounded-3 px-3 fw-medium text-secondary" onclick="history_clearSearch()">
             <i class="bi bi-x-lg me-1"></i> <span data-i18n="his_btn_clear_filter">Xóa lọc</span>
@@ -761,7 +761,7 @@
                                   <th class="py-3 " id ="id_th_change_type" data-i18n="admin_th_change_type">Loại thay đổi</th>
                                   <th class="text-center py-3" data-i18n="his_th_link">Link</th>
                                   <th class="text-center py-3" data-i18n="his_th_status">Trạng thái</th>
-                                  <th class="text-center py-3" data-i18n="his_th_action">Thao tác</th>
+                                <th class="text-center py-3" data-i18n="his_th_action">Thao tác</th>
                               </tr>
                           </thead>
                           <tbody id="dept-m-dw-list" class="bg-white"></tbody>

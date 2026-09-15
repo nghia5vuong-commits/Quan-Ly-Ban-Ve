@@ -450,6 +450,32 @@
     transform: translateY(-2px) scale(1.02);
     box-shadow: 0 14px 28px rgba(16, 185, 129, 0.45) !important;
   }
+
+  /* Button Standard - Xem tiêu chuẩn */
+  #page-seachDwByAI .btn-standard {
+    border: 2px dashed rgba(16, 185, 129, 0.5) !important;
+    padding: 11px 20px;
+    font-weight: 700;
+    color: #0f766e !important;
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.6) 0%, rgba(240, 253, 244, 0.8) 100%) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important;
+    border-radius: var(--liquid-radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--liquid-spring);
+  }
+  #page-seachDwByAI .btn-standard:hover {
+    background: linear-gradient(135deg, rgba(209, 250, 229, 0.85) 0%, rgba(240, 253, 244, 0.95) 100%) !important;
+    border-color: rgba(16, 185, 129, 0.8) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(16, 185, 129, 0.25) !important;
+    color: #10b981 !important;
+  }
   /* Compact result cards */
   #page-seachDwByAI .result-card {
     padding: 10px 12px;
@@ -489,6 +515,608 @@
   }
   #page-seachDwByAI .form-control,
   #page-seachDwByAI .form-select { font-size: 0.8rem !important; padding: 6px 10px !important; }
+
+
+
+ /* ==========================================================================
+     FIX LỖI MODAL BỊ RỚT CSS: GỌI ĐÍCH DANH ID MODAL BẰNG MỌI GIÁ
+     ========================================================================== */
+
+  /* 1. ÉP MODAL BUNG FULL MÀN HÌNH (Đề phòng Bootstrap cũ không nhận modal-fullscreen) */
+  #standardModal .modal-dialog {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  #standardModal .modal-content {
+    height: 100vh !important;
+    border-radius: 0 !important;
+    background: #f8fafc !important;
+    border: none !important;
+  }
+
+  /* 2. HEADER MODAL ĐỔ MÀU GRADIENT */
+  #standardModal .std-modal-header {
+    background: linear-gradient(135deg, #0f766e 0%, #0369a1 100%) !important;
+    color: #ffffff !important;
+    padding: 16px 24px !important;
+  }
+  #standardModal .std-modal-header .modal-title {
+    font-size: 1.25rem !important;
+    color: #ffffff !important;
+  }
+  #standardModal .std-modal-subtitle {
+    color: #e0f2fe !important;
+  }
+
+  /* 3. KHU VỰC CUỘN BẢNG BẮT BUỘC (KÍCH HOẠT THANH CUỘN NGANG) */
+  #standardModal .std-table-wrap {
+    width: 100vw !important;
+    height: calc(100vh - 130px) !important;
+    overflow-x: auto !important; 
+    overflow-y: auto !important;
+    display: block !important; 
+    background-color: #ffffff !important;
+  }
+
+  /* Tùy chỉnh thanh cuộn */
+  #standardModal .std-table-wrap::-webkit-scrollbar { width: 12px; height: 12px; }
+  #standardModal .std-table-wrap::-webkit-scrollbar-track { background: #f1f5f9; }
+  #standardModal .std-table-wrap::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 3px solid #f1f5f9; }
+
+  /* 4. ÉP BẢNG BUNG DÀI THEO NỘI DUNG (CỨU TINH CHỐNG BÓP MÉO) */
+  #standardModal table.std-table {
+    width: max-content !important; 
+    min-width: 100% !important;
+    table-layout: auto !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+  }
+
+  /* 5. CẤM RỚT DÒNG VÀ SET KÍCH THƯỚC Ô */
+  #standardModal table.std-table th,
+  #standardModal table.std-table td {
+    white-space: nowrap !important; 
+    padding: 12px 18px !important;
+    vertical-align: middle !important;
+    border-right: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  /* 6. MÀU NỀN 3 NHÓM HEADER LỚN TRÊN CÙNG */
+  #standardModal table.std-table th.std-group-info { background-color: #bae6fd !important; color: #0369a1 !important; font-size: 0.9rem !important; } 
+  #standardModal table.std-table th.std-group-pack { background-color: #a7f3d0 !important; color: #047857 !important; font-size: 0.9rem !important; } 
+  #standardModal table.std-table th.std-group-history { background-color: #fde68a !important; color: #b45309 !important; font-size: 0.9rem !important; }
+  
+  /* 7. MÀU NỀN DÒNG TIÊU ĐỀ SỐ 2 */
+  #standardModal table.std-table tr.std-sub-header th { background-color: #f1f5f9 !important; color: #1e293b !important; font-weight: bold !important; text-align: center !important;}
+
+  /* 8. ĐỊNH DẠNG CỘT DỮ LIỆU BÊN DƯỚI */
+  #standardModal table.std-table tbody td {
+    font-size: 0.85rem !important; 
+    color: #1e293b !important;
+    background-color: #ffffff !important;
+  }
+  #standardModal table.std-table tbody tr:hover td { 
+    background-color: #ecfdf5 !important; 
+  }
+
+  /* 9. STICKY THEO CẢ CHIỀU DỌC LẪN CHIỀU NGANG */
+  #standardModal table.std-table thead th { position: sticky !important; z-index: 20 !important; }
+  /* Phân tầng Z-index tránh 2 dòng Header đè nhau */
+  #standardModal table.std-table thead tr:nth-child(1) th { top: 0 !important; z-index: 21 !important; }
+  #standardModal table.std-table thead tr:nth-child(2) th { top: 46px !important; z-index: 20 !important; } /* Nếu bị hở 1 vệt trắng nhỏ giữa 2 dòng tiêu đề, hãy tăng/giảm số 46px này */
+
+  /* Ép cột STT đứng im bên trái */
+  #standardModal table.std-table tbody td:first-child,
+  #standardModal table.std-table thead th.std-sticky-col {
+    position: sticky !important; 
+    left: 0 !important; 
+    z-index: 30 !important;
+    background-color: #f1f5f9 !important; 
+    font-weight: bold !important; 
+    box-shadow: inset -2px 0 0 rgba(0,0,0,0.1) !important;
+  }
+
+  /* 10. NGOẠI LỆ: CHỈ NHỮNG CỘT VĂN BẢN DÀI MỚI ĐƯỢC PHÉP RỚT DÒNG */
+  #standardModal table.std-table tbody td:nth-child(6),   /* Địa chỉ */
+  #standardModal table.std-table tbody td:nth-child(16),  /* Nguyên vật liệu */
+  #standardModal table.std-table tbody td:nth-child(17),  /* PP Đóng gói */
+  #standardModal table.std-table tbody td:nth-child(20),  /* Ghi chú 1 */
+  #standardModal table.std-table tbody td:nth-child(22),  /* ND thay đổi */
+  #standardModal table.std-table tbody td:nth-child(23),  /* Lý do thay đổi */
+  #standardModal table.std-table tbody td:nth-child(28)   /* Ghi chú 2 */
+  {
+    white-space: normal !important;
+    min-width: 250px !important;
+    max-width: 400px !important;
+    line-height: 1.6 !important;
+    text-align: left !important; 
+  }
+
+  /* ==========================================================================
+     STANDARD MODAL - LIQUID GLASS CARD BASED DESIGN
+     ========================================================================== */
+
+  /* Modal Dialog & Content */
+  #standardModal .modal-dialog {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  #standardModal .modal-content {
+    height: 100vh !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    border: none !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header Gradient */
+  #standardModal .std-modal-header {
+    background: linear-gradient(135deg, #0369a1 0%, #0f766e 100%) !important;
+    color: #ffffff !important;
+    padding: 20px 28px !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  }
+  #standardModal .std-modal-header .modal-title {
+    font-size: 1.5rem !important;
+    font-weight: 800 !important;
+    color: #ffffff !important;
+  }
+  #standardModal .std-modal-subtitle {
+    color: #cffafe !important;
+    font-size: 0.9rem !important;
+    margin-top: 6px;
+    font-weight: 500;
+  }
+
+  /* Tab Navigation */
+  #standardModal .std-tab-navigation {
+    display: flex;
+    gap: 8px;
+    padding: 12px 28px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    flex-wrap: wrap;
+  }
+  #standardModal .std-tab-btn {
+    padding: 10px 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    color: #475569;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #standardModal .std-tab-btn:hover {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(16, 185, 129, 0.3);
+    transform: translateY(-1px);
+  }
+  #standardModal .std-tab-btn.active {
+    background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    color: #ffffff;
+    border-color: rgba(16, 185, 129, 0.4);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  }
+
+  /* Modal Body */
+  #standardModal .std-modal-body {
+    flex: 1;
+    overflow-y: auto;
+    background: #ffffff;
+    padding: 20px 28px;
+  }
+
+  /* Tab Content */
+  #standardModal .std-tab-content {
+    animation: fadeInContent 0.3s ease-out;
+  }
+  @keyframes fadeInContent {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  #standardModal .std-tab-pane {
+    display: none;
+  }
+  #standardModal .std-tab-pane.active {
+    display: block;
+  }
+
+  /* Cards Grid */
+  #standardModal .std-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 20px;
+    animation: gridSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes gridSlideIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Standard Card */
+  #standardModal .std-card {
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06), inset 0 1px 1px 0 rgba(255, 255, 255, 0.8);
+    padding: 16px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+  }
+  #standardModal .std-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(16, 185, 129, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+
+  /* Card Label */
+  #standardModal .std-card-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #0369a1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Card Value */
+  #standardModal .std-card-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 16px;
+    word-break: break-word;
+    line-height: 1.4;
+  }
+
+  /* Card Details */
+  #standardModal .std-card-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* Detail Item */
+  #standardModal .std-detail-item {
+    padding: 10px 12px;
+    background: linear-gradient(135deg, rgba(240, 253, 244, 0.8) 0%, rgba(209, 250, 229, 0.5) 100%);
+    border-left: 3px solid #10b981;
+    border-radius: 6px;
+  }
+  #standardModal .std-detail-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0369a1;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+  }
+  #standardModal .std-detail-value {
+    font-size: 0.95rem;
+    color: #1e293b;
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  /* Badge Styles */
+  #standardModal .std-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  #standardModal .std-badge.primary {
+    background: rgba(3, 105, 161, 0.15);
+    color: #0369a1;
+    border: 1px solid rgba(3, 105, 161, 0.3);
+  }
+  #standardModal .std-badge.success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  #standardModal .std-badge.warning {
+    background: rgba(217, 119, 6, 0.15);
+    color: #d97706;
+    border: 1px solid rgba(217, 119, 6, 0.3);
+  }
+  #standardModal .std-badge.danger {
+    background: rgba(220, 38, 38, 0.15);
+    color: #dc2626;
+    border: 1px solid rgba(220, 38, 38, 0.3);
+  }
+  #standardModal .std-badge.gray {
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
+    border: 1px solid rgba(100, 116, 139, 0.2);
+  }
+
+  /* Loading & Empty States */
+  #standardModal .std-loading-state,
+  #standardModal .std-empty-state {
+    padding: 60px 20px;
+    text-align: center;
+    color: #64748b;
+  }
+  #standardModal .spinner-border {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  /* Modal Footer */
+  #standardModal .std-modal-footer {
+    background: rgba(255, 255, 255, 0.7);
+    border-top: 1px solid rgba(16, 185, 129, 0.1);
+    padding: 16px 28px;
+  }
+
+  /* Scrollbar Styling */
+  #standardModal .std-modal-body::-webkit-scrollbar {
+    width: 10px;
+  }
+  #standardModal .std-modal-body::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.5);
+  }
+  #standardModal .std-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.4);
+    border-radius: 10px;
+  }
+  #standardModal .std-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.6);
+  }
+
+  /* Giao diện modal tiêu chuẩn đồng nhất với hệ thống và tối ưu cho việc đọc dữ liệu. */
+  #standardModal .modal-dialog {
+    width: min(96vw, 1280px) !important;
+    max-width: min(96vw, 1280px) !important;
+    height: auto !important;
+    max-height: 92vh !important;
+    margin: 1.5rem auto !important;
+  }
+  #standardModal .modal-content {
+    height: 92vh !important;
+    max-height: 92vh !important;
+    overflow: hidden !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    border-radius: 18px !important;
+    background: #f8fafc !important;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25) !important;
+  }
+  #standardModal .std-modal-header {
+    flex: 0 0 auto;
+    padding: 18px 24px !important;
+    background: linear-gradient(135deg, #047857 0%, #0f766e 52%, #0369a1 100%) !important;
+    border-bottom: 0 !important;
+  }
+  #standardModal .std-modal-header .modal-title {
+    font-size: 1.05rem !important;
+    letter-spacing: 0 !important;
+  }
+  #standardModal .std-modal-subtitle {
+    display: block;
+    margin-top: 4px !important;
+    color: rgba(236, 253, 245, 0.9) !important;
+    font-size: 0.78rem !important;
+  }
+  #standardModal .std-tab-navigation {
+    flex: 0 0 auto;
+    gap: 6px;
+    padding: 10px 18px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid rgba(203, 213, 225, 0.8) !important;
+    box-shadow: none !important;
+  }
+  #standardModal .std-tab-btn {
+    min-height: 38px;
+    padding: 8px 14px !important;
+    border: 1px solid transparent !important;
+    border-radius: 10px !important;
+    color: #475569 !important;
+    background: transparent !important;
+    font-size: 0.82rem !important;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  }
+  #standardModal .std-tab-btn:hover {
+    transform: none !important;
+    color: #047857 !important;
+    background: #ecfdf5 !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+  }
+  #standardModal .std-tab-btn.active {
+    color: #047857 !important;
+    background: #d1fae5 !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    box-shadow: none !important;
+  }
+  #standardModal .std-modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 18px 22px !important;
+    overflow-y: auto !important;
+    background: #f8fafc !important;
+  }
+  #standardModal .std-tab-content {
+    min-height: 100%;
+  }
+  #standardModal .std-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    align-items: start;
+    gap: 14px !important;
+    animation: none !important;
+  }
+  #standardModal .std-card {
+    min-width: 0;
+    padding: 15px !important;
+    border: 1px solid rgba(203, 213, 225, 0.8) !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06) !important;
+  }
+  #standardModal .std-card:hover {
+    transform: translateY(-2px) !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.1) !important;
+  }
+  #standardModal .std-card-label {
+    margin-bottom: 8px !important;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #0369a1 !important;
+    font-size: 0.72rem !important;
+    letter-spacing: 0 !important;
+  }
+  #standardModal .std-card-value {
+    margin-bottom: 12px !important;
+    color: #0f172a !important;
+    font-size: 0.98rem !important;
+    line-height: 1.35 !important;
+  }
+  #standardModal .std-card-details {
+    gap: 7px !important;
+  }
+  #standardModal .std-detail-item {
+    display: grid;
+    grid-template-columns: minmax(105px, 38%) 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 8px 10px !important;
+    border-left: 3px solid #10b981 !important;
+    border-radius: 6px !important;
+    background: #f0fdf4 !important;
+  }
+  #standardModal .std-detail-label {
+    margin: 0 !important;
+    color: #64748b !important;
+    font-size: 0.68rem !important;
+    line-height: 1.35;
+  }
+  #standardModal .std-detail-value {
+    min-width: 0;
+    color: #1e293b !important;
+    font-size: 0.78rem !important;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+  #standardModal .std-modal-footer {
+    flex: 0 0 auto;
+    padding: 10px 22px !important;
+    background: #ffffff !important;
+    border-top: 1px solid #e2e8f0 !important;
+  }
+
+  @media (max-width: 768px) {
+    #standardModal .modal-dialog {
+      width: 100vw !important;
+      max-width: 100vw !important;
+      margin: 0 !important;
+    }
+    #standardModal .modal-content {
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+    }
+    #standardModal .std-modal-header { padding: 15px 16px !important; }
+    #standardModal .std-tab-navigation { padding: 8px 12px !important; overflow-x: auto; flex-wrap: nowrap; }
+    #standardModal .std-tab-btn { flex: 0 0 auto; white-space: nowrap; }
+    #standardModal .std-modal-body { padding: 14px 12px !important; }
+    #standardModal .std-cards-grid { grid-template-columns: 1fr !important; }
+    #standardModal .std-detail-item { grid-template-columns: 42% 1fr; }
+  }
+
+  /* Bảng tiêu chuẩn hợp nhất: một dòng dữ liệu tương ứng với một bản ghi. */
+  #standardModal .std-table-wrap {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: auto !important;
+    background: #ffffff !important;
+    border: 1px solid #dbe5e1;
+    border-radius: 10px;
+  }
+  #standardModal table.std-table {
+    width: max-content !important;
+    min-width: 100% !important;
+    table-layout: auto !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    font-size: 0.78rem;
+  }
+  #standardModal table.std-table th,
+  #standardModal table.std-table td {
+    min-width: 118px;
+    max-width: 260px;
+    padding: 9px 11px !important;
+    border-right: 1px solid #e2e8f0 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    vertical-align: top !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+  }
+  #standardModal table.std-table thead th {
+    position: sticky !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    z-index: 20 !important;
+  }
+  #standardModal table.std-table thead tr:first-child th {
+    top: 0 !important;
+    padding: 10px 12px !important;
+    font-size: 0.76rem !important;
+    font-weight: 800 !important;
+  }
+  #standardModal table.std-table thead tr:nth-child(2) th {
+    top: 39px !important;
+    background: #f8fafc !important;
+    color: #334155 !important;
+    font-size: 0.7rem !important;
+  }
+  #standardModal table.std-table th.std-group-info { background: #e0f2fe !important; color: #0369a1 !important; }
+  #standardModal table.std-table th.std-group-pack { background: #d1fae5 !important; color: #047857 !important; }
+  #standardModal table.std-table th.std-group-history { background: #fef3c7 !important; color: #b45309 !important; }
+  #standardModal table.std-table tbody td {
+    color: #1e293b !important;
+    background: #ffffff !important;
+    line-height: 1.4;
+  }
+  #standardModal table.std-table tbody tr:nth-child(even) td { background: #f8fafc !important; }
+  #standardModal table.std-table tbody tr:hover td { background: #ecfdf5 !important; }
+  #standardModal table.std-table th:first-child,
+  #standardModal table.std-table td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 22 !important;
+    min-width: 58px;
+    width: 58px;
+    text-align: center !important;
+    background: #f1f5f9 !important;
+    font-weight: 700 !important;
+    box-shadow: 2px 0 0 rgba(148, 163, 184, 0.35);
+  }
+  #standardModal table.std-table thead th:first-child { z-index: 30 !important; }
 </style>
 
   <main class="container-fluid p-0" style="height: 100%; overflow: hidden;">
@@ -502,7 +1130,7 @@
             <div id="previewContainer" class="mb-3">
               <div id="previewPlaceholder" class="text-center p-2">
                 <i class="bi bi-cloud-arrow-up fs-2 text-primary d-block mb-1"></i>
-                <span class="small text-muted fw-semibold">Chọn hoặc kéo thả ảnh bản vẽ vào đây</span>
+                <span class="small text-muted fw-semibold" data-i18n="upload_hint">Chọn hoặc kéo thả ảnh bản vẽ vào đây</span>
               </div>
               <img id="previewImage" src="" alt="Xem trước">
             </div>
@@ -518,20 +1146,24 @@
                 data-i18n-placeholder="w_placeholder">
             </div>
 
-            <label class="upload-title"><i class="bi bi-person-badge"></i> <span data-i18n="cust_title">Khách
-                hàng</span></label>
+            <label class="upload-title"><i class="bi bi-person-badge"></i> <span data-i18n="cust_title">Khách hàng</span></label>
             <div class="search-select-wrapper mb-4" id="customerWrapper">
-              <div class="search-select-input" onclick="toggleDropdown()">
+              
+              <!-- Đổi onclick thành openDropdown để click vào input chỉ MỞ chứ không ĐÓNG -->
+              <div class="search-select-input" onclick="openDropdown()">
+                
+                <!-- Bỏ onfocus, thêm tham số 'true' vào hàm oninput -->
                 <input type="text" id="customerSearch" class="search-select-field" placeholder="Gõ để tìm khách hàng..."
-                  autocomplete="off" oninput="filterCustomerList()" onfocus="openDropdown()">
-                <i class="bi bi-chevron-down search-select-arrow"></i>
+                  autocomplete="off" oninput="filterCustomerList(true)">
+                  
+                <!-- Bắt sự kiện riêng cho icon mũi tên để Toggle (Đóng/Mở) -->
+                <i class="bi bi-chevron-down search-select-arrow" onclick="event.stopPropagation(); toggleDropdown();" style="cursor: pointer; padding: 10px;"></i>
               </div>
-              <div class="search-select-dropdown" id="customerDropdown"></div>
+              
+              <div class="search-select-dropdown custom-scrollbar" id="customerDropdown"></div>
               <input type="hidden" id="customerSelect" value="">
             </div>
-
-            <button id="viewStandardBtn" class="btn btn-outline-primary w-100 mb-4 mt-2 fw-bold"
-              style="display:none; border-width: 2px;">
+            <button id="viewStandardBtn" class="btn btn-standard w-100 mb-4 mt-2 fw-bold" style="display:none;">
               <i class="bi bi-box-seam"></i> <span data-i18n="btn_standard">Xem tiêu chuẩn đóng gói</span>
             </button>
 
@@ -565,7 +1197,7 @@
               <!-- Card 1: Input Drawing -->
               <div class="ai-scan-card">
                 <div class="scan-card-header">
-                  <span class="scan-chip"><i class="bi bi-image me-1"></i> Bản vẽ tải lên</span>
+                  <span class="scan-chip"><i class="bi bi-image me-1"></i> <span data-i18n="ai_uploaded_drawing">Bản vẽ tải lên</span></span>
                 </div>
                 <div class="scan-viewport">
                   <img id="loaderOriginalImg" class="scan-image" src="" alt="Bản vẽ tải lên">
@@ -588,7 +1220,7 @@
               <!-- Card 2: Database Matrix -->
               <div class="ai-scan-card">
                 <div class="scan-card-header">
-                  <span class="scan-chip"><i class="bi bi-database-fill-check me-1"></i> Kho dữ liệu bản vẽ</span>
+                  <span class="scan-chip"><i class="bi bi-database-fill-check me-1"></i> <span data-i18n="ai_drawing_database">Kho dữ liệu bản vẽ</span></span>
                 </div>
                 <div class="scan-viewport">
                   <div class="db-matrix-icon">
@@ -607,7 +1239,7 @@
                 <span data-i18n="ai_loading">AI đang truy xuất &amp; phân tích mặt cắt</span>
                 <span class="dots"></span>
               </h5>
-              <p class="text-muted small mb-3">Đang đối chiếu vectơ hình học và xếp hạng độ tương đồng theo tỷ lệ Vector...</p>
+              <p class="text-muted small mb-3" data-i18n="ai_loading_desc">Đang đối chiếu vectơ hình học và xếp hạng độ tương đồng theo tỷ lệ Vector...</p>
               
               <div class="ai-progress-track">
                 <div class="ai-progress-bar"></div>
@@ -677,7 +1309,7 @@
     <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
       <div class="modal-content border-0 shadow-lg std-modal">
         <div class="modal-header std-modal-header">
-          <div>
+          <div class="flex-grow-1">
             <h5 class="modal-title fw-bold" id="standardModalTitle">
               <i class="bi bi-box-seam-fill me-2"></i><span data-i18n="std_modal_title">Tiêu Chuẩn Đóng Gói</span>
             </h5>
@@ -686,67 +1318,26 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <div class="modal-body p-0">
-          <div class="std-table-wrap">
-            <table class="std-table">
-              <thead>
-                <tr>
-                  <th colspan="11" class="std-group std-group-info">
-                    <i class="bi bi-person-lines-fill"></i> <span data-i18n="std_info_group">Thông tin khách hàng</span>
-                  </th>
-                  <th colspan="9" class="std-group std-group-pack">
-                    <i class="bi bi-box-seam"></i> <span data-i18n="std_pack_group">Tiêu chuẩn đóng gói gốc</span>
-                  </th>
-                  <th colspan="8" class="std-group std-group-history">
-                    <i class="bi bi-clock-history"></i> <span data-i18n="std_history_group">Lịch sử thay đổi</span>
-                  </th>
-                </tr>
-                <tr class="std-sub-header">
-                  <th rowspan="2" class="std-sticky-col">STT</th>
-                  <th rowspan="2">Khách hàng</th>
-                  <th rowspan="2">Phân loại</th>
-                  <th rowspan="2">Bề mặt</th>
-                  <th rowspan="2">Dự án</th>
-                  <th rowspan="2">Địa chỉ</th>
-                  <th rowspan="2">Dự kiến<br>xuất hàng</th>
-                  <th rowspan="2">Mark</th>
-                  <th rowspan="2">Người gửi<br>thông tin</th>
-                  <th rowspan="2">QA Nhập<br>thông tin</th>
-                  <th rowspan="2">QA Đảm<br>trách</th>
-                  <th colspan="3" class="text-center">Pallet / Thùng Carton</th>
-                  <th rowspan="2">Tiêu chuẩn<br>bề mặt</th>
-                  <th rowspan="2">Nguyên<br>vật liệu</th>
-                  <th rowspan="2">Phương pháp<br>đóng gói</th>
-                  <th rowspan="2">Đóng gói<br>1 TO/Pallet</th>
-                  <th rowspan="2">Phương tiện<br>vận chuyển</th>
-                  <th rowspan="2">Ghi chú</th>
-                  <th rowspan="2">Ngày<br>áp dụng</th>
-                  <th rowspan="2">Nội dung<br>thay đổi</th>
-                  <th rowspan="2">Lý do<br>thay đổi</th>
-                  <th colspan="4" class="text-center">Thông tin Pallet mới</th>
-                  <th rowspan="2">Ghi chú</th>
-                </tr>
-                <tr class="std-sub-header">
-                  <th>Type</th>
-                  <th>Size (mm)</th>
-                  <th>Kg max</th>
-                  <th>Type</th>
-                  <th>Size</th>
-                  <th>Kg max</th>
-                  <th>Ngày áp dụng</th>
-                </tr>
-              </thead>
-              <tbody id="standardTableBody"></tbody>
-            </table>
+        <div class="modal-body p-4 std-modal-body">
+          <!-- Loading State -->
+          <div id="standardLoadingState" class="text-center py-5" style="display:none;">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <p class="text-muted" data-i18n="std_loading">Đang tải...</p>
           </div>
+
+          <!-- Empty State -->
+          <div id="standardEmptyState" class="text-center py-5" style="display:none;">
+            <i class="bi bi-inbox" style="font-size:3rem;color:#cbd5e1;"></i>
+            <p class="mt-3 mb-1 fw-bold text-muted" data-i18n="std_empty">Chưa có dữ liệu</p>
+            <small class="text-muted" data-i18n="std_empty_desc">Không tìm thấy tiêu chuẩn</small>
+          </div>
+
+          <div id="standardTableContainer" class="std-table-wrap"></div>
         </div>
 
         <div class="modal-footer std-modal-footer">
-          <span class="text-muted me-auto" style="font-size:12px;">
-            <i class="bi bi-info-circle"></i> <span data-i18n="scroll_hint">Cuộn ngang để xem đầy đủ bảng</span>
-          </span>
           <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
-            <i class="bi bi-x-lg me-1"></i> Đóng
+            <i class="bi bi-x-lg me-1"></i> <span data-i18n="close_btn">Đóng</span>
           </button>
         </div>
       </div>
@@ -757,7 +1348,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg">
         <div class="modal-header bg-primary text-secondary">
-          <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-excel"></i> Lưu & Copy Dữ Liệu</h5>
+          <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-excel"></i> <span data-i18n="use_link_title">Lưu & Copy Dữ Liệu</span></h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-4">
@@ -765,7 +1356,7 @@
 
           <div class="row g-3 mb-3">
             <div class="col-6">
-              <label class="form-label fw-bold">Chiều cao (H)</label>
+              <label class="form-label fw-bold" data-i18n="height_label">Chiều cao (H)</label>
               <input type="number" id="formH" class="form-control" required>
             </div>
             <div class="col-6">
@@ -774,7 +1365,7 @@
             </div>
           </div>
 
-          <label class="form-label fw-bold">DW No & Version</label>
+          <label class="form-label fw-bold" data-i18n="dw_version_label">DW No & Version</label>
           <div class="search-select-wrapper mb-3" id="dwWrapper">
             <div class="search-select-input" onclick="toggleDropdownDw()">
               <input type="text" id="dwNoSearch" class="search-select-field" placeholder="Dw no, Version, To"
@@ -788,7 +1379,7 @@
         <div class="modal-footer bg-light">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
           <button type="button" class="btn btn-primary fw-bold" onclick="submitUseForm()">
-            <i class="bi bi-save"></i> Lưu & Cập nhật
+            <i class="bi bi-save"></i> <span data-i18n="save_update">Lưu & Cập nhật</span>
           </button>
         </div>
       </div>
@@ -1199,9 +1790,14 @@
       dropdown.innerHTML = html;
     }
 
-    function filterCustomerList() {
+   function filterCustomerList(isUserTyping) {
       var kw = document.getElementById('customerSearch').value.trim().toLowerCase();
-      openDropdown();
+      
+      // CHỈ MỞ DROPDOWN NẾU NGƯỜI DÙNG ĐANG CHỦ ĐỘNG GÕ PHÍM
+      if (isUserTyping) {
+        openDropdown();
+      }
+      
       clearTimeout(window.aiCustomerFilterTimer);
       window.aiCustomerFilterTimer = setTimeout(function () {
         if (!kw) { renderDropdownItems(allCustomers); return; }
@@ -1229,45 +1825,78 @@
     function changeBox(text) { if (!text || text === '0') return '-'; return '<div class="change-box">' + text + '</div>'; }
     function kgBold(val) { if (!val || val === '0') return '-'; return '<strong style="color:#dc2626;font-size:14px;">' + val + '</strong>'; }
 
-    function getcustomerSTD(customerName) {
-      var tbody = document.getElementById('standardTableBody');
+   function getcustomerSTD(customerName) {
       var titleEl = document.getElementById('standardModalTitle');
       var subtitleEl = document.getElementById('standardModalSubtitle');
-      tbody.innerHTML = '<tr><td colspan="28" class="std-loading-state"><div class="spinner-border" role="status"></div><p class="mt-3 mb-0 text-muted">' + dwAiT('std_loading') + '</p></td></tr>';
+    var tableContainer = document.getElementById('standardTableContainer');
+      var loadingState = document.getElementById('standardLoadingState');
+      var emptyState = document.getElementById('standardEmptyState');
+      
+      loadingState.style.display = 'flex';
+    tableContainer.innerHTML = '';
+      emptyState.style.display = 'none';
+      
       titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
       subtitleEl.textContent = dwAiT('retrieving_for') + ' ' + customerName + '...';
-      var standardModal = new bootstrap.Modal(document.getElementById('standardModal'));
+      
+      var standardModalEl = document.getElementById('standardModal');
+      var standardModal = bootstrap.Modal.getInstance(standardModalEl) || new bootstrap.Modal(standardModalEl);
       standardModal.show();
+
+      function esc(str) {
+        if (str === null || str === undefined || str === '') return '-';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
       
       google.script.run
         .withSuccessHandler(function (rows) {
+          loadingState.style.display = 'none';
+          
           if (!rows || rows.length === 0) {
-            titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
             subtitleEl.textContent = customerName;
-            tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-inbox"></i><p class="mb-1 fw-bold" style="color:#64748b;">' + dwAiT('std_empty') + '</p><small>' + dwAiT('std_empty_desc') + ' <strong>' + customerName + '</strong></small></td></tr>';
-            // Auto-close modal khi không có dữ liệu sau 2 giây
-            setTimeout(function () { standardModal.hide(); }, 2000);
+            emptyState.style.display = 'flex';
+            setTimeout(function () { standardModal.hide(); }, 2500);
             return;
           }
-          titleEl.innerHTML = '<i class="bi bi-box-seam-fill me-2"></i>' + dwAiT('std_modal_title');
+          
           subtitleEl.textContent = customerName + ' - ' + rows.length + ' ' + dwAiT('records');
-          var html = '';
+
+          var tableHtml = '<table class="std-table">' +
+            '<thead>' +
+            '<tr>' +
+            '<th class="std-sticky-col" rowspan="2">STT</th>' +
+            '<th class="std-group-info" colspan="10"><i class="bi bi-person-lines-fill me-1"></i>' + dwAiT('std_group_info') + '</th>' +
+            '<th class="std-group-pack" colspan="9"><i class="bi bi-box-seam me-1"></i>' + dwAiT('std_group_pack') + '</th>' +
+            '<th class="std-group-history" colspan="8"><i class="bi bi-clock-history me-1"></i>' + dwAiT('std_group_history') + '</th>' +
+            '</tr>' +
+            '<tr>' +
+            '<th>' + dwAiT('std_customer') + '</th><th>' + dwAiT('std_category') + '</th><th>' + dwAiT('std_surface') + '</th><th>' + dwAiT('std_project') + '</th><th>' + dwAiT('std_address') + '</th><th>' + dwAiT('std_ship_date') + '</th><th>Mark</th><th>' + dwAiT('std_sender') + '</th><th>' + dwAiT('std_qa_input') + '</th><th>' + dwAiT('std_qa_owner') + '</th>' +
+            '<th>' + dwAiT('std_pallet') + '</th><th>Size (MM)</th><th>Kg Max</th><th>' + dwAiT('std_surface_standard') + '</th><th>' + dwAiT('std_material') + '</th><th>' + dwAiT('std_pack_method') + '</th><th>' + dwAiT('std_pack_one_to') + '</th><th>' + dwAiT('std_transport') + '</th><th>' + dwAiT('std_note') + '</th>' +
+            '<th>' + dwAiT('std_apply_date') + '</th><th>' + dwAiT('std_change_content') + '</th><th>' + dwAiT('std_change_reason') + '</th><th>' + dwAiT('std_new_pallet_type') + '</th><th>' + dwAiT('std_new_pallet_size') + '</th><th>' + dwAiT('std_new_pallet_kg') + '</th><th>' + dwAiT('std_new_apply_date') + '</th><th>' + dwAiT('std_note') + '</th>' +
+            '</tr>' +
+            '</thead><tbody>';
+
           rows.forEach(function (r, i) {
-            html += '<tr><td class="text-center fw-bold">' + (i + 1) + '</td><td><strong>' + (r[0] || '') + '</strong></td><td>' + badge('gray', r[1]) + '</td><td class="text-center">' + (r[2] || '-') + '</td><td style="color:#2563eb;font-weight:500;">' + (r[3] || '-') + '</td><td>' + (r[4] || '-') + '</td><td>' + (r[5] || '-') + '</td><td>' + (r[6] || '-') + '</td><td class="text-center">' + (r[7] || '-') + '</td><td>' + (r[8] || '-') + '</td><td>' + (r[9] || '-') + '</td><td>' + palletBadge(r[10]) + '</td><td class="text-center" style="font-family:monospace;">' + (r[11] || '-') + '</td><td class="text-center">' + (r[12] || '-') + '</td><td class="text-start">' + (r[13] || '-') + '</td><td class="text-start">' + (r[14] || '-') + '</td><td class="text-center">' + (r[15] || '-') + '</td><td class="text-center">' + (r[16] || '-') + '</td><td>' + badge('gray', r[17]) + '</td><td class="text-start text-muted">' + (r[18] || '-') + '</td><td class="text-center">' + (r[19] || '-') + '</td><td>' + changeBox(r[20]) + '</td><td class="text-start">' + (r[21] || '-') + '</td><td class="text-center">' + (r[22] || '-') + '</td><td class="text-center" style="font-family:monospace;">' + (r[23] || '-') + '</td><td class="text-center">' + kgBold(r[24]) + '</td><td class="text-center">' + (r[25] || '-') + '</td><td class="text-center">' + (r[26] || '-') + '</td></tr>';
+            tableHtml += '<tr><td>' + (i + 1) + '</td>';
+            for (var columnIndex = 0; columnIndex < 27; columnIndex++) {
+              tableHtml += '<td>' + esc(r[columnIndex]) + '</td>';
+            }
+            tableHtml += '</tr>';
           });
-          tbody.innerHTML = html;
-          // Modal vẫn giữ mở để người dùng xem dữ liệu
+          tableHtml += '</tbody></table>';
+          tableContainer.innerHTML = tableHtml;
         })
         .withFailureHandler(function (err) {
+          loadingState.style.display = 'none';
           titleEl.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i>' + dwAiT('std_error');
           subtitleEl.textContent = '';
-          tbody.innerHTML = '<tr><td colspan="28" class="std-empty-state"><i class="bi bi-exclamation-circle text-danger"></i><p class="text-danger fw-bold">' + err.message + '</p></td></tr>';
-          // Auto-close modal khi có lỗi sau 3 giây
+          emptyState.innerHTML = '<i class="bi bi-exclamation-circle text-danger" style="font-size:3rem;"></i><p class="mt-3 mb-1 fw-bold text-danger">' + dwAiT('std_error') + '</p><small class="text-danger">' + err.message + '</small>';
+          emptyState.style.display = 'flex';
           setTimeout(function () { standardModal.hide(); }, 3000);
         })
         .getCustomerStandard(customerName);
     }
-
+    
     var currentLang = localStorage.getItem('app_lang') || 'vi';
     var i18n = {
       vi: {
@@ -1275,7 +1904,7 @@
         dim_title: 'Thông số kích thước',
         h_placeholder: 'Chiều cao',
         w_placeholder: 'Chiều rộng',
-        cust_title: 'Đối tượng khách hàng',
+        cust_title: 'Khách hàng',
         btn_standard: 'Xem tiêu chuẩn',
         btn_search: 'PHÂN TÍCH & TÌM KIẾM',
         btn_ai: 'ĐÁNH GIÁ TỪ AI',
@@ -1314,14 +1943,24 @@
         records: 'bản ghi',
         not_found: 'Không tìm thấy',
         no_excel_data: 'Không có dữ liệu',
-        action_to_link: 'Sử dụng'
+        action_to_link: 'Sử dụng',
+        upload_hint: 'Chọn hoặc kéo thả ảnh bản vẽ vào đây', ai_uploaded_drawing: 'Bản vẽ tải lên',
+        ai_drawing_database: 'Kho dữ liệu bản vẽ', ai_loading_desc: 'Đang đối chiếu vectơ hình học và xếp hạng độ tương đồng theo tỷ lệ Vector...',
+        use_link_title: 'Lưu & Copy Dữ Liệu', height_label: 'Chiều cao (H)', width_label: 'Chiều rộng (W)',
+        dw_version_label: 'DW No & Version', dw_version_placeholder: 'Dw no, Version, To', save_update: 'Lưu & Cập nhật',
+        std_group_info: 'Thông tin khách hàng & dự án', std_group_pack: 'Tiêu chuẩn đóng gói', std_group_history: 'Lịch sử thay đổi',
+        std_customer: 'Khách hàng', std_category: 'Phân loại', std_surface: 'Bề mặt', std_project: 'Dự án', std_address: 'Địa chỉ', std_ship_date: 'Dự kiến xuất hàng',
+        std_sender: 'Người gửi thông tin', std_qa_input: 'QA nhập thông tin', std_qa_owner: 'QA đảm trách', std_pallet: 'Pallet / Thùng Carton',
+        std_surface_standard: 'Tiêu chuẩn bề mặt', std_material: 'Nguyên vật liệu', std_pack_method: 'Phương pháp đóng gói', std_pack_one_to: 'Đóng gói 1 TO/Pallet',
+        std_transport: 'Phương tiện vận chuyển', std_note: 'Ghi chú', std_apply_date: 'Ngày áp dụng', std_change_content: 'Nội dung thay đổi',
+        std_change_reason: 'Lý do thay đổi', std_new_pallet_type: 'Pallet mới - Type', std_new_pallet_size: 'Pallet mới - Size', std_new_pallet_kg: 'Pallet mới - Kg Max', std_new_apply_date: 'Pallet mới - Ngày áp dụng'
       },
       en: {
         upload_title: 'Input Image',
         dim_title: 'Dimensions',
         h_placeholder: 'Height',
         w_placeholder: 'Width',
-        cust_title: 'Target Customer',
+        cust_title: 'Customer',
         btn_standard: 'View Standard',
         btn_search: 'ANALYZE & SEARCH',
         btn_ai: 'AI EVALUATION',
@@ -1360,7 +1999,40 @@
         records: 'records',
         not_found: 'Not found',
         no_excel_data: 'No data',
-        action_to_link: 'Use'
+        action_to_link: 'Use',
+        upload_hint: 'Choose or drag a drawing image here', ai_uploaded_drawing: 'Uploaded drawing',
+        ai_drawing_database: 'Drawing database', ai_loading_desc: 'Comparing geometric vectors and ranking similarity by vector ratio...',
+        use_link_title: 'Save & Copy Data', height_label: 'Height (H)', width_label: 'Width (W)',
+        dw_version_label: 'DW No & Version', dw_version_placeholder: 'Drawing no, version, TO', save_update: 'Save & Update',
+        std_group_info: 'Customer & project information', std_group_pack: 'Packaging standard', std_group_history: 'Change history',
+        std_customer: 'Customer', std_category: 'Category', std_surface: 'Surface', std_project: 'Project', std_address: 'Address', std_ship_date: 'Expected shipment',
+        std_sender: 'Information sender', std_qa_input: 'QA input', std_qa_owner: 'QA owner', std_pallet: 'Pallet / Carton', std_surface_standard: 'Surface standard',
+        std_material: 'Material', std_pack_method: 'Packing method', std_pack_one_to: '1 TO/Pallet packing', std_transport: 'Transport', std_note: 'Note',
+        std_apply_date: 'Effective date', std_change_content: 'Change content', std_change_reason: 'Change reason', std_new_pallet_type: 'New pallet - Type',
+        std_new_pallet_size: 'New pallet - Size', std_new_pallet_kg: 'New pallet - Kg Max', std_new_apply_date: 'New pallet - Effective date'
+      },
+      ja: {
+        upload_title: '入力画像', dim_title: '寸法', h_placeholder: '高さ', w_placeholder: '幅', cust_title: '顧客',
+        btn_standard: '梱包標準を表示', btn_search: '分析して検索', btn_ai: 'AI評価', filter_title: 'クイックフィルター:',
+        filter_dim: 'H×W', filter_cust: '顧客別', filter_reset: 'リセット', all_customers: '-- 全顧客 --',
+        search_placeholder: '顧客を検索...', loading_data: '読み込み中...', no_data: '一致するデータがありません。',
+        match_rate: '一致', size_label: '寸法:', cust_label: '顧客:', general_cust: '共通', found_results: '{0}件見つかりました。',
+        error_msg: 'エラー: ', no_link: '図面リンクなし', no_image: '画像を選択してください。', welcome_title: 'AIで図面を検索',
+        welcome_desc: '図面画像をアップロードし、寸法と顧客を選択して「分析して検索」を押してください。', ai_loading: 'AI分析中',
+        view_standard_for: '標準を表示:', std_modal_title: '梱包標準', std_loading: '読み込み中...', std_empty: 'データなし',
+        std_empty_desc: '標準が見つかりません', std_error: 'エラー', ai_modal_title: 'SmartVision AI結果', close_btn: '閉じる',
+        scroll_hint: '横スクロールで全体を表示', retrieving_for: '取得中:', records: '件', not_found: '見つかりません',
+        no_excel_data: 'データなし', action_to_link: '使用', upload_hint: '図面画像を選択またはドロップ',
+        ai_uploaded_drawing: 'アップロード図面', ai_drawing_database: '図面データベース',
+        ai_loading_desc: '幾何ベクトルを照合し、ベクトル比率で類似度をランキングしています。',
+        use_link_title: 'データを保存してコピー', height_label: '高さ (H)', width_label: '幅 (W)',
+        dw_version_label: '図面番号とバージョン', dw_version_placeholder: '図面番号、バージョン、TO', save_update: '保存して更新',
+        std_group_info: '顧客・プロジェクト情報', std_group_pack: '梱包標準', std_group_history: '変更履歴',
+        std_customer: '顧客', std_category: '分類', std_surface: '表面', std_project: 'プロジェクト', std_address: '住所', std_ship_date: '出荷予定',
+        std_sender: '情報送信者', std_qa_input: 'QA入力', std_qa_owner: 'QA担当', std_pallet: 'パレット / カートン', std_surface_standard: '表面標準',
+        std_material: '材料', std_pack_method: '梱包方法', std_pack_one_to: '1 TO/パレット梱包', std_transport: '輸送手段', std_note: '備考',
+        std_apply_date: '適用日', std_change_content: '変更内容', std_change_reason: '変更理由', std_new_pallet_type: '新パレット - タイプ',
+        std_new_pallet_size: '新パレット - サイズ', std_new_pallet_kg: '新パレット - Kg Max', std_new_apply_date: '新パレット - 適用日'
       }
     };
 

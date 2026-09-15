@@ -471,10 +471,12 @@
       .sidebar {
         position: fixed;
         inset: 0 auto 0 0;
-        width: 250px;
+        width: min(250px, 86vw);
         transform: translateX(-105%);
         transition: transform 0.25s ease;
         z-index: 1100;
+        background: #ffffff;
+        box-shadow: 12px 0 32px rgba(15, 23, 42, 0.16);
       }
       .sidebar.open {
         transform: translateX(0);
@@ -495,6 +497,66 @@
       .d-flex.vh-100.w-100:has(.sidebar.open)::before {
         opacity: 1;
         pointer-events: auto;
+      }
+
+      .topbar {
+        min-height: 58px;
+        padding: 0 12px !important;
+      }
+      .topbar > div:last-child {
+        min-width: 0;
+        gap: 6px !important;
+      }
+      .d-flex.vh-100.w-100:has(.sidebar.open) {
+        overflow: hidden;
+      }
+      .index-main-wrapper {
+        height: calc(var(--app-viewport-height, 100vh) - 58px);
+        padding: 8px !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+      }
+      .index-page-view.active {
+        min-width: 0;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .topbar {
+        padding: 0 8px !important;
+      }
+      .topbar .user-avatar {
+        width: 34px;
+        height: 34px;
+      }
+      .topbar .dropdown-menu {
+        position: fixed !important;
+        top: 62px !important;
+        right: 8px !important;
+        left: 8px !important;
+        width: auto !important;
+      }
+      .sidebar nav {
+        padding: 12px 10px;
+      }
+      .index-nav-item {
+        min-height: 44px;
+        padding: 9px 12px;
+      }
+      .index-main-wrapper {
+        padding: 6px !important;
+      }
+    }
+
+    @media (min-width: 993px) {
+      .sidebar {
+        position: relative;
+        inset: auto;
+        transform: none !important;
+      }
+      .sidebar.open {
+        transform: none !important;
       }
     }
 
@@ -738,6 +800,162 @@
       border-radius: 18px !important;
       box-shadow: 0 18px 45px rgba(15, 23, 42, 0.25) !important;
     }
+
+    /* Final responsive shell rules: these come last so Bootstrap and shell base rules cannot override them. */
+    .d-flex.vh-100.w-100 {
+      min-height: var(--app-viewport-height, 100vh);
+      height: var(--app-viewport-height, 100vh) !important;
+    }
+
+    @media (min-width: 993px) {
+      .d-flex.vh-100.w-100 {
+        display: flex !important;
+      }
+      .sidebar {
+        position: relative !important;
+        width: 250px;
+        height: 100%;
+        transform: none !important;
+      }
+      .sidebar-compact .sidebar {
+        width: 76px;
+      }
+      main {
+        min-width: 0;
+        min-height: 0;
+      }
+      .index-main-wrapper {
+        height: calc(var(--app-viewport-height, 100vh) - 66px) !important;
+        min-height: 0;
+        overflow: auto !important;
+        padding: 10px !important;
+      }
+    }
+
+    @media (max-width: 992px) {
+      .d-flex.vh-100.w-100 {
+        position: relative;
+        display: block !important;
+        height: var(--app-viewport-height, 100vh) !important;
+        overflow: hidden !important;
+      }
+      main {
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden !important;
+      }
+      .sidebar {
+        width: min(280px, 86vw) !important;
+        height: var(--app-viewport-height, 100vh) !important;
+        max-height: var(--app-viewport-height, 100vh);
+        overflow: hidden;
+        background: #ffffff !important;
+        transform: translateX(-105%) !important;
+      }
+      /* Không mang trạng thái compact của Desktop sang Mobile. */
+      .sidebar-compact .sidebar {
+        width: min(280px, 86vw) !important;
+      }
+      .sidebar-compact .sidebar .brand-text,
+      .sidebar-compact .sidebar .nav-text {
+        width: auto !important;
+        max-width: none !important;
+        margin-left: 0.5rem !important;
+        opacity: 1 !important;
+        overflow: visible !important;
+        pointer-events: auto !important;
+      }
+      .sidebar-compact .sidebar > div:first-child {
+        justify-content: flex-start !important;
+        padding-left: 16px !important;
+      }
+      .sidebar-compact .sidebar nav {
+        padding: 12px 10px !important;
+      }
+      .sidebar-compact .index-nav-item {
+        display: flex !important;
+        grid-template-columns: none !important;
+        place-items: normal !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        height: auto !important;
+        min-height: 44px;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding: 9px 12px !important;
+      }
+      .sidebar-compact .index-nav-item.active::after {
+        right: 12px;
+      }
+      .sidebar.open {
+        transform: translateX(0) !important;
+      }
+      .sidebar nav {
+        min-height: 0;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+      }
+      .topbar {
+        width: 100%;
+        min-height: 58px !important;
+        height: 58px;
+        padding: 0 12px !important;
+        flex-shrink: 0;
+      }
+      .topbar > div:first-child,
+      .topbar > div:last-child {
+        min-width: 0;
+      }
+      .topbar > div:last-child {
+        gap: 6px !important;
+      }
+      .index-main-wrapper {
+        width: 100%;
+        height: calc(var(--app-viewport-height, 100vh) - 58px) !important;
+        min-height: 0;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        padding: 8px !important;
+      }
+      .index-page-view.active {
+        width: 100%;
+        min-width: 0;
+        min-height: 0;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .topbar {
+        padding: 0 8px !important;
+      }
+      .topbar h6,
+      .topbar small {
+        display: none !important;
+      }
+      .topbar .user-avatar {
+        width: 34px;
+        height: 34px;
+      }
+      .topbar .d-none.d-sm-block {
+        display: none !important;
+      }
+      .topbar .dropdown-menu {
+        position: fixed !important;
+        top: 64px !important;
+        left: 8px !important;
+        right: 8px !important;
+        width: auto !important;
+        max-width: none !important;
+      }
+      .index-main-wrapper {
+        padding: 6px !important;
+      }
+      .sidebar {
+        width: min(280px, 88vw) !important;
+      }
+    }
   </style>
 
 </head>
@@ -847,40 +1065,40 @@
 
         <button class="btn text-start w-100 border-0 fw-medium index-nav-item active" id="nav-btn-dashboard"
           onclick="switchTab('dashboard', this)">
-          <i class="fa fa-chart-pie"></i> <span class="nav-text">Tổng quan</span>
+          <i class="fa fa-chart-pie"></i> <span class="nav-text" data-i18n="nav_dashboard">Tổng quan</span>
         </button>
 
         <!-- CỤM MENU TỔ HỢP -->
         <button class="btn text-start w-100 border-0 fw-medium index-nav-item" onclick="switchTab('dwInformation', this)" id="nav-btn-dwInformation">
             <i class="fa fa-layer-group"></i>
             <span class="nav-text d-flex justify-content-between align-items-center w-100 pe-3">
-              Thông tin bản vẽ 
+              <span data-i18n="nav_drawing_info">Thông tin bản vẽ</span>
             </span>
           </button>
-
-        <button class="btn text-start w-100 border-0 fw-medium index-nav-item" onclick="switchTab('dwHistory', this)" id="nav-btn-dwHistory">
-          <i class="fa fa-chart-line"></i> <span class="nav-text">Lịch sử bản vẽ</span>
-        </button>
-
         <button class="btn text-start w-100 border-0 fw-medium index-nav-item" id="nav-btn-seachDwByAi"
           onclick="switchTab('seachDwByAi', this)">
-          <i class="fa fa-microchip"></i> <span class="nav-text">Tìm kiếm AI</span>
+          <i class="fa fa-microchip"></i> <span class="nav-text" data-i18n="nav_ai_search">Tìm kiếm AI</span>
         </button>
 
         <button class="btn text-start w-100 border-0 fw-medium index-nav-item" id="nav-btn-dwDesign"
           onclick="switchTab('dwDesign', this)">
-          <i class="fa fa-pen-nib"></i> <span class="nav-text">Thiết kế bản vẽ</span>
+          <i class="fa fa-pen-nib"></i> <span class="nav-text" data-i18n="nav_drawing_design">Thiết kế bản vẽ</span>
         </button>
 
         <button class="btn text-start w-100 border-0 fw-medium index-nav-item" id="nav-btn-submitDrawingsForApproval"
           onclick="switchTab('submitDrawingsForApproval', this)">
-          <i class="fa fa-file-signature"></i> <span class="nav-text">Trình ký duyệt</span>
+          <i class="fa fa-file-signature"></i> <span class="nav-text" data-i18n="nav_approval">Trình ký duyệt</span>
         </button>
 
         <button class="btn text-start w-100 border-0 fw-medium index-nav-item" id="nav-btn-release"
           onclick="switchTab('release', this)">
-          <i class="fa fa-paper-plane"></i> <span class="nav-text">Ban hành bản vẽ</span>
+          <i class="fa fa-paper-plane"></i> <span class="nav-text" data-i18n="nav_release">Ban hành bản vẽ</span>
         </button>
+
+        <button class="btn text-start w-100 border-0 fw-medium index-nav-item" onclick="switchTab('dwHistory', this)" id="nav-btn-dwHistory">
+          <i class="fa fa-chart-line"></i> <span class="nav-text" data-i18n="nav_history_received">Lịch sử tiếp nhận</span>
+        </button>
+
 
       </nav>
     </aside>
@@ -1388,8 +1606,126 @@
       }
     }
 
+    function syncResponsiveShell() {
+      var shell = document.querySelector('.d-flex.vh-100.w-100');
+      var sidebar = document.getElementById('mainSidebar');
+      if (!shell || !sidebar) return;
+
+      if (window.innerWidth > 992 || window.__responsiveViewportWidth !== window.innerWidth) {
+        sidebar.classList.remove('open');
+        if (window.innerWidth > 992) {
+          shell.classList.remove('sidebar-compact');
+          if (localStorage.getItem('sidebar_compact') === '1') shell.classList.add('sidebar-compact');
+        }
+      }
+
+      window.__responsiveViewportWidth = window.innerWidth;
+      document.documentElement.style.setProperty('--app-viewport-height', window.innerHeight + 'px');
+    }
+
+    window.addEventListener('resize', syncResponsiveShell, { passive: true });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(syncResponsiveShell, 120);
+    }, { passive: true });
+
+    document.addEventListener('click', function (event) {
+      if (window.innerWidth > 992) return;
+      var shell = document.querySelector('.d-flex.vh-100.w-100');
+      var sidebar = document.getElementById('mainSidebar');
+      if (!shell || !sidebar || !sidebar.classList.contains('open')) return;
+      if (!sidebar.contains(event.target) && event.target !== document.getElementById('menuBtn')) {
+        sidebar.classList.remove('open');
+      }
+    });
+
+    // Phân quyền menu theo chức vụ của người dùng.
+    var menuPermissionsByPosition = {
+      ST: ['dashboard', 'dwInformation', 'seachDwByAi', 'dwDesign', 'submitDrawingsForApproval', 'release', 'dwHistory'],
+      Leader: ['dashboard', 'seachDwByAi', 'submitDrawingsForApproval', 'release', 'dwHistory'],
+      MGR: ['dashboard', 'submitDrawingsForApproval', 'dwHistory'],
+      GM: ['dashboard', 'submitDrawingsForApproval', 'dwHistory']
+    };
+
+    function normalizeUserPosition(position) {
+      var normalized = String(position || '').trim().toLowerCase();
+      var positionMap = {
+        'charger': 'ST',
+        'st': 'ST',
+        'checker 1': 'Leader',
+        'leader': 'Leader',
+        'checker 2': 'MGR',
+        'mgr': 'MGR',
+        'approval': 'GM',
+        'gm': 'GM'
+      };
+      return positionMap[normalized] || '';
+    }
+
+    function applyMenuPermissions(position) {
+      var normalizedPosition = normalizeUserPosition(position);
+      var allowedPages = menuPermissionsByPosition[normalizedPosition] || ['dashboard'];
+      window.currentUserPosition = normalizedPosition;
+      window.allowedMenuPages = allowedPages;
+
+      document.querySelectorAll('.index-nav-item').forEach(function (button) {
+        var pageName = button.id.replace(/^nav-btn-/, '');
+        var isAllowed = allowedPages.indexOf(pageName) !== -1;
+        button.hidden = !isAllowed;
+        button.style.setProperty('display', isAllowed ? '' : 'none', 'important');
+        button.setAttribute('aria-hidden', isAllowed ? 'false' : 'true');
+      });
+
+      if (allowedPages.indexOf(activePageName) === -1) {
+        switchTab('dashboard', document.getElementById('nav-btn-dashboard'));
+      }
+    }
+
+    var pageChromeTranslations = {
+      vi: {
+        dashboard: ['Tổng Quan Hệ Thống', 'Theo dõi tiến độ bản vẽ, quản lý yêu cầu và quy trình ban hành tập trung.'],
+        dwInformation: ['Thông Tin Bản Vẽ', 'Nhận thông tin yêu cầu bản vẽ khách hàng qua Email và Quản lý dữ liệu tập trung.'],
+        dwHistory: ['Lịch Sử Bản Vẽ', 'Theo dõi tần suất TO và đối chiếu trạng thái SO từ các nguồn dữ liệu.'],
+        seachDwByAi: ['Tìm Kiếm Bản Vẽ Bằng AI', 'Quét hình ảnh hoặc file PDF bản vẽ để AI tự động phân tích và tìm kiếm quy cách tương đương.'],
+        dwDesign: ['Thiết Kế Bản Vẽ', 'Tải lên file PDF/Excel bản vẽ thiết kế mới và quản lý danh sách yêu cầu chờ thiết kế.'],
+        submitDrawingsForApproval: ['Trình Ký Phê Duyệt', 'Kiểm tra thông tin PDF và phê duyệt hoặc phản hồi bản vẽ thiết kế mới nhất.'],
+        release: ['Quản Lý Ban Hành Bản Vẽ', 'Theo dõi trạng thái bản vẽ và quản lý ban hành lên hệ thống QA system.']
+      },
+      en: {
+        dashboard: ['System Dashboard', 'Track drawing progress, requests, and the centralized release workflow.'],
+        dwInformation: ['Drawing Information', 'Receive customer drawing requests by email and manage centralized data.'],
+        dwHistory: ['Drawing History', 'Track TO frequency and compare SO status across data sources.'],
+        seachDwByAi: ['AI Drawing Search', 'Analyze drawing images or PDF files and find equivalent specifications.'],
+        dwDesign: ['Drawing Design', 'Upload new drawing PDF/Excel files and manage drawings waiting for design.'],
+        submitDrawingsForApproval: ['Approval Workflow', 'Review PDF information and approve or return the latest drawings.'],
+        release: ['Drawing Release Management', 'Track drawing status and release drawings to the QA system.']
+      },
+      ja: {
+        dashboard: ['システムダッシュボード', '図面の進捗、依頼、発行ワークフローを一元管理します。'],
+        dwInformation: ['図面情報', '顧客からの図面依頼をメールで受け取り、データを管理します。'],
+        dwHistory: ['図面履歴', 'TO頻度を追跡し、各データソースのSO状態を照合します。'],
+        seachDwByAi: ['AI図面検索', '図面画像またはPDFを分析し、同等の仕様を検索します。'],
+        dwDesign: ['図面設計', '新しい図面PDF/Excelをアップロードし、設計待ち図面を管理します。'],
+        submitDrawingsForApproval: ['承認ワークフロー', 'PDF情報を確認し、最新図面を承認または差し戻します。'],
+        release: ['図面発行管理', '図面の状態を確認し、QAシステムへ発行します。']
+      }
+    };
+
+    function applyPageChromeLanguage(pageName) {
+      var lang = localStorage.getItem('app_lang') || 'vi';
+      var text = (pageChromeTranslations[lang] || pageChromeTranslations.vi)[pageName];
+      if (!text) return;
+      var titleEl = document.getElementById('topbarPageTitle');
+      var subtitleEl = document.getElementById('topbarPageSubtitle');
+      if (titleEl) titleEl.textContent = text[0];
+      if (subtitleEl) subtitleEl.textContent = text[1];
+    }
+
     // Chuyển Trang (Views)
     function switchTab(pageName, element) {
+      if (window.allowedMenuPages && window.allowedMenuPages.indexOf(pageName) === -1) {
+        pageName = 'dashboard';
+        element = document.getElementById('nav-btn-dashboard');
+      }
       if (pageName === activePageName) return;
 
       forceHideLoading();
@@ -1446,6 +1782,7 @@
         if (topbarTitle) topbarTitle.textContent = pageTitleMap[pageName].title;
         if (topbarSubtitle) topbarSubtitle.textContent = pageTitleMap[pageName].subtitle;
       }
+      applyPageChromeLanguage(pageName);
 
       // Nếu không phải là click vào menu con, hãy xóa active của menu con đi
       if (pageName !== 'dwInformation') {
@@ -1566,6 +1903,7 @@
  
     // Khởi tạo hệ thống
     document.addEventListener('DOMContentLoaded', function () {
+      syncResponsiveShell();
       clearStaleScreenOverlays();
       showFirstLoading("LIXIL BEHAVIORS");
 
@@ -1606,6 +1944,7 @@
           }
           if (nameEl) nameEl.textContent = profile.name;
           if (posEl) posEl.textContent = posElValue;
+          applyMenuPermissions(profile.position);
           var avatarEl = document.getElementById('uiUserAvatar');
           if (avatarEl) {
             var avatarSrc = profile.avatarUrl || ('https://unavatar.io/' + encodeURIComponent(profile.email || '') + '?fallback=' + encodeURIComponent('https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.name || 'U') + '&background=7CB342&color=ffffff&bold=true&size=128'));
@@ -1674,6 +2013,9 @@
         'nav_create': 'Tạo yêu cầu',
         'nav_manage': 'Phê duyệt',
         'nav_history': 'Lịch sử bộ phận',
+        'nav_dashboard': 'Tổng quan', 'nav_drawing_info': 'Thông tin bản vẽ', 'nav_ai_search': 'Tìm kiếm AI',
+        'nav_drawing_design': 'Thiết kế bản vẽ', 'nav_approval': 'Trình ký duyệt', 'nav_release': 'Ban hành bản vẽ',
+        'nav_history_received': 'Lịch sử tiếp nhận',
         'lang_name': 'Tiếng Việt',
 
         /* --- LỊCH SỬ BỘ PHẬN --- */
@@ -1777,11 +2119,62 @@
         'his_alert_link_label': 'Dán đường dẫn (Google Drive/Smarteam...)',
         'his_alert_link_success': 'Đã nhận link!',
         'his_alert_save_success': 'Đã lưu thông tin!',
+        'dw_history_title': 'Lịch sử và đối chiếu bản vẽ',
+        'dw_history_subtitle': 'Theo dõi tần suất TO và kiểm tra trạng thái SO giữa email, dữ liệu bản vẽ và Check adjust.',
+        'dw_history_reload': 'Cập nhật', 'dw_history_tab_frequency': 'Tần suất TO', 'dw_history_tab_comparison': 'Đối chiếu SO',
+        'dw_history_loading': 'Đang tải dữ liệu...', 'dw_history_select_tab': 'Chọn tab để tải dữ liệu.',
+        'dw_history_th_to': 'TO', 'dw_history_th_frequency': 'Tần suất', 'dw_history_th_occurrences': 'Số lần xuất hiện',
+        'dw_history_th_colors_count': 'Số màu', 'dw_history_th_customers_count': 'Số khách', 'dw_history_th_colors': 'Các màu',
+        'dw_history_th_customers': 'Khách hàng', 'dw_history_th_so': 'Mã SO', 'dw_history_th_drawing': 'Bản vẽ',
+        'dw_history_ph_to': 'Lọc TO...', 'dw_history_ph_filter': 'Lọc...', 'dw_history_ph_colors': 'Lọc màu...',
+        'dw_history_ph_customers': 'Lọc khách...', 'dw_history_ph_so': 'Tìm mã SO...',
+        'dw_history_kpi_total': 'Tổng SO', 'dw_history_kpi_received': 'Đã tiếp nhận', 'dw_history_kpi_unreceived': 'Chưa tiếp nhận',
+        'dw_history_filter_all': 'Tất cả', 'dw_history_filter_received': 'Đã tiếp nhận', 'dw_history_filter_unreceived': 'Chưa tiếp nhận',
+        'dash_data_title': 'Dữ Liệu Bản Vẽ Đóng Gói G2G', 'dash_live_data': 'Live Data',
+        'dash_data_subtitle': 'Tìm nhanh theo mã, dự án, người tạo, trạng thái và thời gian cập nhật.',
+        'dash_all_fye': '📅 Tất cả FYE', 'dash_all_months': '📆 Tất cả tháng', 'dash_all': 'Tất cả',
+        'dash_filtering': 'Đang lọc:', 'dash_clear_all': 'Xóa tất cả', 'dash_preview_title': 'Xem trước bản vẽ',
+        'dash_preview_meta': 'Tài liệu đang được mở trong hệ thống', 'dash_total_drawings': 'Tổng Số Bản Vẽ',
+        'dash_packaging_drawings': 'Bản vẽ đóng gói', 'dash_pending_design': 'Chờ Thiết Kế',
+        'dash_pending_approval': 'Chờ Ký Duyệt', 'dash_pending_release': 'Chờ Ban Hành',
+        'dash_released': 'Đã Ban Hành Lên QA System', 'dash_fye_title': 'Tổng Số Bản Vẽ Theo Từng Năm (FYE)',
+        'dash_fye_subtitle': 'So sánh số lượng thiết kế qua các năm tài chính', 'dash_project_title': 'Thống Kê Theo Dự Án',
+        'dash_project_subtitle': 'Phân bổ số lượng bản vẽ theo từng dự án trong 12 tháng', 'dash_detail_list': 'Danh sách chi tiết',
+        'dash_detail_subtitle': 'Danh sách bản vẽ đóng gói', 'dash_search_placeholder': 'Tìm mã, SKU, TO, dự án, người tạo, trạng thái...',
+        'dash_th_type': 'Type', 'dash_th_to': 'To', 'dash_th_dw_code': 'Dw Code', 'dash_th_version': 'Ver',
+        'dash_th_project': 'Project', 'dash_th_customer': 'Customer', 'dash_th_date': 'Date', 'dash_th_drawing': 'DW', 'dash_th_status': 'Status',
+        'design_preview_title': 'Xem trước bản vẽ', 'design_preview_meta': 'PDF preview', 'design_upload_title': 'Tải lên bản vẽ',
+        'design_drawing_code': 'Drawing Code', 'design_drawing_placeholder': 'Nhập / Chọn mã Drawing...', 'design_group': 'Group',
+        'design_auto_fill': 'Tự động điền...', 'design_choose_excel': 'Kéo thả hoặc bấm để chọn Excel', 'design_nas_note': '*Tự động lưu trữ vào ổ NAS QA.',
+        'design_upload_button': 'TẢI FILE', 'design_pending_title': 'Danh sách bản vẽ chờ thiết kế', 'design_search_placeholder': 'Tìm kiếm...',
+        'design_th_type': 'Type', 'design_th_to': 'To', 'design_th_dw_code': 'Dw Code', 'design_th_version': 'Ver',
+        'design_th_project': 'Project', 'design_th_customer': 'Customer', 'design_th_excel': 'Excel Sample', 'design_th_pdf': 'PDF',
+        'design_th_action': 'Action', 'design_pagination_empty': 'Hiển thị 0 - 0 / 0 bản vẽ', 'design_prev': 'Trang trước', 'design_next': 'Trang sau',
+        'approval_title': 'Danh sách Trình ký Phê duyệt', 'approval_search_placeholder': 'Tìm theo TO, DW Code, KH...',
+        'approval_tab_all': 'Tất cả', 'approval_tab_barsale': 'Barsale', 'approval_tab_oem': 'OEM', 'approval_tab_we': 'WE SASH',
+        'approval_bulk_sign': 'Ký hàng loạt', 'approval_bulk_release': 'Ban hành hàng loạt', 'approval_refresh': 'Làm mới Data',
+        'approval_th_type': 'Type', 'approval_th_to': 'To', 'approval_th_dw_code': 'Dw Code', 'approval_th_version': 'Ver',
+        'approval_th_project': 'Project', 'approval_th_customer': 'Customer', 'approval_th_status': 'Status', 'approval_th_action': 'Action',
+        'approval_pagination_empty': 'Hiển thị 0 - 0 / 0 bản vẽ', 'approval_prev': 'Trang trước', 'approval_next': 'Trang sau',
+        'approval_reject_title': 'Từ Chối Bản Vẽ', 'approval_reject_reason': 'Lý do từ chối',
+        'approval_reject_placeholder': 'Nhập lý do chi tiết (sai kích thước, sai thông số, chưa đạt chuẩn...)',
+        'approval_reject_required': 'Vui lòng nhập lý do từ chối!', 'approval_cancel': 'Hủy', 'approval_confirm_reject': 'Xác Nhận Từ Chối',
+        'release_title': 'Quản lý ban hành bản vẽ', 'release_subtitle': 'Theo dõi tiến độ kiểm tra và ban hành bản vẽ lên QA System.',
+        'release_filtering': 'Đang lọc', 'release_clear_filter': 'Hủy lọc', 'release_search_placeholder': 'Tìm Request No. trong QA-G2G...',
+        'info_tab_mail': 'Hộp thư dự án bản vẽ từ khách hàng', 'info_tab_add': 'Thêm bản vẽ', 'info_tab_manage': 'Quản lí bản vẽ',
+        'info_search_email': 'Tìm kiếm email...', 'info_status': 'Trạng thái:', 'info_all': 'Tất cả', 'info_received': 'Đã tiếp nhận', 'info_unreceived': 'Chưa tiếp nhận',
+        'info_empty_title': 'Chọn email để xem nội dung', 'info_empty_desc': 'Email có tiêu đề [MANUFACTURING ORDER] hoặc [NEW PROJECT] sẽ hiển thị ở đây',
+        'info_search_drawing': 'Tìm kiếm Type, TO, Customer...', 'info_bulk_edit': 'Sửa hàng loạt', 'info_add_new': 'Thêm mới',
+        'info_th_type': 'Type', 'info_th_to': 'TO', 'info_th_dw_code': 'Dw Code', 'info_th_customer': 'Customer', 'info_th_action': 'Action',
+        'info_th_status': 'Trạng thái', 'info_th_section': 'Hình mặt cắt', 'info_no_data': 'Không có dữ liệu', 'info_no_complete_data': 'Không có bản vẽ đủ dữ liệu',
       },
       'en': {
         'nav_create': 'Create Request',
         'nav_manage': 'Approve',
         'nav_history': 'Dept. History',
+        'nav_dashboard': 'Dashboard', 'nav_drawing_info': 'Drawing Information', 'nav_ai_search': 'AI Search',
+        'nav_drawing_design': 'Drawing Design', 'nav_approval': 'Approval Workflow', 'nav_release': 'Drawing Release',
+        'nav_history_received': 'Receipt History',
         'lang_name': 'English',
 
 
@@ -1886,11 +2279,62 @@
         'his_alert_link_label': 'Paste URL (Google Drive/Smarteam...)',
         'his_alert_link_success': 'Link attached!',
         'his_alert_save_success': 'Saved successfully!',
+        'dw_history_title': 'Drawing History and Comparison',
+        'dw_history_subtitle': 'Track TO frequency and compare SO status across email, drawing data, and Check adjust.',
+        'dw_history_reload': 'Refresh', 'dw_history_tab_frequency': 'TO Frequency', 'dw_history_tab_comparison': 'SO Comparison',
+        'dw_history_loading': 'Loading data...', 'dw_history_select_tab': 'Select a tab to load data.',
+        'dw_history_th_to': 'TO', 'dw_history_th_frequency': 'Frequency', 'dw_history_th_occurrences': 'Occurrences',
+        'dw_history_th_colors_count': 'Colors', 'dw_history_th_customers_count': 'Customers', 'dw_history_th_colors': 'Colors',
+        'dw_history_th_customers': 'Customers', 'dw_history_th_so': 'SO No.', 'dw_history_th_drawing': 'Drawing',
+        'dw_history_ph_to': 'Filter TO...', 'dw_history_ph_filter': 'Filter...', 'dw_history_ph_colors': 'Filter colors...',
+        'dw_history_ph_customers': 'Filter customers...', 'dw_history_ph_so': 'Search SO...',
+        'dw_history_kpi_total': 'Total SO', 'dw_history_kpi_received': 'Received', 'dw_history_kpi_unreceived': 'Unreceived',
+        'dw_history_filter_all': 'All', 'dw_history_filter_received': 'Received', 'dw_history_filter_unreceived': 'Unreceived',
+        'dash_data_title': 'G2G Packaging Drawing Data', 'dash_live_data': 'Live Data',
+        'dash_data_subtitle': 'Search by code, project, creator, status, or update time.',
+        'dash_all_fye': '📅 All FYE', 'dash_all_months': '📆 All months', 'dash_all': 'All',
+        'dash_filtering': 'Filtering:', 'dash_clear_all': 'Clear all', 'dash_preview_title': 'Drawing preview',
+        'dash_preview_meta': 'Document opened in the system', 'dash_total_drawings': 'Total Drawings',
+        'dash_packaging_drawings': 'Packaging drawings', 'dash_pending_design': 'Pending Design',
+        'dash_pending_approval': 'Pending Approval', 'dash_pending_release': 'Pending Release',
+        'dash_released': 'Released to QA System', 'dash_fye_title': 'Total Drawings by Fiscal Year (FYE)',
+        'dash_fye_subtitle': 'Compare design volume across fiscal years', 'dash_project_title': 'Statistics by Project',
+        'dash_project_subtitle': 'Drawing distribution by project over 12 months', 'dash_detail_list': 'Detailed list',
+        'dash_detail_subtitle': 'Packaging drawing list', 'dash_search_placeholder': 'Search code, SKU, TO, project, creator, status...',
+        'dash_th_type': 'Type', 'dash_th_to': 'To', 'dash_th_dw_code': 'Drawing Code', 'dash_th_version': 'Ver',
+        'dash_th_project': 'Project', 'dash_th_customer': 'Customer', 'dash_th_date': 'Date', 'dash_th_drawing': 'DW', 'dash_th_status': 'Status',
+        'design_preview_title': 'Drawing preview', 'design_preview_meta': 'PDF preview', 'design_upload_title': 'Upload drawing',
+        'design_drawing_code': 'Drawing Code', 'design_drawing_placeholder': 'Enter / select drawing code...', 'design_group': 'Group',
+        'design_auto_fill': 'Auto-filled...', 'design_choose_excel': 'Drop or click to choose Excel', 'design_nas_note': '*Automatically stored on QA NAS.',
+        'design_upload_button': 'UPLOAD FILE', 'design_pending_title': 'Drawings pending design', 'design_search_placeholder': 'Search...',
+        'design_th_type': 'Type', 'design_th_to': 'To', 'design_th_dw_code': 'Drawing Code', 'design_th_version': 'Ver',
+        'design_th_project': 'Project', 'design_th_customer': 'Customer', 'design_th_excel': 'Excel Sample', 'design_th_pdf': 'PDF',
+        'design_th_action': 'Action', 'design_pagination_empty': 'Showing 0 - 0 / 0 drawings', 'design_prev': 'Previous', 'design_next': 'Next',
+        'approval_title': 'Approval Workflow List', 'approval_search_placeholder': 'Search TO, Drawing Code, Customer...',
+        'approval_tab_all': 'All', 'approval_tab_barsale': 'Barsale', 'approval_tab_oem': 'OEM', 'approval_tab_we': 'WE SASH',
+        'approval_bulk_sign': 'Bulk sign', 'approval_bulk_release': 'Bulk release', 'approval_refresh': 'Refresh data',
+        'approval_th_type': 'Type', 'approval_th_to': 'To', 'approval_th_dw_code': 'Drawing Code', 'approval_th_version': 'Ver',
+        'approval_th_project': 'Project', 'approval_th_customer': 'Customer', 'approval_th_status': 'Status', 'approval_th_action': 'Action',
+        'approval_pagination_empty': 'Showing 0 - 0 / 0 drawings', 'approval_prev': 'Previous', 'approval_next': 'Next',
+        'approval_reject_title': 'Reject Drawing', 'approval_reject_reason': 'Rejection reason',
+        'approval_reject_placeholder': 'Enter the detailed reason (wrong size, wrong specification, not compliant...)',
+        'approval_reject_required': 'Please enter a rejection reason!', 'approval_cancel': 'Cancel', 'approval_confirm_reject': 'Confirm Rejection',
+        'release_title': 'Drawing Release Management', 'release_subtitle': 'Track drawing review progress and release drawings to the QA System.',
+        'release_filtering': 'Filtering', 'release_clear_filter': 'Clear filter', 'release_search_placeholder': 'Search Request No. in QA-G2G...',
+        'info_tab_mail': 'Customer drawing project inbox', 'info_tab_add': 'Add drawing', 'info_tab_manage': 'Drawing management',
+        'info_search_email': 'Search email...', 'info_status': 'Status:', 'info_all': 'All', 'info_received': 'Received', 'info_unreceived': 'Not received',
+        'info_empty_title': 'Select an email to view its content', 'info_empty_desc': 'Emails with [MANUFACTURING ORDER] or [NEW PROJECT] in the subject appear here',
+        'info_search_drawing': 'Search Type, TO, Customer...', 'info_bulk_edit': 'Bulk edit', 'info_add_new': 'Add new',
+        'info_th_type': 'Type', 'info_th_to': 'TO', 'info_th_dw_code': 'Drawing Code', 'info_th_customer': 'Customer', 'info_th_action': 'Action',
+        'info_th_status': 'Status', 'info_th_section': 'Section image', 'info_no_data': 'No data', 'info_no_complete_data': 'No complete drawings',
       },
       'ja': {
         'nav_create': 'リクエスト作成',
         'nav_manage': '承認',
         'nav_history': '部門履歴',
+        'nav_dashboard': 'ダッシュボード', 'nav_drawing_info': '図面情報', 'nav_ai_search': 'AI検索',
+        'nav_drawing_design': '図面設計', 'nav_approval': '承認ワークフロー', 'nav_release': '図面発行',
+        'nav_history_received': '受付履歴',
         'lang_name': '日本語',
 
         /* --- 部門履歴 --- */
@@ -1994,6 +2438,54 @@
         'his_alert_link_label': 'URLを貼り付け (Google Drive/Smarteam...)',
         'his_alert_link_success': 'リンクを追加しました！',
         'his_alert_save_success': '保存しました！',
+        'dw_history_title': '図面履歴と照合',
+        'dw_history_subtitle': 'メール、図面データ、Check adjust間のTO頻度とSO状態を確認します。',
+        'dw_history_reload': '更新', 'dw_history_tab_frequency': 'TO頻度', 'dw_history_tab_comparison': 'SO照合',
+        'dw_history_loading': 'データを読み込み中...', 'dw_history_select_tab': 'タブを選択してデータを読み込みます。',
+        'dw_history_th_to': 'TO', 'dw_history_th_frequency': '頻度', 'dw_history_th_occurrences': '出現回数',
+        'dw_history_th_colors_count': '色数', 'dw_history_th_customers_count': '顧客数', 'dw_history_th_colors': '色',
+        'dw_history_th_customers': '顧客', 'dw_history_th_so': 'SO番号', 'dw_history_th_drawing': '図面',
+        'dw_history_ph_to': 'TOを絞り込み...', 'dw_history_ph_filter': '絞り込み...', 'dw_history_ph_colors': '色を絞り込み...',
+        'dw_history_ph_customers': '顧客を絞り込み...', 'dw_history_ph_so': 'SO番号を検索...',
+        'dw_history_kpi_total': 'SO合計', 'dw_history_kpi_received': '受付済み', 'dw_history_kpi_unreceived': '未受付',
+        'dw_history_filter_all': 'すべて', 'dw_history_filter_received': '受付済み', 'dw_history_filter_unreceived': '未受付',
+        'dash_data_title': 'G2G梱包図面データ', 'dash_live_data': 'Live Data',
+        'dash_data_subtitle': 'コード、プロジェクト、作成者、状態、更新日時で検索',
+        'dash_all_fye': '📅 全FYE', 'dash_all_months': '📆 全月', 'dash_all': 'すべて',
+        'dash_filtering': '絞り込み中:', 'dash_clear_all': 'すべてクリア', 'dash_preview_title': '図面プレビュー',
+        'dash_preview_meta': 'システムで開いているドキュメント', 'dash_total_drawings': '図面総数',
+        'dash_packaging_drawings': '梱包図面', 'dash_pending_design': '設計待ち',
+        'dash_pending_approval': '承認待ち', 'dash_pending_release': '発行待ち',
+        'dash_released': 'QAシステム発行済み', 'dash_fye_title': '年度別図面総数 (FYE)',
+        'dash_fye_subtitle': '年度別の設計数を比較', 'dash_project_title': 'プロジェクト別統計',
+        'dash_project_subtitle': '12か月間のプロジェクト別図面数', 'dash_detail_list': '詳細一覧',
+        'dash_detail_subtitle': '梱包図面一覧', 'dash_search_placeholder': 'コード、SKU、TO、プロジェクト、作成者、状態を検索...',
+        'dash_th_type': 'タイプ', 'dash_th_to': 'TO', 'dash_th_dw_code': '図面コード', 'dash_th_version': 'Ver',
+        'dash_th_project': 'プロジェクト', 'dash_th_customer': '顧客', 'dash_th_date': '日付', 'dash_th_drawing': '図面', 'dash_th_status': '状態',
+        'design_preview_title': '図面プレビュー', 'design_preview_meta': 'PDFプレビュー', 'design_upload_title': '図面アップロード',
+        'design_drawing_code': '図面コード', 'design_drawing_placeholder': '図面コードを入力 / 選択...', 'design_group': 'グループ',
+        'design_auto_fill': '自動入力...', 'design_choose_excel': 'クリックまたはドロップしてExcelを選択', 'design_nas_note': '*QA NASに自動保存されます。',
+        'design_upload_button': 'ファイルをアップロード', 'design_pending_title': '設計待ち図面一覧', 'design_search_placeholder': '検索...',
+        'design_th_type': 'タイプ', 'design_th_to': 'TO', 'design_th_dw_code': '図面コード', 'design_th_version': 'Ver',
+        'design_th_project': 'プロジェクト', 'design_th_customer': '顧客', 'design_th_excel': 'Excelサンプル', 'design_th_pdf': 'PDF',
+        'design_th_action': '操作', 'design_pagination_empty': '0 - 0 / 0 図面を表示', 'design_prev': '前へ', 'design_next': '次へ',
+        'approval_title': '承認申請一覧', 'approval_search_placeholder': 'TO、図面コード、顧客で検索...',
+        'approval_tab_all': 'すべて', 'approval_tab_barsale': 'Barsale', 'approval_tab_oem': 'OEM', 'approval_tab_we': 'WE SASH',
+        'approval_bulk_sign': '一括署名', 'approval_bulk_release': '一括発行', 'approval_refresh': 'データ更新',
+        'approval_th_type': 'タイプ', 'approval_th_to': 'TO', 'approval_th_dw_code': '図面コード', 'approval_th_version': 'Ver',
+        'approval_th_project': 'プロジェクト', 'approval_th_customer': '顧客', 'approval_th_status': '状態', 'approval_th_action': '操作',
+        'approval_pagination_empty': '0 - 0 / 0 図面を表示', 'approval_prev': '前へ', 'approval_next': '次へ',
+        'approval_reject_title': '図面を差し戻す', 'approval_reject_reason': '差し戻し理由',
+        'approval_reject_placeholder': '詳細な理由を入力してください（サイズ、仕様、基準未達など）',
+        'approval_reject_required': '差し戻し理由を入力してください。', 'approval_cancel': 'キャンセル', 'approval_confirm_reject': '差し戻しを確認',
+        'release_title': '図面発行管理', 'release_subtitle': '図面の確認進捗を追跡し、QAシステムへ発行します。',
+        'release_filtering': '絞り込み中', 'release_clear_filter': '絞り込み解除', 'release_search_placeholder': 'QA-G2GのRequest No.を検索...',
+        'info_tab_mail': '顧客図面プロジェクト受信箱', 'info_tab_add': '図面追加', 'info_tab_manage': '図面管理',
+        'info_search_email': 'メール検索...', 'info_status': '状態:', 'info_all': 'すべて', 'info_received': '受付済み', 'info_unreceived': '未受付',
+        'info_empty_title': 'メールを選択して内容を表示', 'info_empty_desc': '[MANUFACTURING ORDER] または [NEW PROJECT] のメールがここに表示されます',
+        'info_search_drawing': 'Type、TO、顧客を検索...', 'info_bulk_edit': '一括編集', 'info_add_new': '新規追加',
+        'info_th_type': 'タイプ', 'info_th_to': 'TO', 'info_th_dw_code': '図面コード', 'info_th_customer': '顧客', 'info_th_action': '操作',
+        'info_th_status': '状態', 'info_th_section': '断面画像', 'info_no_data': 'データなし', 'info_no_complete_data': '完全な図面データなし',
       }
     };
 
@@ -2080,6 +2572,13 @@
           if (dictionary[value] && element.getAttribute(attribute) !== dictionary[value]) element.setAttribute(attribute, dictionary[value]);
         });
       });
+      document.querySelectorAll('[data-i18n-title], [data-i18n-aria-label]').forEach(function (element) {
+        ['title', 'aria-label'].forEach(function (attribute) {
+          var keyAttribute = 'data-i18n-' + attribute;
+          var key = element.getAttribute(keyAttribute);
+          if (key && translations[lang] && translations[lang][key]) element.setAttribute(attribute, translations[lang][key]);
+        });
+      });
       var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
       var textNodes = [];
       while (walker.nextNode()) textNodes.push(walker.currentNode);
@@ -2095,6 +2594,7 @@
       var selector = document.getElementById('appLanguageSelect');
       if (selector) selector.value = langCode;
       _translateAppDom(langCode);
+      applyPageChromeLanguage(activePageName);
       window.dispatchEvent(new CustomEvent('app-language-changed', { detail: { lang: langCode } }));
     }
 
