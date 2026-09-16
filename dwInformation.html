@@ -766,6 +766,18 @@
             </table>
           </div>
 
+          <div id="pendingDrawingPagination" class="d-flex justify-content-between align-items-center mt-3 px-1 d-none">
+            <small class="text-muted" id="pendingDrawingPageInfo"></small>
+            <div class="btn-group shadow-sm">
+              <button type="button" class="btn btn-sm btn-light border" id="pendingDrawingPrevBtn" onclick="changePendingDrawingPage(-1)">
+                <i class="fa fa-chevron-left"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-light border" id="pendingDrawingNextBtn" onclick="changePendingDrawingPage(1)">
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
           <!-- Trạng thái trống (Empty state) -->
           <div id="emptyTableState" class="manual-empty-state d-none">
             <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mx-auto"
@@ -812,6 +824,18 @@
                 <!-- Dữ liệu JS sẽ đổ vào đây -->
               </tbody>
             </table>
+          </div>
+
+          <div id="managedDrawingPagination" class="d-flex justify-content-between align-items-center mt-3 px-1 d-none">
+            <small class="text-muted" id="managedDrawingPageInfo"></small>
+            <div class="btn-group shadow-sm">
+              <button type="button" class="btn btn-sm btn-light border" id="managedDrawingPrevBtn" onclick="changeManagedDrawingPage(-1)">
+                <i class="fa fa-chevron-left"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-light border" id="managedDrawingNextBtn" onclick="changeManagedDrawingPage(1)">
+                <i class="fa fa-chevron-right"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Trạng thái trống (Empty state) -->
@@ -1871,6 +1895,11 @@
        ========================================================================== */
     var pendingState = { selectedLogIdx: null, subject: '', isUpgradeMode: false, isFullEditMode: false, isBulkMode: false };
     var drawingDataList = [];
+    var pendingDrawingViewData = [];
+    var managedDrawingViewData = [];
+    var pendingDrawingPage = 1;
+    var managedDrawingPage = 1;
+    var drawingPageSize = 50;
     var drawingModalInstance = null; // Quản lý instance của Modal
 
     function getDrawingModal() {
@@ -1942,6 +1971,8 @@
 
     function renderPendingList(logs) {
       drawingDataList = logs || [];
+      pendingDrawingViewData = drawingDataList;
+      pendingDrawingPage = 1;
       renderDrawingTable(drawingDataList);
     }
 
@@ -1983,9 +2014,14 @@
       if (!data || data.length === 0) {
         tbody.innerHTML = '';
         emptyState.classList.remove('d-none');
+        updateDrawingPagination('pending', 0, 0);
       } else {
         emptyState.classList.add('d-none');
-        var html = data.map(function (item) {
+        var totalPages = Math.max(1, Math.ceil(data.length / drawingPageSize));
+        pendingDrawingPage = Math.min(Math.max(1, pendingDrawingPage), totalPages);
+        var startIndex = (pendingDrawingPage - 1) * drawingPageSize;
+        var pageData = data.slice(startIndex, startIndex + drawingPageSize);
+        var html = pageData.map(function (item) {
           var type = escHtml(String(item.type || 'New'));
           var to = escHtml(String(item.to || 'N/A'));
           var dwCode = escHtml(String(item.dwCode || 'DW-V2-01V'));
@@ -2008,7 +2044,31 @@
             '</tr>';
         }).join('');
         tbody.innerHTML = html;
+        updateDrawingPagination('pending', pendingDrawingPage, data.length);
       }
+    }
+
+    function updateDrawingPagination(type, page, totalItems) {
+      var prefix = type === 'managed' ? 'managedDrawing' : 'pendingDrawing';
+      var container = document.getElementById(prefix + 'Pagination');
+      if (!container) return;
+      var totalPages = Math.max(1, Math.ceil(totalItems / drawingPageSize));
+      var pageInfo = document.getElementById(prefix + 'PageInfo');
+      var previousButton = document.getElementById(prefix + 'PrevBtn');
+      var nextButton = document.getElementById(prefix + 'NextBtn');
+      container.classList.toggle('d-none', totalItems <= drawingPageSize);
+      if (pageInfo) {
+        var start = totalItems ? ((page - 1) * drawingPageSize) + 1 : 0;
+        var end = Math.min(page * drawingPageSize, totalItems);
+        pageInfo.textContent = 'Hiển thị ' + start + ' - ' + end + ' / ' + totalItems + ' bản vẽ (Trang ' + page + '/' + totalPages + ')';
+      }
+      if (previousButton) previousButton.disabled = page <= 1;
+      if (nextButton) nextButton.disabled = page >= totalPages;
+    }
+
+    function changePendingDrawingPage(direction) {
+      pendingDrawingPage += direction;
+      renderDrawingTable(pendingDrawingViewData);
     }
 
     function handleSearchPackagingDrawing(imageUrl, so) {
@@ -3142,9 +3202,14 @@
       if (!data || data.length === 0) {
         tbody.innerHTML = '';
         emptyState.classList.remove('d-none');
+        updateDrawingPagination('pending', 0, 0);
       } else {
         emptyState.classList.add('d-none');
-        var html = data.map(function (item, itemIndex) {
+        var totalPages = Math.max(1, Math.ceil(data.length / drawingPageSize));
+        pendingDrawingPage = Math.min(Math.max(1, pendingDrawingPage), totalPages);
+        var startIndex = (pendingDrawingPage - 1) * drawingPageSize;
+        var pageData = data.slice(startIndex, startIndex + drawingPageSize);
+        var html = pageData.map(function (item, itemIndex) {
           var type = escHtml(String(item.type || 'New'));
           var to = escHtml(String(item.to || 'N/A'));
           var dwCode = escHtml(String(item.dwCode || 'DW-V2-01V'));
@@ -3170,6 +3235,7 @@
             '</tr>';
         }).join('');
         tbody.innerHTML = html;
+        updateDrawingPagination('pending', pendingDrawingPage, data.length);
       }
     };
 
@@ -3190,6 +3256,7 @@
             showToast('Lỗi phản hồi rỗng', 'error');
           } else if (res.success) {
             managedDrawingList = res.data || [];
+            managedDrawingViewData = managedDrawingList;
             managedDrawingsLoaded = true;
             renderManagedDrawingTable(managedDrawingList);
           } else {
@@ -3266,9 +3333,14 @@
       if (!data || data.length === 0) {
         tbody.innerHTML = '';
         emptyState.classList.remove('d-none');
+        updateDrawingPagination('managed', 0, 0);
       } else {
         emptyState.classList.add('d-none');
-        var html = data.map(function (item) {
+        var totalPages = Math.max(1, Math.ceil(data.length / drawingPageSize));
+        managedDrawingPage = Math.min(Math.max(1, managedDrawingPage), totalPages);
+        var startIndex = (managedDrawingPage - 1) * drawingPageSize;
+        var pageData = data.slice(startIndex, startIndex + drawingPageSize);
+        var html = pageData.map(function (item) {
           // Convert tất cả dữ liệu sang string ngay từ đầu
           var type = escHtml(String(item.type || 'New'));
           var to = escHtml(String(item.to || 'N/A'));
@@ -3353,13 +3425,21 @@
             openEditManagedDrawing(JSON.parse(this.dataset.item));
           });
         });
+        updateDrawingPagination('managed', managedDrawingPage, data.length);
       }
+    }
+
+    function changeManagedDrawingPage(direction) {
+      managedDrawingPage += direction;
+      renderManagedDrawingTable(managedDrawingViewData);
     }
 
     function searchManagedDrawingData() {
       var keyword = document.getElementById('searchManagedDrawingInput').value.trim().toLowerCase();
+      managedDrawingPage = 1;
       if (!keyword) {
-        renderManagedDrawingTable(managedDrawingList);
+        managedDrawingViewData = managedDrawingList;
+        renderManagedDrawingTable(managedDrawingViewData);
         return;
       }
 
@@ -3374,7 +3454,8 @@
           status.indexOf(keyword) !== -1;
       });
 
-      renderManagedDrawingTable(filtered);
+      managedDrawingViewData = filtered;
+      renderManagedDrawingTable(managedDrawingViewData);
     }
 
     function viewManagedDrawing(rowId) {
@@ -3521,8 +3602,10 @@
     // ========== SEARCH DRAWING DATA (CẦN UPDATE) ==========
     function searchDrawingData() {
       var keyword = document.getElementById('searchDrawingInput').value.trim().toLowerCase();
+      pendingDrawingPage = 1;
       if (!keyword) {
-        renderDrawingTable(drawingDataList);
+        pendingDrawingViewData = drawingDataList;
+        renderDrawingTable(pendingDrawingViewData);
         return;
       }
 
@@ -3535,7 +3618,8 @@
           dwCode.indexOf(keyword) !== -1 || customer.indexOf(keyword) !== -1;
       });
 
-      renderDrawingTable(filtered);
+      pendingDrawingViewData = filtered;
+      renderDrawingTable(pendingDrawingViewData);
     }
 
 

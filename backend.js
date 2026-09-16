@@ -64,6 +64,23 @@ const getSheetDataByConfig = (spreadsheetId, sheetName) => {
 
 const getAllData = () => getMainData();
 
+const getOptimizedSheetRows = (spreadsheetId, sheetName, maxColumns) => {
+  try {
+    const sheet = getSheetByIdAndName(spreadsheetId, sheetName);
+    if (!sheet) return [];
+
+    const lastRow = sheet.getLastRow();
+    const lastColumn = Math.min(sheet.getLastColumn(), maxColumns || sheet.getLastColumn());
+    if (lastRow <= 1 || lastColumn <= 0) return [];
+
+    const rows = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+    return normalizeSheetRows(rows);
+  } catch (error) {
+    Logger.log(`Lỗi đọc dữ liệu tối ưu hóa cho sheet ${sheetName}: ${error.toString()}`);
+    return [];
+  }
+};
+
 const normalizeComparisonSo = (value) => {
   const text = String(value || '').trim().toUpperCase();
   const match = text.match(/(?:SO\s*)?(\d{6,})/);
@@ -141,7 +158,7 @@ const getDrawingStatusBySo = (rawSo) => {
   };
 };
 
-const getMainData = () => getSheetDataByConfig(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName);
+const getMainData = () => getOptimizedSheetRows(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName, 35);
 
 const getReleaseData = () => {
   const releaseSpreadsheet = SpreadsheetApp.openById(sheetConfig.releaseSpreadsheetId);
@@ -152,15 +169,11 @@ const getReleaseData = () => {
   }
 
   const releaseRows = releaseSheet.getLastRow() > 1
-    ? normalizeSheetRows(releaseSheet.getRange(2, 1, releaseSheet.getLastRow() - 1, releaseSheet.getLastColumn()).getValues())
+    ? normalizeSheetRows(releaseSheet.getRange(2, 1, releaseSheet.getLastRow() - 1, Math.min(releaseSheet.getLastColumn(), 35)).getValues())
     : [];
 
   // Một số yêu cầu QA-G2G đang nằm ở Data trước khi được ghi sang sheet release.
-  // Hợp nhất chúng để dashboard không bị rỗng giữa hai bước của quy trình.
-  const mainSheet = getSheetByIdAndName(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName);
-  const mainRows = mainSheet && mainSheet.getLastRow() > 1
-    ? normalizeSheetRows(mainSheet.getRange(2, 1, mainSheet.getLastRow() - 1, mainSheet.getLastColumn()).getValues())
-    : [];
+  const mainRows = getOptimizedSheetRows(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName, 35);
   const isQaG2gRow = (row) => String(row[10] || '').trim().toUpperCase() === 'QA-G2G';
   const qaReleaseRows = releaseRows.filter(isQaG2gRow);
   const qaRows = mainRows.filter(isQaG2gRow);
@@ -175,6 +188,13 @@ const getReleaseData = () => {
   });
 
   return mergedRows;
+};
+
+const getDashboardPayload = () => {
+  return {
+    mainData: getMainData(),
+    releaseData: getReleaseData()
+  };
 };
 
 const getHolidaysFromCal = () => {

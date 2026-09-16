@@ -10,7 +10,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LIXIL - Hệ Thống Quản Lý Bản Vẽ & Sản Xuất</title>
   <link rel="icon" type="image/svg+xml"
-    href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='96' fill='%23FFFFFF' stroke='%23E2E8F0' stroke-width='3'/><g transform='translate(18, 66)'><path d='M 18,6 V 42 C 18,52 26,60 36,60 H 38' fill='none' stroke='%23F36F21' stroke-width='13' stroke-linecap='round' stroke-linejoin='round'/><line x1='52' y1='6' x2='52' y2='60' stroke='%23F36F21' stroke-width='13' stroke-linecap='round'/><line x1='70' y1='6' x2='96' y2='60' stroke='%23F36F21' stroke-width='13' stroke-linecap='round'/><line x1='96' y1='6' x2='70' y2='60' stroke='%2358595B' stroke-width='13' stroke-linecap='round'/><line x1='114' y1='6' x2='114' y2='60' stroke='%2358595B' stroke-width='13' stroke-linecap='round'/><path d='M 128,6 V 42 C 128,52 136,60 146,60 H 148' fill='none' stroke='%2358595B' stroke-width='13' stroke-linecap='round' stroke-linejoin='round'/></g></svg>" />
+    href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='96' fill='%23FFFFFF' stroke='%23E2E8F0' stroke-width='3'/><g transform='translate(18, 66)'><path d='M 18,6 V 42 C 18,52 26,60 36,60 H 38' fill='none' stroke='%23F36F21' stroke-width='13' stroke-linecap='round' stroke-linejoin='round'/><line x1='52' y1='6' x2='52' y2='60' stroke='%23F36F21' stroke-width='13' stroke-linecap='round'/><line x1='70' y1='6' x2='96' y2='60' stroke='%23F36F21' stroke-width='13' stroke-linecap='round'/><line x1='96' y1='6' x2='70' y2='60' stroke='%23F36F21' stroke-width='13' stroke-linecap='round'/><line x1='114' y1='6' x2='114' y2='60' stroke='%23F36F21' stroke-width='13' stroke-linecap='round'/><path d='M 128,6 V 42 C 128,52 136,60 146,60 H 148' fill='none' stroke='%23F36F21' stroke-width='13' stroke-linecap='round' stroke-linejoin='round'/></g></svg>" />
 
   <!-- Fonts & Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -989,9 +989,9 @@
               stroke-linecap="round" stroke-linejoin="round" />
             <line x1="52" y1="6" x2="52" y2="60" stroke="#F36F21" stroke-width="13" stroke-linecap="round" />
             <line x1="70" y1="6" x2="96" y2="60" stroke="#F36F21" stroke-width="13" stroke-linecap="round" />
-            <line x1="96" y1="6" x2="70" y2="60" stroke="#58595B" stroke-width="13" stroke-linecap="round" />
-            <line x1="114" y1="6" x2="114" y2="60" stroke="#58595B" stroke-width="13" stroke-linecap="round" />
-            <path d="M 128,6 V 42 C 128,52 136,60 146,60 H 148" fill="none" stroke="#58595B" stroke-width="13"
+            <line x1="96" y1="6" x2="70" y2="60" stroke="#F36F21" stroke-width="13" stroke-linecap="round" />
+            <line x1="114" y1="6" x2="114" y2="60" stroke="#F36F21" stroke-width="13" stroke-linecap="round" />
+            <path d="M 128,6 V 42 C 128,52 136,60 146,60 H 148" fill="none" stroke="#F36F21" stroke-width="13"
               stroke-linecap="round" stroke-linejoin="round" />
           </g>
         </svg>
@@ -1047,9 +1047,9 @@
                 stroke-linecap="round" stroke-linejoin="round" />
               <line x1="52" y1="6" x2="52" y2="60" stroke="#F36F21" stroke-width="13" stroke-linecap="round" />
               <line x1="70" y1="6" x2="96" y2="60" stroke="#F36F21" stroke-width="13" stroke-linecap="round" />
-              <line x1="96" y1="6" x2="70" y2="60" stroke="#58595B" stroke-width="13" stroke-linecap="round" />
-              <line x1="114" y1="6" x2="114" y2="60" stroke="#58595B" stroke-width="13" stroke-linecap="round" />
-              <path d="M 128,6 V 42 C 128,52 136,60 146,60 H 148" fill="none" stroke="#58595B" stroke-width="13"
+              <line x1="96" y1="6" x2="70" y2="60" stroke="#F36F21" stroke-width="13" stroke-linecap="round" />
+              <line x1="114" y1="6" x2="114" y2="60" stroke="#F36F21" stroke-width="13" stroke-linecap="round" />
+              <path d="M 128,6 V 42 C 128,52 136,60 146,60 H 148" fill="none" stroke="#F36F21" stroke-width="13"
                 stroke-linecap="round" stroke-linejoin="round" />
             </g>
           </svg>
@@ -1263,10 +1263,11 @@
       var _lastRequestedAt = {};
       var _inFlight = {};
       var TTL = 5 * 60 * 1000;
+      var _dashboardRequestInFlight = false;
 
       var _serverFnMap = {
-        mainData: 'getMainData',
-        releaseData: 'getReleaseData'
+        mainData: 'getDashboardPayload',
+        releaseData: 'getDashboardPayload'
       };
 
       function _notify(key) {
@@ -1278,7 +1279,9 @@
       }
 
       function _fetch(key) {
-        if (_inFlight[key]) return;
+        var fnName = _serverFnMap[key];
+        if (!fnName) return;
+
         if (!_cache[key]) _cache[key] = { data: [], fetchedAt: 0, loading: false };
         if (_cache[key].loading) return;
 
@@ -1288,52 +1291,54 @@
           return;
         }
 
-        _lastRequestedAt[key] = now;
-        _inFlight[key] = true;
-        _cache[key].loading = true;
+        if (_dashboardRequestInFlight) return;
 
-        var fnName = _serverFnMap[key];
-        if (!fnName) {
-          _cache[key].loading = false;
-          _inFlight[key] = false;
-          return;
-        }
+        _lastRequestedAt[key] = now;
+        _dashboardRequestInFlight = true;
+        _cache[key].loading = true;
 
         google.script.run
           .withSuccessHandler(function (data) {
-            var normalizedData = Array.isArray(data) ? data : (data ? [data] : []);
-            _cache[key] = { data: normalizedData, fetchedAt: Date.now(), loading: false };
-            _inFlight[key] = false;
-            if (key === 'mainData') {
-              window.pageData = normalizedData;
-              pageData = normalizedData;
-              updatePageDataIndex(normalizedData);
+            var payload = data || {};
+            var mainData = Array.isArray(payload.mainData) ? payload.mainData : [];
+            var releaseData = Array.isArray(payload.releaseData) ? payload.releaseData : [];
 
-              // Đẩy dữ liệu xuống tất cả các page render đang chứa cùng dữ liệu
-              if (typeof initThietKeBanVe === 'function') {
-                try { initThietKeBanVe(); } catch (e) { }
-              }
-              if (typeof initSubmitApproval === 'function') {
-                try { initSubmitApproval(); } catch (e) { }
-              }
+            _cache.mainData = { data: mainData, fetchedAt: Date.now(), loading: false };
+            _cache.releaseData = { data: releaseData, fetchedAt: Date.now(), loading: false };
+
+            _inFlight.mainData = false;
+            _inFlight.releaseData = false;
+            _dashboardRequestInFlight = false;
+
+            window.pageData = mainData;
+            pageData = mainData;
+            updatePageDataIndex(mainData);
+
+            if (typeof initThietKeBanVe === 'function') {
+              try { initThietKeBanVe(); } catch (e) { }
             }
-            _notify(key);
+            if (typeof initSubmitApproval === 'function') {
+              try { initSubmitApproval(); } catch (e) { }
+            }
+
+            _notify('mainData');
+            _notify('releaseData');
           })
           .withFailureHandler(function (error) {
-            _cache[key].loading = false;
-            _inFlight[key] = false;
-            _lastRequestedAt[key] = 0;
-            if (key === 'mainData') {
-              window._initialLoadedParts.mainData = true;
-              updateInitialProgress(70, 'Không tải được dữ liệu bản vẽ', 'stepMainData');
-              window.checkInitialDataReady();
-            }
-            if (key === 'releaseData') {
-              window._initialLoadedParts.releaseData = true;
-              if (typeof handleHistoryFailure === 'function') handleHistoryFailure(error);
-              updateInitialProgress(85, 'Không tải được dữ liệu QA-G2G', 'stepReleaseData');
-              window.checkInitialDataReady();
-            }
+            _cache.mainData = _cache.mainData || { data: [], fetchedAt: 0, loading: false };
+            _cache.releaseData = _cache.releaseData || { data: [], fetchedAt: 0, loading: false };
+            _cache.mainData.loading = false;
+            _cache.releaseData.loading = false;
+            _dashboardRequestInFlight = false;
+            _lastRequestedAt.mainData = 0;
+            _lastRequestedAt.releaseData = 0;
+
+            window._initialLoadedParts.mainData = true;
+            updateInitialProgress(70, 'Không tải được dữ liệu bản vẽ', 'stepMainData');
+            if (typeof handleHistoryFailure === 'function') handleHistoryFailure(error);
+            window._initialLoadedParts.releaseData = true;
+            updateInitialProgress(85, 'Không tải được dữ liệu QA-G2G', 'stepReleaseData');
+            window.checkInitialDataReady();
           })
           [fnName]();
       }
@@ -1932,28 +1937,30 @@
         if (profile) {
           var nameEl = document.getElementById('uiUserName');
           var posEl = document.getElementById('uiUserPosition');
+          var userPosition = profile.position || '';
           let posElValue = "";
-          if(profile.position==="Charger"){
-            posElValue = "ST";
-          }else if(profile.position==="Checker 1"){
-            posElValue = "Leader";
-          }else if(profile.position==="Checker 2"){
-            posElValue = "MGR";
 
-          }else if(profile.position==="Approval"){
+          if (userPosition === "Charger") {
+            posElValue = "ST";
+          } else if (userPosition === "Checker 1") {
+            posElValue = "Leader";
+          } else if (userPosition === "Checker 2") {
+            posElValue = "MGR";
+          } else if (userPosition === "Approval") {
             posElValue = "GM";
           }
 
-
-        const restrictedRoles = ["Checker 1", "Checker 2", "Approval"];
-          if (restrictedRoles.includes(userRole)) {
+          const restrictedRoles = ["Checker 1", "Checker 2", "Approval"];
+          if (restrictedRoles.includes(userPosition)) {
             document.getElementById('nav-btn-dwDesign')?.style.setProperty('display', 'none', 'important');
             document.getElementById('nav-btn-release')?.style.setProperty('display', 'none', 'important');
             document.getElementById('nav-btn-dwInformation')?.style.setProperty('display', 'none', 'important');
           }
+
           if (nameEl) nameEl.textContent = profile.name;
           if (posEl) posEl.textContent = posElValue;
-          applyMenuPermissions(profile.position);
+          applyMenuPermissions(userPosition);
+
           var avatarEl = document.getElementById('uiUserAvatar');
           if (avatarEl) {
             var avatarSrc = profile.avatarUrl || ('https://unavatar.io/' + encodeURIComponent(profile.email || '') + '?fallback=' + encodeURIComponent('https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.name || 'U') + '&background=7CB342&color=ffffff&bold=true&size=128'));
