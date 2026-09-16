@@ -26,28 +26,42 @@ function doGet(e) {
 
 function getUser(mail) {
   try {
+    var normalizedMail = String(mail || '').trim().toLowerCase();
+    if (!normalizedMail) return null;
+
+    var cache = CacheService.getScriptCache();
+    var cacheKey = 'user:' + Utilities.base64EncodeWebSafe(normalizedMail);
+    var cached = cache.get(cacheKey);
+    if (cached) return cached === 'null' ? null : JSON.parse(cached);
+
     const ss = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM");
     const sheet = ss.getSheetByName("User");
 
     const lastrow = sheet.getLastRow();
-    const lastcol = sheet.getLastColumn();
+    // getUser chỉ dùng A:E; tránh đọc các cột phụ không liên quan.
+    const lastcol = Math.min(sheet.getLastColumn(), 5);
     let data = [];
 
     if (lastrow > 1) {
       data = sheet.getRange(2, 1, lastrow - 1, lastcol).getValues();
     }
 
-    const userRow = data.find(row => row[3].toString().trim().toLowerCase() === mail.toString().trim().toLowerCase());
+    const userRow = data.find(row => row[3] && row[3].toString().trim().toLowerCase() === normalizedMail);
 
-    if (!userRow) return null;
+    if (!userRow) {
+      cache.put(cacheKey, 'null', 300);
+      return null;
+    }
 
-    return {
+    var result = {
       msnv: userRow[0],
       dept: userRow[1],
       name: userRow[2],
       mail: userRow[3],
       position: userRow[4],
     };
+    cache.put(cacheKey, JSON.stringify(result), 300);
+    return result;
   } catch (e) {
     return null;
   }
@@ -60,6 +74,14 @@ function getUser(mail) {
 function getUserProfile() {
   var email = Session.getActiveUser().getEmail();
   if (!email) email = "test@example.com";
+
+  var profileCacheKey = 'profile:' + Utilities.base64EncodeWebSafe(email.toLowerCase());
+  try {
+    var cachedProfile = CacheService.getScriptCache().get(profileCacheKey);
+    if (cachedProfile) return JSON.parse(cachedProfile);
+  } catch (cacheError) {
+    // Cache chỉ là tối ưu phụ; tiếp tục đọc dữ liệu gốc nếu cache lỗi.
+  }
 
   var profile = {
     name: email.split('@')[0],
@@ -74,7 +96,12 @@ function getUserProfile() {
     var sheet = ss.getSheetByName("User");
 
     if (sheet) {
-      var data = sheet.getDataRange().getValues();
+      // Profile chỉ dùng A:F; không cần tải toàn bộ các cột mở rộng của User.
+      var profileLastRow = sheet.getLastRow();
+      var profileLastColumn = Math.min(sheet.getLastColumn(), 6);
+      var data = profileLastRow > 0 && profileLastColumn > 0
+        ? sheet.getRange(1, 1, profileLastRow, profileLastColumn).getValues()
+        : [];
       for (var i = 1; i < data.length; i++) {
         if (data[i][3] && data[i][3].toString().trim().toLowerCase() === email.toLowerCase()) {
           if (data[i][2]) profile.name = data[i][2].toString().trim();
@@ -108,6 +135,11 @@ function getUserProfile() {
     profile.avatarUrl = "data:image/svg+xml;base64," + Utilities.base64Encode(svg);
   }
 
+  try {
+    CacheService.getScriptCache().put(profileCacheKey, JSON.stringify(profile), 300);
+  } catch (cacheError) {
+    // Không làm thay đổi kết quả nếu profile không thể ghi cache.
+  }
   return profile;
 }
 
@@ -138,14 +170,17 @@ function getLatestNotifications() {
   var sheet = ss.getSheetByName("Note");
   if (!sheet) return [];
 
-  var data = sheet.getDataRange().getDisplayValues();
-  if (data.length <= 1) return [];
+  var lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return [];
+
+  // Chỉ lấy phần dữ liệu cần hiển thị; tránh đọc toàn bộ lịch sử Note.
+  var startRow = Math.max(2, lastRow - 19);
+  var data = sheet.getRange(startRow, 1, lastRow - startRow + 1, 5).getDisplayValues();
 
   var notis = [];
-  var start = Math.max(1, data.length - 20); // Chỉ lấy 20 dòng cuối
 
   // Chạy ngược từ dưới lên để lấy thông báo mới nhất
-  for (var i = data.length - 1; i >= start; i--) {
+  for (var i = data.length - 1; i >= 0; i--) {
     notis.push({
       email: data[i][0],
       user: data[i][1],

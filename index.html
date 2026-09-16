@@ -1264,11 +1264,37 @@
       var _inFlight = {};
       var TTL = 5 * 60 * 1000;
       var _dashboardRequestInFlight = false;
+      var _historicalLoadScheduled = false;
 
       var _serverFnMap = {
         mainData: 'getDashboardPayload',
-        releaseData: 'getDashboardPayload'
+        releaseData: 'getDashboardPayload',
+        historicalData: 'getHistoricalDashboardPayload'
       };
+
+      function _rowKey(row) {
+        if (!Array.isArray(row)) return '';
+        return String(row[0] || '').trim() || [row[8], row[4], row[5], row[6]].map(function (v) {
+          return String(v || '').trim();
+        }).join('|');
+      }
+
+      function _mergeRows(currentRows, fullRows) {
+        var result = [];
+        var byKey = {};
+        (Array.isArray(currentRows) ? currentRows : []).concat(Array.isArray(fullRows) ? fullRows : []).forEach(function (row) {
+          var key = _rowKey(row);
+          if (!key || byKey[key] === undefined) {
+            byKey[key] = result.length;
+            result.push(row);
+          } else {
+            // Dữ liệu full là bản mới hơn; thay dòng current tương ứng nhưng
+            // không làm thay đổi thứ tự/row shape của dữ liệu nghiệp vụ.
+            result[byKey[key]] = row;
+          }
+        });
+        return result;
+      }
 
       function _notify(key) {
         var entry = _cache[key];
@@ -1291,10 +1317,10 @@
           return;
         }
 
-        if (_dashboardRequestInFlight) return;
+        if (_dashboardRequestInFlight && key !== 'historicalData') return;
 
         _lastRequestedAt[key] = now;
-        _dashboardRequestInFlight = true;
+        if (key !== 'historicalData') _dashboardRequestInFlight = true;
         _cache[key].loading = true;
 
         google.script.run
@@ -1303,8 +1329,14 @@
             var mainData = Array.isArray(payload.mainData) ? payload.mainData : [];
             var releaseData = Array.isArray(payload.releaseData) ? payload.releaseData : [];
 
-            _cache.mainData = { data: mainData, fetchedAt: Date.now(), loading: false };
-            _cache.releaseData = { data: releaseData, fetchedAt: Date.now(), loading: false };
+            if (key === 'historicalData') {
+              _cache.mainData = { data: _mergeRows(_cache.mainData && _cache.mainData.data, mainData), fetchedAt: Date.now(), loading: false };
+              _cache.releaseData = { data: _mergeRows(_cache.releaseData && _cache.releaseData.data, releaseData), fetchedAt: Date.now(), loading: false };
+              _cache.historicalData = { data: mainData, fetchedAt: Date.now(), loading: false };
+            } else {
+              _cache.mainData = { data: mainData, fetchedAt: Date.now(), loading: false };
+              _cache.releaseData = { data: releaseData, fetchedAt: Date.now(), loading: false };
+            }
 
             _inFlight.mainData = false;
             _inFlight.releaseData = false;
@@ -1323,22 +1355,45 @@
 
             _notify('mainData');
             _notify('releaseData');
+            if (key === 'historicalData') {
+              window._historicalDataReady = true;
+              if (typeof handleHistorySuccess === 'function') {
+                try { handleHistorySuccess(_cache.releaseData.data); } catch (e) { }
+              }
+            } else if (!_historicalLoadScheduled) {
+              // Không tranh tài nguyên với request current-year. Chỉ tải full data
+              // sau khi payload vận hành đã render, khi trình duyệt rảnh.
+              _historicalLoadScheduled = true;
+              var schedule = window.requestIdleCallback || function (callback) {
+                return window.setTimeout(callback, 1200);
+              };
+              schedule(function () {
+                _historicalLoadScheduled = false;
+                if (!_cache.historicalData || !_cache.historicalData.fetchedAt) {
+                  AppDataStore.loadHistorical();
+                }
+              }, { timeout: 5000 });
+            }
           })
           .withFailureHandler(function (error) {
-            _cache.mainData = _cache.mainData || { data: [], fetchedAt: 0, loading: false };
-            _cache.releaseData = _cache.releaseData || { data: [], fetchedAt: 0, loading: false };
-            _cache.mainData.loading = false;
-            _cache.releaseData.loading = false;
+            _cache[key] = _cache[key] || { data: [], fetchedAt: 0, loading: false };
+            _cache[key].loading = false;
+            if (key !== 'historicalData') {
+              _cache.mainData = _cache.mainData || { data: [], fetchedAt: 0, loading: false };
+              _cache.releaseData = _cache.releaseData || { data: [], fetchedAt: 0, loading: false };
+              _cache.mainData.loading = false;
+              _cache.releaseData.loading = false;
+            }
             _dashboardRequestInFlight = false;
-            _lastRequestedAt.mainData = 0;
-            _lastRequestedAt.releaseData = 0;
+            _lastRequestedAt[key] = 0;
 
-            window._initialLoadedParts.mainData = true;
-            updateInitialProgress(70, 'Không tải được dữ liệu bản vẽ', 'stepMainData');
-            if (typeof handleHistoryFailure === 'function') handleHistoryFailure(error);
-            window._initialLoadedParts.releaseData = true;
-            updateInitialProgress(85, 'Không tải được dữ liệu QA-G2G', 'stepReleaseData');
-            window.checkInitialDataReady();
+            if (key !== 'historicalData') {
+              window._initialLoadedParts.mainData = true;
+              updateInitialProgress(70, 'Không tải được dữ liệu bản vẽ', 'stepMainData');
+              window._initialLoadedParts.releaseData = true;
+              updateInitialProgress(85, 'Không tải được dữ liệu QA-G2G', 'stepReleaseData');
+              window.checkInitialDataReady();
+            } else if (typeof handleHistoryFailure === 'function') handleHistoryFailure(error);
           })
           [fnName]();
       }
@@ -1370,7 +1425,12 @@
 
         init: function () {
           _fetch('mainData');
-          _fetch('releaseData');
+        },
+
+        loadHistorical: function () {
+          if (_cache.historicalData && _cache.historicalData.fetchedAt &&
+            (Date.now() - _cache.historicalData.fetchedAt) < TTL) return;
+          _fetch('historicalData');
         },
 
         ensure: function (key) {
@@ -1956,7 +2016,6 @@
             document.getElementById('nav-btn-release')?.style.setProperty('display', 'none', 'important');
             document.getElementById('nav-btn-dwInformation')?.style.setProperty('display', 'none', 'important');
           }
-
           if (nameEl) nameEl.textContent = profile.name;
           if (posEl) posEl.textContent = posElValue;
           applyMenuPermissions(userPosition);

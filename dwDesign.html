@@ -513,20 +513,6 @@
       }
       if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.invalidate === 'function') {
         AppDataStore.invalidate('mainData');
-      }
-      if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run
-          .withSuccessHandler(function (res) {
-            if (Array.isArray(res)) {
-              window.pageData = res;
-              if (typeof pageData !== 'undefined') pageData = res;
-              initThietKeBanVe();
-            }
-          })
-          .withFailureHandler(function () {
-            initThietKeBanVe();
-          })
-          .getMainData();
       } else {
         initThietKeBanVe();
       }
@@ -842,27 +828,10 @@
       tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span>Đang chờ tải dữ liệu bản vẽ...</td></tr>';
       updateDwDesignPaginationUI(0, 0, 0, 1, 1);
 
-      // Nếu chưa có dữ liệu trong RAM, tự động gọi backend tải ngay lập tức
-      if (!isFetchingDesignData && typeof google !== 'undefined' && google.script && google.script.run) {
-        isFetchingDesignData = true;
-        google.script.run
-          .withSuccessHandler(function (res) {
-            isFetchingDesignData = false;
-            if (Array.isArray(res) && res.length > 0) {
-              window.pageData = res;
-              if (typeof pageData !== 'undefined') pageData = res;
-              buildToDropdownList();
-              loadDrawingList();
-            } else {
-              tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-muted"><i class="bi bi-inbox fs-1 d-block mb-3"></i>Không có dữ liệu trong hệ thống.</td></tr>';
-            }
-          })
-          .withFailureHandler(function (err) {
-            isFetchingDesignData = false;
-            console.error('Lỗi tải dữ liệu dwDesign:', err);
-            tbody.innerHTML = '<tr><td colspan="12" class="text-center py-5 text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Lỗi tải dữ liệu: ' + (err.message || err) + '</td></tr>';
-          })
-          .getMainData();
+      // AppDataStore là nguồn dữ liệu duy nhất. Không gọi getMainData() riêng
+      // tại đây vì request đó sẽ đọc toàn bộ Sheet lần nữa.
+      if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.ensure === 'function') {
+        AppDataStore.ensure('mainData');
       }
       return;
     }

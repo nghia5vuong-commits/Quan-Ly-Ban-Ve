@@ -875,22 +875,17 @@
             btn.disabled = true;
         }
 
-        // Luôn đọc trực tiếp để không bị cache rỗng hoặc cache cũ chặn dữ liệu mới.
-        if (typeof google !== 'undefined' && google.script && google.script.run) {
-            google.script.run
-                .withSuccessHandler(function (data) {
-                    const rows = Array.isArray(data) ? data : [];
-                    const qaRows = rows.filter(row => String(row[10] || '').trim().toUpperCase() === 'QA-G2G');
-                    if (qaRows.length > 0) {
-                        handleHistorySuccess(qaRows);
-                        return;
-                    }
-                    loadQaRowsFromMainData();
-                })
-                .withFailureHandler(function (err) {
-                    loadQaRowsFromMainData(err);
-                })
-                .getReleaseData();
+        // Lịch sử dùng full payload đã tải nền và merge vào AppDataStore.
+        // Không gọi getReleaseData/getMainData trực tiếp để tránh đọc Sheet lặp lại.
+        if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.loadHistorical === 'function') {
+            var historical = AppDataStore.get('historicalData');
+            if (Array.isArray(historical) && historical.length > 0) {
+                handleHistorySuccess((AppDataStore.get('releaseData') || []).filter(function (row) {
+                    return String(row[10] || '').trim().toUpperCase() === 'QA-G2G';
+                }));
+            } else {
+                AppDataStore.loadHistorical();
+            }
         } else {
             historyLoadActive = false;
             if (_pendingReloadBtn) {
@@ -904,19 +899,6 @@
             }
         }
     };
-
-    function loadQaRowsFromMainData(previousError) {
-        google.script.run
-            .withSuccessHandler(function (data) {
-                const rows = Array.isArray(data) ? data : [];
-                const qaRows = rows.filter(row => String(row[10] || '').trim().toUpperCase() === 'QA-G2G');
-                handleHistorySuccess(qaRows);
-            })
-            .withFailureHandler(function (error) {
-                handleHistoryFailure(error || previousError);
-            })
-            .getMainData();
-    }
 
     function handleHistorySuccess(data) {
         historyLoadActive = false;

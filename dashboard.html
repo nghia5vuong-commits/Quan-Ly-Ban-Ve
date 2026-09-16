@@ -915,11 +915,11 @@
         case 'id': return String(row[0] || '');
         case 'status': return String(row[2] || '');
         case 'group': return String(row[3] || row[1] || '');
-        case 'type': return String(row[3] || row[4] || row[1] || '');
+        case 'type': return String(row[4] || row[3] || row[1] || '');
         case 'version': return String(row[5] || row[12] || '');
         case 'reqNo': return String(row[8] || row[0] || '');
         case 'dwNo': return String(row[11] || row[8] || '');
-        case 'project': return String(row[9] || ''); 
+        case 'project': return String(row[9] || '');
         case 'fye': return String(row[23] || '').trim() || computeFYE(row[6]);
         case 'date': return String(row[6] || '');
         case 'note': return String(row[22] || row[13] || '');
@@ -933,14 +933,14 @@
         case 'customer': return String(row[10] || '');
         case 'creator': return String(row[12] || '');
         case 'to': return String(row[8] || '');
-        default: return ''; 
+        default: return '';
       }
     } else if (row && typeof row === 'object') {
       switch (key) {
         case 'id': return String(row.id || row.ID || row[0] || '');
         case 'status': return String(row.status || row.TrangThai || row[2] || '');
         case 'group': return String(row.group || row.Group || row[3] || '');
-        case 'type': return String(row.group || row.Group || row[3] || row.type || row.Type || row[4] || '');
+        case 'type': return String(row.type || row.Type || row[4] || row.group || row.Group || row[3] || '');
         case 'version': return String(row.version || row.Ver || row.Version || row[5] || row[12] || '');
         case 'reqNo': return String(row.reqNo || row.requestNo || row[8] || row[0] || '');
         case 'dwNo': return String(row.dwNo || row.drawingNo || row[11] || '');
@@ -962,6 +962,37 @@
       }
     }
     return '';
+  }
+
+  function detectIsNewRow(row) {
+    var directValues = [];
+    if (Array.isArray(row)) {
+      directValues = row.slice(0, 25).map(function (value) {
+        return String(value || '').trim();
+      });
+    } else if (row && typeof row === 'object') {
+      Object.keys(row).forEach(function (key) {
+        directValues.push(String(row[key] || '').trim());
+      });
+    }
+
+    for (var i = 0; i < directValues.length; i++) {
+      var value = directValues[i].toLowerCase();
+      if (!value) continue;
+      if (value.includes('revise') || value.includes('revis') || value.includes('old')) return false;
+      if (value.includes('new')) return true;
+    }
+
+    var typeValue = String(getRowValue(row, 'type') || '').trim().toLowerCase();
+    var versionValue = String(getRowValue(row, 'version') || '').trim().toLowerCase();
+    if (typeValue.includes('revise') || typeValue.includes('revis') || typeValue.includes('old')) return false;
+    if (typeValue.includes('new')) return true;
+
+    var normalizedVersion = versionValue.replace(/^v/i, '').replace(/[^0-9]/g, '');
+    if (normalizedVersion === '1' || normalizedVersion === '2') return true;
+    if (versionValue.includes('rev') || versionValue.includes('sửa') || versionValue.includes('revis')) return false;
+
+    return true;
   }
 
   function populateDashFyeOptions(rawData) {
@@ -1123,9 +1154,9 @@
     var fyeDistributionMap = {};
 
     rawData.forEach(function (row) {
-      var itemGroup = (getRowValue(row, 'group') + ' ' + getRowValue(row, 'type')).toUpperCase();
-      var itemFye = getRowValue(row, 'fye').toUpperCase();
-      var searchText = (Array.isArray(row) ? row : Object.values(row || {})).join(' ').toLowerCase();
+      var itemGroup = ((getRowValue(row, 'group') || '') + ' ' + (getRowValue(row, 'type') || '')).toUpperCase();
+      var itemFye = String(getRowValue(row, 'fye') || '').toUpperCase();
+      var searchText = (Array.isArray(row) ? row.join(' ') : Object.keys(row || {}).map(function (key) { return row[key]; }).join(' ')).toLowerCase();
       var matchesBaseFilter = true;
 
       if (globalFilters.type === 'BARSALE' && !itemGroup.includes('BARSALE')) matchesBaseFilter = false;
@@ -1160,9 +1191,10 @@
       var currentFye = getRowValue(row, 'fye').toUpperCase();
       var monthIdx = -1;
 
-      var isNewRow = true;
-      if (version === '1' || version === '2' || version.includes('rev') || version.includes('sửa') || (parseInt(version, 10) > 0 && !(version === '0' || version === 'v0'))) {
-        isNewRow = false;
+      var isNewRow = detectIsNewRow(row);
+      var versionNumber = String(version || '').replace(/^v/i, '').replace(/[^0-9]/g, '');
+      if (versionNumber === '1' || versionNumber === '2') {
+        isNewRow = true;
       }
 
       // SỬ DỤNG HÀM PARSE AN TOÀN ĐỂ FIX LỖI BIỂU ĐỒ TRỐNG DATA
