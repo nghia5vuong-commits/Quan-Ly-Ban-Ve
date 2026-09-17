@@ -2076,10 +2076,11 @@
 
     var aiInitialDataLoaded = false;
     function loadInitialData() {
-      if (aiInitialDataLoaded) return;
+      if (aiInitialDataLoaded) return Promise.resolve();
       aiInitialDataLoaded = true;
       applyTranslations();
-      google.script.run.withSuccessHandler(function (response) {
+      return new Promise(function (resolve, reject) {
+        google.script.run.withSuccessHandler(function (response) {
         globalDataMap = response.dataMap || {};
         allCustomers = response.customers || [];
         globalDwList = response.dwList || [];
@@ -2090,9 +2091,12 @@
           input.disabled = false;
         }
         renderDropdownItems(allCustomers);
-      }).withFailureHandler(function () {
+          resolve(response);
+      }).withFailureHandler(function (error) {
         aiInitialDataLoaded = false;
+          reject(error);
       }).getInitialData();
+      });
     }
 
     // Export all to window scope

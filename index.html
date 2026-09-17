@@ -965,13 +965,8 @@
   var requestId = "<?= requestId ?>";
   var initialPage = "<?= initialPage ?>";
 </script>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-  if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  }
-</script>
+<script defer src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" onload="if (window.pdfjsLib && pdfjsLib.GlobalWorkerOptions) { pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; }"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1229,11 +1224,8 @@
     } else {
       hoistModalsToBody();
     }
-    setTimeout(hoistModalsToBody, 300);
-    setTimeout(hoistModalsToBody, 1200);
 
     let loadingRequests = 0;
-    let failsafeTimer = null;
     let activePageName = 'dashboard';
     window.appTabRenderVersion = { mainData: 1, releaseData: 1 };
     window.appTabLastRendered = {};
@@ -1257,12 +1249,31 @@
     // ============================================================
     // APP DATA STORE — Trung tâm quản lý cache dữ liệu client-side
     // ============================================================
+    window.__appLoadMetrics = window.__appLoadMetrics || { start: Date.now(), events: {} };
+    window.__recordAppTiming = function (name) {
+      var base = window.__appLoadMetrics || { start: Date.now(), events: {} };
+      var now = Date.now();
+      base.events = base.events || {};
+      base.events[name] = now - (base.start || now);
+      if (typeof console !== 'undefined' && console && typeof console.info === 'function') {
+        console.info('[APP-TIME]', name, base.events[name] + 'ms');
+      }
+      window.__appLoadMetrics = base;
+    };
+
     window.AppDataStore = (function () {
       var _cache = {};
       var _listeners = {};
       var _lastRequestedAt = {};
       var _inFlight = {};
+      var _pendingPromises = {};
       var TTL = 5 * 60 * 1000;
+      // Xóa bỏ triệt để dữ liệu lưu tạm thời nếu có từ trước
+      try {
+        localStorage.removeItem('quan-ly-ban-ve:data-cache:mainData');
+        localStorage.removeItem('quan-ly-ban-ve:data-cache:releaseData');
+      } catch (e) { }
+
       var _dashboardRequestInFlight = false;
       var _historicalLoadScheduled = false;
 
@@ -1288,8 +1299,6 @@
             byKey[key] = result.length;
             result.push(row);
           } else {
-            // Dữ liệu full là bản mới hơn; thay dòng current tương ứng nhưng
-            // không làm thay đổi thứ tự/row shape của dữ liệu nghiệp vụ.
             result[byKey[key]] = row;
           }
         });
@@ -1304,47 +1313,43 @@
         (_listeners[key] || []).forEach(function (fn) { try { fn(entry.data); } catch (e) { } });
       }
 
-      function _fetch(key) {
+      function _fetch(key, force) {
         var fnName = _serverFnMap[key];
-        if (!fnName) return;
+        if (!fnName) return Promise.resolve();
 
         if (!_cache[key]) _cache[key] = { data: [], fetchedAt: 0, loading: false };
-        if (_cache[key].loading) return;
+        if (_cache[key].loading) return _pendingPromises[key] || Promise.resolve();
 
         var now = Date.now();
-        var lastRequestedAt = _lastRequestedAt[key] || 0;
-        if (now - lastRequestedAt < 1500) {
-          return;
-        }
-
         if (_dashboardRequestInFlight && key !== 'historicalData') return;
 
         _lastRequestedAt[key] = now;
         if (key !== 'historicalData') _dashboardRequestInFlight = true;
         _cache[key].loading = true;
 
+        var requestPromise = new Promise(function (resolve, reject) {
         google.script.run
           .withSuccessHandler(function (data) {
             var payload = data || {};
             var mainData = Array.isArray(payload.mainData) ? payload.mainData : [];
             var releaseData = Array.isArray(payload.releaseData) ? payload.releaseData : [];
 
-            if (key === 'historicalData') {
-              _cache.mainData = { data: _mergeRows(_cache.mainData && _cache.mainData.data, mainData), fetchedAt: Date.now(), loading: false };
-              _cache.releaseData = { data: _mergeRows(_cache.releaseData && _cache.releaseData.data, releaseData), fetchedAt: Date.now(), loading: false };
-              _cache.historicalData = { data: mainData, fetchedAt: Date.now(), loading: false };
-            } else {
-              _cache.mainData = { data: mainData, fetchedAt: Date.now(), loading: false };
-              _cache.releaseData = { data: releaseData, fetchedAt: Date.now(), loading: false };
-            }
+            var currentMain = (_cache.mainData && Array.isArray(_cache.mainData.data)) ? _cache.mainData.data : [];
+            var currentRelease = (_cache.releaseData && Array.isArray(_cache.releaseData.data)) ? _cache.releaseData.data : [];
+            var mergedMain = _mergeRows(currentMain, mainData);
+            var mergedRelease = _mergeRows(currentRelease, releaseData);
+
+            _cache.mainData = { data: mergedMain, fetchedAt: Date.now(), loading: false, trusted: true };
+            _cache.releaseData = { data: mergedRelease, fetchedAt: Date.now(), loading: false, trusted: true };
+            _cache.historicalData = { data: mergedMain, fetchedAt: Date.now(), loading: false, trusted: true };
 
             _inFlight.mainData = false;
             _inFlight.releaseData = false;
             _dashboardRequestInFlight = false;
 
-            window.pageData = mainData;
-            pageData = mainData;
-            updatePageDataIndex(mainData);
+            window.pageData = mergedMain;
+            pageData = mergedMain;
+            updatePageDataIndex(mergedMain);
 
             if (typeof initThietKeBanVe === 'function') {
               try { initThietKeBanVe(); } catch (e) { }
@@ -1355,25 +1360,13 @@
 
             _notify('mainData');
             _notify('releaseData');
-            if (key === 'historicalData') {
-              window._historicalDataReady = true;
-              if (typeof handleHistorySuccess === 'function') {
-                try { handleHistorySuccess(_cache.releaseData.data); } catch (e) { }
-              }
-            } else if (!_historicalLoadScheduled) {
-              // Không tranh tài nguyên với request current-year. Chỉ tải full data
-              // sau khi payload vận hành đã render, khi trình duyệt rảnh.
-              _historicalLoadScheduled = true;
-              var schedule = window.requestIdleCallback || function (callback) {
-                return window.setTimeout(callback, 1200);
-              };
-              schedule(function () {
-                _historicalLoadScheduled = false;
-                if (!_cache.historicalData || !_cache.historicalData.fetchedAt) {
-                  AppDataStore.loadHistorical();
-                }
-              }, { timeout: 5000 });
+            window._historicalDataReady = true;
+
+            // Tự động làm mới Dashboard để hiển thị tất cả các năm (FYE)
+            if (typeof updateDashboardStats === 'function') {
+              try { updateDashboardStats(); } catch (e) { }
             }
+            resolve(data);
           })
           .withFailureHandler(function (error) {
             _cache[key] = _cache[key] || { data: [], fetchedAt: 0, loading: false };
@@ -1394,8 +1387,17 @@
               updateInitialProgress(85, 'Không tải được dữ liệu QA-G2G', 'stepReleaseData');
               window.checkInitialDataReady();
             } else if (typeof handleHistoryFailure === 'function') handleHistoryFailure(error);
+            reject(error);
           })
           [fnName]();
+        });
+        _pendingPromises[key] = requestPromise;
+        requestPromise.then(function () {
+          if (_pendingPromises[key] === requestPromise) delete _pendingPromises[key];
+        }, function () {
+          if (_pendingPromises[key] === requestPromise) delete _pendingPromises[key];
+        });
+        return requestPromise;
       }
 
       return {
@@ -1403,14 +1405,15 @@
           if (!_listeners[key]) _listeners[key] = [];
           _listeners[key].push(cb);
           var entry = _cache[key];
-          if (entry && entry.data) {
+          if (entry && entry.data && entry.trusted) {
             try { cb(entry.data); } catch (e) { }
           }
         },
 
         get: function (key) {
           var e = _cache[key];
-          return e ? e.data : null;
+          if (!e || !e.data || !e.trusted) return null;
+          return e.data;
         },
 
         invalidate: function (key) {
@@ -1420,17 +1423,47 @@
           _inFlight[key] = false;
           _lastRequestedAt[key] = 0;
           _cache[key] = entry;
-          _fetch(key);
+          _fetch(key, true);
         },
 
         init: function () {
-          _fetch('mainData');
+          window.__recordAppTiming && window.__recordAppTiming('AppDataStore.init.start');
+          _cache.mainData = _cache.mainData || { data: [], fetchedAt: 0, loading: false, trusted: false };
+          _cache.releaseData = _cache.releaseData || { data: [], fetchedAt: 0, loading: false, trusted: false };
+
+          // Tải dữ liệu trực tiếp từ máy chủ Google Apps Script (không lưu tạm thời)
+          return _fetch('mainData', true).then(function () {
+            window.__recordAppTiming && window.__recordAppTiming('AppDataStore.init.complete');
+            var mainData = _cache.mainData ? _cache.mainData.data : [];
+            var releaseData = _cache.releaseData ? _cache.releaseData.data : [];
+            if (Array.isArray(mainData) && mainData.length) {
+              window.pageData = mainData;
+              pageData = mainData;
+              updatePageDataIndex(mainData);
+            }
+            return {
+              mainData: mainData,
+              releaseData: releaseData
+            };
+          }).catch(function (error) {
+            window.__recordAppTiming && window.__recordAppTiming('AppDataStore.init.error');
+            throw error;
+          });
+        },
+
+        preloadBackground: function () {
+          return Promise.all([
+            this.loadHistorical(),
+            typeof preloadPageData === 'function' ? preloadPageData() : Promise.resolve()
+          ]);
         },
 
         loadHistorical: function () {
           if (_cache.historicalData && _cache.historicalData.fetchedAt &&
-            (Date.now() - _cache.historicalData.fetchedAt) < TTL) return;
-          _fetch('historicalData');
+            (Date.now() - _cache.historicalData.fetchedAt) < TTL) {
+            return Promise.resolve(_cache.historicalData.data);
+          }
+          return _fetch('historicalData');
         },
 
         ensure: function (key) {
@@ -1498,40 +1531,88 @@
     // Alias backward compat: window.pageData được AppDataStore đồng bộ tự động
     var pageData = [];
 
-    var _initialLoadedParts = { user: false, mainData: false, releaseData: false };
+    var _initialLoadedParts = { user: false, mainData: false, releaseData: false, dwInfo: false, dwHistory: false };
+    window._initialLoadedParts = _initialLoadedParts;
 
     window.checkInitialDataReady = function () {
-      if (!_initialLoadedParts.mainData || !_initialLoadedParts.releaseData) return;
+      if (!_initialLoadedParts.mainData || !_initialLoadedParts.releaseData || !_initialLoadedParts.dwInfo || !_initialLoadedParts.dwHistory) return;
       updateInitialProgress(100, 'Đã tải xong dữ liệu hệ thống', 'stepReleaseData');
       forceHideLoading();
     };
 
+    window.preloadDwInfoData = function () {
+      var p1 = (typeof initThongTinBanVe === 'function') ? initThongTinBanVe(true) : Promise.resolve();
+      var p2 = (typeof initNhapDuLieuBanVe === 'function') ? initNhapDuLieuBanVe(true) : Promise.resolve();
+      var p3 = (typeof loadManagedDrawings === 'function') ? loadManagedDrawings(true) : Promise.resolve();
+
+      return Promise.all([
+        Promise.resolve(p1).catch(function (e) { console.warn('Lỗi tải email dwInfo:', e); }),
+        Promise.resolve(p2).catch(function (e) { console.warn('Lỗi tải nhập liệu dwInfo:', e); }),
+        Promise.resolve(p3).catch(function (e) { console.warn('Lỗi tải quản lý dwInfo:', e); })
+      ]).then(function () {
+        if (window._initialLoadedParts) {
+          window._initialLoadedParts.dwInfo = true;
+        }
+        updateInitialProgress(80, "Đã tải dữ liệu thông tin bản vẽ...", "stepMainData");
+        window.checkInitialDataReady();
+      }).catch(function (e) {
+        console.warn('Lỗi preloadDwInfoData:', e);
+        if (window._initialLoadedParts) {
+          window._initialLoadedParts.dwInfo = true;
+        }
+        window.checkInitialDataReady();
+      });
+    };
+
+    window.preloadDwHistoryData = function () {
+      var p = (typeof window.dwHistoryPreload === 'function')
+        ? window.dwHistoryPreload()
+        : Promise.resolve();
+
+      return Promise.resolve(p).then(function () {
+        if (window._initialLoadedParts) {
+          window._initialLoadedParts.dwHistory = true;
+        }
+        updateInitialProgress(90, "Đã tải dữ liệu lịch sử bản vẽ...", "stepMainData");
+        window.checkInitialDataReady();
+      }).catch(function (e) {
+        console.warn('Lỗi preloadDwHistoryData:', e);
+        if (window._initialLoadedParts) {
+          window._initialLoadedParts.dwHistory = true;
+        }
+        window.checkInitialDataReady();
+      });
+    };
+
     function preloadPageData() {
-      // Khởi tạo dữ liệu các trang ngay trong splash loader để chuyển tab không bị chờ.
-      if (typeof initThongTinBanVe === 'function') initThongTinBanVe(true);
-      if (typeof initNhapDuLieuBanVe === 'function') {
-        window.__dwInfoInitialLoadGuard = window.__dwInfoInitialLoadGuard || {};
-        window.__dwInfoInitialLoadGuard.manual = true;
-        initNhapDuLieuBanVe(true);
-      }
-      if (typeof loadManagedDrawings === 'function') {
-        window.__dwInfoInitialLoadGuard = window.__dwInfoInitialLoadGuard || {};
-        window.__dwInfoInitialLoadGuard.manage = true;
-        loadManagedDrawings(true);
-      }
-      if (typeof initThietKeBanVe === 'function') {
-        window.__dwDesignPreloaded = true;
-        initThietKeBanVe();
-      }
+      // Đã chuyển sang cơ chế Lazy Loading (AppInitializer.loadModuleAsync) theo nhu cầu khi click tab
+      return Promise.resolve();
+    }
+
+    function preloadMainDataPages() {
+      return Promise.all([
+        typeof initThietKeBanVe === 'function'
+          ? Promise.resolve().then(function () { return initThietKeBanVe(); })
+          : Promise.resolve(),
+        typeof initSubmitApproval === 'function'
+          ? Promise.resolve().then(function () { return initSubmitApproval(); })
+          : Promise.resolve()
+      ]);
     }
 
     function updateInitialProgress(percent, text, stepDoneId) {
       var bar = document.getElementById('appLoadProgressBar');
       var percentEl = document.getElementById('appLoadPercentText');
       var statusEl = document.getElementById('appLoadStatusText');
+      var safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+      var priorPercent = Number(window.__initialProgressPercent || 0);
+      if (safePercent < priorPercent && String(stepDoneId || '').indexOf('stepReleaseData') === -1) {
+        safePercent = priorPercent;
+      }
+      window.__initialProgressPercent = safePercent;
 
-      if (bar) bar.style.width = percent + '%';
-      if (percentEl) percentEl.textContent = percent + '%';
+      if (bar) bar.style.width = safePercent + '%';
+      if (percentEl) percentEl.textContent = safePercent + '%';
       if (statusEl && text) statusEl.textContent = text;
 
       if (stepDoneId) {
@@ -1552,7 +1633,7 @@
       }
 
       if (percent >= 100) {
-        setTimeout(hideInitialAppLoader, 450);
+        hideInitialAppLoader();
       }
     }
 
@@ -1593,12 +1674,8 @@
         loader.style.opacity = '1';
       }
 
-      updateInitialProgress(20, text || "LIXIL BEHAVIORS");
-      clearTimeout(failsafeTimer);
-      failsafeTimer = setTimeout(function () {
-        updateInitialProgress(100, "Hoàn tất!", "stepReleaseData");
-        hideInitialAppLoader();
-      }, 12000);
+      window.__initialProgressPercent = 0;
+      updateInitialProgress(10, text || "LIXIL BEHAVIORS");
     }
 
     function isInitialLoaderVisible() {
@@ -1612,11 +1689,6 @@
 
       if (isInitialLoaderVisible()) {
         updateInitialProgress(80, text || 'Đang xử lý dữ liệu...', 'stepMainData');
-        clearTimeout(failsafeTimer);
-        failsafeTimer = setTimeout(function () {
-          updateInitialProgress(100, 'Hoàn tất!', 'stepReleaseData');
-          hideInitialAppLoader();
-        }, 12000);
         return;
       }
 
@@ -1628,9 +1700,6 @@
         overlay.classList.remove('d-none');
         overlay.classList.add('d-flex');
       }
-
-      clearTimeout(failsafeTimer);
-      failsafeTimer = setTimeout(function () { forceHideLoading(); }, 150000);
     }
 
     function hideLoading() {
@@ -1640,7 +1709,6 @@
 
     function forceHideLoading() {
       loadingRequests = 0;
-      clearTimeout(failsafeTimer);
       var overlay = document.getElementById('mainLoadingOverlay');
       if (overlay) {
         overlay.classList.remove('d-flex');
@@ -1866,47 +1934,10 @@
 
       // Giảm giật bằng cách đẩy render chính của từng page xuống một lần duy nhất trong frame kế tiếp.
       schedulePageRender(pageName, function () {
-        var mVer = window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0;
-        var rVer = window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0;
-
-        if (pageName === 'dashboard' && typeof updateDashboardStats === 'function') {
-          if (window.pageData && window.pageData.length > 0 && window.appTabLastRendered.dashboard !== mVer) {
-            updateDashboardStats();
-            window.appTabLastRendered.dashboard = mVer;
-          }
+        if (window.AppInitializer && typeof window.AppInitializer.loadModuleAsync === 'function') {
+          window.AppInitializer.loadModuleAsync(pageName);
         }
-        if (pageName === 'submitDrawingsForApproval' && typeof initSubmitApproval === 'function') {
-          if (window.appTabLastRendered.submitDrawingsForApproval !== mVer) {
-            initSubmitApproval();
-            window.appTabLastRendered.submitDrawingsForApproval = mVer;
-          }
-        }
-        if (pageName === 'dwDesign') {
-          var dwDesignFn = (typeof initThietKeBanVe === 'function') ? initThietKeBanVe : window.initThietKeBanVe;
-          if (typeof dwDesignFn === 'function') {
-            try { dwDesignFn(); } catch (e) { console.error('Lỗi chạy initThietKeBanVe:', e); }
-          }
-          window.appTabLastRendered.dwDesign = mVer;
-        }
-        if (pageName === 'release' && typeof history_loadData === 'function') {
-          if (window.appTabLastRendered.release !== rVer) {
-            history_loadData();
-            window.appTabLastRendered.release = rVer;
-          }
-        }
-        if (pageName === 'dwInformation' && typeof initThongTinBanVe === 'function') {
-          if (window.appTabLastRendered.dwInformation !== mVer) {
-            initThongTinBanVe();
-            window.appTabLastRendered.dwInformation = mVer;
-          }
-        }
-        if (pageName === 'seachDwByAi' && typeof initSeachDwByAi === 'function') {
-          if (window.appTabLastRendered.seachDwByAi !== mVer) {
-            initSeachDwByAi();
-            window.appTabLastRendered.seachDwByAi = mVer;
-          }
-        }
-      }, 'render-' + pageName + '-' + (pageName === 'release' ? (window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0) : (window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0)));
+      }, 'render-' + pageName);
 
       var activePage = document.getElementById('index-page-' + pageName);
       if (activePage) activePage.scrollTop = 0;
@@ -1958,14 +1989,196 @@
         tab.show();
       }
 
-      // 4. Bắt đầu tải dữ liệu tương ứng
+      // 4. Bắt đầu tải dữ liệu tương ứng (ngầm nếu cần)
       if (tabType === 'mail') {
-        if (typeof initThongTinBanVe === 'function') initThongTinBanVe();
+        if (typeof initThongTinBanVe === 'function') initThongTinBanVe(true);
       } else {
-        if (typeof initNhapDuLieuBanVe === 'function') initNhapDuLieuBanVe();
+        if (typeof initNhapDuLieuBanVe === 'function') initNhapDuLieuBanVe(true);
       }
     }
  
+    // ============================================================
+    // APP INITIALIZER — Bộ điều phối khởi tạo hệ thống (Kiểu C# App Bootstrap)
+    // ============================================================
+    window.AppInitializer = (function () {
+      var _initializedModules = {};
+      var _backgroundSyncStarted = false;
+
+      return {
+        // 1. Khởi tạo chính (C# InitAsync pattern)
+        initAsync: function (pageToLoad) {
+          pageToLoad = pageToLoad || 'dashboard';
+
+          // 1.1 Áp dụng ngay User Profile từ server template (0ms)
+          applyUserProfile(user);
+          if (window._initialLoadedParts) {
+            window._initialLoadedParts.user = true;
+          }
+          updateInitialProgress(40, "LIXIL BEHAVIORS", "stepUser");
+
+          // 1.2 Đăng ký lắng nghe AppDataStore
+          AppDataStore.onReady('mainData', function (data) {
+            pageData = data;
+            window.pageData = data;
+            var mVer = window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0;
+
+            if (activePageName === 'dashboard' && typeof updateDashboardStats === 'function') {
+              updateDashboardStats();
+              window.appTabLastRendered.dashboard = mVer;
+            }
+
+            if (typeof initSubmitApproval === 'function') {
+              try { initSubmitApproval(); } catch (e) { }
+              window.appTabLastRendered.submitDrawingsForApproval = mVer;
+            }
+
+            var dwFn = (typeof initThietKeBanVe === 'function') ? initThietKeBanVe : window.initThietKeBanVe;
+            if (typeof dwFn === 'function') {
+              try { dwFn(); } catch (e) { console.error('Lỗi initThietKeBanVe onReady:', e); }
+              window.appTabLastRendered.dwDesign = mVer;
+            }
+
+            if (window._initialLoadedParts) {
+              window._initialLoadedParts.mainData = true;
+            }
+            updateInitialProgress(65, "Đã tải dữ liệu bản vẽ...", "stepMainData");
+            window.checkInitialDataReady();
+          });
+
+          AppDataStore.onReady('releaseData', function (data) {
+            var rVer = window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0;
+            if (Array.isArray(data) && typeof handleHistorySuccess === 'function') {
+              handleHistorySuccess(data);
+              window.appTabLastRendered.release = rVer;
+            }
+
+            if (window._initialLoadedParts) {
+              window._initialLoadedParts.releaseData = true;
+            }
+            updateInitialProgress(95, "Đã tải dữ liệu QA-G2G...", "stepReleaseData");
+            window.checkInitialDataReady();
+          });
+
+          // 1.3 Kích hoạt tải trước song song dữ liệu Thông tin bản vẽ (dwInformation & dwIf)
+          if (typeof window.preloadDwInfoData === 'function') {
+            window.preloadDwInfoData();
+          }
+
+          // 1.4 Kích hoạt tải trước song song dữ liệu Lịch sử bản vẽ (dwHistory)
+          if (typeof window.preloadDwHistoryData === 'function') {
+            window.preloadDwHistoryData();
+          }
+
+          // 1.5 Tải dữ liệu năm hiện tại cho Dashboard (tốc độ nhanh nhất để mở ngay màn hình)
+          return AppDataStore.init().then(function () {
+            var navButton = document.getElementById('nav-btn-' + pageToLoad);
+            if (navButton && typeof switchTab === 'function') {
+              switchTab(pageToLoad, navButton);
+            }
+
+            // Tắt màn hình chờ nếu các phần dữ liệu khởi động đã xong
+            window.checkInitialDataReady();
+
+            // 1.5 Khởi động tác vụ chạy ngầm tải toàn bộ dữ liệu lịch sử (Background Worker)
+            window.AppInitializer.startBackgroundSync();
+          }).catch(function (error) {
+            console.error('Lỗi khởi tạo dữ liệu AppDataStore:', error);
+            window.checkInitialDataReady();
+          });
+        },
+
+        // 2. Đồng bộ ngầm (Background Sync) nếu cần
+        startBackgroundSync: function () {
+          // Toàn bộ dữ liệu các năm đã được tải đầy đủ ngay từ AppDataStore.init()
+          // Dữ liệu dwInformation đã được nạp song song qua preloadDwInfoData
+        },
+
+        // 3. Điều phối tải module theo nhu cầu (Lazy Module Loader)
+        loadModuleAsync: function (moduleName) {
+          var mVer = window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0;
+          var rVer = window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0;
+
+          if (moduleName === 'dashboard' && typeof updateDashboardStats === 'function') {
+            if (window.pageData && window.pageData.length > 0 && window.appTabLastRendered.dashboard !== mVer) {
+              updateDashboardStats();
+              window.appTabLastRendered.dashboard = mVer;
+            }
+          } else if (moduleName === 'submitDrawingsForApproval' && typeof initSubmitApproval === 'function') {
+            if (window.appTabLastRendered.submitDrawingsForApproval !== mVer) {
+              initSubmitApproval();
+              window.appTabLastRendered.submitDrawingsForApproval = mVer;
+            }
+          } else if (moduleName === 'dwDesign') {
+            var dwDesignFn = (typeof initThietKeBanVe === 'function') ? initThietKeBanVe : window.initThietKeBanVe;
+            if (typeof dwDesignFn === 'function') {
+              try { dwDesignFn(); } catch (e) { console.error('Lỗi chạy initThietKeBanVe:', e); }
+            }
+            window.appTabLastRendered.dwDesign = mVer;
+          } else if (moduleName === 'release' && typeof history_loadData === 'function') {
+            if (window.appTabLastRendered.release !== rVer) {
+              history_loadData();
+              window.appTabLastRendered.release = rVer;
+            }
+          } else if (moduleName === 'dwInformation' && typeof initThongTinBanVe === 'function') {
+            if (!_initializedModules.dwInformation) {
+              _initializedModules.dwInformation = true;
+              initThongTinBanVe(true);
+            }
+          } else if (moduleName === 'dwHistory') {
+            if (!_initializedModules.dwHistory) {
+              _initializedModules.dwHistory = true;
+              if (typeof dwHistorySwitchTab === 'function') {
+                dwHistorySwitchTab('frequency');
+              } else if (typeof dwHistoryReloadActiveTab === 'function') {
+                dwHistoryReloadActiveTab();
+              }
+            }
+          } else if (moduleName === 'seachDwByAi' && typeof initSeachDwByAi === 'function') {
+            if (!_initializedModules.seachDwByAi || window.appTabLastRendered.seachDwByAi !== mVer) {
+              _initializedModules.seachDwByAi = true;
+              initSeachDwByAi();
+              window.appTabLastRendered.seachDwByAi = mVer;
+            }
+          }
+        }
+      };
+    })();
+
+    // Hàm áp dụng User Profile lên UI
+    function applyUserProfile(profile) {
+      if (!profile) return;
+      var nameEl = document.getElementById('uiUserName');
+      var posEl = document.getElementById('uiUserPosition');
+      var userPosition = profile.position || '';
+      let posElValue = "";
+
+      if (userPosition === "Charger") {
+        posElValue = "ST";
+      } else if (userPosition === "Checker 1") {
+        posElValue = "Leader";
+      } else if (userPosition === "Checker 2") {
+        posElValue = "MGR";
+      } else if (userPosition === "Approval") {
+        posElValue = "GM";
+      }
+
+      const restrictedRoles = ["Checker 1", "Checker 2", "Approval"];
+      if (restrictedRoles.includes(userPosition)) {
+        document.getElementById('nav-btn-dwDesign')?.style.setProperty('display', 'none', 'important');
+        document.getElementById('nav-btn-release')?.style.setProperty('display', 'none', 'important');
+        document.getElementById('nav-btn-dwInformation')?.style.setProperty('display', 'none', 'important');
+      }
+      if (nameEl) nameEl.textContent = profile.name || '';
+      if (posEl) posEl.textContent = posElValue;
+      if (typeof applyMenuPermissions === 'function') applyMenuPermissions(userPosition);
+
+      var avatarEl = document.getElementById('uiUserAvatar');
+      if (avatarEl) {
+        var avatarSrc = profile.avatarUrl || ('https://unavatar.io/' + encodeURIComponent(profile.mail || profile.email || '') + '?fallback=' + encodeURIComponent('https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.name || 'U') + '&background=7CB342&color=ffffff&bold=true&size=128'));
+        avatarEl.innerHTML = '<img src="' + avatarSrc + '" alt="Avatar" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src=\'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.name || 'U') + '&background=7CB342&color=ffffff&bold=true&size=128\';" />';
+      }
+    }
+
     // Khởi tạo hệ thống
     document.addEventListener('DOMContentLoaded', function () {
       syncResponsiveShell();
@@ -1989,95 +2202,9 @@
       if (!document.getElementById('index-page-' + pageToLoad)) {
         pageToLoad = "dashboard";
       }
-      var navButton = document.getElementById('nav-btn-' + pageToLoad);
-      if (navButton) switchTab(pageToLoad, navButton);
 
-      // Tải Profile người dùng song song với dữ liệu
-      google.script.run.withSuccessHandler(function (profile) {
-        if (profile) {
-          var nameEl = document.getElementById('uiUserName');
-          var posEl = document.getElementById('uiUserPosition');
-          var userPosition = profile.position || '';
-          let posElValue = "";
-
-          if (userPosition === "Charger") {
-            posElValue = "ST";
-          } else if (userPosition === "Checker 1") {
-            posElValue = "Leader";
-          } else if (userPosition === "Checker 2") {
-            posElValue = "MGR";
-          } else if (userPosition === "Approval") {
-            posElValue = "GM";
-          }
-
-          const restrictedRoles = ["Checker 1", "Checker 2", "Approval"];
-          if (restrictedRoles.includes(userPosition)) {
-            document.getElementById('nav-btn-dwDesign')?.style.setProperty('display', 'none', 'important');
-            document.getElementById('nav-btn-release')?.style.setProperty('display', 'none', 'important');
-            document.getElementById('nav-btn-dwInformation')?.style.setProperty('display', 'none', 'important');
-          }
-          if (nameEl) nameEl.textContent = profile.name;
-          if (posEl) posEl.textContent = posElValue;
-          applyMenuPermissions(userPosition);
-
-          var avatarEl = document.getElementById('uiUserAvatar');
-          if (avatarEl) {
-            var avatarSrc = profile.avatarUrl || ('https://unavatar.io/' + encodeURIComponent(profile.email || '') + '?fallback=' + encodeURIComponent('https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.name || 'U') + '&background=7CB342&color=ffffff&bold=true&size=128'));
-            avatarEl.innerHTML = '<img src="' + avatarSrc + '" alt="Avatar" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src=\'https://ui-avatars.com/api/?name=' + encodeURIComponent(profile.name || 'U') + '&background=7CB342&color=ffffff&bold=true&size=128\';" />';
-          }
-        }
-        updateInitialProgress(40, "LIXIL BEHAVIORS", "stepUser");
-        _initialLoadedParts.user = true;
-      }).withFailureHandler(function (error) {
-        _initialLoadedParts.user = true;
-        updateInitialProgress(40, 'Không tải được thông tin người dùng', 'stepUser');
-        window.checkInitialDataReady();
-        console.error('Lỗi tải thông tin người dùng:', error);
-      }).getUserProfile();
-
-      // Đăng ký các page lắng nghe khi mainData sẵn sàng / cập nhật
-      AppDataStore.onReady('mainData', function (data) {
-        pageData = data; // Đồng bộ alias cũ
-        window.pageData = data;
-        var mVer = window.appTabRenderVersion ? window.appTabRenderVersion.mainData : 0;
-
-        if (activePageName === 'dashboard' && typeof updateDashboardStats === 'function') {
-          updateDashboardStats();
-          window.appTabLastRendered.dashboard = mVer;
-        }
-
-        if (typeof initSubmitApproval === 'function') {
-          try { initSubmitApproval(); } catch (e) { }
-          window.appTabLastRendered.submitDrawingsForApproval = mVer;
-        }
-
-        var dwFn = (typeof initThietKeBanVe === 'function') ? initThietKeBanVe : window.initThietKeBanVe;
-        if (typeof dwFn === 'function') {
-          try { dwFn(); } catch (e) { console.error('Lỗi initThietKeBanVe onReady:', e); }
-          window.appTabLastRendered.dwDesign = mVer;
-        }
-
-        _initialLoadedParts.mainData = true;
-        updateInitialProgress(70, "Đã tải dữ liệu bản vẽ...", "stepMainData");
-        window.checkInitialDataReady();
-      });
-
-      // Đăng ký dwRelease lắng nghe releaseData
-      AppDataStore.onReady('releaseData', function (data) {
-        var rVer = window.appTabRenderVersion ? window.appTabRenderVersion.releaseData : 0;
-        if (Array.isArray(data) && data.length > 0 && typeof handleHistorySuccess === 'function') {
-          handleHistorySuccess(data);
-          window.appTabLastRendered.release = rVer;
-        }
-
-        _initialLoadedParts.releaseData = true;
-        updateInitialProgress(85, "Đã tải dữ liệu QA-G2G...", "stepReleaseData");
-        window.checkInitialDataReady();
-      });
-
-      // Bắt đầu fetch song song cả 2 nguồn
-      AppDataStore.init();
-      preloadPageData();
+      // Khởi động toàn bộ ứng dụng qua AppInitializer (C# style bootstrap)
+      AppInitializer.initAsync(pageToLoad);
     });
 
 

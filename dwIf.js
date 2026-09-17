@@ -1,7 +1,6 @@
 var MAIL_CONFIG = {
   SUBJECT_FILTERS: ['MANUFACTURING ORDER', 'NEW PROJECT', 'DIE REQUEST', 'NEW CUSTOMER', 'NEW CUSTOMER + NEW PROJECT'],
-  MAX_THREADS: 25,
-  LIST_CACHE_SECONDS: 30,
+  MAX_THREADS: 50,
   TIMEZONE: 'Asia/Ho_Chi_Minh'
 };
 
@@ -51,7 +50,7 @@ function normalizeImageSource(value) {
 }
 
 function buildQuery(keyword) {
-  var query = 'subject:("MANUFACTURING ORDER" OR "NEW PROJECT" OR "THÔNG BÁO TỰ ĐỘNG" OR "DIE REQUEST" OR "NEW CUSTOMER" OR "NEW CUSTOMER + NEW PROJECT")';
+  var query = 'subject:("MANUFACTURING ORDER" OR "NEW PROJECT" OR "DIE REQUEST" OR "NEW CUSTOMER" OR "NEW CUSTOMER + NEW PROJECT")';
   if (keyword && keyword.trim() !== '') {
     query = '(' + query + ') ' + keyword.trim();
   }
@@ -133,10 +132,6 @@ function getManufacturingEmails(page, keyword) {
   try {
     page = page || 0;
     keyword = keyword || '';
-    var cache = CacheService.getScriptCache();
-    var cacheKey = 'MAIL_LIST_' + page + '_' + Utilities.base64EncodeWebSafe(keyword).substring(0, 80);
-    var cached = cache.get(cacheKey);
-    if (cached) return JSON.parse(cached);
 
     var query = buildQuery(keyword);
     var limit = MAIL_CONFIG.MAX_THREADS;
@@ -232,7 +227,6 @@ function getManufacturingEmails(page, keyword) {
       page: page,
       hasMore: hasMore
     };
-    cache.put(cacheKey, JSON.stringify(result), MAIL_CONFIG.LIST_CACHE_SECONDS);
     return result;
   } catch (err) {
     return { success: false, error: err.toString(), emails: [], total: 0 };
@@ -400,12 +394,13 @@ function getEmailReceptionStats() {
     var receivedThreadIds = new Set();
 
     if (logSheet) {
-      var data = logSheet.getDataRange().getValues();
-      for (var r = 0; r < data.length; r++) {
-        for (var c = 0; c < data[r].length; c++) {
-          var cellValue = String(data[r][c]).trim();
-          if (cellValue.length > 10) {
-            receivedThreadIds.add(cellValue);
+      var lastRow = logSheet.getLastRow();
+      if (lastRow >= 2) {
+        var threadIdValues = logSheet.getRange(2, 2, lastRow - 1, 1).getValues();
+        for (var r = 0; r < threadIdValues.length; r++) {
+          var val = String(threadIdValues[r][0] || '').trim();
+          if (val) {
+            receivedThreadIds.add(val);
           }
         }
       }
@@ -922,48 +917,48 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     mappedRowData[33] = soNo;              // AH: Mã SO
 
     // Chế độ INSERT: kiểm tra TO+Customer trước khi ghi
-      // ========================================================================
-      // KIỂM TRA: TO + Customer đã tồn tại trong sheet "Data" chưa?
-      // Chỉ bỏ qua ghi Data khi cùng TO + Customer đã tồn tại, không phân biệt "TO-123" / "123" hay chữ hoa/thường.
-      // ========================================================================
-      function normalizeToValue(value) {
-        if (value === null || value === undefined) return "";
-        return String(value).replace(/^TO-?/i, "").replace(/\s+/g, "").trim().toUpperCase();
-      }
+    // ========================================================================
+    // KIỂM TRA: TO + Customer đã tồn tại trong sheet "Data" chưa?
+    // Chỉ bỏ qua ghi Data khi cùng TO + Customer đã tồn tại, không phân biệt "TO-123" / "123" hay chữ hoa/thường.
+    // ========================================================================
+    function normalizeToValue(value) {
+      if (value === null || value === undefined) return "";
+      return String(value).replace(/^TO-?/i, "").replace(/\s+/g, "").trim().toUpperCase();
+    }
 
-      function normalizeCustomerValue(value) {
-        if (value === null || value === undefined) return "";
-        return String(value).replace(/\s+/g, " ").trim().toUpperCase();
-      }
+    function normalizeCustomerValue(value) {
+      if (value === null || value === undefined) return "";
+      return String(value).replace(/\s+/g, " ").trim().toUpperCase();
+    }
 
-      var toCodeNormalized = normalizeToValue(toCode);
-      var customerNameNormalized = normalizeCustomerValue(customerName);
-      var toCustomerExists = false;
+    var toCodeNormalized = normalizeToValue(toCode);
+    var customerNameNormalized = normalizeCustomerValue(customerName);
+    var toCustomerExists = false;
 
-      if (toCodeNormalized && customerNameNormalized && sheetData && sheetData.getLastRow() > 1) {
-        try {
-          var existingData = sheetData.getRange(2, 1, sheetData.getLastRow() - 1, sheetData.getLastColumn()).getValues();
-          for (var checkIdx = 0; checkIdx < existingData.length; checkIdx++) {
-            var checkRow = existingData[checkIdx];
-            var existingTO = normalizeToValue(checkRow[8]);      // Column I (index 8): TO
-            var existingCustomer = normalizeCustomerValue(checkRow[10]); // Column K (index 10): Customer
+    if (toCodeNormalized && customerNameNormalized && sheetData && sheetData.getLastRow() > 1) {
+      try {
+        var existingData = sheetData.getRange(2, 1, sheetData.getLastRow() - 1, sheetData.getLastColumn()).getValues();
+        for (var checkIdx = 0; checkIdx < existingData.length; checkIdx++) {
+          var checkRow = existingData[checkIdx];
+          var existingTO = normalizeToValue(checkRow[8]);      // Column I (index 8): TO
+          var existingCustomer = normalizeCustomerValue(checkRow[10]); // Column K (index 10): Customer
 
-            if (existingTO === toCodeNormalized && existingCustomer === customerNameNormalized) {
-              toCustomerExists = true;
-              break;
-            }
+          if (existingTO === toCodeNormalized && existingCustomer === customerNameNormalized) {
+            toCustomerExists = true;
+            break;
           }
-        } catch (checkErr) {
         }
+      } catch (checkErr) {
       }
+    }
 
-      // Chỉ lưu vào sheet "Data" nếu TO + Customer chưa tồn tại
-      if (!toCustomerExists) {
-        sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
-        if (cellImageObj) {
-          try { sheetData.getRange(targetRow, 33).setValue(cellImageObj); } catch (e) { }
-        }
+    // Chỉ lưu vào sheet "Data" nếu TO + Customer chưa tồn tại
+    if (!toCustomerExists) {
+      sheetData.getRange(targetRow, 1, 1, mappedRowData.length).setValues([mappedRowData]);
+      if (cellImageObj) {
+        try { sheetData.getRange(targetRow, 33).setValue(cellImageObj); } catch (e) { }
       }
+    }
 
     // Luôn luôn lưu vào sheet "SO" (dù TO+Customer đã tồn tại hay chưa)
     if (sheetSO) {
@@ -1005,7 +1000,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
       // LUÔN TẠO HÀNG MỚI: Không cập nhật dòng cũ, mà tạo dòng mới mỗi lần
       // ========================================================================
       var soData = sheetSO.getDataRange().getValues();
-      
+
       // Tìm tần suất lớn nhất nhưng luôn tạo dòng mới, không sửa dòng SO cũ.
       var maxTanXuatTO = 0;
       var toToFind = ("TO-" + pureToCode).toUpperCase();
@@ -1036,7 +1031,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
       }
       var newTanXuatTO = maxTanXuatTO + 1;
       var newTanXuatMau = maxTanXuatMau + 1;
-      
+
       // Tìm max Tần xuất theo khách (Column J) cho TO+khách này
       var maxTanXuatKhach = 0;
       var toCustomerToFind = toCustomerNormalized;
@@ -1051,7 +1046,7 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
         }
       }
       var newTanXuatKhach = maxTanXuatKhach + 1;
-      
+
       // Tạo hàng mới
       var mappedRowSO = new Array(12).fill("");
       mappedRowSO[0] = "TO-" + pureToCode; // A: TO
@@ -1072,12 +1067,12 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
 
     // Trả về kết quả chi tiết
-    var resultMsg = toCustomerExists 
+    var resultMsg = toCustomerExists
       ? "Lưu thành công! (Chỉ cập nhật SO, TO [" + toCodeNormalized + "] - Customer [" + customerNameNormalized + "] đã tồn tại)"
       : "Lưu thành công! (Lưu Data & cập nhật/tạo SO)";
-    
-    return { 
-      success: true, 
+
+    return {
+      success: true,
       message: resultMsg,
       dataOnly: !toCustomerExists,
       soOnly: toCustomerExists
@@ -1128,11 +1123,32 @@ function getManagedDrawings() {
 
     var data = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getValues();
     var displayData = dataSheet.getRange(2, 1, dataSheet.getLastRow() - 1, Math.max(34, dataSheet.getLastColumn())).getDisplayValues();
+    var currentYear = Number(Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy'));
     var managed = [];
+    var currentYearRows = [];
+    var recentRows = [];
 
     for (var i = 0; i < data.length; i++) {
       var row = data[i] || [];
       var displayRow = displayData[i] || [];
+      var receivedDate = row[6];
+      var receivedYear = receivedDate instanceof Date && !isNaN(receivedDate.getTime())
+        ? Number(Utilities.formatDate(receivedDate, Session.getScriptTimeZone(), 'yyyy'))
+        : Number(String(receivedDate || '').match(/20\d{2}/) || 0);
+
+      var rowContext = { row: row, displayRow: displayRow, index: i };
+      if (receivedYear === currentYear) {
+        currentYearRows.push(rowContext);
+      }
+      recentRows.push(rowContext);
+    }
+
+    var rowsToProcess = currentYearRows.length > 0 ? currentYearRows : recentRows.slice(-250);
+
+    for (var j = 0; j < rowsToProcess.length; j++) {
+      var rowInfo = rowsToProcess[j];
+      var row = rowInfo.row || [];
+      var displayRow = rowInfo.displayRow || [];
 
       // Dữ liệu cơ bản quyết định việc hiển thị; lỗi đọc hình ảnh không được loại bỏ dòng.
       var hasDrawingData = [row[8], row[9], row[10], row[11], row[33]].some(function (value) {
@@ -1143,32 +1159,31 @@ function getManagedDrawings() {
       var adValue = row[29];  // AD: Height
       var agValue = row[32];  // AG: Hình mặt cắt
 
-      // Chuyển sang string an toàn, vẫn coi số 0 và CellImage là dữ liệu hợp lệ.
       var acStr = acValue === null || acValue === undefined ? '' : String(acValue).trim();
       var adStr = adValue === null || adValue === undefined ? '' : String(adValue).trim();
       var agStr = '';
       try {
         agStr = normalizeImageSource(agValue);
       } catch (imageError) {
-        Logger.log('Không thể đọc hình mặt cắt dòng ' + (i + 2) + ': ' + imageError.toString());
+        Logger.log('Không thể đọc hình mặt cắt dòng ' + (rowInfo.index + 2) + ': ' + imageError.toString());
       }
       var hasImageValue = agValue !== null && agValue !== undefined && agValue !== '';
       var displayAcStr = String(displayRow[28] || '').trim();
       var displayAdStr = String(displayRow[29] || '').trim();
 
       if (hasDrawingData || (acStr !== '') || (adStr !== '') || (displayAcStr !== '') || (displayAdStr !== '') || (agStr !== '') || hasImageValue) {
-        var typeVal = row[3] || 'New';        // D: Type
-        var toVal = row[8] || 'N/A';          // I: TO
-        var dwCodeVal = row[11] || '';        // L: DW Code
-        var customerVal = row[10] || 'Unknown'; // K: Customer
-        var oldDwCodeVal = row[14] || '';     // O: DW Code cũ trước khi thay đổi
+        var typeVal = row[3] || 'New';
+        var toVal = row[8] || 'N/A';
+        var dwCodeVal = row[11] || '';
+        var customerVal = row[10] || 'Unknown';
+        var oldDwCodeVal = row[14] || '';
 
         managed.push({
-          status: String(row[2] || ''),       // C: Status
+          status: String(row[2] || ''),
           type: String(typeVal),
           to: String(toVal),
           dwCode: String(dwCodeVal),
-          oldDwCode: String(oldDwCodeVal),    // O: DW Code cũ trước thay đổi
+          oldDwCode: String(oldDwCodeVal),
           customer: String(customerVal),
           group: String(row[3] || ''),
           project: String(row[9] || ''),
@@ -1182,10 +1197,10 @@ function getManagedDrawings() {
           fye: String(row[23] || ''),
           width: String(row[28] || ''),
           height: String(row[29] || ''),
-          cutDrawing: agStr,    // Already converted to string
+          cutDrawing: agStr,
           image: agStr,
           so: String(row[33] || ''),
-          rowIdx: i + 2                 // Row index (1-based)
+          rowIdx: rowInfo.index + 2
         });
       }
     }
@@ -1240,7 +1255,7 @@ function getDrawingByRowIdx(rowIdx) {
     }
 
     var rowData = dataSheet.getRange(rowIdx, 1, 1, dataSheet.getLastColumn()).getValues()[0];
-    
+
     // Ánh xạ chính xác theo thứ tự 34 cột (A->AH) của sheet Data:
     // A(0): ID, B(1): Mail, C(2): Status, D(3): Group, E(4): Type, F(5): Version,
     // G(6): Ngày tiếp nhận, H(7): Ngày hoàn thành dự kiến, I(8): TO, J(9): Dự án,
@@ -1306,7 +1321,6 @@ function getDrawingsWithoutImage() {
       for (var i = 1; i < logValues.length; i++) {
         var rawSo = String(logValues[i][5] || '').trim();
         var customer = String(logValues[i][3] || 'Unknown');
-        // Cột E là nguồn xử lý TO; cột I/J chỉ lưu kết quả phân loại NEW/OLD.
         var logTos = splitDrawingToValues(logValues[i][4]).map(function (toValue) {
           var normalizedTo = normalizeLogTo(toValue);
           return normalizedTo ? 'TO-' + normalizedTo : '';
@@ -1327,6 +1341,29 @@ function getDrawingsWithoutImage() {
             imageUrl: ''
           });
         });
+      }
+
+      if (pending.length === 0 && logValues.length > 1) {
+        var fallbackLogRows = logValues.slice(1).slice(-80);
+        for (var j = 0; j < fallbackLogRows.length; j++) {
+          var logRow = fallbackLogRows[j];
+          var fallbackRawSo = String(logRow[5] || '').trim();
+          var fallbackCustomer = String(logRow[3] || 'Unknown');
+          var fallbackTo = String(logRow[4] || '').trim();
+          if (!fallbackTo) continue;
+          pending.push({
+            rowIdx: j + 2,
+            displayRowIdx: j + 2 + '-fallback',
+            type: 'New',
+            to: fallbackTo || 'N/A',
+            dwCode: '',
+            customer: fallbackCustomer,
+            subject: String(logRow[2] || ''),
+            so: fallbackRawSo,
+            existsInData: false,
+            imageUrl: ''
+          });
+        }
       }
 
       return { success: true, data: pending.reverse() };
@@ -1353,7 +1390,7 @@ function updateBulkDrawing(rowIds, bulkData) {
     var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
     var ss = SpreadsheetApp.openById(sheetId);
     var dataSheet = ss.getSheetByName('Data');
-    
+
     if (!dataSheet || !rowIds || rowIds.length === 0) {
       return { success: false, error: 'Invalid row IDs or no data' };
     }
@@ -1361,7 +1398,7 @@ function updateBulkDrawing(rowIds, bulkData) {
     // Column mapping
     // B=2: Type, D=4: TO, E=5: Project, F=6: SO, G=7: Dw Code, H=8: Version
     // I=9: Type DW, J=10: Assignee, N=14: Assignee Done Date, P=16: Status
-    
+
     for (var idx = 0; idx < rowIds.length; idx++) {
       var rowId = rowIds[idx];
       if (rowId < 2) continue;
@@ -1375,9 +1412,9 @@ function updateBulkDrawing(rowIds, bulkData) {
       if (bulkData.status) dataSheet.getRange(rowId, 16).setValue(bulkData.status);
     }
 
-    return { 
-      success: true, 
-      message: 'Đã cập nhật ' + rowIds.length + ' bản vẽ' 
+    return {
+      success: true,
+      message: 'Đã cập nhật ' + rowIds.length + ' bản vẽ'
     };
   } catch (err) {
     return { success: false, error: err.toString() };
@@ -1644,3 +1681,4 @@ function getTabTransferHistory() {
     return { success: false, error: err.toString() };
   }
 }
+

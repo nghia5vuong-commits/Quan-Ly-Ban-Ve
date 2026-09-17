@@ -14,7 +14,9 @@ function doGet(e) {
     dept: "", // Để trống hoặc điền mặc định
     name: "User (Chưa đăng ký)",
     mail: currentEmail,
-    position: ""
+    position: "",
+    avatarUrl: "",
+    initials: "U"
   };
   template.requestId = requestId;
 
@@ -38,8 +40,8 @@ function getUser(mail) {
     const sheet = ss.getSheetByName("User");
 
     const lastrow = sheet.getLastRow();
-    // getUser chỉ dùng A:E; tránh đọc các cột phụ không liên quan.
-    const lastcol = Math.min(sheet.getLastColumn(), 5);
+    // getUser lấy A:F để có thêm avatarUrl nếu có
+    const lastcol = Math.min(sheet.getLastColumn(), 6);
     let data = [];
 
     if (lastrow > 1) {
@@ -49,18 +51,25 @@ function getUser(mail) {
     const userRow = data.find(row => row[3] && row[3].toString().trim().toLowerCase() === normalizedMail);
 
     if (!userRow) {
-      cache.put(cacheKey, 'null', 300);
+      cache.put(cacheKey, 'null', 3600);
       return null;
     }
 
+    var userName = userRow[2] ? String(userRow[2]).trim() : "";
+    var names = userName.split(" ");
+    var initials = names.length > 0 && names[names.length - 1] ? names[names.length - 1].charAt(0).toUpperCase() : "U";
+    var avatarUrl = (userRow[5] && String(userRow[5]).trim()) ? String(userRow[5]).trim() : "";
+
     var result = {
-      msnv: userRow[0],
-      dept: userRow[1],
-      name: userRow[2],
-      mail: userRow[3],
-      position: userRow[4],
+      msnv: userRow[0] || "",
+      dept: userRow[1] || "",
+      name: userName,
+      mail: userRow[3] || normalizedMail,
+      position: userRow[4] || "",
+      avatarUrl: avatarUrl,
+      initials: initials
     };
-    cache.put(cacheKey, JSON.stringify(result), 300);
+    cache.put(cacheKey, JSON.stringify(result), 21600); // Cache 6 giờ
     return result;
   } catch (e) {
     return null;

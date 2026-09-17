@@ -36,16 +36,57 @@ const _toDateKey = (dateValue) => {
   return y + '-' + m + '-' + day;
 };
 
-const _loadCalendarRows = () => {
+var _submitCalendarCache = null;
+var _submitCalendarCacheTime = 0;
+
+const _loadCalendarOffSet = () => {
+  var now = Date.now();
+  if (_submitCalendarCache && (now - _submitCalendarCacheTime < 300000)) {
+    return _submitCalendarCache;
+  }
+
+  var offSet = new Set();
   try {
     var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
     var calSheet = ss.getSheetByName('Cal');
-    if (!calSheet) return [];
+    if (!calSheet) return offSet;
     var values = calSheet.getDataRange().getValues();
-    if (!values || values.length < 2) return [];
-    return values.slice(1);
+    if (!values || values.length < 2) return offSet;
+
+    var offPatterns = [
+      'weekend', 'holiday', 'nghi', 'day off', 'off', 'rest', 'sunday', 'saturday',
+      'khong lam', 'khong hoat dong', 'ngay nghi', 'leave', 'non working', 'non-working',
+      'close', 'closed'
+    ];
+
+    for (var i = 1; i < values.length; i++) {
+      var row = values[i];
+      var rowDate = row[0];
+      if (!rowDate) continue;
+
+      var dateKey = '';
+      if (rowDate instanceof Date && !isNaN(rowDate.getTime())) {
+        dateKey = _toDateKey(rowDate);
+      } else {
+        dateKey = String(rowDate).trim().slice(0, 10);
+      }
+      if (!dateKey) continue;
+
+      var status = _normalizeCalendarText(row[2]);
+      var description = _normalizeCalendarText(row[3]);
+      var text = (status + ' ' + description).trim();
+
+      var isOff = offPatterns.some(function (p) { return text.indexOf(p) !== -1; });
+      if (isOff) {
+        offSet.add(dateKey);
+      }
+    }
+
+    _submitCalendarCache = offSet;
+    _submitCalendarCacheTime = now;
+    return offSet;
   } catch (e) {
-    return [];
+    return offSet;
   }
 };
 
@@ -55,36 +96,14 @@ const _normalizeCalendarText = (value) => {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .trim();
-}
+};
 
-function _isCalendarOffDate(dateKey) {
+function _isCalendarOffDate(dateKey, offSet) {
   if (!dateKey) return false;
 
-  var calendarRows = _loadCalendarRows();
-  for (var i = 0; i < calendarRows.length; i++) {
-    var row = calendarRows[i];
-    var rowDate = String(row[0] || '').trim();
-    if (!rowDate) continue;
-
-    if (String(rowDate).slice(0, 10) === dateKey) {
-      var status = _normalizeCalendarText(row[2]);
-      var description = _normalizeCalendarText(row[3]);
-      var text = (status + ' ' + description).trim();
-
-      var offPatterns = [
-        'weekend', 'holiday', 'nghi', 'day off', 'off', 'rest', 'sunday', 'saturday',
-        'khong lam', 'khong hoat dong', 'ngay nghi', 'leave', 'non working', 'non-working',
-        'close', 'closed'
-      ];
-
-      for (var j = 0; j < offPatterns.length; j++) {
-        if (text.indexOf(offPatterns[j]) !== -1) {
-          return true;
-        }
-      }
-
-      return false;
-    }
+  var currentOffSet = offSet || _loadCalendarOffSet();
+  if (currentOffSet.has(dateKey)) {
+    return true;
   }
 
   var d = new Date(dateKey + 'T00:00:00');
@@ -100,6 +119,8 @@ function _getBusinessDateAfterDays(dateValue, businessDays) {
     startDate = new Date();
   }
 
+  // Tải danh sách ngày nghỉ DUY NHẤT một lần từ bộ nhớ trước vòng lặp
+  var offSet = _loadCalendarOffSet();
   var workingDays = 0;
   var cursor = new Date(startDate.getTime());
   var maxLoops = 366;
@@ -107,7 +128,7 @@ function _getBusinessDateAfterDays(dateValue, businessDays) {
   while (workingDays < requestedDays && maxLoops > 0) {
     cursor.setDate(cursor.getDate() + 1);
     var key = _toDateKey(cursor);
-    if (_isCalendarOffDate(key)) {
+    if (_isCalendarOffDate(key, offSet)) {
       maxLoops--;
       continue;
     }

@@ -193,23 +193,53 @@
         }));
       };
 
+      function runAfterFreshAppData(task) {
+        if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.init === 'function') {
+          return Promise.resolve()
+            .then(function () { return AppDataStore.init(); })
+            .then(function () { return task(); })
+            .catch(function () { return task(); });
+        }
+        return Promise.resolve().then(task);
+      }
+
       function loadFrequency() {
+        if (window.__recordAppTiming) window.__recordAppTiming('dwHistory.loadFrequency.start');
         var body = document.getElementById('dwHistoryFrequencyBody');
         if (body) body.innerHTML = '<tr><td colspan="7" class="history-empty"><i class="fa fa-spinner fa-spin me-2"></i>Đang tải dữ liệu...</td></tr>';
-        google.script.run.withSuccessHandler(function (response) {
-          frequencyAll = response && response.success ? (response.data || []) : [];
-          frequencyFiltered = frequencyAll.slice();
-          renderFrequency();
-        }).withFailureHandler(function () { if (body) body.innerHTML = '<tr><td colspan="7" class="history-empty text-danger">Không thể tải dữ liệu.</td></tr>'; }).getToFrequencyData();
+        return runAfterFreshAppData(function () {
+          return new Promise(function (resolve, reject) {
+            google.script.run.withSuccessHandler(function (response) {
+              frequencyAll = response && response.success ? (response.data || []) : [];
+              frequencyFiltered = frequencyAll.slice();
+              renderFrequency();
+              if (window.__recordAppTiming) window.__recordAppTiming('dwHistory.loadFrequency.complete');
+              resolve(response);
+            }).withFailureHandler(function (error) {
+              if (body) body.innerHTML = '<tr><td colspan="7" class="history-empty text-danger">Không thể tải dữ liệu.</td></tr>';
+              reject(error);
+            }).getToFrequencyData();
+          });
+        });
       }
 
       function loadComparison() {
+        if (window.__recordAppTiming) window.__recordAppTiming('dwHistory.loadComparison.start');
         var body = document.getElementById('dwHistoryComparisonBody');
         if (body) body.innerHTML = '<tr><td colspan="5" class="history-empty"><i class="fa fa-spinner fa-spin me-2"></i>Đang đối chiếu...</td></tr>';
-        google.script.run.withSuccessHandler(function (response) {
-          comparisonAll = response && response.success ? (response.data || []) : [];
-          dwHistoryFilterComparison();
-        }).withFailureHandler(function () { if (body) body.innerHTML = '<tr><td colspan="5" class="history-empty text-danger">Không thể tải dữ liệu.</td></tr>'; }).getSoDrawingComparison();
+        return runAfterFreshAppData(function () {
+          return new Promise(function (resolve, reject) {
+            google.script.run.withSuccessHandler(function (response) {
+              comparisonAll = response && response.success ? (response.data || []) : [];
+              dwHistoryFilterComparison();
+              if (window.__recordAppTiming) window.__recordAppTiming('dwHistory.loadComparison.complete');
+              resolve(response);
+            }).withFailureHandler(function (error) {
+              if (body) body.innerHTML = '<tr><td colspan="5" class="history-empty text-danger">Không thể tải dữ liệu.</td></tr>';
+              reject(error);
+            }).getSoDrawingComparison();
+          });
+        });
       }
 
       window.dwHistorySwitchTab = function (tab) {
@@ -257,7 +287,42 @@
       };
 
       window.dwHistoryReloadActiveTab = function () { if (activeTab === 'frequency') loadFrequency(); else loadComparison(); };
-      loadFrequency();
+      window.dwHistoryPreload = function () {
+        var p1 = new Promise(function (resolve) {
+          google.script.run
+            .withSuccessHandler(function (response) {
+              frequencyAll = response && response.success ? (response.data || []) : [];
+              frequencyFiltered = frequencyAll.slice();
+              renderFrequency();
+              resolve(response);
+            })
+            .withFailureHandler(function (err) {
+              console.warn('Lỗi tải dữ liệu tần suất TO lúc khởi động:', err);
+              var body = document.getElementById('dwHistoryFrequencyBody');
+              if (body) body.innerHTML = '<tr><td colspan="7" class="history-empty text-danger">Không thể tải dữ liệu.</td></tr>';
+              resolve({ success: false, error: err });
+            })
+            .getToFrequencyData();
+        });
+
+        var p2 = new Promise(function (resolve) {
+          google.script.run
+            .withSuccessHandler(function (response) {
+              comparisonAll = response && response.success ? (response.data || []) : [];
+              dwHistoryFilterComparison();
+              resolve(response);
+            })
+            .withFailureHandler(function (err) {
+              console.warn('Lỗi tải dữ liệu đối chiếu SO lúc khởi động:', err);
+              var body = document.getElementById('dwHistoryComparisonBody');
+              if (body) body.innerHTML = '<tr><td colspan="5" class="history-empty text-danger">Không thể tải dữ liệu.</td></tr>';
+              resolve({ success: false, error: err });
+            })
+            .getSoDrawingComparison();
+        });
+
+        return Promise.all([p1, p2]);
+      };
     })();
   </script>
 </div>

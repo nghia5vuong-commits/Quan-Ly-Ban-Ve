@@ -750,6 +750,7 @@
   }
 
   function initSubmitApproval() {
+    if (window.__recordAppTiming) window.__recordAppTiming('submitApproval.init.start');
     const tbody = document.getElementById('approvalTableBody');
     if (!tbody) return;
     approvalCurrentPage = 1;
@@ -813,6 +814,7 @@
       return false;
     });
 
+    if (window.__recordAppTiming) window.__recordAppTiming('submitApproval.init.complete');
     renderApprovalTable();
   }
 

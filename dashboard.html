@@ -439,7 +439,7 @@
           <select class="form-select form-select-sm border-0 bg-transparent fw-semibold text-dark shadow-none pe-4" id="dashFyeFilter"
             onchange="updateDashboardStats()" style="cursor: pointer; font-size: 0.82rem;">
             <option value="ALL" data-i18n="dash_all_fye">📅 Tất cả FYE</option>
-            <option value="FYE27">FYE27</option>
+            <option value="FYE27" selected>FYE27</option>
             <option value="FYE26">FYE26</option>
             <option value="FYE25">FYE25</option>
             <option value="FYE24">FYE24</option>
@@ -714,7 +714,7 @@
   // GLOBAL STATE - QUẢN LÝ BỘ LỌC LIÊN KẾT ĐA CHIỀU
   // =========================================================
   var globalFilters = {
-    fye: 'ALL',
+    fye: 'FYE27',
     type: 'ALL',
     kpi: 'all',      // 'all', 'design', 'approve', 'release'
     project: null,   // Lưu tên dự án khi click biểu đồ
@@ -805,15 +805,9 @@
 
     dashboardRenderRaf = requestAnimationFrame(function () {
       dashboardRenderRaf = null;
-      if (dashboardRefreshTimer) {
-        clearTimeout(dashboardRefreshTimer);
+      if (!document.hidden) {
+        updateDashboardStats();
       }
-      dashboardRefreshTimer = setTimeout(function () {
-        dashboardRefreshTimer = null;
-        if (!document.hidden) {
-          updateDashboardStats();
-        }
-      }, 40);
     });
   }
 
@@ -842,9 +836,9 @@
   }
 
   function resetDashFilters() {
-    globalFilters = { fye: 'ALL', type: 'ALL', kpi: 'all', project: null, month: null, isNew: null, search: '', creator: '', status: 'ALL', dateFrom: '', dateTo: '' };
+    globalFilters = { fye: 'FYE27', type: 'ALL', kpi: 'all', project: null, month: null, isNew: null, search: '', creator: '', status: 'ALL', dateFrom: '', dateTo: '' };
     var dashFyeFilter = document.getElementById('dashFyeFilter');
-    if (dashFyeFilter) dashFyeFilter.value = 'ALL';
+    if (dashFyeFilter) dashFyeFilter.value = 'FYE27';
     var dashMonthFilter = document.getElementById('dashMonthFilter');
     if (dashMonthFilter) dashMonthFilter.value = 'ALL';
     ['dashSearchInput'].forEach(function (id) {
@@ -998,7 +992,7 @@
   function populateDashFyeOptions(rawData) {
     var select = document.getElementById('dashFyeFilter');
     if (!select) return;
-    var currentVal = globalFilters.fye;
+    var currentVal = globalFilters.fye || 'FYE27';
     var fyeSet = new Set();
     rawData.forEach(function(row) {
       var dateVal = (Array.isArray(row)) ? row[6] : (row.date || row.Date || row[6]);
@@ -1006,9 +1000,11 @@
     });
     var allFye = Array.from(fyeSet).sort((a, b) => parseInt(b.replace('FYE', '')) - parseInt(a.replace('FYE', '')));
     var optionsHtml = '<option value="ALL">📅 Tất cả FYE</option>';
+    if (!allFye.includes('FYE27')) allFye.unshift('FYE27');
     allFye.forEach(f => { optionsHtml += `<option value="${f}">${f}</option>`; });
     select.innerHTML = optionsHtml;
-    select.value = currentVal;
+    select.value = currentVal === 'ALL' || allFye.includes(currentVal) ? currentVal : 'FYE27';
+    globalFilters.fye = select.value;
   }
 
   function populateDashFilterOptions(rawData) {
@@ -1158,6 +1154,17 @@
       var itemFye = String(getRowValue(row, 'fye') || '').toUpperCase();
       var searchText = (Array.isArray(row) ? row.join(' ') : Object.keys(row || {}).map(function (key) { return row[key]; }).join(' ')).toLowerCase();
       var matchesBaseFilter = true;
+      var baseMonthLabel = null;
+      var baseDate = parseDashboardDate(getRowValue(row, 'date'));
+      if (baseDate) {
+        var baseMonthIdx = (baseDate.getMonth() + 1 >= 4)
+          ? (baseDate.getMonth() - 3)
+          : (baseDate.getMonth() + 9);
+        if (baseMonthIdx >= 0 && baseMonthIdx <= 11) {
+          baseMonthLabel = fyeMonthLabels[baseMonthIdx];
+        }
+      }
+      var baseIsNewRow = detectIsNewRow(row);
 
       if (globalFilters.type === 'BARSALE' && !itemGroup.includes('BARSALE')) matchesBaseFilter = false;
       if (globalFilters.type === 'OEM' && !itemGroup.includes('OEM')) matchesBaseFilter = false;
@@ -1165,6 +1172,8 @@
       if (globalFilters.fye !== 'ALL' && itemFye !== globalFilters.fye) matchesBaseFilter = false;
       if (globalFilters.search && !searchText.includes(globalFilters.search)) matchesBaseFilter = false;
       if (globalFilters.project && getRowValue(row, 'project').trim() !== globalFilters.project) matchesBaseFilter = false;
+      if (globalFilters.month && baseMonthLabel !== globalFilters.month) matchesBaseFilter = false;
+      if (globalFilters.isNew !== null && baseIsNewRow !== globalFilters.isNew) matchesBaseFilter = false;
       if (!matchesBaseFilter) return;
 
       total += 1;
@@ -1671,7 +1680,5 @@
     renderDashRecentTable(dashboardFullRows);
   }
 
-  document.addEventListener('DOMContentLoaded', function () {
-    setTimeout(updateDashboardStats, 500);
-  });
+  // updateDashboardStats() được gọi từ index.html qua AppDataStore.onReady('mainData')
 </script>

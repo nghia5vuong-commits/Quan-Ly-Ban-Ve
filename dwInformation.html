@@ -1043,11 +1043,17 @@
 
     var dwInfoInitialized = false;
 
-    function initThongTinBanVe(isBackground) {
-      if (dwInfoInitialized) return;
+    function initThongTinBanVe(isBackground, forceReload) {
+      if (!forceReload && dwInfoInitialized) {
+        if (state.emails && state.emails.length > 0 && typeof renderEmailList === 'function') {
+          renderEmailList(state.emails);
+        }
+        return Promise.resolve();
+      }
       dwInfoInitialized = true;
-      loadEmailsAndStats(0, !!isBackground);
+      return loadEmailsAndStats(0, !!isBackground);
     }
+
 
     async function loadEmailsAndStats(page, isBackground) {
       if (!isBackground) loadingRequests++;
@@ -1055,9 +1061,14 @@
 
       try {
         // Hiển thị danh sách ngay khi dữ liệu email về, không chờ thống kê.
-        const emailRes = await new Promise((resolve, reject) => {
+        const emailPromise = new Promise((resolve, reject) => {
           google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getManufacturingEmails(page, state.keyword);
         });
+        const statsPromise = new Promise((resolve, reject) => {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getStatistics();
+        });
+        const results = await Promise.all([emailPromise, statsPromise]);
+        const emailRes = results[0];
 
         if (!emailRes || !emailRes.success) {
           showToast('Lỗi tải danh sách: ' + (emailRes ? emailRes.error : 'rỗng'), 'error');
@@ -1070,15 +1081,13 @@
         }
         if (!isBackground) hideLoading();
 
-        // Thống kê chạy riêng, không chặn thao tác chọn email.
-        google.script.run.withSuccessHandler(function (statsRes) {
-          if (statsRes && statsRes.success) {
-            setText('statTotal', statsRes.total);
-            setText('statUnread', statsRes.unread);
-            setText('statToday', statsRes.today);
-            setText('statWeek', statsRes.thisWeek);
-          }
-        }).getStatistics();
+        const statsRes = results[1];
+        if (statsRes && statsRes.success) {
+          setText('statTotal', statsRes.total);
+          setText('statUnread', statsRes.unread);
+          setText('statToday', statsRes.today);
+          setText('statWeek', statsRes.thisWeek);
+        }
       } catch (err) {
         if (!isBackground) hideLoading(); // <--- TẮT LOADING NẾU CÓ LỖI
         showToast('Lỗi kết nối máy chủ: ' + err.message, 'error');
@@ -1912,9 +1921,7 @@
 
         // Lắng nghe sự kiện modal show để re-fill ngày (tránh trường hợp form bị reset)
         modalEl.addEventListener('shown.bs.modal', function () {
-          setTimeout(function () {
-            autoFillAssigneeDoneDate();
-          }, 100);
+          autoFillAssigneeDoneDate();
         });
       }
       return drawingModalInstance;
@@ -1923,8 +1930,14 @@
     var pendingDrawingsLoading = false;
     var pendingDrawingsLoaded = false;
 
-    async function initNhapDuLieuBanVe(isBackground) {
-      if (pendingDrawingsLoading || (pendingDrawingsLoaded && isBackground)) return;
+    async function initNhapDuLieuBanVe(isBackground, forceReload) {
+      if (pendingDrawingsLoading) return;
+      if (pendingDrawingsLoaded && !forceReload) {
+        if (drawingDataList && typeof renderPendingList === 'function') {
+          renderPendingList(drawingDataList);
+        }
+        return;
+      }
       pendingDrawingsLoading = true;
       if (!isBackground) loadingRequests++;
       closeDrawingForm();
@@ -2662,15 +2675,13 @@
             // Nếu là chế độ upgrade (nâng cấp bản vẽ) thì nhảy sang tab manage
             if (pendingState.isUpgradeMode) {
               pendingState.isUpgradeMode = false;  // Reset flag
-              setTimeout(function () {
-                refreshDwIfUiAfterDataChange();
-                // Nhảy sang tab 3 (Quản lí bản vẽ)
-                var manageTabBtn = document.getElementById('manage-tab');
-                if (manageTabBtn) {
-                  var manageTab = new bootstrap.Tab(manageTabBtn);
-                  manageTab.show();
-                }
-              }, 500);
+              refreshDwIfUiAfterDataChange();
+              // Nhảy sang tab 3 (Quản lí bản vẽ)
+              var manageTabBtn = document.getElementById('manage-tab');
+              if (manageTabBtn) {
+                var manageTab = new bootstrap.Tab(manageTabBtn);
+                manageTab.show();
+              }
             } else {
               // Chế độ bình thường: reload tab 2
               refreshDwIfUiAfterDataChange();
@@ -3244,12 +3255,19 @@
     var managedDrawingsLoading = false;
     var managedDrawingsLoaded = false;
 
-    function loadManagedDrawings(isBackground) {
-      if (managedDrawingsLoading || (managedDrawingsLoaded && isBackground)) return;
+    function loadManagedDrawings(isBackground, forceReload) {
+      if (managedDrawingsLoading) return Promise.resolve();
+      if (managedDrawingsLoaded && !forceReload) {
+        if (managedDrawingList && typeof renderManagedDrawingTable === 'function') {
+          renderManagedDrawingTable(managedDrawingList);
+        }
+        return Promise.resolve();
+      }
       managedDrawingsLoading = true;
       if (!isBackground) showLoading('Đang tải bản vẽ đủ dữ liệu...');
 
-      google.script.run
+      return new Promise(function (resolve, reject) {
+        google.script.run
         .withSuccessHandler(function (res) {
           if (!isBackground) hideLoading();
           if (!res) {
@@ -3263,13 +3281,16 @@
             showToast('Lỗi tải danh sách: ' + res.error, 'error');
           }
           managedDrawingsLoading = false;
+          resolve(res);
         })
         .withFailureHandler(function (err) {
           if (!isBackground) hideLoading();
           managedDrawingsLoading = false;
           showToast('Lỗi kết nối: ' + err.message, 'error');
+          resolve({ success: false, error: err });
         })
         .getManagedDrawings();
+      });
     }
 
     function cleanDesignStr(val) {
@@ -3516,30 +3537,32 @@
       });
     }
 
-    // ========== ĐIỀU CHỈNH LUỒNG INIT ==========
-    window.__dwInfoInitialLoadGuard = window.__dwInfoInitialLoadGuard || {};
-
-    var originalInitThongTinBanVe = window.initThongTinBanVe;
-    window.initThongTinBanVe = function () {
-      if (typeof originalInitThongTinBanVe === 'function') {
-        originalInitThongTinBanVe();
-      }
-    };
-
-    // Chỉ load 1 lần duy nhất khi tab được bật lần đầu
+    // Chỉ load khi tab chưa có dữ liệu
     document.querySelector('.page-dwIf').addEventListener('shown.bs.tab', function (e) {
       var targetId = e && e.target ? e.target.id : '';
 
-      if (targetId === 'manual-tab' && !window.__dwInfoInitialLoadGuard.manual) {
-        window.__dwInfoInitialLoadGuard.manual = true;
-        initNhapDuLieuBanVe();
+      if (targetId === 'mail-tab') {
+        if (!dwInfoInitialized) {
+          initThongTinBanVe(false, true);
+        }
+        return;
+      }
+
+      if (targetId === 'manual-tab') {
+        if (!pendingDrawingsLoaded) {
+          initNhapDuLieuBanVe(false);
+        } else if (drawingDataList && drawingDataList.length > 0 && typeof renderDrawingTable === 'function') {
+          renderDrawingTable(drawingDataList);
+        }
         return;
       }
 
       if (targetId === 'manage-tab') {
-        window.__dwInfoInitialLoadGuard.manage = true;
-        managedDrawingsLoaded = false;
-        loadManagedDrawings();
+        if (!managedDrawingsLoaded) {
+          loadManagedDrawings(false);
+        } else if (managedDrawingList && managedDrawingList.length > 0 && typeof renderManagedDrawingTable === 'function') {
+          renderManagedDrawingTable(managedDrawingList);
+        }
       }
 
     });

@@ -6,9 +6,12 @@ const sheetConfig = {
   holidaySheetName: "Cal",
 };
 
+const padZero = (n) => (n < 10 ? '0' + n : '' + n);
+
 const formatSheetCellValue = (cell) => {
   if (cell instanceof Date) {
-    return Utilities.formatDate(cell, Session.getScriptTimeZone(), "dd/MM/yyyy");
+    if (isNaN(cell.getTime())) return '';
+    return `${padZero(cell.getDate())}/${padZero(cell.getMonth() + 1)}/${cell.getFullYear()}`;
   }
 
   if (cell && typeof cell === "object") {
@@ -35,10 +38,12 @@ const formatSheetCellValue = (cell) => {
 
 // Chuyển đổi theo lô để tránh UrlFetchApp.fetch tuần tự cho từng ảnh trong sheet.
 // Giá trị trả về vẫn giữ nguyên như normalizeSheetRows trước đây.
-const normalizeSheetRows = (rows) => {
+const normalizeSheetRows = (rows, options) => {
+  const includeImages = !(options && options.includeImages === false);
   const imageCells = [];
   const normalized = rows.map((row, rowIndex) => row.map((cell, columnIndex) => {
     if (cell && typeof cell === 'object' && typeof cell.getContentUrl === 'function') {
+      if (!includeImages) return '';
       try {
         const imageUrl = cell.getContentUrl();
         if (imageUrl) {
@@ -108,7 +113,7 @@ const getSheetDataByConfig = (spreadsheetId, sheetName) => {
 
 const getAllData = () => getMainData();
 
-const getOptimizedSheetRows = (spreadsheetId, sheetName, maxColumns) => {
+const getOptimizedSheetRows = (spreadsheetId, sheetName, maxColumns, options) => {
   try {
     const sheet = getSheetByIdAndName(spreadsheetId, sheetName);
     if (!sheet) return [];
@@ -118,7 +123,7 @@ const getOptimizedSheetRows = (spreadsheetId, sheetName, maxColumns) => {
     if (lastRow <= 1 || lastColumn <= 0) return [];
 
     const rows = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
-    return normalizeSheetRows(rows);
+    return normalizeSheetRows(rows, options);
   } catch (error) {
     Logger.log(`Lỗi đọc dữ liệu tối ưu hóa cho sheet ${sheetName}: ${error.toString()}`);
     return [];
@@ -129,6 +134,7 @@ const getOptimizedSheetRows = (spreadsheetId, sheetName, maxColumns) => {
 // tiếp nhận bản vẽ, nên đây là mốc duy nhất để xác định dữ liệu năm hiện tại.
 // Không thay đổi row shape mà các màn hình hiện tại đang sử dụng.
 const CURRENT_YEAR_COLUMNS = [6]; // G: thời gian tiếp nhận bản vẽ
+const RELEASE_CURRENT_YEAR_COLUMN = 13; // N: ngày yêu cầu hoàn thành trong sheet release
 const ACTIVE_STATUS_PARTS = [
   'dang thuc hien', 'cho checker', 'cho approval', 'cho ban hanh',
   'dang ban hanh', 'cho thiet ke', 'trinh ky', 'pending', 'tra ve',
@@ -176,9 +182,14 @@ const isCurrentOperationalRow = (row, currentYear) => {
   return parseSheetYear(row[CURRENT_YEAR_COLUMNS[0]]) === currentYear;
 };
 
+const isCurrentReleaseRow = (row, currentYear) => {
+  if (!Array.isArray(row)) return false;
+  return parseSheetYear(row[RELEASE_CURRENT_YEAR_COLUMN]) === currentYear;
+};
+
 // Đọc giá trị gốc để lọc trước khi tải/giải mã CellImage. Lịch sử vẫn dùng
 // đường đọc cũ khi được yêu cầu, còn request đầu tiên chỉ normalize các dòng cần thiết.
-const getCurrentYearSheetRows = (spreadsheetId, sheetName, maxColumns) => {
+const getCurrentYearSheetRows = (spreadsheetId, sheetName, maxColumns, options) => {
   try {
     const sheet = getSheetByIdAndName(spreadsheetId, sheetName);
     if (!sheet) return [];
@@ -188,7 +199,7 @@ const getCurrentYearSheetRows = (spreadsheetId, sheetName, maxColumns) => {
 
     const rows = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
     const currentYear = getCurrentYearInScriptTimezone();
-    return normalizeSheetRows(rows.filter((row) => isCurrentOperationalRow(row, currentYear)));
+    return normalizeSheetRows(rows.filter((row) => isCurrentOperationalRow(row, currentYear)), options);
   } catch (error) {
     Logger.log(`Lỗi đọc dữ liệu năm hiện tại cho sheet ${sheetName}: ${error.toString()}`);
     return [];
@@ -287,18 +298,22 @@ const getReleaseData = (providedMainRows, options) => {
     : [];
   const currentOnly = !!(options && options.currentOnly);
   const currentYear = getCurrentYearInScriptTimezone();
+  const isQaG2gRow = (row) => String(row && row[10] || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '') === 'QAG2G';
   const releaseRows = normalizeSheetRows(currentOnly
-    ? rawReleaseRows.filter((row) => isCurrentOperationalRow(row, currentYear))
-    : rawReleaseRows);
+    ? rawReleaseRows.filter((row) => isCurrentReleaseRow(row, currentYear))
+    : rawReleaseRows, options);
 
   // Một số yêu cầu QA-G2G đang nằm ở Data trước khi được ghi sang sheet release.
   // Dashboard đã đọc mainData ở ngay trước đó; dùng lại để tránh đọc Data lần thứ hai.
   const mainRows = Array.isArray(providedMainRows)
     ? providedMainRows
-    : getOptimizedSheetRows(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName, 35);
-  const isQaG2gRow = (row) => String(row[10] || '').trim().toUpperCase() === 'QA-G2G';
+    : getOptimizedSheetRows(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName, 35, options);
   const qaReleaseRows = releaseRows.filter(isQaG2gRow);
-  const qaRows = mainRows.filter(isQaG2gRow);
+  const qaRows = mainRows.filter((row) => isQaG2gRow(row) &&
+    (!currentOnly || isCurrentReleaseRow(row, currentYear)));
   const mergedRows = [];
   const seenKeys = new Set();
 
@@ -312,34 +327,48 @@ const getReleaseData = (providedMainRows, options) => {
   return mergedRows;
 };
 
-const getDashboardPayload = () => {
-  // Request đầu tiên chỉ trả dữ liệu đang vận hành/năm hiện tại. Đây là API
-  // mới cho dashboard; getMainData/getReleaseData vẫn giữ nguyên cho các màn
-  // hình và tích hợp cũ cần toàn bộ dữ liệu.
-  const mainData = getCurrentYearMainData();
+const getSheetLastUpdatedAt = (spreadsheetId, sheetName) => {
+  try {
+    const sheet = getSheetByIdAndName(spreadsheetId, sheetName);
+    if (!sheet) return 0;
+    const updatedAt = sheet.getLastUpdated();
+    return updatedAt ? updatedAt.getTime() : 0;
+  } catch (error) {
+    return 0;
+  }
+};
+
+const getDashboardDataVersion = () => {
+  const mainSheetUpdated = getSheetLastUpdatedAt(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName);
+  const releaseSheetUpdated = getSheetLastUpdatedAt(sheetConfig.releaseSpreadsheetId, sheetConfig.releaseSheetName);
   return {
-    mainData,
-    releaseData: getReleaseData(mainData, { currentOnly: true }),
-    isCurrentYearOnly: true,
-    currentYear: getCurrentYearInScriptTimezone()
+    success: true,
+    currentYear: getCurrentYearInScriptTimezone(),
+    mainDataVersion: mainSheetUpdated,
+    releaseDataVersion: releaseSheetUpdated,
+    serverTime: Date.now()
   };
 };
 
-const getCurrentYearMainData = () => getCurrentYearSheetRows(
-  sheetConfig.mainSpreadsheetId,
-  sheetConfig.mainSheetName,
-  35
-);
-
-const getHistoricalDashboardPayload = () => {
-  const mainData = getMainData();
+const getDashboardPayload = () => {
+  // Trả về toàn bộ dữ liệu hệ thống (tất cả các năm) không lọc giới hạn năm hiện tại
+  const mainData = getOptimizedSheetRows(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName, 35, { includeImages: false });
   return {
     mainData,
-    releaseData: getReleaseData(mainData),
+    releaseData: getReleaseData(mainData, { includeImages: false }),
     isCurrentYearOnly: false,
     currentYear: getCurrentYearInScriptTimezone()
   };
 };
+
+const getCurrentYearMainData = (options) => getOptimizedSheetRows(
+  sheetConfig.mainSpreadsheetId,
+  sheetConfig.mainSheetName,
+  35,
+  options
+);
+
+const getHistoricalDashboardPayload = () => getDashboardPayload();
 
 const getHolidaysFromCal = () => {
   try {

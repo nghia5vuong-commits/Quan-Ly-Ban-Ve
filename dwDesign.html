@@ -1176,7 +1176,6 @@
         clearInterval(storeTimer);
       }
     }, 200);
-    setTimeout(function () { clearInterval(storeTimer); }, 5000);
   }
 
   // Tự động kiểm tra và vẽ lại khi tab dwDesign hiển thị
@@ -1223,14 +1222,7 @@
     }, 500);
   })();
 
-  // Tự động chạy sau khi DOM sẵn sàng hoặc nếu đã có data
-  if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(initThietKeBanVe, 150);
-  } else {
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(initThietKeBanVe, 150);
-    });
-  }
+  // initThietKeBanVe() được gọi từ index.html qua AppDataStore.onReady('mainData')
 
   // ==========================================
   // XỬ LÝ UPLOAD CHÍNH CỦA FORM BÊN TRÁI

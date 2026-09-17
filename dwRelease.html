@@ -532,6 +532,7 @@
           </button>
           <select id="fye-year-filter" class="form-select form-select-sm shadow-sm text-success fw-bold" style="width: auto; cursor: pointer; border-radius: var(--liquid-radius-sm); border: 1px solid rgba(16, 185, 129, 0.35); background: var(--liquid-glass-elevated);" onchange="history_onMainFilterChange()">
               <option value="ALL" data-i18n="his_opt_all_fye">📅 Tất cả FYE</option>
+              <option value="FYE27" selected>FYE27</option>
           </select>
           <button class="btn btn-emerald-gradient btn-sm shadow-sm" id="dept-btn-reload" onclick="history_loadData()">
             <i class="bi bi-arrow-clockwise me-1"></i> <span data-i18n="his_btn_reload">Làm mới</span>
@@ -836,6 +837,13 @@
         CHARGER_DATE:25, CHECKER_DATE:27, REJECT_REASONNOTE: 30, STATUS:21,
         DEPT_NOTE_EDIT:33, CHECKER_NOTE_EDIT:34, APPROVER_NOTE_EDIT:35, TRANGTHAIDW:23, REMARK:36, FILE_DS_DW:37,CHANGE_TYPE:39,STAMPED:38
     };
+
+    function isQaG2gRow(row) {
+        return String(row && row[COL.DEPT] || '')
+            .trim()
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '') === 'QAG2G';
+    }
    
     let wrapper = null;
     
@@ -850,11 +858,13 @@
     
     let fyeChartInstance = null;
     let historyLoadActive = false;
+    let historyLoadRequest = null;
     var _pendingReloadBtn = null;
     var _pendingReloadBtnText = '';
 
     window.history_loadData = function() {
-        if (historyLoadActive) return;
+        if (window.__recordAppTiming) window.__recordAppTiming('dwRelease.history_loadData.start');
+        if (historyLoadActive) return historyLoadRequest || Promise.resolve();
         historyLoadActive = true;
         wrapper = document.getElementById('stats-history');
         
@@ -877,15 +887,38 @@
 
         // Lịch sử dùng full payload đã tải nền và merge vào AppDataStore.
         // Không gọi getReleaseData/getMainData trực tiếp để tránh đọc Sheet lặp lại.
-        if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.loadHistorical === 'function') {
-            var historical = AppDataStore.get('historicalData');
-            if (Array.isArray(historical) && historical.length > 0) {
-                handleHistorySuccess((AppDataStore.get('releaseData') || []).filter(function (row) {
-                    return String(row[10] || '').trim().toUpperCase() === 'QA-G2G';
-                }));
-            } else {
-                AppDataStore.loadHistorical();
-            }
+        if (typeof AppDataStore !== 'undefined' && typeof AppDataStore.onReady === 'function') {
+            historyLoadRequest = new Promise(function (resolve, reject) {
+                var settled = false;
+                var finish = function (rows) {
+                    if (settled) return;
+                    settled = true;
+                    var qaRows = (Array.isArray(rows) ? rows : []).filter(isQaG2gRow);
+                    handleHistorySuccess(qaRows);
+                    resolve(qaRows);
+                };
+                var cachedReleaseData = AppDataStore.get('releaseData');
+                if (Array.isArray(cachedReleaseData) && cachedReleaseData.length > 0) {
+                    finish(cachedReleaseData);
+                    return;
+                }
+                AppDataStore.onReady('releaseData', finish);
+                var loadResult = typeof AppDataStore.loadHistorical === 'function'
+                    ? AppDataStore.loadHistorical()
+                    : Promise.resolve();
+                if (loadResult && typeof loadResult.catch === 'function') {
+                    loadResult.catch(function (error) {
+                        if (!settled) {
+                            window.handleHistoryFailure(error);
+                            reject(error);
+                        }
+                    });
+                }
+            }).finally(function () {
+                if (window.__recordAppTiming) window.__recordAppTiming('dwRelease.history_loadData.complete');
+                historyLoadRequest = null;
+            });
+            return historyLoadRequest;
         } else {
             historyLoadActive = false;
             if (_pendingReloadBtn) {
@@ -897,6 +930,8 @@
             if (tbody) {
                 tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-danger">Không thể kết nối tới máy chủ dữ liệu.</td></tr>';
             }
+            historyLoadRequest = Promise.resolve();
+            return historyLoadRequest;
         }
     };
 
@@ -910,7 +945,7 @@
         }
 
         if (!data || !Array.isArray(data)) data = [];
-        masterRawData = data.filter(row => String(row[10] || '').trim().toUpperCase() === 'QA-G2G');
+        masterRawData = data.filter(isQaG2gRow);
 
         // Nạp toàn bộ dữ liệu - user sẽ dùng bộ lọc trên UI để lọc theo bộ phận
         deptRawData = masterRawData.slice();
@@ -950,16 +985,17 @@
         const curVal = fyeSelect.value;
 
         let optionsHtml = `<option value="ALL" data-i18n="his_opt_all_fye">${t('his_opt_all_fye')}</option>`;
+        if (!availableFyes.includes('FYE27')) availableFyes.unshift('FYE27');
         availableFyes.forEach(fye => {
             optionsHtml += `<option value="${fye}">${fye}</option>`;
         });
         fyeSelect.innerHTML = optionsHtml;
 
-        // Giữ ALL mặc định để người dùng xem được toàn bộ danh sách
-        if (curVal && curVal !== 'ALL' && availableFyes.includes(curVal)) {
+        // Giữ lựa chọn hiện tại, bao gồm ALL khi người dùng chọn xem toàn bộ FYE.
+        if (curVal === 'ALL' || (curVal && availableFyes.includes(curVal))) {
             fyeSelect.value = curVal;
         } else {
-            fyeSelect.value = "ALL";
+            fyeSelect.value = "FYE27";
         }
     }
 
@@ -972,7 +1008,7 @@
 
     function history_getFilteredData() {
         const selectedFye = document.getElementById('fye-year-filter')?.value || 'ALL';
-        let filtered = deptRawData.filter(row => String(row[COL.DEPT] || '').trim().toUpperCase() === 'QA-G2G');
+        let filtered = deptRawData.filter(isQaG2gRow);
 
         if (selectedFye !== 'ALL') {
             filtered = filtered.filter(function (row) {
