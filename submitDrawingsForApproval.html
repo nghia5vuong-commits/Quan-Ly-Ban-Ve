@@ -655,12 +655,17 @@
 
   function normalizeApprovalLevelName(value) {
     if (!value && value !== 0) return '';
-    return String(value)
+    const clean = String(value)
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
-      .replace(/\s+/g, '')
+      .replace(/[^a-z0-9]/g, '')
       .trim();
+    if (clean === 'leader' || clean === 'kiemtra1' || clean === 'check1') return 'checker1';
+    if (clean === 'mgr' || clean === 'manager' || clean === 'kiemtra2' || clean === 'check2') return 'checker2';
+    if (clean === 'gm' || clean === 'gmqa' || clean === 'pheduyet') return 'approval';
+    if (clean === 'st' || clean === 'soanthao' || clean === 'chager' || clean === 'charge') return 'charger';
+    return clean;
   }
 
   function isReleaseEligibleRow(row) {

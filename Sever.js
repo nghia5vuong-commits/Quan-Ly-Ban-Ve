@@ -1,4 +1,7 @@
 function doGet(e) {
+  // [BẠN CÓ THỂ XÓA DÒNG NÀY SAU KHI CHẠY 1 LẦN ĐỂ DỌN SẠCH TOÀN BỘ CACHE HỆ THỐNG]:
+  resetAllSystemCache();
+
   var page = e.parameter.page || "";
   var requestId = e.parameter.requestId || "";
   var template = HtmlService.createTemplateFromFile("index");
@@ -7,6 +10,7 @@ function doGet(e) {
 
   var currentEmail = Session.getActiveUser().getEmail();
 
+  // Đọc thông tin user trực tiếp từ Google Sheet trong thời gian thực (Không dùng Cache)
   var userInfo = getUser(currentEmail);
 
   template.userFromServer = userInfo || {
@@ -26,21 +30,69 @@ function doGet(e) {
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
 }
 
+// Hàm dọn sạch TOÀN BỘ cache của hệ thống (User, Profile, Email, Thống kê...) trên mọi tầng cache
+function resetAllSystemCache() {
+  try {
+    var scriptCache = CacheService.getScriptCache();
+    var userCache = CacheService.getUserCache();
+    var docCache = CacheService.getDocumentCache();
+    var keys = [];
+
+    // 1. Quét dọn toàn bộ Cache User & Profile từ Sheet User
+    var ss = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM");
+    var sheet = ss.getSheetByName("User");
+    if (sheet) {
+      var lastrow = sheet.getLastRow();
+      if (lastrow >= 2) {
+        var data = sheet.getRange(2, 4, lastrow - 1, 1).getValues(); // Cột D: Email
+        for (var i = 0; i < data.length; i++) {
+          var m = String(data[i][0] || '').trim().toLowerCase();
+          if (m) {
+            keys.push('user:' + Utilities.base64EncodeWebSafe(m));
+            keys.push('profile:' + Utilities.base64EncodeWebSafe(m));
+          }
+        }
+      }
+    }
+
+    // 2. Dọn Cache của user hiện tại đang chạy phiên
+    var curMail = Session.getActiveUser().getEmail();
+    if (curMail) {
+      var normCur = String(curMail).trim().toLowerCase();
+      keys.push('user:' + Utilities.base64EncodeWebSafe(normCur));
+      keys.push('profile:' + Utilities.base64EncodeWebSafe(normCur));
+    }
+
+    // 3. Dọn tất cả các Cache nghiệp vụ khác trong toàn bộ dự án (Mail, Stats, v.v.)
+    keys.push("MAIL_STATS");
+    keys.push("MAIL_LIST_0_");
+    for (var page = 0; page < 30; page++) {
+      keys.push("MAIL_LIST_" + page + "_");
+      keys.push("MAIL_LIST_" + page);
+    }
+
+    // 4. Xóa đồng loạt trên cả 3 tầng Cache của Google Apps Script
+    if (keys.length > 0) {
+      try { if (scriptCache) scriptCache.removeAll(keys); } catch (e1) {}
+      try { if (userCache) userCache.removeAll(keys); } catch (e2) {}
+      try { if (docCache) docCache.removeAll(keys); } catch (e3) {}
+    }
+  } catch (err) {
+    Logger.log("Lỗi xóa cache toàn hệ thống: " + err);
+  }
+}
+
 function getUser(mail) {
   try {
     var normalizedMail = String(mail || '').trim().toLowerCase();
     if (!normalizedMail) return null;
 
-    var cache = CacheService.getScriptCache();
-    var cacheKey = 'user:' + Utilities.base64EncodeWebSafe(normalizedMail);
-    var cached = cache.get(cacheKey);
-    if (cached) return cached === 'null' ? null : JSON.parse(cached);
-
+    // Đọc trực tiếp từ Sheet User, KHÔNG dùng Cache
     const ss = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM");
     const sheet = ss.getSheetByName("User");
+    if (!sheet) return null;
 
     const lastrow = sheet.getLastRow();
-    // getUser lấy A:F để có thêm avatarUrl nếu có
     const lastcol = Math.min(sheet.getLastColumn(), 6);
     let data = [];
 
@@ -51,7 +103,6 @@ function getUser(mail) {
     const userRow = data.find(row => row[3] && row[3].toString().trim().toLowerCase() === normalizedMail);
 
     if (!userRow) {
-      cache.put(cacheKey, 'null', 3600);
       return null;
     }
 
@@ -59,18 +110,17 @@ function getUser(mail) {
     var names = userName.split(" ");
     var initials = names.length > 0 && names[names.length - 1] ? names[names.length - 1].charAt(0).toUpperCase() : "U";
     var avatarUrl = (userRow[5] && String(userRow[5]).trim()) ? String(userRow[5]).trim() : "";
+    var userPosition = userRow[4] ? String(userRow[4]).trim() : "";
 
-    var result = {
+    return {
       msnv: userRow[0] || "",
       dept: userRow[1] || "",
       name: userName,
       mail: userRow[3] || normalizedMail,
-      position: userRow[4] || "",
+      position: userPosition,
       avatarUrl: avatarUrl,
       initials: initials
     };
-    cache.put(cacheKey, JSON.stringify(result), 21600); // Cache 6 giờ
-    return result;
   } catch (e) {
     return null;
   }
@@ -83,14 +133,6 @@ function getUser(mail) {
 function getUserProfile() {
   var email = Session.getActiveUser().getEmail();
   if (!email) email = "test@example.com";
-
-  var profileCacheKey = 'profile:' + Utilities.base64EncodeWebSafe(email.toLowerCase());
-  try {
-    var cachedProfile = CacheService.getScriptCache().get(profileCacheKey);
-    if (cachedProfile) return JSON.parse(cachedProfile);
-  } catch (cacheError) {
-    // Cache chỉ là tối ưu phụ; tiếp tục đọc dữ liệu gốc nếu cache lỗi.
-  }
 
   var profile = {
     name: email.split('@')[0],
@@ -105,7 +147,6 @@ function getUserProfile() {
     var sheet = ss.getSheetByName("User");
 
     if (sheet) {
-      // Profile chỉ dùng A:F; không cần tải toàn bộ các cột mở rộng của User.
       var profileLastRow = sheet.getLastRow();
       var profileLastColumn = Math.min(sheet.getLastColumn(), 6);
       var data = profileLastRow > 0 && profileLastColumn > 0
@@ -144,11 +185,6 @@ function getUserProfile() {
     profile.avatarUrl = "data:image/svg+xml;base64," + Utilities.base64Encode(svg);
   }
 
-  try {
-    CacheService.getScriptCache().put(profileCacheKey, JSON.stringify(profile), 300);
-  } catch (cacheError) {
-    // Không làm thay đổi kết quả nếu profile không thể ghi cache.
-  }
   return profile;
 }
 

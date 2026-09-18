@@ -1774,24 +1774,46 @@
     // Phân quyền menu theo chức vụ của người dùng.
     var menuPermissionsByPosition = {
       ST: ['dashboard', 'dwInformation', 'seachDwByAi', 'dwDesign', 'submitDrawingsForApproval', 'release', 'dwHistory'],
-      Leader: ['dashboard', 'seachDwByAi', 'submitDrawingsForApproval', 'release', 'dwHistory'],
+      Leader: ['dashboard', 'seachDwByAi', 'submitDrawingsForApproval', 'dwHistory'],
       MGR: ['dashboard', 'submitDrawingsForApproval', 'dwHistory'],
       GM: ['dashboard', 'submitDrawingsForApproval', 'dwHistory']
     };
 
     function normalizeUserPosition(position) {
-      var normalized = String(position || '').trim().toLowerCase();
-      var positionMap = {
-        'charger': 'ST',
-        'st': 'ST',
-        'checker 1': 'Leader',
-        'leader': 'Leader',
-        'checker 2': 'MGR',
-        'mgr': 'MGR',
-        'approval': 'GM',
-        'gm': 'GM'
-      };
-      return positionMap[normalized] || '';
+      var raw = String(position || '').trim().toLowerCase();
+      var clean = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+      if (!clean) return 'ST';
+      if (clean === 'charger' || clean === 'chager' || clean === 'st' || clean === 'soanthao' || clean === 'charge') {
+        return 'ST';
+      }
+      if (clean === 'checker1' || clean === 'c1' || clean === 'leader' || clean === 'kiemtra1' || clean === 'check1') {
+        return 'Leader';
+      }
+      if (clean === 'checker2' || clean === 'c2' || clean === 'mgr' || clean === 'manager' || clean === 'kiemtra2' || clean === 'check2') {
+        return 'MGR';
+      }
+      if (clean === 'approval' || clean === 'approver' || clean === 'gm' || clean === 'gmqa' || clean === 'pheduyet' || clean === 'qa') {
+        return 'GM';
+      }
+      return 'ST';
+    }
+
+    function getUserDisplayRole(rawPosition, normalizedPos) {
+      var norm = normalizedPos || normalizeUserPosition(rawPosition);
+      var raw = String(rawPosition || '').trim();
+      if (norm === 'Leader') {
+        return (/leader/i.test(raw) && !/checker/i.test(raw)) ? 'Leader (Checker 1)' : 'Checker 1';
+      }
+      if (norm === 'MGR') {
+        return (/mgr|manager/i.test(raw) && !/checker/i.test(raw)) ? 'MGR (Checker 2)' : 'Checker 2';
+      }
+      if (norm === 'GM') {
+        return (/gm/i.test(raw)) ? 'GM (Approval)' : 'Approval';
+      }
+      if (norm === 'ST') {
+        return (/charger/i.test(raw)) ? 'ST' : (raw || 'ST');
+      }
+      return raw || 'Thành viên';
     }
 
     function applyMenuPermissions(position) {
@@ -2149,28 +2171,13 @@
       if (!profile) return;
       var nameEl = document.getElementById('uiUserName');
       var posEl = document.getElementById('uiUserPosition');
-      var userPosition = profile.position || '';
-      let posElValue = "";
+      var rawPosition = profile.position ? String(profile.position).trim() : '';
+      var normalizedPos = normalizeUserPosition(rawPosition);
+      var displayRole = getUserDisplayRole(rawPosition, normalizedPos);
 
-      if (userPosition === "Charger") {
-        posElValue = "ST";
-      } else if (userPosition === "Checker 1") {
-        posElValue = "Leader";
-      } else if (userPosition === "Checker 2") {
-        posElValue = "MGR";
-      } else if (userPosition === "Approval") {
-        posElValue = "GM";
-      }
-
-      const restrictedRoles = ["Checker 1", "Checker 2", "Approval"];
-      if (restrictedRoles.includes(userPosition)) {
-        document.getElementById('nav-btn-dwDesign')?.style.setProperty('display', 'none', 'important');
-        document.getElementById('nav-btn-release')?.style.setProperty('display', 'none', 'important');
-        document.getElementById('nav-btn-dwInformation')?.style.setProperty('display', 'none', 'important');
-      }
       if (nameEl) nameEl.textContent = profile.name || '';
-      if (posEl) posEl.textContent = posElValue;
-      if (typeof applyMenuPermissions === 'function') applyMenuPermissions(userPosition);
+      if (posEl) posEl.textContent = displayRole;
+      if (typeof applyMenuPermissions === 'function') applyMenuPermissions(rawPosition);
 
       var avatarEl = document.getElementById('uiUserAvatar');
       if (avatarEl) {

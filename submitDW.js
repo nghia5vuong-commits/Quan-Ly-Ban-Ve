@@ -13,10 +13,10 @@ var COL_APPROVAL_BY = 19;
 var COL_APPROVAL_DATE = 20;
 
 const _cleanStr = (s) => String(s || '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .trim();
 
 const generateRandomString = (length) => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -298,19 +298,19 @@ const _getNextStep = (currentStatus) => {
 
 function _getUserNameByEmail(email) {
   if (!email || email === 'System') return 'System';
-  
+
   try {
     var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
-    
+
     var userSheetName = (typeof USER_SHEET_NAME !== 'undefined') ? USER_SHEET_NAME : 'User';
     var userSheet = ss.getSheetByName(userSheetName);
-    
+
     if (!userSheet) {
-      return email; 
+      return email;
     }
 
     var data = userSheet.getDataRange().getValues();
-    
+
     for (var i = 1; i < data.length; i++) {
       var rowMail = String(data[i][3]).trim().toLowerCase(); // Cột D (Mail) là index 3
       if (rowMail === email.toLowerCase()) {
@@ -320,8 +320,8 @@ function _getUserNameByEmail(email) {
     }
   } catch (e) {
   }
-  
-  return email; 
+
+  return email;
 };
 
 const _normalizeRoleName = (value) => {
@@ -355,6 +355,32 @@ function _getUserEmailByRole(roleNames) {
       var normalizedPosition = _normalizeRoleName(positionValue);
       if (normalizedRoles.indexOf(normalizedPosition) !== -1) {
         return mail;
+      }
+    }
+  } catch (e) {
+  }
+
+  return '';
+}
+
+function _getUserEmailByName(userName) {
+  if (!userName || userName === 'System') return '';
+
+  try {
+    var ss = SpreadsheetApp.openById(SUBMIT_SS_ID);
+    var userSheetName = (typeof SUBMIT_USER !== 'undefined' ? SUBMIT_USER : 'User');
+    var userSheet = ss.getSheetByName(userSheetName);
+    if (!userSheet) return '';
+
+    var data = userSheet.getDataRange().getValues();
+    var cleanTarget = _cleanStr(userName);
+    for (var r = 1; r < data.length; r++) {
+      var rowName = _cleanStr(data[r][2]); // Cột C: Name
+      if (rowName && (rowName === cleanTarget || rowName.indexOf(cleanTarget) !== -1 || cleanTarget.indexOf(rowName) !== -1)) {
+        var mail = String(data[r][3] || '').trim(); // Cột D: Email
+        if (mail && mail.indexOf('@') !== -1) {
+          return mail;
+        }
       }
     }
   } catch (e) {
@@ -454,115 +480,253 @@ function _getApprovalDrawingDetails(sheet, sheetRow, drawingId) {
 }
 
 function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus, actorName, details) {
+  details = details || {};
+
+  // 1. Kiểm tra danh sách bản vẽ (nhiều bản vẽ vs 1 bản vẽ)
+  var drawingList = [];
+  if (Array.isArray(details.drawingList) && details.drawingList.length > 0) {
+    drawingList = details.drawingList;
+  } else if (Array.isArray(details.drawings) && details.drawings.length > 0) {
+    drawingList = details.drawings;
+  } else if (Array.isArray(dwNo) && dwNo.length > 0) {
+    drawingList = dwNo;
+  } else if (typeof dwNo === 'string' && dwNo.indexOf(',') !== -1) {
+    drawingList = dwNo.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+
+  var isList = drawingList.length > 1 || details.isList === true;
+
+  // 2. Xác định displayDwNo
+  var displayDwNo = '';
+  if (isList) {
+    displayDwNo = drawingList.map(function (d) {
+      return typeof d === 'object' ? (d.dwNo || d.id || '') : String(d);
+    }).filter(Boolean).join(', ');
+  } else {
+    displayDwNo = details.dwNo || (typeof dwNo === 'string' ? dwNo : '') || '';
+  }
+
+  // 3. Xác định quy trình đã hoàn thành hay đang trình ký
+  var isCompleted = false;
+  if (typeof details.isCompleted === 'boolean') {
+    isCompleted = details.isCompleted;
+  } else {
+    var normLevel = _cleanStr(currentLevel);
+    var normNext = _cleanStr(nextStatus);
+    if (
+      normLevel.indexOf('approval') !== -1 ||
+      normLevel.indexOf('approver') !== -1 ||
+      normLevel.indexOf('hoan thanh') !== -1 ||
+      normLevel.indexOf('completed') !== -1 ||
+      normNext.indexOf('cho ban hanh') !== -1 ||
+      normNext.indexOf('hoan thanh') !== -1
+    ) {
+      isCompleted = true;
+    }
+  }
+
+  // Fallback targetEmail sang Người đảm trách nếu chưa có
+  if (!targetEmail && details.assignee) {
+    targetEmail = _getUserEmailByName(details.assignee);
+  }
   if (!targetEmail) {
     return false;
   }
 
-  details = details || {};
-  var displayDwNo = details.dwNo || dwNo || '';
-  var receivedDate = _formatApprovalEmailDate(details.receivedDate);
-  var dueDate = _formatApprovalEmailDate(details.dueDate);
-  var systemUrl = _getApprovalWebUrl(details.id || displayDwNo, 'view');
-  var approvalButtons = _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'approve'), 'Approval', '#16a34a')
-    + _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'reject'), 'Reject', '#dc2626');
-  var drawingUrl = details.pdfUrl || systemUrl;
-  var actionButtons = approvalButtons
-    + _approvalEmailButton(drawingUrl, 'Xem bản vẽ', '#2563eb')
-    + _approvalEmailButton(systemUrl, 'Vào hệ thống', '#475569');
+  // 4. Tiêu đề email (Subject) theo 2 trường hợp:
+  // - [PDMSystem] Yêu cầu xác nhận bản vẽ ...
+  // - [PDMSystem] Quy trình kí duyệt đã hoàn thành ...
+  var subject = isCompleted
+    ? '[PDMSystem] Quy trình kí duyệt đã hoàn thành ' + displayDwNo
+    : '[PDMSystem] Yêu cầu xác nhận bản vẽ ' + displayDwNo;
 
-  var subject = '[TRÌNH KÝ] Yêu cầu xác nhận bản vẽ ' + displayDwNo + ' - ' + nextStatus;
-  var bodyText = '';
-  var titleText = '';
+  // 5. Lời chào: Dear + Người đảm trách,
+  var assigneeName = String(details.assignee || details.drafter || details.pic || details.assigneeName || '').trim();
+  if (!assigneeName && targetEmail) {
+    var targetUserName = _getUserNameByEmail(targetEmail);
+    if (targetUserName && targetUserName !== 'System' && targetUserName !== targetEmail) {
+      assigneeName = targetUserName;
+    }
+  }
+  if (!assigneeName) {
+    assigneeName = 'Anh/Chị';
+  }
+  var salutation = 'Dear ' + assigneeName + ',';
 
-  if (currentLevel === 'Checker 1') {
-    bodyText = 'Bản vẽ ' + displayDwNo + ' vừa được ' + actorName + ' ký duyệt ở cấp Checker 1.\n'
-      + 'Hiện tại cần bạn xác nhận ở cấp Checker 2 để tiếp tục quy trình.';
-    titleText = 'Xác Nhận Bản Vẽ - Cấp Checker 2';
-  } else if (currentLevel === 'Checker 2') {
-    bodyText = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' xác nhận ở cấp Checker 2.\n'
-      + 'Hiện tại cần bạn ký duyệt ở cấp Approval để tiếp tục quy trình.';
-    titleText = 'Phê Duyệt Bản Vẽ - Cấp Approval';
-  } else if (currentLevel === 'Approval') {
-    bodyText = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Approval.\n'
-      + 'Đã chuyển sang trạng thái Chờ ban hành và đang chờ Charge xử lý ban hành.';
-    titleText = 'Bản Vẽ Đã Phê Duyệt - Chờ Ban Hành';
+  // 6. Thông tin chi tiết (2 trường hợp: danh sách bản vẽ hoặc bản vẽ xx đã được ...)
+  var detailMessage = '';
+  var detailsHtml = '';
+
+  if (isList) {
+    // Trường hợp: Danh sách bản vẽ
+    detailMessage = isCompleted
+      ? 'Các bản vẽ trong danh sách dưới đây đã được hoàn tất quy trình ký duyệt.'
+      : 'Danh sách các bản vẽ dưới đây đã được trình ký, yêu cầu xác nhận để tiếp tục quy trình.';
+
+    var drawingRowsHtml = drawingList.map(function (item, idx) {
+      var dNo = typeof item === 'object' ? (item.dwNo || item.id || '') : String(item);
+      var dCustomer = typeof item === 'object' ? (item.customer || item.project || '---') : '---';
+      var dType = typeof item === 'object' ? (item.typeDw || item.type || '---') : '---';
+      var dStatus = typeof item === 'object' ? (item.status || nextStatus || '---') : (nextStatus || '---');
+      var dUrl = typeof item === 'object' ? (item.pdfUrl || '') : '';
+      var linkCol = dUrl
+        ? '<a href="' + _escapeApprovalEmailHtml(dUrl) + '" style="color:#2563eb;font-weight:600;text-decoration:none;">Xem file</a>'
+        : '---';
+
+      return '<tr>'
+        + '<td style="padding:10px 8px;border:1px solid #d1d5db;text-align:center;">' + (idx + 1) + '</td>'
+        + '<td style="padding:10px 12px;border:1px solid #d1d5db;font-weight:700;color:#0d6efd;">' + _escapeApprovalEmailHtml(dNo) + '</td>'
+        + '<td style="padding:10px 12px;border:1px solid #d1d5db;">' + _escapeApprovalEmailHtml(dCustomer) + '</td>'
+        + '<td style="padding:10px 12px;border:1px solid #d1d5db;">' + _escapeApprovalEmailHtml(dType) + '</td>'
+        + '<td style="padding:10px 12px;border:1px solid #d1d5db;text-align:center;"><span style="background:#e0f2fe;color:#0369a1;padding:4px 8px;border-radius:12px;font-size:12px;font-weight:600;">' + _escapeApprovalEmailHtml(dStatus) + '</span></td>'
+        + '<td style="padding:10px 12px;border:1px solid #d1d5db;text-align:center;">' + linkCol + '</td>'
+        + '</tr>';
+    }).join('');
+
+    detailsHtml = `
+      <div style="margin-bottom: 24px;">
+        <table style="width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid #d1d5db; font-size: 13px;">
+          <thead>
+            <tr style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
+              <th style="padding: 10px 8px; border: 1px solid #d1d5db; text-align: center; width: 45px;">STT</th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Mã bản vẽ</th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Khách hàng / Dự án</th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Loại bản vẽ</th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: center;">Trạng thái</th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: center;">Xem</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${drawingRowsHtml}
+          </tbody>
+        </table>
+      </div>
+    `;
   } else {
-    bodyText = 'Bản vẽ ' + displayDwNo + ' đã cập nhật trạng thái: ' + nextStatus;
-    titleText = 'Cập Nhật Trạng Thái Bản Vẽ';
+    // Trường hợp: 1 bản vẽ cụ thể -> "Bản vẽ xx đã được ..."
+    if (isCompleted) {
+      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + (actorName ? actorName + ' ' : '') + 'ký duyệt hoàn thành.\n'
+        + 'Đã chuyển sang trạng thái: ' + (nextStatus || 'Chờ ban hành') + '.';
+    } else if (currentLevel === 'Checker 1') {
+      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Checker 1.\n'
+        + 'Hiện tại cần bạn xác nhận ở cấp Checker 2 để tiếp tục quy trình.';
+    } else if (currentLevel === 'Checker 2') {
+      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' xác nhận ở cấp Checker 2.\n'
+        + 'Hiện tại cần bạn ký duyệt ở cấp Approval để tiếp tục quy trình.';
+    } else if (currentLevel === 'Approval') {
+      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Approval.\n'
+        + 'Đã chuyển sang trạng thái: ' + (nextStatus || 'Chờ ban hành') + '.';
+    } else {
+      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + (actorName || 'người đảm trách') + ' trình ký, yêu cầu xác nhận để tiếp tục quy trình.';
+    }
+
+    var receivedDate = _formatApprovalEmailDate(details.receivedDate);
+    var dueDate = _formatApprovalEmailDate(details.dueDate);
+    var linkHtml = details.pdfUrl
+      ? '<a href="' + _escapeApprovalEmailHtml(details.pdfUrl) + '" style="display:inline-block;margin:4px 6px 4px 0;color:#2563eb;font-weight:600;">Mở file PDF bản vẽ</a>'
+      : '';
+    var imageHtml = details.cutDrawingBlob
+      ? '<p style="margin:24px 0 8px;font-weight:700;color:#334155;">Hình mặt cắt</p><div style="padding:12px;text-align:center;background:#f8fafc;border:1px solid #dbeafe;border-radius:8px;"><img src="cid:approvalCutDrawing" style="max-width:100%;max-height:280px;object-fit:contain;border-radius:6px;" alt="Hình mặt cắt" /></div>'
+      : '';
+
+    detailsHtml = `
+      <!-- INFO TABLE -->
+      <table style="width: 100%; border-collapse: collapse; background: #f8f9fa; margin-bottom: 24px;">
+        <tbody>
+          <tr>
+            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; width: 35%; border-bottom: 1px solid #ddd; border-right: 1px solid #ddd;">Mã bản vẽ</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong style="color: #0d6efd; font-size: 15px;">${_escapeApprovalEmailHtml(displayDwNo)}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Cấp xét duyệt</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong>${_escapeApprovalEmailHtml(currentLevel || '---')}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Trạng thái tiếp theo</td>
+            <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;">
+              <span style="display: inline-block; background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px;">${_escapeApprovalEmailHtml(nextStatus || '---')}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Người xử lý</td>
+            <td style="padding: 12px 15px;"><strong>${_escapeApprovalEmailHtml(actorName || '---')}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- DETAILED SPECS TABLE -->
+      <table style="width:100%;border-collapse:collapse;background:#ffffff;margin-top:10px;">
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;width:35%;">TO</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.to)}</td></tr>
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Khách hàng</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.customer)}</td></tr>
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Dự án</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.project)}</td></tr>
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type / Version</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.type)} / ${_escapeApprovalEmailHtml(details.version)}</td></tr>
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type DW</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.typeDw)}</td></tr>
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Người đảm trách</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.assignee || '---')}</td></tr>
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Ngày tiếp nhận / Deadline</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(receivedDate)} / ${_escapeApprovalEmailHtml(dueDate)}</td></tr>
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Width / Height</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.width)} / ${_escapeApprovalEmailHtml(details.height)} mm</td></tr>
+        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Số SO / FYE</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.so)} / ${_escapeApprovalEmailHtml(details.fye)}</td></tr>
+      </table>
+      <div style="margin-top:10px;">${linkHtml}</div>
+      ${imageHtml}
+    `;
   }
 
-  var imageHtml = details.cutDrawingBlob
-    ? '<p style="margin:24px 0 8px;font-weight:700;color:#334155;">Hình mặt cắt</p><div style="padding:12px;text-align:center;background:#f8fafc;border:1px solid #dbeafe;border-radius:8px;"><img src="cid:approvalCutDrawing" style="max-width:100%;max-height:280px;object-fit:contain;border-radius:6px;" alt="Hình mặt cắt" /></div>'
-    : '';
-  var linkHtml = details.pdfUrl
-    ? '<a href="' + _escapeApprovalEmailHtml(details.pdfUrl) + '" style="display:inline-block;margin:4px 6px 4px 0;color:#2563eb;">Mở file PDF</a>'
-    : '';
+  // 7. Nút bấm hành động (Nếu là trình ký thì có, nếu hoàn thành thì KHÔNG có)
+  var actionButtonsHtml = '';
+  if (!isCompleted) {
+    var systemUrl = _getApprovalWebUrl(details.id || displayDwNo, 'view');
+    var approvalButtons = _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'approve'), 'Approval', '#16a34a')
+      + _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'reject'), 'Reject', '#dc2626');
+    var drawingUrl = details.pdfUrl || systemUrl;
+    var actionButtons = approvalButtons
+      + _approvalEmailButton(drawingUrl, 'Xem bản vẽ', '#2563eb')
+      + _approvalEmailButton(systemUrl, 'Vào hệ thống', '#475569');
 
+    actionButtonsHtml = `
+      <!-- CALL TO ACTION -->
+      <div style="text-align: center; margin: 28px 0;">
+        ${actionButtons}
+      </div>
+    `;
+  }
+
+  // 8. Tiêu đề header banner
+  var titleText = isCompleted
+    ? 'Quy Trình Kí Duyệt Đã Hoàn Thành'
+    : (currentLevel ? ('Yêu Cầu Xác Nhận Bản Vẽ - ' + currentLevel) : 'Yêu Cầu Xác Nhận Bản Vẽ');
+  var headerGradient = isCompleted
+    ? 'linear-gradient(135deg, #15803d 0%, #166534 100%)'
+    : 'linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%)';
+
+  // 9. Tạo HTML Body hoàn chỉnh
   var htmlBody = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; max-width: 700px; margin: 0 auto; color: #333;">
       <!-- HEADER -->
-      <div style="background: linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%); border-radius: 12px 12px 0 0; padding: 30px 25px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <div style="background: ${headerGradient}; border-radius: 12px 12px 0 0; padding: 30px 25px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
         <div style="font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 12px; opacity: 0.9; text-transform: uppercase;">Hệ thống quản lý bản vẽ</div>
         <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px;">${titleText}</h1>
-        <div style="font-size: 13px; font-weight: 500; color: #b0d0f0; margin-top: 8px;">Bản vẽ: <span style="color: #ffc107; font-weight: 700;">${_escapeApprovalEmailHtml(displayDwNo)}</span></div>
+        <div style="font-size: 13px; font-weight: 500; color: #b0d0f0; margin-top: 8px;">${isList ? 'Danh sách bản vẽ' : 'Bản vẽ'}: <span style="color: #ffc107; font-weight: 700;">${_escapeApprovalEmailHtml(displayDwNo)}</span></div>
       </div>
 
       <!-- MAIN CONTENT -->
       <div style="background: white; padding: 32px 25px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-        <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #555;">
-          <strong>Xin chào,</strong>
+        <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #333;">
+          <strong>${_escapeApprovalEmailHtml(salutation)}</strong>
         </p>
 
         <!-- STATUS INFO BOX -->
-        <div style="background: #f0f7ff; border-left: 4px solid #0d6efd; padding: 18px; border-radius: 6px; margin-bottom: 24px;">
-          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #0d6efd;">
-            <strong>ℹ Thông tin cần xử lý:</strong><br>
-            ${_escapeApprovalEmailHtml(bodyText).split('\n').join('<br>')}
+        <div style="background: #f0f7ff; border-left: 4px solid #0d6efd; padding: 16px 18px; border-radius: 6px; margin-bottom: 24px;">
+          <p style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #0d6efd;">
+            ℹ Thông tin chi tiết:
+          </p>
+          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #1e3a8a;">
+            ${_escapeApprovalEmailHtml(detailMessage).split('\n').join('<br>')}
           </p>
         </div>
 
-        <!-- INFO TABLE -->
-        <table style="width: 100%; border-collapse: collapse; background: #f8f9fa; margin-bottom: 24px;">
-          <tbody>
-            <tr>
-              <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; width: 35%; border-bottom: 1px solid #ddd; border-right: 1px solid #ddd;">Mã bản vẽ</td>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong style="color: #0d6efd; font-size: 15px;">${_escapeApprovalEmailHtml(displayDwNo)}</strong></td>
-            </tr>
-            <tr>
-              <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Cấp xét duyệt</td>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong>${_escapeApprovalEmailHtml(currentLevel)}</strong></td>
-            </tr>
-            <tr>
-              <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Trạng thái tiếp theo</td>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;">
-                <span style="display: inline-block; background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px;">${_escapeApprovalEmailHtml(nextStatus)}</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Người xử lý</td>
-              <td style="padding: 12px 15px;"><strong>${_escapeApprovalEmailHtml(actorName)}</strong></td>
-            </tr>
-          </tbody>
-        </table>
+        ${detailsHtml}
 
-        <table style="width:100%;border-collapse:collapse;background:#ffffff;margin-top:10px;">
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;width:35%;">TO</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.to)}</td></tr>
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Khách hàng</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.customer)}</td></tr>
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Dự án</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.project)}</td></tr>
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type / Version</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.type)} / ${_escapeApprovalEmailHtml(details.version)}</td></tr>
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type DW</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.typeDw)}</td></tr>
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Người đảm trách</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.assignee)}</td></tr>
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Ngày tiếp nhận / Deadline</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(receivedDate)} / ${_escapeApprovalEmailHtml(dueDate)}</td></tr>
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Width / Height</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.width)} / ${_escapeApprovalEmailHtml(details.height)} mm</td></tr>
-          <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Số SO / FYE</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.so)} / ${_escapeApprovalEmailHtml(details.fye)}</td></tr>
-        </table>
-        <div style="margin-top:10px;">${linkHtml}</div>
-        ${imageHtml}
-
-        <!-- CALL TO ACTION -->
-        <div style="text-align: center; margin: 28px 0;">
-          ${actionButtons}
-        </div>
+        ${actionButtonsHtml}
 
         <!-- FOOTER -->
         <div style="border-top: 1px solid #e0e0e0; margin-top: 32px; padding-top: 20px; text-align: center;">
@@ -581,12 +745,21 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
     </div>
   `;
 
+  var bodyText = salutation + '\n\n'
+    + 'Thông tin chi tiết:\n'
+    + detailMessage + '\n\n'
+    + (isList ? '' : 'Mã bản vẽ: ' + displayDwNo + '\nTrạng thái: ' + nextStatus + '\n\n')
+    + 'Trân trọng,\nHệ thống Web App Quản Lý Bản Vẽ';
+
   try {
     var mailOptions = { htmlBody: htmlBody };
-    if (details.cutDrawingBlob) mailOptions.inlineImages = { approvalCutDrawing: details.cutDrawingBlob };
+    if (details.cutDrawingBlob && !isList) {
+      mailOptions.inlineImages = { approvalCutDrawing: details.cutDrawingBlob };
+    }
     GmailApp.sendEmail(targetEmail, subject, bodyText, mailOptions);
     return true;
   } catch (e) {
+    Logger.log('Lỗi gửi email luồng ký duyệt: ' + e.toString());
     return false;
   }
 };
@@ -746,7 +919,12 @@ const approveDrawingOnServer = (drawingId, approvedLevel) => {
   } else if (step.level === 'Checker 2') {
     notifyEmail = _getUserEmailByRole(['Approval', 'Approver', 'GMQA', 'QA', 'Approval QA']);
   } else if (step.level === 'Approval') {
-    notifyEmail = _getUserEmailByRole(['Charger', 'Charge', 'QA Charge', 'Charge QA']);
+    var chargerEmail = _getUserEmailByRole(['Charger', 'Charge', 'QA Charge', 'Charge QA']);
+    var assigneeEmail = _getUserEmailByName(drawingDetails.assignee);
+    var emailList = [];
+    if (chargerEmail) emailList.push(chargerEmail);
+    if (assigneeEmail && emailList.indexOf(assigneeEmail) === -1) emailList.push(assigneeEmail);
+    notifyEmail = emailList.join(',');
   }
 
   if (notifyEmail) {
@@ -757,7 +935,7 @@ const approveDrawingOnServer = (drawingId, approvedLevel) => {
     success: true,
     drawingId: drawingId,
     prevStatus: currentStatus,
-    nextStatus: step.nextStatus,  
+    nextStatus: step.nextStatus,
     level: step.level,
     approvedBy: approverName,
     approvedAt: nowStr
@@ -831,7 +1009,7 @@ function requestReleaseDW(arr) {
 
   const existingIds = new Set();
   data.forEach(row => {
-    if(row[0]) existingIds.add(String(row[0]));
+    if (row[0]) existingIds.add(String(row[0]));
   });
 
   const requestTypeRaw = String((arr && arr[2]) || 'Normal');
@@ -856,7 +1034,7 @@ function requestReleaseDW(arr) {
       if (idStr.startsWith(orderCheck)) {
         let numberPart = parseInt(idStr.slice(-3), 10);
         if (!isNaN(numberPart)) {
-             check.push(numberPart);
+          check.push(numberPart);
         }
       }
     }
@@ -893,13 +1071,13 @@ function requestReleaseDW(arr) {
     const depName = String(arr[0] || '').trim();
 
     existingIds.add(newID);
-     mailValue.push({
-              requestId: orderNo,
-              dw: row[1],
-              status:"Yêu Cầu Ban Hàng Bản Vẽ Mới",
-              dept: depName,
-              name: arr[1],
-            });
+    mailValue.push({
+      requestId: orderNo,
+      dw: row[1],
+      status: "Yêu Cầu Ban Hàng Bản Vẽ Mới",
+      dept: depName,
+      name: arr[1],
+    });
 
     output.push([
       newID,
@@ -913,7 +1091,7 @@ function requestReleaseDW(arr) {
       orderNo,
       "",
       "QA-G2G",
-      String(row[7] || ''), 
+      String(row[7] || ''),
       arr[1],
       requestDateRaw,
       requestType,
@@ -970,9 +1148,9 @@ function updateBulkStatusByIds(targetIds, stt) {
   // 1. ĐỌC 1 LẦN: Chỉ lấy dữ liệu Cột A (ID) và Cột C (Status)
   // Lấy riêng biệt để tránh ghi đè làm mất công thức ở cột B (nếu có)
   const idValues = sheet.getRange(1, 1, lastRow, 1).getValues(); // Đọc toàn bộ cột A
-  const statusRange = sheet.getRange(1, 3, lastRow, 1); 
+  const statusRange = sheet.getRange(1, 3, lastRow, 1);
   const statusValues = statusRange.getValues(); // Đọc toàn bộ cột C
-  
+
   // Chuyển mảng targetIds thành Set để tìm kiếm với tốc độ siêu tốc (O(1))
   const idSet = new Set(targetIds.map(id => String(id || '').trim()));
   let hasChanges = false;
@@ -980,7 +1158,7 @@ function updateBulkStatusByIds(targetIds, stt) {
   // 2. XỬ LÝ TRONG RAM: Vòng lặp này chạy bằng tốc độ của CPU/RAM, gần như tức thời
   for (let i = 0; i < idValues.length; i++) {
     const currentId = String(idValues[i][0] || '').trim();
-    
+
     // Nếu ID ở dòng hiện tại nằm trong mảng cần thay đổi
     if (idSet.has(currentId)) {
       statusValues[i][0] = stt; // Cập nhật trạng thái mới vào mảng
