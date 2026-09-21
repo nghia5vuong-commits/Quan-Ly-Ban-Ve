@@ -420,6 +420,15 @@
     transform: translateY(-1px);
   }
 
+  /* Overdue rows styling (trễ kì hạn tô màu đỏ nhạt) */
+  .page-dashboard .table-custom tbody tr.row-late td {
+    background-color: #fef2f2 !important;
+  }
+
+  .page-dashboard .table-custom tbody tr.row-late:hover td {
+    background-color: #fee2e2 !important;
+  }
+
   /* Filter Chips & Badges */
   .page-dashboard .badge,
   .page-dashboard .filter-chip {
@@ -438,6 +447,55 @@
     transform: scale(1.05);
     background: #10b981;
     color: #ffffff;
+  }
+
+  /* FYE Donut Breakdown Styles */
+  .page-dashboard .fye-stat-card {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    border-radius: 12px;
+  }
+
+  .page-dashboard .fye-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+  }
+
+  .page-dashboard .fye-stat-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+  }
+
+  .page-dashboard .fye-legend-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 20px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-size: 0.76rem;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .page-dashboard .fye-legend-badge:hover {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .page-dashboard .fye-legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
   }
 </style>
 <div class="page-dashboard custom-scroll"
@@ -652,8 +710,8 @@
   <!-- BIỂU ĐỒ PIE TỶ LỆ TRẠNG THÁI THEO FYE (Chỉ hiện khi chọn từng FYE cụ thể) -->
   <div class="row g-4 mb-4 d-none" id="rowChartFyePie">
     <div class="col-12">
-      <div class="chart-card">
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div class="chart-card d-flex flex-column align-items-center">
+        <div class="w-100 d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
           <div>
             <h6 class="fw-bold text-dark mb-0">
               <i class="bi bi-pie-chart-fill text-primary me-2"></i>
@@ -661,28 +719,40 @@
                   class="text-primary fw-bold">FYE</span></span>
             </h6>
             <small class="text-muted" style="font-size: 0.78rem;">
-              Tỷ lệ phân bổ và tiến độ bản vẽ trong năm tài chính được chọn
+              Tỷ lệ giữa bản vẽ chưa ban hành và bản vẽ đã ban hành
             </small>
           </div>
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-bold"
-            id="badgeFyeSelected" style="font-size: 0.72rem;">FYE</span>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1.5 fw-bold"
+            id="badgeFyeSelected" style="font-size: 0.75rem;">FYE</span>
         </div>
 
-        <div class="row align-items-center g-4">
-          <!-- Cột biểu đồ Pie / Doughnut -->
-          <div class="col-12 col-md-5 col-lg-4 d-flex justify-content-center">
-            <div style="position: relative; width: 100%; max-width: 250px; height: 250px; margin: 0 auto;">
-              <canvas id="chartFyePie"></canvas>
-              <!-- Center Text hiển thị Tổng số bản vẽ -->
-              <div id="chartFyePieCenter"
-                style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
-                <div
-                  style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                  Tổng số</div>
-                <div id="chartFyePieCenterCount"
-                  style="font-size: 1.65rem; font-weight: 800; color: #1e293b; line-height: 1.1;">0</div>
-                <div style="font-size: 0.72rem; color: #64748b; font-weight: 500;">bản vẽ</div>
-              </div>
+        <!-- Biểu đồ Donut căn giữa gọn gàng -->
+        <div class="d-flex flex-column align-items-center justify-content-center py-2"
+          style="width: 100%; max-width: 380px;">
+          <div style="position: relative; width: 240px; height: 240px; margin: 0 auto;">
+            <canvas id="chartFyePie"></canvas>
+            <!-- Center Text hiển thị Tổng số bản vẽ -->
+            <div id="chartFyePieCenter"
+              style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
+              <div
+                style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                Tổng số</div>
+              <div id="chartFyePieCenterCount"
+                style="font-size: 1.85rem; font-weight: 800; color: #0f172a; line-height: 1.15;">0</div>
+              <div style="font-size: 0.72rem; color: #64748b; font-weight: 500;">bản vẽ</div>
+            </div>
+          </div>
+          <!-- Legend tương tác bên dưới biểu đồ -->
+          <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
+            <div class="fye-legend-badge" onclick="setKpiFilter(globalFilters.kpi === 'design' ? 'all' : 'design')"
+              title="Click để lọc bản vẽ Chưa ban hành">
+              <span class="fye-legend-dot" style="background: #f59e0b;"></span>
+              <span class="fw-semibold">Chưa ban hành</span>
+            </div>
+            <div class="fye-legend-badge" onclick="setKpiFilter(globalFilters.kpi === 'released' ? 'all' : 'released')"
+              title="Click để lọc bản vẽ Đã ban hành">
+              <span class="fye-legend-dot" style="background: #10b981;"></span>
+              <span class="fw-semibold">Đã ban hành</span>
             </div>
           </div>
         </div>
@@ -691,18 +761,17 @@
   </div>
 
   <div class="row g-4 mb-4">
-    <!-- Chart 1: Tiếp Nhận vs Chưa Tiếp Nhận -->
+    <!-- Chart 1: Thống Kê Theo Khách Hàng -->
     <div class="col-12 col-lg-6">
       <div class="chart-card h-100 d-flex flex-column">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
-            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-success me-2"></i><span
-                data-i18n="dash_project_title">Thống Kê Theo Dự Án</span></h6>
-            <small class="text-muted" data-i18n="dash_project_subtitle" style="font-size: 0.78rem;">Phân bổ số lượng bản
-              vẽ theo từng dự án trong 12 tháng</small>
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-bar-chart-fill text-success me-2"></i><span>Thống Kê Theo Khách Hàng</span></h6>
+            <small class="text-muted" style="font-size: 0.78rem;">Phân bổ số lượng bản
+              vẽ theo từng khách hàng trong 12 tháng</small>
           </div>
           <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-bold"
-            style="font-size: 0.72rem;">Dự Án</span>
+            style="font-size: 0.72rem;">Khách Hàng</span>
         </div>
         <div class="flex-grow-1 position-relative" style="min-height: 240px; max-height: 270px;">
           <canvas id="chartReceptionStatus"></canvas>
@@ -724,6 +793,24 @@
         </div>
         <div class="flex-grow-1 position-relative" style="min-height: 240px; max-height: 270px;">
           <canvas id="chartNewVsRevise"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart 3: BARSALE / OEM / WE SASH theo tháng -->
+  <div class="row g-4 mb-4">
+    <div class="col-12">
+      <div class="chart-card d-flex flex-column" style="height: 320px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <h6 class="fw-bold text-dark mb-0"><i class="bi bi-layers-fill text-warning me-2"></i><span>Phân Loại Theo BARSALE / OEM / WE SASH</span></h6>
+            <small class="text-muted" style="font-size: 0.78rem;">Số lượng bản vẽ theo phân loại sản phẩm trong từng tháng</small>
+          </div>
+          <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 fw-bold" style="font-size: 0.72rem;">Phân Loại</span>
+        </div>
+        <div class="flex-grow-1 position-relative">
+          <canvas id="chartTypeByMonth"></canvas>
         </div>
       </div>
     </div>
@@ -1042,7 +1129,7 @@
         case 'estimatedCompletionDate': return String(row.estimatedCompletionDate || row[7] || '');
         case 'completionDate': return String(row.completionDate || row[16] || '');
         case 'releaseDate': return String(row.releaseDate || row[34] || '');
-        case 'ngDamTrach': return String(row.ngDamTrach || row[16] || '');
+        case 'ngDamTrach': return String(row.ngDamTrach || row[15] || '');
         case 'checker': return String(row.checker || row[17] || '');
         case 'approve': return String(row.approve || row[19] || '');
         case 'customer': return String(row.customer || row[10] || '');
@@ -1137,10 +1224,12 @@
 
   function parseDashboardDate(value) {
     if (!value) return null;
+    if (value instanceof Date) return isNaN(value.getTime()) ? null : value;
     var text = String(value).trim();
-    var slashParts = text.split('/');
+    if (!text || text === '—' || text === '-') return null;
+    var slashParts = text.split(/[/\-]/);
     var date = null;
-    if (slashParts.length === 3 && slashParts[0].length <= 2) {
+    if (slashParts.length === 3 && slashParts[0].length <= 2 && slashParts[2].length === 4) {
       date = new Date(Number(slashParts[2]), Number(slashParts[1]) - 1, Number(slashParts[0]));
     } else {
       date = new Date(text);
@@ -1244,7 +1333,8 @@
     var finalData = [];
     var newCountsByMonth = new Array(12).fill(0);
     var reviseCountsByMonth = new Array(12).fill(0);
-    var projectCountsByMonth = {};
+    var customerCountsByMonth = {};
+    var typeByMonthMap = { BARSALE: new Array(12).fill(0), OEM: new Array(12).fill(0), 'WE SASH': new Array(12).fill(0) };
     var fyeDistributionMap = {};
 
     rawData.forEach(function (row) {
@@ -1282,6 +1372,16 @@
       else if (status.includes('chờ checker') || status.includes('chờ approval')) pendingApprove += 1;
       else if (status.includes('đã ban hành')) released += 1;
       else if (status.includes('chờ ban hành') || status.includes('ban hành thất bại')) release += 1;
+
+      // Phân loại BARSALE / OEM / WE SASH theo tháng
+      if (baseMonthLabel !== null) {
+        var bMonthIdx = fyeMonthLabels.indexOf(baseMonthLabel);
+        if (bMonthIdx >= 0) {
+          if (itemGroup.includes('BARSALE')) typeByMonthMap['BARSALE'][bMonthIdx] += 1;
+          else if (itemGroup.includes('OEM')) typeByMonthMap['OEM'][bMonthIdx] += 1;
+          else typeByMonthMap['WE SASH'][bMonthIdx] += 1;
+        }
+      }
     });
 
     document.getElementById('dashTotalCount').textContent = total;
@@ -1292,7 +1392,7 @@
 
     baseData.forEach(function (row) {
       var status = getRowValue(row, 'status').toLowerCase();
-      var projectVal = getRowValue(row, 'project').trim() || 'Khác';
+      var customerVal = getRowValue(row, 'customer').trim() || 'Khác';
       var version = getRowValue(row, 'version').toLowerCase();
       var dateVal = getRowValue(row, 'date');
       var currentFye = getRowValue(row, 'fye').toUpperCase();
@@ -1320,7 +1420,7 @@
       if (globalFilters.kpi === 'released' && !(status.includes('đã ban hành'))) matchesKpiFilter = false;
       if (globalFilters.kpi === 'release' && !(status.includes('chờ ban hành') || status.includes('ban hành thất bại'))) matchesKpiFilter = false;
 
-      if (globalFilters.project && projectVal !== globalFilters.project) matchesKpiFilter = false;
+      if (globalFilters.project && getRowValue(row, 'project').trim() !== globalFilters.project) matchesKpiFilter = false;
       if (globalFilters.month && monthLabel !== globalFilters.month) matchesKpiFilter = false;
       if (globalFilters.isNew !== null && isNewRow !== globalFilters.isNew) matchesKpiFilter = false;
 
@@ -1335,8 +1435,8 @@
       }
 
       if (monthIdx >= 0 && monthIdx <= 11) {
-        if (!projectCountsByMonth[projectVal]) projectCountsByMonth[projectVal] = new Array(12).fill(0);
-        projectCountsByMonth[projectVal][monthIdx] += 1;
+        if (!customerCountsByMonth[customerVal]) customerCountsByMonth[customerVal] = new Array(12).fill(0);
+        customerCountsByMonth[customerVal][monthIdx] += 1;
         if (isNewRow) newCountsByMonth[monthIdx] += 1;
         else reviseCountsByMonth[monthIdx] += 1;
       }
@@ -1356,150 +1456,18 @@
     if (rowChartFyePie) {
       if (globalFilters.fye !== 'ALL') {
         rowChartFyePie.classList.remove('d-none');
-        renderFyePieChart(total, pendingDesign, released, total - pendingDesign - released, globalFilters.fye);
+        // "Chưa ban hành" = chờ thiết kế + chờ ký duyệt + chờ ban hành
+        var chuaBanHanh = pendingDesign + pendingApprove + release;
+        renderFyePieChart(total, chuaBanHanh, released, globalFilters.fye);
       } else {
         rowChartFyePie.classList.add('d-none');
       }
     }
 
-    renderDashCharts(projectCountsByMonth, newCountsByMonth, reviseCountsByMonth, fyeMonthLabels);
+    renderDashCharts(customerCountsByMonth, newCountsByMonth, reviseCountsByMonth, fyeMonthLabels, typeByMonthMap);
     renderDashRecentTable(finalData);
   }
 
-  // ==========================================
-  // 2. CẬP NHẬT: RENDER BẢNG DỮ LIỆU CUỐI CÙNG (Fix lỗi tô đỏ dòng)
-  // ==========================================
-  function renderDashRecentTable(dataList) {
-    var tbody = document.getElementById('dashRecentTableBody');
-    if (!tbody) return;
-
-    if (dataList.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-2 text-black-50"></i>Không có dữ liệu trùng khớp.</td></tr>';
-      return;
-    }
-
-    var fragment = document.createDocumentFragment();
-    var limitedRows = dataList.slice(0, 15);
-
-    limitedRows.forEach(function (row) {
-      var id = getRowValue(row, 'id');
-      var group = getRowValue(row, 'group') || '';
-      var dwNo = getRowValue(row, 'dwNo') || 'Chưa có mã';
-      var type = getRowValue(row, 'type') || '—';
-      var version = getRowValue(row, 'version') || '0';
-      var st = getRowValue(row, 'status') || 'Chưa xác định';
-      var to = getRowValue(row, 'to') || 'Chưa có mã';
-      var project = getRowValue(row, 'project') || '—';
-      var customer = getRowValue(row, 'customer') || '—';
-      var completionDate = getRowValue(row, 'completionDate') || '—';
-      var date = getRowValue(row, 'date') || '—';
-      var estimatedCompletionDate = getRowValue(row, 'estimatedCompletionDate') || '—';
-      var releaseDate = getRowValue(row, 'releaseDate') || '—';
-      var pdflink = getRowValue(row, 'pdfSample') || '';
-      var ngDamTrach = getRowValue(row, 'ngDamTrach') || '';
-      var checkerRaw = getRowValue(row, 'checker') || '';
-      var approve = getRowValue(row, 'approve') || '';
-
-      // Tách checker an toàn
-      var checkerList = checkerRaw ? String(checkerRaw).split('\n') : [];
-      var checker1 = checkerList[0] || '';
-      var checker2 = checkerList[1] || '';
-
-      var pdf = (pdflink && String(pdflink).includes('http'))
-        ? '<button type="button" data-drawing-preview data-preview-url="' + String(pdflink).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" data-preview-title="' + String(dwNo).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" class="btn btn-sm btn-outline-danger border-0 py-1 px-2" title="Xem trước bản vẽ PDF"><i class="bi bi-file-earmark-pdf-fill fs-5"></i></button>'
-        : '<span class="text-muted small"><i class="bi bi-dash"></i></span>';
-
-      var signHtml = '<div class="mt-2 pt-2 border-top border-secondary border-opacity-25 text-start w-100" style="font-size: 0.75rem; line-height: 1.4;">';
-      if (ngDamTrach) signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">Chg:</span> <span class="fw-medium text-dark">' + String(ngDamTrach).replace(/</g, '&lt;') + '</span></div>';
-      if (checker1 || checker2) {
-        var chkValue = [checker1, checker2].filter(Boolean).join(', ');
-        signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">Chk:</span> <span class="fw-medium text-dark">' + String(chkValue).replace(/</g, '&lt;') + '</span></div>';
-      }
-      if (approve) signHtml += '<div class="d-flex justify-content-between"><span class="text-muted">App:</span> <span class="fw-medium text-primary">' + String(approve).replace(/</g, '&lt;') + '</span></div>';
-      signHtml += '</div>';
-      if (!ngDamTrach && !checker1 && !checker2 && !approve) signHtml = '';
-
-      var dateHtml = '<div class="text-start d-flex flex-column gap-1 mx-auto" style="font-size: 0.75rem; width: fit-content;">';
-      dateHtml += '<div title="Ngày tiếp nhận"><i class="bi bi-box-arrow-in-right text-secondary me-1"></i> <span class="fw-medium text-dark">' + String(date).replace(/</g, '&lt;') + '</span></div>';
-
-      // XÉT ĐIỀU KIỆN TRỄ HẠN THÔNG MINH
-      var isLate = false;
-      if (estimatedCompletionDate !== '—' && completionDate === '—') {
-        var tmDate = parseDashboardDate(estimatedCompletionDate);
-        var today = new Date();
-        today.setHours(0, 0, 0, 0);
-        if (tmDate && !isNaN(tmDate.getTime()) && tmDate < today) {
-          isLate = true;
-        }
-      }
-      var tmColor = isLate ? 'text-danger fw-bold' : 'text-primary fw-medium';
-
-      dateHtml += '<div title="Hạn chót (TM)"><i class="bi bi-stopwatch text-warning me-1"></i> <span class="' + tmColor + '">' + String(estimatedCompletionDate).replace(/</g, '&lt;') + '</span></div>';
-      if (completionDate !== '—') dateHtml += '<div title="Ngày hoàn thành (ACT)"><i class="bi bi-check2-circle text-success me-1"></i> <span class="fw-medium text-success">' + String(completionDate).replace(/</g, '&lt;') + '</span></div>';
-      if (releaseDate !== '—') dateHtml += '<div title="Ngày ban hành"><i class="bi bi-send-check text-info me-1"></i> <span class="fw-medium text-info">' + String(releaseDate).replace(/</g, '&lt;') + '</span></div>';
-      dateHtml += '</div>';
-
-      var badgeClass = 'bg-secondary text-white';
-      var stt = 'Chưa xác định';
-      var stLower = st.toLowerCase();
-      var stIcon = 'bi-circle';
-
-      if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành')) {
-        badgeClass = 'bg-info text-dark border border-info';
-        stt = 'DW ban hành';
-        stIcon = 'bi-hourglass-split';
-      } else if (stLower.includes('đã ban hành') || stLower.includes('released')) {
-        badgeClass = 'bg-success text-white';
-        stt = 'Đã ban hành';
-        stIcon = 'bi-check-circle-fill';
-      } else if (stLower.includes('checker') || stLower.includes('approval')) {
-        badgeClass = 'bg-warning text-dark';
-        stt = 'Đang trình ký';
-        stIcon = 'bi-pencil-square';
-      } else if (stLower.includes('trả về charger') || stLower.includes('returned')) {
-        badgeClass = 'bg-danger text-white';
-        stt = 'Bị trả lại';
-        stIcon = 'bi-exclamation-triangle-fill';
-      } else if (stLower.includes('đang thực hiện')) {
-        badgeClass = 'bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25';
-        stt = (ngDamTrach ? ngDamTrach.split(' ')[0] : 'Charger') + ' đang thực hiện';
-        stIcon = 'bi-palette-fill';
-      } else if (stLower.includes('ban hành thất bại')) {
-        badgeClass = 'bg-danger text-white';
-        stt = 'Ban hành thất bại';
-        stIcon = 'bi-exclamation-triangle-fill';
-      }
-
-      // KÍCH HOẠT LỚP CSS TÔ ĐỎ DÒNG
-      var trClass = 'align-middle border-bottom border-light transition-all';
-      if (isLate && (stLower.includes('đang thực hiện') || stLower.includes('trả về charger') || stLower.includes('returned') || stLower.includes('bị trả lại'))) {
-        trClass += ' table-danger'; // Tô đỏ toàn dòng bằng class của Bootstrap
-      } else {
-        trClass += ' hover-bg-light';
-      }
-
-      var tr = document.createElement('tr');
-      tr.className = trClass;
-      tr.innerHTML = [
-        '<td class="d-none">' + String(id).replace(/</g, '&lt;') + '</td>',
-        '<td class="d-none">' + String(group).replace(/</g, '&lt;') + '</td>',
-        '<td class="text-center"><span class="badge bg-light text-dark border px-2 py-1 shadow-sm">' + String(type).replace(/</g, '&lt;') + '</span></td>',
-        '<td class="text-center fw-medium text-secondary">' + String(to).replace(/</g, '&lt;') + '</td>',
-        '<td class="text-center fw-bold text-dark" style="font-size: 0.9rem;">' + String(dwNo).replace(/</g, '&lt;') + '</td>',
-        '<td class="text-center text-muted" style="font-size: 0.85rem;">v' + String(version).replace(/</g, '&lt;') + '</td>',
-        '<td class="text-center fw-semibold text-dark text-truncate" style="max-width: 120px;" title="' + String(project).replace(/</g, '&lt;') + '">' + String(project).replace(/</g, '&lt;') + '</td>',
-        '<td class="text-center text-muted text-truncate" style="font-size: 0.85rem; max-width: 120px;" title="' + String(customer).replace(/</g, '&lt;') + '"><i class="bi bi-person-fill me-1"></i>' + String(customer).replace(/</g, '&lt;') + '</td>',
-        '<td class="py-2">' + dateHtml + '</td>',
-        '<td class="text-center">' + pdf + '</td>',
-        '<td class="text-center"><div class="d-flex flex-column h-100 justify-content-center align-items-center"><span class="badge ' + badgeClass + ' w-100 py-2 shadow-sm mb-1" style="font-size: 0.75rem;"><i class="bi ' + stIcon + ' me-1"></i>' + stt + '</span>' + signHtml + '</div></td>'
-      ].join('');
-
-      fragment.appendChild(tr);
-    });
-
-    tbody.innerHTML = '';
-    tbody.appendChild(fragment);
-  }
   // ==========================================
   // VẼ CÁC BIỂU ĐỒ VỚI SỰ KIỆN CLICK (CROSS-FILTER)
   // ==========================================
@@ -1557,38 +1525,41 @@
     });
   }
 
-  function renderFyePieChart(total, pendingDesign, released, otherCount, fyeYear) {
+  function renderFyePieChart(total, pendingDesign, released, fyeYear) {
     if (typeof Chart === 'undefined') return;
 
     var canvas = document.getElementById('chartFyePie');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
 
+    var year = fyeYear || '';
+
     // Cập nhật text tiêu đề & badge FYE
     var titleYearEl = document.getElementById('fyePieTitleYear');
-    if (titleYearEl) titleYearEl.textContent = fyeYear || '';
+    if (titleYearEl) titleYearEl.textContent = year;
     var badgeFye = document.getElementById('badgeFyeSelected');
-    if (badgeFye) badgeFye.textContent = fyeYear || 'FYE';
-
-    // Cập nhật các thẻ thông tin chi tiết
-    var elTotal = document.getElementById('fyePieTotalCount');
-    var elDesign = document.getElementById('fyePieDesignCount');
-    var elDesignPct = document.getElementById('fyePieDesignPercent');
-    var elReleased = document.getElementById('fyePieReleasedCount');
-    var elReleasedPct = document.getElementById('fyePieReleasedPercent');
-    var elOther = document.getElementById('fyePieOtherCount');
-    var elOtherPct = document.getElementById('fyePieOtherPercent');
-    var wrapOther = document.getElementById('fyePieOtherWrap');
-    var centerTotal = document.getElementById('chartFyePieCenterCount');
+    if (badgeFye) badgeFye.textContent = year || 'FYE';
 
     var safeTotal = Number(total) || 0;
     var safeDesign = Number(pendingDesign) || 0;
     var safeReleased = Number(released) || 0;
-    var safeOther = Math.max(0, safeTotal - safeDesign - safeReleased);
+    var sumTwo = safeDesign + safeReleased;
 
-    var pctDesign = safeTotal > 0 ? Math.round((safeDesign / safeTotal) * 100) : 0;
-    var pctReleased = safeTotal > 0 ? Math.round((safeReleased / safeTotal) * 100) : 0;
-    var pctOther = safeTotal > 0 ? Math.max(0, 100 - pctDesign - pctReleased) : 0;
+    var pctDesign = sumTwo > 0 ? Math.round((safeDesign / sumTwo) * 100) : 0;
+    var pctReleased = sumTwo > 0 ? (100 - pctDesign) : 0;
+
+    // Cập nhật thẻ thông tin và thanh tỷ lệ
+    var elTotal = document.getElementById('fyePieTotalCount');
+    var centerTotal = document.getElementById('chartFyePieCenterCount');
+    var elDesign = document.getElementById('fyePieDesignCount');
+    var elDesignPct = document.getElementById('fyePieDesignPercent');
+    var elReleased = document.getElementById('fyePieReleasedCount');
+    var elReleasedPct = document.getElementById('fyePieReleasedPercent');
+    var elRateText = document.getElementById('fyePieRateText');
+    var elRatioDesign = document.getElementById('fyeRatioDesignText');
+    var elRatioReleased = document.getElementById('fyeRatioReleasedText');
+    var barDesign = document.getElementById('fyeProgressDesign');
+    var barReleased = document.getElementById('fyeProgressReleased');
 
     if (elTotal) elTotal.textContent = safeTotal.toLocaleString();
     if (centerTotal) centerTotal.textContent = safeTotal.toLocaleString();
@@ -1596,28 +1567,26 @@
     if (elDesignPct) elDesignPct.textContent = pctDesign + '%';
     if (elReleased) elReleased.textContent = safeReleased.toLocaleString();
     if (elReleasedPct) elReleasedPct.textContent = pctReleased + '%';
+    if (elRateText) elRateText.textContent = pctReleased + '%';
+    if (elRatioDesign) elRatioDesign.textContent = pctDesign + '% (' + safeDesign.toLocaleString() + ')';
+    if (elRatioReleased) elRatioReleased.textContent = pctReleased + '% (' + safeReleased.toLocaleString() + ')';
 
-    if (safeOther > 0) {
-      if (wrapOther) wrapOther.style.display = 'block';
-      if (elOther) elOther.textContent = safeOther.toLocaleString();
-      if (elOtherPct) elOtherPct.textContent = pctOther + '%';
-    } else {
-      if (wrapOther) wrapOther.style.display = 'none';
-    }
+    if (barDesign) barDesign.style.width = pctDesign + '%';
+    if (barReleased) barReleased.style.width = pctReleased + '%';
 
-    // Dữ liệu cho Pie / Doughnut
+    // Dữ liệu cho Pie / Doughnut: CHỈ 2 TRẠNG THÁI (Đang được thiết kế & Đã ban hành)
     var labels = [];
     var data = [];
     var bgColors = [];
     var hoverColors = [];
 
-    if (safeTotal === 0) {
+    if (sumTwo === 0) {
       labels = ['Chưa có dữ liệu'];
       data = [1];
       bgColors = ['#e2e8f0'];
       hoverColors = ['#cbd5e1'];
     } else {
-      labels.push('Đang được thiết kế');
+      labels.push('Chưa ban hành');
       data.push(safeDesign);
       bgColors.push('#f59e0b');
       hoverColors.push('#d97706');
@@ -1626,13 +1595,6 @@
       data.push(safeReleased);
       bgColors.push('#10b981');
       hoverColors.push('#059669');
-
-      if (safeOther > 0) {
-        labels.push('Chờ duyệt & ban hành');
-        data.push(safeOther);
-        bgColors.push('#3b82f6');
-        hoverColors.push('#2563eb');
-      }
     }
 
     if (dashChartFyePieInstance) {
@@ -1652,7 +1614,7 @@
           data: data,
           backgroundColor: bgColors,
           hoverBackgroundColor: hoverColors,
-          borderWidth: 2,
+          borderWidth: 3,
           borderColor: '#ffffff',
           hoverOffset: 6
         }]
@@ -1662,17 +1624,10 @@
         animation: false,
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '68%',
+        cutout: '70%',
         plugins: {
           legend: {
-            display: true,
-            position: 'bottom',
-            labels: {
-              usePointStyle: true,
-              boxWidth: 8,
-              padding: 14,
-              font: { family: 'Inter, sans-serif', size: 12, weight: '500' }
-            }
+            display: false
           },
           tooltip: {
             backgroundColor: '#1e293b',
@@ -1682,10 +1637,10 @@
             cornerRadius: 8,
             callbacks: {
               label: function (context) {
-                if (safeTotal === 0) return 'Chưa có bản vẽ';
+                if (sumTwo === 0) return 'Chưa có bản vẽ';
                 var val = context.raw || 0;
-                var pct = Math.round((val / safeTotal) * 100);
-                return ' ' + context.label + ': ' + val + ' bản vẽ (' + pct + '%)';
+                var pct = Math.round((val / sumTwo) * 100);
+                return ' ' + context.label + ': ' + val.toLocaleString() + ' bản vẽ (' + pct + '%)';
               }
             }
           }
@@ -1693,12 +1648,10 @@
         onClick: function (e, elements, chart) {
           if (elements.length > 0) {
             var label = chart.data.labels[elements[0].index];
-            if (label.indexOf('thiết kế') !== -1) {
+            if (label.indexOf('Chưa') !== -1) {
               setKpiFilter(globalFilters.kpi === 'design' ? 'all' : 'design');
-            } else if (label.indexOf('ban hành') !== -1 && label.indexOf('Chờ') === -1) {
+            } else if (label.indexOf('Đã ban hành') !== -1) {
               setKpiFilter(globalFilters.kpi === 'released' ? 'all' : 'released');
-            } else if (label.indexOf('Chờ') !== -1) {
-              setKpiFilter(globalFilters.kpi === 'sign' ? 'all' : 'sign');
             }
           }
         }
@@ -1706,33 +1659,43 @@
     });
   }
 
-  function renderDashCharts(projectCountsByMonth, newCountsByMonth, reviseCountsByMonth, fyeMonthLabels) {
+  var dashChart3Instance = null;
+
+  function renderDashCharts(customerCountsByMonth, newCountsByMonth, reviseCountsByMonth, fyeMonthLabels, typeByMonthMap) {
     if (typeof Chart === 'undefined') return;
 
-    // CHART 1: DỰ ÁN
+    // CHART 1: KHÁCH HÀNG (Bỏ mục chọn khách hàng theo yêu cầu)
     var ctx1 = document.getElementById('chartReceptionStatus').getContext('2d');
 
     var colorPalette = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316', '#6366f1', '#84cc16'];
-    var projectDatasets = [], colorIdx = 0;
-    for (var p in projectCountsByMonth) {
-      projectDatasets.push({ label: p, data: projectCountsByMonth[p], backgroundColor: colorPalette[colorIdx % colorPalette.length], borderRadius: 4 });
+    var customerDatasets = [], colorIdx = 0;
+    for (var c in customerCountsByMonth) {
+      customerDatasets.push({ label: c, data: customerCountsByMonth[c], backgroundColor: colorPalette[colorIdx % colorPalette.length], borderRadius: 4 });
       colorIdx++;
     }
 
     if (dashChart1Instance) {
       dashChart1Instance.data.labels = fyeMonthLabels;
-      dashChart1Instance.data.datasets = projectDatasets;
+      dashChart1Instance.data.datasets = customerDatasets;
+      if (dashChart1Instance.options && dashChart1Instance.options.plugins && dashChart1Instance.options.plugins.legend) {
+        dashChart1Instance.options.plugins.legend.display = false;
+      }
       dashChart1Instance.update('none');
     }
 
     if (!dashChart1Instance) dashChart1Instance = new Chart(ctx1, {
       type: 'bar',
-      data: { labels: fyeMonthLabels, datasets: projectDatasets },
+      data: { labels: fyeMonthLabels, datasets: customerDatasets },
       options: {
         ...chartInteractionOptions,
         animation: false,
         responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: commonTooltip },
+        plugins: {
+          legend: {
+            display: false // Bỏ hoàn toàn các mục chọn khách hàng
+          },
+          tooltip: commonTooltip
+        },
         scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
         onClick: function (e, elements, chart) {
           if (elements.length > 0) {
@@ -1740,10 +1703,10 @@
             var dashMonthFilter = document.getElementById('dashMonthFilter');
             if (dashMonthFilter) dashMonthFilter.value = globalFilters.month;
 
-            globalFilters.project = chart.data.datasets[elements[0].datasetIndex].label;
+            var custName = chart.data.datasets[elements[0].datasetIndex].label;
             var searchInput = document.getElementById('dashSearchInput');
-            globalFilters.search = globalFilters.project.toLowerCase();
-            if (searchInput) searchInput.value = globalFilters.project;
+            globalFilters.search = custName.toLowerCase();
+            if (searchInput) searchInput.value = custName;
             updateDashboardStats(); // Gọi lại để lọc toàn bộ màn hình
           }
         }
@@ -1757,36 +1720,79 @@
       dashChart2Instance.data.datasets[0].data = newCountsByMonth;
       dashChart2Instance.data.datasets[1].data = reviseCountsByMonth;
       dashChart2Instance.update('none');
-      return;
-    }
-
-    dashChart2Instance = new Chart(ctx2, {
-      type: 'bar',
-      data: {
-        labels: fyeMonthLabels,
-        datasets: [
-          { label: 'Thiết kế mới (NEW)', data: newCountsByMonth, backgroundColor: '#3b82f6', borderRadius: 4 },
-          { label: 'Chỉnh sửa (REVISE)', data: reviseCountsByMonth, backgroundColor: '#6366f1', borderRadius: 4 }
-        ]
-      },
-      options: {
-        ...chartInteractionOptions,
-        animation: false,
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: commonTooltip },
-        scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
-        onClick: function (e, elements, chart) {
-          if (elements.length > 0) {
-            globalFilters.month = chart.data.labels[elements[0].index];
-            var dashMonthFilter = document.getElementById('dashMonthFilter');
-            if (dashMonthFilter) dashMonthFilter.value = globalFilters.month;
-
-            globalFilters.isNew = (elements[0].datasetIndex === 0); // index 0 là NEW, 1 là REVISE
-            updateDashboardStats();
+    } else {
+      dashChart2Instance = new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: fyeMonthLabels,
+          datasets: [
+            { label: 'Thiết kế mới (NEW)', data: newCountsByMonth, backgroundColor: '#3b82f6', borderRadius: 4 },
+            { label: 'Chỉnh sửa (REVISE)', data: reviseCountsByMonth, backgroundColor: '#6366f1', borderRadius: 4 }
+          ]
+        },
+        options: {
+          ...chartInteractionOptions,
+          animation: false,
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } }, tooltip: commonTooltip },
+          scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
+          onClick: function (e, elements, chart) {
+            if (elements.length > 0) {
+              globalFilters.month = chart.data.labels[elements[0].index];
+              var dashMonthFilter = document.getElementById('dashMonthFilter');
+              if (dashMonthFilter) dashMonthFilter.value = globalFilters.month;
+              globalFilters.isNew = (elements[0].datasetIndex === 0);
+              updateDashboardStats();
+            }
           }
         }
+      });
+    }
+
+    // CHART 3: BARSALE / OEM / WE SASH THEO THÁNG
+    var ctx3El = document.getElementById('chartTypeByMonth');
+    if (ctx3El && typeByMonthMap) {
+      var typeData3 = [
+        { label: 'BARSALE', data: typeByMonthMap['BARSALE'] || new Array(12).fill(0), backgroundColor: '#f59e0b', borderRadius: 4 },
+        { label: 'OEM', data: typeByMonthMap['OEM'] || new Array(12).fill(0), backgroundColor: '#3b82f6', borderRadius: 4 },
+        { label: 'WE SASH', data: typeByMonthMap['WE SASH'] || new Array(12).fill(0), backgroundColor: '#10b981', borderRadius: 4 }
+      ];
+      if (dashChart3Instance) {
+        dashChart3Instance.data.labels = fyeMonthLabels;
+        dashChart3Instance.data.datasets.forEach(function(ds, i) { ds.data = typeData3[i].data; });
+        dashChart3Instance.update('none');
+      } else {
+        var ctx3 = ctx3El.getContext('2d');
+        dashChart3Instance = new Chart(ctx3, {
+          type: 'bar',
+          data: { labels: fyeMonthLabels, datasets: typeData3 },
+          options: {
+            ...chartInteractionOptions,
+            animation: false,
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
+              tooltip: commonTooltip
+            },
+            scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
+            onClick: function (e, elements, chart) {
+              if (elements.length > 0) {
+                globalFilters.month = chart.data.labels[elements[0].index];
+                var dashMonthFilter = document.getElementById('dashMonthFilter');
+                if (dashMonthFilter) dashMonthFilter.value = globalFilters.month;
+                var dsIdx = elements[0].datasetIndex;
+                var typeFilters = ['BARSALE', 'OEM', 'WE SASH'];
+                globalFilters.type = typeFilters[dsIdx] || 'ALL';
+                var typeBtns = document.querySelectorAll('#dashTypeBtnGroup .btn');
+                typeBtns.forEach(function(b) { b.classList.remove('active'); });
+                typeBtns.forEach(function(b) { if (b.dataset.typeFilter === globalFilters.type) b.classList.add('active'); });
+                updateDashboardStats();
+              }
+            }
+          }
+        });
       }
-    });
+    }
   }
 
   // ==========================================
@@ -1796,7 +1802,18 @@
     var tbody = document.getElementById('dashRecentTableBody');
     if (!tbody) return;
 
-    dashboardFullRows = Array.isArray(dataList) ? dataList : [];
+    if (dataList !== dashboardFullRows) {
+      dashboardFullRows = (Array.isArray(dataList) ? dataList.slice() : []).sort(function (a, b) {
+        var dateA = parseDashboardDate(getRowValue(a, 'date'));
+        var dateB = parseDashboardDate(getRowValue(b, 'date'));
+        var timeA = dateA ? dateA.getTime() : 0;
+        var timeB = dateB ? dateB.getTime() : 0;
+        if (timeB !== timeA) return timeB - timeA; // Ngày gần nhất (mới nhất) lên trước, xa nhất xuống dưới
+        var idA = parseInt(getRowValue(a, 'id'), 10) || 0;
+        var idB = parseInt(getRowValue(b, 'id'), 10) || 0;
+        return idB - idA;
+      });
+    }
 
     if (dashboardFullRows.length === 0) {
       tbody.innerHTML = '<tr><td colspan="11" class="text-center text-muted py-5"><i class="bi bi-inbox fs-1 d-block mb-2 text-black-50"></i>Không có dữ liệu trùng khớp.</td></tr>';
@@ -1849,10 +1866,22 @@
       var dateHtml = '<div class="text-start d-flex flex-column gap-1 mx-auto" style="font-size: 0.75rem; width: fit-content;">';
       dateHtml += '<div title="Ngày tiếp nhận"><i class="bi bi-box-arrow-in-right text-secondary me-1"></i> <span class="fw-medium text-dark">' + String(date).replace(/</g, '&lt;') + '</span></div>';
 
+      var stLower = st.toLowerCase();
+      var isCompleted = stLower.includes('đã ban hành') || stLower.includes('released');
+      var hasCompletedDate = completionDate && completionDate !== '—' && completionDate.trim() !== '';
       var isLate = false;
-      if (estimatedCompletionDate !== '—' && completionDate === '—') {
-        var tmDate = new Date(estimatedCompletionDate);
-        if (!isNaN(tmDate.getTime()) && tmDate < new Date()) isLate = true;
+
+      if (!isCompleted && !hasCompletedDate && estimatedCompletionDate && estimatedCompletionDate !== '—') {
+        var tmDate = parseDashboardDate(estimatedCompletionDate);
+        if (tmDate) {
+          var today = new Date();
+          today.setHours(0, 0, 0, 0);
+          var compDay = new Date(tmDate.getTime());
+          compDay.setHours(0, 0, 0, 0);
+          if (compDay < today) {
+            isLate = true;
+          }
+        }
       }
       var tmColor = isLate ? 'text-danger fw-bold' : 'text-primary fw-medium';
 
@@ -1863,7 +1892,6 @@
 
       var badgeClass = 'bg-secondary text-white';
       var stt = 'Chưa xác định';
-      var stLower = st.toLowerCase();
       var stIcon = 'bi-circle';
 
       if (stLower.includes('đang ban hành') || stLower.includes('chờ ban hành')) {
@@ -1874,9 +1902,25 @@
         badgeClass = 'bg-success text-white';
         stt = 'Đã ban hành';
         stIcon = 'bi-check-circle-fill';
+      } else if (stLower.includes('chờ checker') && !stLower.includes('chờ checker 1') && !stLower.includes('chờ checker 2')) {
+        badgeClass = 'bg-primary text-white';
+        stt = 'Chờ Checker xác nhận';
+        stIcon = 'bi-shield-check';
+      } else if (stLower.includes('chờ checker 1') || stLower.includes('checker 1')) {
+        badgeClass = 'bg-warning text-dark';
+        stt = 'Chờ Leader';
+        stIcon = 'bi-person-check-fill';
+      } else if (stLower.includes('chờ checker 2') || stLower.includes('checker 2')) {
+        badgeClass = 'bg-warning text-dark';
+        stt = 'Chờ MGR';
+        stIcon = 'bi-person-check-fill';
+      } else if (stLower.includes('chờ approval') || stLower.includes('approval')) {
+        badgeClass = 'bg-orange text-white';
+        stt = 'Chờ GM';
+        stIcon = 'bi-person-fill-check';
       } else if (stLower.includes('checker') || stLower.includes('approval')) {
         badgeClass = 'bg-warning text-dark';
-        stt = 'Đang trình ký';
+        stt = 'Chờ Leader';
         stIcon = 'bi-pencil-square';
       } else if (stLower.includes('trả về charger') || stLower.includes('returned')) {
         badgeClass = 'bg-danger text-white';
@@ -1893,7 +1937,10 @@
       }
 
       var tr = document.createElement('tr');
-      tr.className = 'align-middle border-bottom border-light hover-bg-light transition-all';
+      tr.className = 'align-middle border-bottom border-light transition-all' + (isLate ? ' row-late table-danger' : ' hover-bg-light');
+      if (isLate) {
+        tr.style.backgroundColor = '#fef2f2';
+      }
       tr.innerHTML = [
         '<td class="d-none">' + String(id).replace(/</g, '&lt;') + '</td>',
         '<td class="d-none">' + String(group).replace(/</g, '&lt;') + '</td>',

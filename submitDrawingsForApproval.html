@@ -294,7 +294,7 @@
   }
   .page-submitDrawingsForApproval .level-card-group {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 8px;
   }
   .page-submitDrawingsForApproval .card-level {
@@ -581,6 +581,17 @@
 <script>
   let currentApprovalTab = 'ALL';
   let approvalRowsData = [];
+  let approvalRenderScheduled = false;
+  let approvalInitInFlight = false;
+
+  function scheduleApprovalRender() {
+    if (approvalRenderScheduled) return;
+    approvalRenderScheduled = true;
+    requestAnimationFrame(function () {
+      approvalRenderScheduled = false;
+      renderApprovalTable();
+    });
+  }
 
   document.querySelector('.page-submitDrawingsForApproval').addEventListener('click', function (event) {
     var tabButton = event.target.closest('[data-approval-tab]');
@@ -633,18 +644,14 @@
 
   function getLevelStates(status) {
     const st = cleanStr(status);
-    // 'Chờ Duyệt' = vừa submit lần đầu, Checker 1 đang chờ ký
-    if (st.includes('cho duyet') || st.includes('cho checker 1') || st.includes('checker1')) return ['waiting', 'pending', 'pending'];
-    // 'Chờ Checker 2' = Checker 1 đã ký xong
-    if (st.includes('cho checker 2') || st.includes('checker 2')) return ['done', 'waiting', 'pending'];
-    // 'Chờ Approval' = Checker 2 đã ký xong
-    if (st.includes('cho approval') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')) return ['done', 'done', 'waiting'];
-    // 'Chờ ban hành' = Approval đã ký xong, chờ ban hành lên hệ thống
-    if (st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')) return ['done', 'done', 'done'];
-    // 'Hoàn thành' = Approval đã ký xong
-    if (st.includes('hoan thanh') || st.includes('done') || st.includes('released')) return ['done', 'done', 'done'];
-    // Mặc định: Checker 1 chờ
-    return ['waiting', 'pending', 'pending'];
+    // Pipeline: Checker xác nhận -> Checker 1 ký -> Checker 2 ký -> Approval ký.
+    if (st.includes('cho checker') && !st.includes('cho checker 1') && !st.includes('cho checker 2')) return ['waiting', 'pending', 'pending', 'pending'];
+    if (st.includes('cho duyet') || st.includes('cho checker 1') || st.includes('checker1')) return ['done', 'waiting', 'pending', 'pending'];
+    if (st.includes('cho checker 2') || st.includes('checker 2')) return ['done', 'done', 'waiting', 'pending'];
+    if (st.includes('cho approval') || st.includes('approval') || st.includes('duyet') || st.includes('trinh ky')) return ['done', 'done', 'done', 'waiting'];
+    if (st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')) return ['done', 'done', 'done', 'done'];
+    if (st.includes('hoan thanh') || st.includes('done') || st.includes('released')) return ['done', 'done', 'done', 'done'];
+    return ['waiting', 'pending', 'pending', 'pending'];
   }
 
   function stateLabel(s) {
@@ -662,6 +669,7 @@
       .replace(/[^a-z0-9]/g, '')
       .trim();
     if (clean === 'leader' || clean === 'kiemtra1' || clean === 'check1') return 'checker1';
+    if (clean === 'checker' || clean === 'kiemtraso') return 'checker';
     if (clean === 'mgr' || clean === 'manager' || clean === 'kiemtra2' || clean === 'check2') return 'checker2';
     if (clean === 'gm' || clean === 'gmqa' || clean === 'pheduyet') return 'approval';
     if (clean === 'st' || clean === 'soanthao' || clean === 'chager' || clean === 'charge') return 'charger';
@@ -675,6 +683,25 @@
     return st === 'cho ban hanh';
   }
 
+  function isApproveEligibleRow(row) {
+    if (!row) return false;
+    const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
+    const [checker, c1, c2, c3] = getLevelStates(String(row[COL_MAP.STATUS] || ''));
+    if (currentPosition === 'checker') {
+      return checker === 'waiting';
+    }
+    if (currentPosition.includes('checker1') || currentPosition.includes('c1')) {
+      return c1 === 'waiting';
+    }
+    if (currentPosition.includes('checker2') || currentPosition.includes('c2')) {
+      return c2 === 'waiting';
+    }
+    if (currentPosition.includes('approval') || currentPosition.includes('approver') || currentPosition.includes('gmqa')) {
+      return c3 === 'waiting';
+    }
+    return c1 === 'waiting' || c2 === 'waiting' || c3 === 'waiting';
+  }
+
   function canUserApproveLevel(levelName) {
     const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
     if (!currentPosition) return false;
@@ -683,6 +710,7 @@
     if (!target) return false;
 
     const allowedMap = {
+      checker: ['checker'],
       checker1: ['checker1', 'c1'],
       checker2: ['checker2', 'c2'],
       approval: ['approval', 'approver', 'gmqa', 'qa', 'gmqa'],
@@ -708,19 +736,19 @@
       if (!approvalSearchDebounce) {
         approvalSearchDebounce = window.appDebounce(function () {
           approvalCurrentPage = 1;
-          renderApprovalTable();
+          scheduleApprovalRender();
         }, 250);
       }
       approvalSearchDebounce();
     } else {
       approvalCurrentPage = 1;
-      renderApprovalTable();
+      scheduleApprovalRender();
     }
   }
 
   function changeApprovalPage(delta) {
     approvalCurrentPage += delta;
-    renderApprovalTable();
+    scheduleApprovalRender();
   }
 
   function updateApprovalPaginationUI(total, start, end, page, totalPages) {
@@ -751,13 +779,18 @@
       let el = document.getElementById(btnId);
       if (el) el.classList.toggle('active', t === tabName);
     });
-    renderApprovalTable();
+    scheduleApprovalRender();
   }
 
   function initSubmitApproval() {
+    if (approvalInitInFlight) return;
+    approvalInitInFlight = true;
     if (window.__recordAppTiming) window.__recordAppTiming('submitApproval.init.start');
     const tbody = document.getElementById('approvalTableBody');
-    if (!tbody) return;
+    if (!tbody) {
+      approvalInitInFlight = false;
+      return;
+    }
     approvalCurrentPage = 1;
 
     const rawData = (Array.isArray(window.pageData) && window.pageData.length > 0)
@@ -765,6 +798,7 @@
       : ((typeof pageData !== 'undefined' && Array.isArray(pageData)) ? pageData : []);
     if (!rawData || rawData.length === 0) { 
       tbody.innerHTML = '<tr><td colspan="10" class="text-center py-5 text-muted"><span class="spinner-border spinner-border-sm text-primary me-2"></span> Đang tải dữ liệu trình ký...</td></tr>';
+      approvalInitInFlight = false;
       return; 
     }
 
@@ -796,23 +830,32 @@
         return isTarget || (hasPdf && !st.includes('hoan thanh') && !st.includes('done') && !st.includes('released'));
       }
 
-      // Checker 1: Chỉ xem bản vẽ chờ Checker 1 (Chờ Duyệt)
+      // Checker: chỉ xem bản vẽ đang chờ xác nhận trước.
+      if (currentPosition === 'checker') {
+        return st.includes('cho checker') && !st.includes('cho checker 1') && !st.includes('cho checker 2');
+      }
+
+      // Checker 1: Xem bản vẽ chờ Checker 1 và bản vẽ đã chuyển sang Checker 2 (để coi lại PDF đã ký)
       if (currentPosition.includes('checker1') || currentPosition.includes('c1')) {
         const isChecker1Waiting = st.includes('cho duyet') || st.includes('cho checker 1') || st.includes('checker1');
-        return isChecker1Waiting;
+        const isChecker2Waiting = st.includes('cho checker 2') || st.includes('checker 2') || st.includes('checker2');
+        return isChecker1Waiting || isChecker2Waiting;
       }
 
-      // Checker 2: Chỉ xem bản vẽ chờ Checker 2
+      // Checker 2: Xem bản vẽ chờ Checker 2 và bản vẽ đã chuyển sang Approval (để coi lại PDF đã ký)
       if (currentPosition.includes('checker2') || currentPosition.includes('c2')) {
         const isChecker2Waiting = st.includes('cho checker 2') || st.includes('checker 2') || st.includes('checker2');
-        return isChecker2Waiting;
+        const isApprovalWaiting = st.includes('cho approval') || st.includes('approval') || st.includes('gmqa') || st.includes('trinh ky');
+        return isChecker2Waiting || isApprovalWaiting;
       }
 
-      // Approval (GM QA): Chỉ xem bản vẽ chờ Approval
+      // Approval (GM QA): Xem bản vẽ chờ Approval và bản vẽ Approval đã ký duyệt (Chờ ban hành, Ban hành, Đã ban hành...)
       if (currentPosition.includes('approval') || currentPosition.includes('approver') || currentPosition.includes('gmqa')) {
         const isApprovalWaiting = st.includes('cho approval') || st.includes('approval') || st.includes('gmqa')
           || st.includes('trinh ky');
-        return isApprovalWaiting;
+        const isApprovedByApproval = st.includes('cho ban hanh') || st.includes('ban hanh') || st.includes('dang ban hanh')
+          || st.includes('hoan thanh') || st.includes('done') || st.includes('released');
+        return isApprovalWaiting || isApprovedByApproval;
       }
 
       // Mặc định: không hiển thị
@@ -820,7 +863,8 @@
     });
 
     if (window.__recordAppTiming) window.__recordAppTiming('submitApproval.init.complete');
-    renderApprovalTable();
+    approvalInitInFlight = false;
+    scheduleApprovalRender();
   }
 
   function renderApprovalTable() {
@@ -889,11 +933,11 @@
     const version = row[COL_MAP.VERSION] || '0';
     const project = row[COL_MAP.PROJECT] || '—';
     const customer = row[COL_MAP.CUSTOMER] || 'Chưa rõ KH';
-    const statusRaw = String(row[COL_MAP.STATUS] || 'Chờ Duyệt').trim();
+    const statusRaw = String(row[COL_MAP.STATUS] || 'Chờ Checker').trim();
     const pdfUrl = String(row[COL_MAP.PDF_LINK_AF] || row[COL_MAP.PDF_LINK_O] || '');
     if (id) window._approvalPdfMap[id] = pdfUrl;
 
-    const [c1, c2, c3] = getLevelStates(statusRaw);
+    const [checker, c1, c2, c3] = getLevelStates(statusRaw);
     const hasPdf = pdfUrl.includes('http');
     const st = cleanStr(statusRaw);
 
@@ -910,9 +954,12 @@
       : `<button class="btn-view-pdf" disabled><i class="bi bi-file-earmark-pdf"></i> N/A</button>`;
 
     const rowActionHtml = isReleaseStatus
-      ? `<button class="btn-step-approve shadow-sm" data-row-id="${id}" data-dw-no="${dwNo}" onclick="event.stopPropagation(); openBulkReleaseFormForRow('${id}', '${dwNo}')">
-          <i class="fa fa-rocket me-1"></i> Gửi ban hành
-        </button>`
+      ? `<div class="d-flex gap-1 justify-content-center align-items-center flex-wrap">
+          ${pdfBtn}
+          <button class="btn-step-approve shadow-sm" data-row-id="${id}" data-dw-no="${dwNo}" onclick="event.stopPropagation(); openBulkReleaseFormForRow('${id}', '${dwNo}')" title="Gửi ban hành lên QA System">
+            <i class="fa fa-rocket me-1"></i> Gửi ban hành
+          </button>
+        </div>`
       : pdfBtn;
 
     const mkActions = (state, id, dwNo, level, label) => {
@@ -932,10 +979,15 @@
         </div>`;
     };
 
+    const canActOnRow = isApproveEligibleRow(row) || isReleaseEligibleRow(row);
+    const cbDisabled = canActOnRow ? '' : 'disabled';
+    const cbTitle = canActOnRow ? '' : 'title="Bản vẽ đã hoàn tất cấp duyệt của bạn hoặc đang chờ cấp tiếp theo"';
+    const cbCursor = canActOnRow ? 'cursor: pointer;' : 'cursor: not-allowed; opacity: 0.38;';
+
     return `
     <tr id="dw-card-${id}" class="dw-row" onclick="toggleRowDetail('${id}')">
       <td class="text-center" onclick="event.stopPropagation();">
-        <input type="checkbox" class="form-check-input approval-row-checkbox" data-row-id="${id}" data-row-index="${sourceRowIndex}" onchange="updateBulkApproveButtonVisibility(); updateBulkReleaseButtonVisibility();" style="cursor: pointer;">
+        <input type="checkbox" class="form-check-input approval-row-checkbox" data-row-id="${id}" data-row-index="${sourceRowIndex}" onchange="updateBulkApproveButtonVisibility(); updateBulkReleaseButtonVisibility();" ${cbDisabled} ${cbTitle} style="${cbCursor}">
       </td>
       <td class="text-center fw-bold text-secondary">${idx + 1}</td>
       <td><span class="badge bg-light text-dark border px-2 py-1">${type}</span></td>
@@ -950,7 +1002,9 @@
       <td><span class="chip-cust"><i class="bi bi-building me-1"></i>${customer}</span></td>
       <td class="text-center">
         <span class="status-badge mb-1" style="background:${bb};color:${bc};">${statusRaw}</span>
-        <div class="pipeline-dots d-flex justify-content-center mt-1" title="Cấp 1: Checker 1  ->  Cấp 2: Checker 2  ->  Cấp 3: Approval">
+        <div class="pipeline-dots d-flex justify-content-center mt-1" title="Checker xác nhận  ->  Checker 1  ->  Checker 2  ->  Approval">
+          <span class="dot" data-state="${checker}" title="Xác nhận trước - Checker"></span>
+          <div class="dot-connector"></div>
           <span class="dot" data-state="${c1}" title="Cấp 1 - Checker 1"></span>
           <div class="dot-connector"></div>
           <span class="dot" data-state="${c2}" title="Cấp 2 - Checker 2"></span>
@@ -966,6 +1020,15 @@
       <td colspan="10" class="p-0 border-0">
         <div class="detail-expand-container shadow-inner">
           <div class="level-card-group">
+            <div class="card-level ${checker}">
+              <div class="card-level-header">
+                <div class="level-title"><i class="bi bi-shield-check text-info fs-5"></i> Xác nhận trước — Checker</div>
+                ${stateLabel(checker)}
+              </div>
+              <div class="level-desc">Kiểm tra trước khi chuyển sang Checker 1. Không đóng dấu lên PDF.</div>
+              ${mkActions(checker, id, dwNo, 'Checker', 'Xác nhận')}
+            </div>
+
             <div class="card-level ${c1}">
               <div class="card-level-header">
                 <div class="level-title"><i class="bi bi-1-circle-fill text-primary fs-5"></i> Duyệt cấp 1 — Checker 1</div>
@@ -1073,6 +1136,15 @@
     handleApprove(rowId, dwNo, level, pdfUrl, btnEl);
   }
 
+  function confirmCheckerOnServer(rowId) {
+    return new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)
+        .approveDrawingOnServer(rowId, 'Checker');
+    });
+  }
+
   async function handleApprove(rowId, dwNo, level, passedPdfUrl, triggerBtn) {
     if (_isApprovingSingle) return;
 
@@ -1090,6 +1162,23 @@
       }
 
       try {
+        if (level === 'Checker') {
+          showApprovalLoading('Đang xác nhận trước khi chuyển tới Checker 1...');
+          await confirmCheckerOnServer(rowId);
+          hideApprovalLoading();
+          if (typeof Swal !== 'undefined') {
+            Swal.fire({
+              title: 'Đã xác nhận',
+              text: `Bản vẽ ${dwNo} đã được chuyển tới Checker 1.`,
+              icon: 'success'
+            });
+          }
+          if (targetRow) targetRow[COL_MAP.STATUS] = 'Chờ Checker 1';
+          if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
+          scheduleApprovalRender();
+          return;
+        }
+
         if (!pdfUrl || !pdfUrl.includes('http')) {
           throw new Error("Bản vẽ này chưa có đường dẫn file PDF đính kèm trên Google Drive để thực hiện đóng dấu chữ ký!");
         }
@@ -1174,11 +1263,19 @@
           });
         }
 
-        const el = document.getElementById('dw-card-' + rowId);
-        const detailEl = document.getElementById('detail-row-' + rowId);
-        if (el) el.remove();
-        if (detailEl) detailEl.remove();
+        // Cập nhật trạng thái và URL PDF mới trong danh sách để giữ bản vẽ trên giao diện cho phép xem lại
+        if (targetRow) {
+          let nextSt = 'Chờ Checker 2';
+          if (level === 'Checker 2') nextSt = 'Chờ Approval';
+          else if (level === 'Approval' || level === 'Approver') nextSt = 'Chờ ban hành';
+          targetRow[COL_MAP.STATUS] = nextSt;
+          if (signedPdfUrl) {
+            targetRow[COL_MAP.PDF_LINK_AF] = signedPdfUrl;
+            if (rowId) window._approvalPdfMap[rowId] = signedPdfUrl;
+          }
+        }
         if (typeof AppDataStore !== 'undefined') AppDataStore.invalidate('mainData');
+        scheduleApprovalRender();
 
       } catch (err) {
         console.error('handleApprove error:', err);
@@ -1292,21 +1389,15 @@
 
   function toggleSelectAllApprovals() {
     const checkbox = document.getElementById('selectAllApprovals') || document.getElementById('headerApprovalCheckbox');
-    const allCheckboxes = Array.from(document.querySelectorAll('.approval-row-checkbox'));
+    const allCheckboxes = Array.from(document.querySelectorAll('.approval-row-checkbox:not(:disabled)'));
 
     approvalBulkState.selectedRows.clear();
 
     if (checkbox && checkbox.checked) {
       allCheckboxes.forEach(cb => {
         const rowId = cb.getAttribute('data-row-id');
-        const row = (approvalRowsData || []).find(r => String(r[COL_MAP.ID] || '') === String(rowId));
-
-        if (isReleaseEligibleRow(row)) {
-          cb.checked = true;
-          if (rowId) approvalBulkState.selectedRows.add(rowId);
-        } else {
-          cb.checked = false;
-        }
+        cb.checked = true;
+        if (rowId) approvalBulkState.selectedRows.add(rowId);
       });
     } else {
       allCheckboxes.forEach(cb => cb.checked = false);
@@ -1396,21 +1487,23 @@
     const currentPosition = normalizeApprovalLevelName((typeof user !== 'undefined' && user && user.position) ? user.position : '');
     let availableLevels = [];
 
-    if (currentPosition.includes('checker1') || currentPosition.includes('c1')) {
+    if (currentPosition === 'checker') {
+      availableLevels = ['Checker'];
+    } else if (currentPosition.includes('checker1') || currentPosition.includes('c1')) {
       availableLevels = ['Checker 1'];
     } else if (currentPosition.includes('checker2') || currentPosition.includes('c2')) {
       availableLevels = ['Checker 2'];
     } else if (currentPosition.includes('approval') || currentPosition.includes('approver') || currentPosition.includes('gmqa')) {
       availableLevels = ['Approval'];
     } else {
-      availableLevels = ['Checker 1', 'Checker 2', 'Approval'];
+      availableLevels = ['Checker', 'Checker 1', 'Checker 2', 'Approval'];
     }
 
     if (typeof Swal !== 'undefined') {
       Swal.fire({
-        title: `Ký hàng loạt (${approvalBulkState.selectedRows.size} bản vẽ)`,
+        title: `Xử lý hàng loạt (${approvalBulkState.selectedRows.size} bản vẽ)`,
         html: `
-          <p style="margin-bottom: 15px; text-align: left;">Chọn cấp ký cho <strong>${approvalBulkState.selectedRows.size}</strong> bản vẽ:</p>
+          <p style="margin-bottom: 15px; text-align: left;">Chọn cấp xử lý cho <strong>${approvalBulkState.selectedRows.size}</strong> bản vẽ:</p>
           <select id="bulkApproveLevel" class="form-select" style="font-size: 0.95rem;">
             ${availableLevels.map(l => `<option value="${l}">${l}</option>`).join('')}
           </select>
@@ -1838,6 +1931,12 @@
           const dwNo = targetRow[COL_MAP.DW_NO] || 'Unknown';
           const pdfUrl = String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '');
 
+          const [checker, c1, c2, c3] = getLevelStates(String(targetRow[COL_MAP.STATUS] || ''));
+          if (level === 'Checker' && checker !== 'waiting') continue;
+          if (level === 'Checker 1' && c1 !== 'waiting') continue;
+          if (level === 'Checker 2' && c2 !== 'waiting') continue;
+          if ((level === 'Approval' || level === 'Approver') && c3 !== 'waiting') continue;
+
           // Gọi handleApprove nhưng bỏ Swal confirm
           await new Promise(resolve => {
             handleApproveInternal(rowId, dwNo, level, pdfUrl, () => {
@@ -1862,9 +1961,10 @@
       Swal.fire('Hoàn thành!', `Đã ký thành công: ${successCount}/${selectedRowIds.length} bản vẽ.${failCount > 0 ? `\nLỗi: ${failCount}` : ''}`, 'success');
     }
 
-    // Clear selection
+    // Clear selection và re-render bảng để giữ bản vẽ đã ký cho phép coi lại
     approvalBulkState.selectedRows.clear();
     updateBulkApproveButtonVisibility();
+    scheduleApprovalRender();
   }
 
   // Wrapper để gọi handleApprove mà không có Swal confirm
@@ -1878,6 +1978,13 @@
     const pdfUrl = (passedPdfUrl && passedPdfUrl.includes('http')) ? passedPdfUrl : (targetRow ? String(targetRow[COL_MAP.PDF_LINK_AF] || targetRow[COL_MAP.PDF_LINK_O] || '') : '');
 
     try {
+      if (level === 'Checker') {
+        await confirmCheckerOnServer(rowId);
+        if (targetRow) targetRow[COL_MAP.STATUS] = 'Chờ Checker 1';
+        onSuccess();
+        return;
+      }
+
       if (!pdfUrl || !pdfUrl.includes('http')) {
         throw new Error("Bản vẽ này chưa có đường dẫn file PDF!");
       }
@@ -1929,8 +2036,7 @@
         reader.readAsDataURL(signedPdfBlob);
       });
 
-      // Lưu file và cập nhật status
-      await new Promise((resolve, reject) => {
+      const signedPdfUrl = await new Promise((resolve, reject) => {
         google.script.run
           .withSuccessHandler(resolve)
           .withFailureHandler(reject)
@@ -1944,11 +2050,17 @@
           .approveDrawingOnServer(rowId, level);
       });
 
-      // Xóa hàng khỏi table
-      const el = document.getElementById('dw-card-' + rowId);
-      const detailEl = document.getElementById('detail-row-' + rowId);
-      if (el) el.remove();
-      if (detailEl) detailEl.remove();
+      // Cập nhật trạng thái và URL PDF trong targetRow
+      if (targetRow) {
+        let nextSt = 'Chờ Checker 2';
+        if (level === 'Checker 2') nextSt = 'Chờ Approval';
+        else if (level === 'Approval' || level === 'Approver') nextSt = 'Chờ ban hành';
+        targetRow[COL_MAP.STATUS] = nextSt;
+        if (signedPdfUrl) {
+          targetRow[COL_MAP.PDF_LINK_AF] = signedPdfUrl;
+          if (rowId) window._approvalPdfMap[rowId] = signedPdfUrl;
+        }
+      }
 
       onSuccess();
     } catch (err) {

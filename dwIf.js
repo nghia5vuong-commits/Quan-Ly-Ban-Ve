@@ -213,6 +213,7 @@ function getManufacturingEmails(page, keyword) {
           tag: detectTag(lastMsg.getSubject()),
 
           receivedProgress: emailProgressMap[threadId] || { total: 0, received: 0, complete: false, label: 'Chưa tiếp nhận' },
+          isInLog: !!emailProgressMap[threadId],
           isReceived: !!(emailProgressMap[threadId] && emailProgressMap[threadId].complete),
           isDrawingDone: !!(threadSoMap[threadId] && checkAdjustSoSet.has(threadSoMap[threadId])),
           drawingStatus: threadSoMap[threadId] && checkAdjustSoSet.has(threadSoMap[threadId]) ? 'Check SO OK' : 'Không có SO'
@@ -269,9 +270,25 @@ function getEmailDetail(threadId) {
     thread.markRead();
     var lastMsg = messages[messages.length - 1];
 
+    var isInLog = false;
+    try {
+      var ss = SpreadsheetApp.openById('1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM');
+      var logSheet = ss.getSheetByName('Log');
+      if (logSheet && logSheet.getLastRow() > 1) {
+        var threadValues = logSheet.getRange(2, 2, logSheet.getLastRow() - 1, 1).getValues();
+        for (var tIdx = 0; tIdx < threadValues.length; tIdx++) {
+          if (String(threadValues[tIdx][0] || '').trim() === String(threadId || '').trim()) {
+            isInLog = true;
+            break;
+          }
+        }
+      }
+    } catch (eLog) { }
+
     var detail = {
       success: true,
       threadId: threadId,
+      isInLog: isInLog,
       subject: lastMsg.getSubject(),
       messageCount: messages.length,
       messages: messageList
@@ -552,7 +569,7 @@ function getAttachmentForDownloadByUrl(fileUrl) {
   }
 }
 
-function saveToLogSheet(threadId, subject, parsedData, fullDataString) {
+function saveToLogSheet(threadId, subject, parsedData, fullDataString, clientUserEmail) {
   try {
     var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
     var ss = SpreadsheetApp.openById(sheetId);
@@ -562,9 +579,10 @@ function saveToLogSheet(threadId, subject, parsedData, fullDataString) {
       logSheet = ss.insertSheet('Log');
     }
 
-    var headers = logSheet.getRange(1, 1, 1, Math.max(8, logSheet.getLastColumn())).getValues()[0];
+    var headers = logSheet.getRange(1, 1, 1, Math.max(11, logSheet.getLastColumn())).getValues()[0];
     if (!headers[8]) logSheet.getRange(1, 9).setValue('TO NEW');
     if (!headers[9]) logSheet.getRange(1, 10).setValue('TO OLD');
+    if (!headers[10]) logSheet.getRange(1, 11).setValue('NGƯỜI TIẾP NHẬN');
 
     var timestamp = Utilities.formatDate(new Date(), MAIL_CONFIG.TIMEZONE, 'dd/MM/yyyy HH:mm:ss');
     var isMaterialSource = Array.isArray(parsedData.materialTos);
@@ -579,7 +597,9 @@ function saveToLogSheet(threadId, subject, parsedData, fullDataString) {
       : [];
     var classification = getLogToClassification(toValues, parsedData.customer || '', dataRows, false);
     var progress = getLogReceiptProgress(toValues, parsedData.customer || '', dataRows);
-    var rowData = [timestamp, threadId, subject, parsedData.customer || '', classification.newValues.join(', '), parsedData.so || '', progress.label, fullDataString || '', classification.newValues.join(', '), classification.oldValues.join(', ')];
+
+    var receiverEmail = String(clientUserEmail || getCurrentUserEmail() || '').trim();
+
     var existingRow = -1;
     if (logSheet.getLastRow() >= 2) {
       var threadValues = logSheet.getRange(2, 2, logSheet.getLastRow() - 1, 1).getValues();
@@ -590,13 +610,42 @@ function saveToLogSheet(threadId, subject, parsedData, fullDataString) {
         }
       }
     }
+
+    // Nếu không có receiverEmail mới nhưng dòng cũ đã có thì giữ lại
+    if (!receiverEmail && existingRow > 1) {
+      var prevReceiver = logSheet.getRange(existingRow, 11).getValue();
+      if (!prevReceiver) {
+        var prevStatus = String(logSheet.getRange(existingRow, 7).getValue() || '');
+        var match = prevStatus.match(/-\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+        if (match) prevReceiver = match[1];
+      }
+      if (prevReceiver) receiverEmail = String(prevReceiver).trim();
+    }
+
+    var statusLabel = progress.label + (receiverEmail ? ' - ' + receiverEmail : '');
+
+    var rowData = [
+      timestamp,
+      threadId,
+      subject,
+      parsedData.customer || '',
+      classification.newValues.join(', '),
+      parsedData.so || '',
+      statusLabel,
+      fullDataString || '',
+      classification.newValues.join(', '),
+      classification.oldValues.join(', '),
+      receiverEmail
+    ];
+
     if (existingRow > 1) logSheet.getRange(existingRow, 1, 1, rowData.length).setValues([rowData]);
     else logSheet.getRange(logSheet.getLastRow() + 1, 1, 1, rowData.length).setValues([rowData]);
     var cache = CacheService.getScriptCache();
     cache.remove("MAIL_STATS");
     cache.remove("MAIL_LIST_0_");
+    try { cache.remove("MAIL_DETAIL_" + String(threadId)); } catch (e) { }
 
-    return { success: true, message: 'Đã lưu tiếp nhận thiết kế thành công!', progress: progress };
+    return { success: true, message: 'Đã lưu tiếp nhận thiết kế thành công!', progress: progress, receiverEmail: receiverEmail };
   } catch (err) {
     return { success: false, error: err.toString() };
   }
@@ -778,8 +827,38 @@ function getCurrentUserEmail() {
   }
 }
 
-function saveDataToTestSheet(subject, matrixData, rowIdx) {
+function getDrawingSyncHistory_() {
   try {
+    var raw = PropertiesService.getUserProperties().getProperty('drawing_sync_history');
+    return raw ? JSON.parse(raw) : {};
+  } catch (err) {
+    return {};
+  }
+}
+
+function rememberDrawingSyncResult_(operationId, result) {
+  if (!operationId) return;
+  try {
+    var history = getDrawingSyncHistory_();
+    history[String(operationId)] = result;
+    var keys = Object.keys(history);
+    while (keys.length > 50) {
+      delete history[keys.shift()];
+    }
+    PropertiesService.getUserProperties().setProperty('drawing_sync_history', JSON.stringify(history));
+  } catch (err) {
+    Logger.log('Không thể lưu lịch sử đồng bộ bản vẽ: ' + err.toString());
+  }
+}
+
+function saveDataToTestSheet(subject, matrixData, rowIdx, operationId) {
+  try {
+    var normalizedOperationId = String(operationId || '').trim();
+    var syncHistory = normalizedOperationId ? getDrawingSyncHistory_() : {};
+    if (normalizedOperationId && syncHistory[normalizedOperationId]) {
+      return syncHistory[normalizedOperationId];
+    }
+
     var ss = SpreadsheetApp.openById("1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM");
     var sectionImageFolderId = "19Faip8STiBLJ58aVLiqwVs4SaotKb1bm";
     var sheetData = ss.getSheetByName("Data") || ss.getSheetByName("data") || ss.insertSheet("Data");
@@ -788,6 +867,20 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
 
     if (!matrixData || matrixData.length === 0) {
       return { success: false, error: "Dữ liệu gửi lên rỗng!" };
+    }
+
+    // Nếu request đã ghi Data nhưng client mất phản hồi, retry phải trả về thành công
+    // thay vì ghi thêm SO lần nữa.
+    if (normalizedOperationId && sheetData.getLastRow() > 1) {
+      var existingIds = sheetData.getRange(2, 1, sheetData.getLastRow() - 1, 1).getValues();
+      var alreadyWritten = existingIds.some(function (row) {
+        return String(row[0] || '').trim() === normalizedOperationId;
+      });
+      if (alreadyWritten) {
+        var duplicateResult = { success: true, operationId: normalizedOperationId, duplicate: true };
+        rememberDrawingSyncResult_(normalizedOperationId, duplicateResult);
+        return duplicateResult;
+      }
     }
 
     // Kiểm tra xem có phải là chế độ cập nhật (upgrade) hay không
@@ -867,7 +960,9 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
     // Luôn luôn tạo một dòng MỚI ở cuối sheet "Data" khi lưu dữ liệu (NẾU chưa tồn tại)
     // TRƯỜNG HỢP UPGRADE: cập nhật dòng hiện có thay vì tạo dòng mới
     var targetRow = isUpgradeMode ? rowIdx : (sheetData.getLastRow() + 1);
-    var autoId = isUpgradeMode ? sheetData.getRange(rowIdx, 1).getValue() : generateUniqueId();
+    var autoId = isUpgradeMode
+      ? sheetData.getRange(rowIdx, 1).getValue()
+      : (normalizedOperationId || generateUniqueId());
     var userEmail = getCurrentUserEmail();
 
     // 2. Ghi dữ liệu vào sheet "Data" (33 cột từ A -> AG)
@@ -1071,15 +1166,57 @@ function saveDataToTestSheet(subject, matrixData, rowIdx) {
       ? "Lưu thành công! (Chỉ cập nhật SO, TO [" + toCodeNormalized + "] - Customer [" + customerNameNormalized + "] đã tồn tại)"
       : "Lưu thành công! (Lưu Data & cập nhật/tạo SO)";
 
-    return {
+    var result = {
       success: true,
       message: resultMsg,
       dataOnly: !toCustomerExists,
       soOnly: toCustomerExists
     };
+    if (normalizedOperationId) {
+      result.operationId = normalizedOperationId;
+      rememberDrawingSyncResult_(normalizedOperationId, result);
+    }
+    return result;
 
   } catch (err) {
     return { success: false, error: err.toString() };
+  }
+}
+
+function syncDrawingOperations(operations) {
+  if (!Array.isArray(operations)) {
+    return { success: false, results: [], error: 'Danh sách thao tác đồng bộ không hợp lệ.' };
+  }
+
+  var lock = LockService.getUserLock();
+  lock.waitLock(30000);
+  try {
+    var results = operations.slice(0, 20).map(function (operation) {
+      var operationId = String(operation && operation.operationId || '').trim();
+      if (!operationId || operation.type !== 'create_drawing' || !Array.isArray(operation.rowData)) {
+        return { success: false, operationId: operationId, error: 'Thao tác tạo bản vẽ không hợp lệ.' };
+      }
+
+      try {
+        var result = saveDataToTestSheet(
+          operation.subject || '',
+          [operation.rowData.slice()],
+          null,
+          operationId
+        );
+        return {
+          success: !!(result && result.success),
+          operationId: operationId,
+          message: result && result.message,
+          error: result && result.error
+        };
+      } catch (err) {
+        return { success: false, operationId: operationId, error: err.toString() };
+      }
+    });
+    return { success: true, results: results };
+  } finally {
+    lock.releaseLock();
   }
 }
 
@@ -1295,12 +1432,14 @@ function getDrawingByRowIdx(rowIdx) {
   }
 }
 
-function getDrawingsWithoutImage() {
+function getDrawingsWithoutImage(userEmailFilter) {
   try {
     var sheetId = '1DRteBSFT1cj4R_OUPMoDxeLMzAIJexWF3HPT-rpMOoM';
     var ss = SpreadsheetApp.openById(sheetId);
     var logSheet = ss.getSheetByName('Log');
     var dataSheet = ss.getSheetByName('Data');
+
+    var filterEmail = String(userEmailFilter || '').trim().toLowerCase();
 
     // Cột E của Log là danh sách TO gốc. Chỉ ẩn TO sau khi đã có
     // trong Data; cột I/J chỉ dùng để phân loại NEW/OLD.
@@ -1314,13 +1453,54 @@ function getDrawingsWithoutImage() {
       });
     }
 
+    // Nếu không có filter từ frontend thì tự lấy từ Session
+    if (!filterEmail) {
+      try { filterEmail = String(getCurrentUserEmail() || '').trim().toLowerCase(); } catch(e) {}
+    }
+
     if (logSheet && logSheet.getLastRow() > 1) {
-      var logValues = logSheet.getDataRange().getValues();
+      var logValues = logSheet.getDataRange().getDisplayValues();
       var pending = [];
 
       for (var i = 1; i < logValues.length; i++) {
         var rawSo = String(logValues[i][5] || '').trim();
         var customer = String(logValues[i][3] || 'Unknown');
+        var statusStr = String(logValues[i][6] || '').trim();
+        var receiverCol = String(logValues[i][10] || '').trim();
+
+        // Xác định email người tiếp nhận
+        var rowReceiver = receiverCol ? receiverCol.toLowerCase() : '';
+        if (!rowReceiver) {
+          var match = statusStr.match(/-\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+          if (match) rowReceiver = match[1].toLowerCase();
+        }
+
+        // Bỏ lọc theo người tiếp nhận: hiển thị tất cả bản vẽ đã tiếp nhận trong Log chưa vào Data
+
+        // Nếu cột F (index 5) trống, trích xuất SO từ cột H (JSON fullDataString) hoặc subject
+        if (!rawSo && logValues[i][7]) {
+          try {
+            var jsonStr = String(logValues[i][7]);
+            if (jsonStr.startsWith('[')) {
+              var pRows = JSON.parse(jsonStr);
+              for (var pr = 0; pr < pRows.length; pr++) {
+                if (!pRows[pr]) continue;
+                for (var pc = 0; pc < pRows[pr].length; pc++) {
+                  if (String(pRows[pr][pc] || '').trim().toLowerCase() === 'sales document' && pRows[pr + 1]) {
+                    rawSo = 'SO' + String(pRows[pr + 1][pc] || '').replace(/[^0-9]/g, '');
+                    break;
+                  }
+                }
+                if (rawSo) break;
+              }
+            }
+          } catch(e) {}
+        }
+        if (!rawSo && logValues[i][2]) {
+          var sMatch = String(logValues[i][2]).match(/\bSO\s*[-:_]?\s*(\d+)\b/i);
+          if (sMatch) rawSo = 'SO' + sMatch[1];
+        }
+
         var logTos = splitDrawingToValues(logValues[i][4]).map(function (toValue) {
           var normalizedTo = normalizeLogTo(toValue);
           return normalizedTo ? 'TO-' + normalizedTo : '';
@@ -1336,7 +1516,9 @@ function getDrawingsWithoutImage() {
             dwCode: '',
             customer: customer,
             subject: String(logValues[i][2] || ''),
+            threadId: String(logValues[i][1] || '').trim(),
             so: rawSo,
+            receiverEmail: rowReceiver,
             existsInData: false,
             imageUrl: ''
           });
@@ -1350,6 +1532,37 @@ function getDrawingsWithoutImage() {
           var fallbackRawSo = String(logRow[5] || '').trim();
           var fallbackCustomer = String(logRow[3] || 'Unknown');
           var fallbackTo = String(logRow[4] || '').trim();
+          var fallbackStatus = String(logRow[6] || '').trim();
+          var fallbackReceiverCol = String(logRow[10] || '').trim();
+          var fallbackReceiver = fallbackReceiverCol.toLowerCase();
+          if (!fallbackReceiver) {
+            var fbMatch = fallbackStatus.match(/-\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/i);
+            if (fbMatch) fallbackReceiver = fbMatch[1].toLowerCase();
+          }
+
+          if (!fallbackRawSo && logRow[7]) {
+            try {
+              var fJson = String(logRow[7]);
+              if (fJson.startsWith('[')) {
+                var fpRows = JSON.parse(fJson);
+                for (var fpr = 0; fpr < fpRows.length; fpr++) {
+                  if (!fpRows[fpr]) continue;
+                  for (var fpc = 0; fpc < fpRows[fpr].length; fpc++) {
+                    if (String(fpRows[fpr][fpc] || '').trim().toLowerCase() === 'sales document' && fpRows[fpr + 1]) {
+                      fallbackRawSo = 'SO' + String(fpRows[fpr + 1][fpc] || '').replace(/[^0-9]/g, '');
+                      break;
+                    }
+                  }
+                  if (fallbackRawSo) break;
+                }
+              }
+            } catch(e) {}
+          }
+          if (!fallbackRawSo && logRow[2]) {
+            var fbSMatch = String(logRow[2]).match(/\bSO\s*[-:_]?\s*(\d+)\b/i);
+            if (fbSMatch) fallbackRawSo = 'SO' + fbSMatch[1];
+          }
+
           if (!fallbackTo) continue;
           pending.push({
             rowIdx: j + 2,
@@ -1360,6 +1573,7 @@ function getDrawingsWithoutImage() {
             customer: fallbackCustomer,
             subject: String(logRow[2] || ''),
             so: fallbackRawSo,
+            receiverEmail: fallbackReceiver,
             existsInData: false,
             imageUrl: ''
           });

@@ -1250,6 +1250,20 @@
     // APP DATA STORE — Trung tâm quản lý cache dữ liệu client-side
     // ============================================================
     window.__appLoadMetrics = window.__appLoadMetrics || { start: Date.now(), events: {} };
+    window.__scheduleAppRender = function (key) {
+      window.__scheduledAppRenders = window.__scheduledAppRenders || {};
+      if (window.__scheduledAppRenders[key]) return;
+      window.__scheduledAppRenders[key] = true;
+      requestAnimationFrame(function () {
+        window.__scheduledAppRenders[key] = false;
+        if (key === 'design' && typeof initThietKeBanVe === 'function') {
+          try { initThietKeBanVe(); } catch (e) { }
+        }
+        if (key === 'approval' && typeof initSubmitApproval === 'function') {
+          try { initSubmitApproval(); } catch (e) { }
+        }
+      });
+    };
     window.__recordAppTiming = function (name) {
       var base = window.__appLoadMetrics || { start: Date.now(), events: {} };
       var now = Date.now();
@@ -1267,7 +1281,14 @@
       var _lastRequestedAt = {};
       var _inFlight = {};
       var _pendingPromises = {};
+      var _notifyScheduled = {};
       var TTL = 5 * 60 * 1000;
+      var SWR_CACHE_KEY = 'quan-ly-ban-ve:swr-dashboard:v1';
+      var revalidateTimer = null;
+      var versionCheckInFlight = false;
+      var knownMainVersion = 0;
+      var knownReleaseVersion = 0;
+      var lastExternalChangeKey = '';
       // Xóa bỏ triệt để dữ liệu lưu tạm thời nếu có từ trước
       try {
         localStorage.removeItem('quan-ly-ban-ve:data-cache:mainData');
@@ -1282,6 +1303,101 @@
         releaseData: 'getDashboardPayload',
         historicalData: 'getHistoricalDashboardPayload'
       };
+
+      function _readStaleSnapshot() {
+        try {
+          var raw = sessionStorage.getItem(SWR_CACHE_KEY);
+          if (!raw) return false;
+          var snapshot = JSON.parse(raw);
+          if (!snapshot || !Array.isArray(snapshot.mainData)) return false;
+          _cache.mainData = {
+            data: snapshot.mainData,
+            fetchedAt: snapshot.fetchedAt || 0,
+            loading: false,
+            trusted: false,
+            version: snapshot.mainDataVersion || 0,
+            stale: true
+          };
+          _cache.releaseData = {
+            data: Array.isArray(snapshot.releaseData) ? snapshot.releaseData : [],
+            fetchedAt: snapshot.fetchedAt || 0,
+            loading: false,
+            trusted: false,
+            version: snapshot.releaseDataVersion || 0,
+            stale: true
+          };
+          return true;
+        } catch (error) {
+          try { sessionStorage.removeItem(SWR_CACHE_KEY); } catch (ignore) { }
+          return false;
+        }
+      }
+
+      function _writeStaleSnapshot(mainData, releaseData, payload) {
+        try {
+          sessionStorage.setItem(SWR_CACHE_KEY, JSON.stringify({
+            mainData: mainData,
+            releaseData: releaseData,
+            mainDataVersion: payload.mainDataVersion || 0,
+            releaseDataVersion: payload.releaseDataVersion || 0,
+            fetchedAt: Date.now()
+          }));
+        } catch (error) {
+          // sessionStorage có thể đầy; SWR vẫn hoạt động trong RAM.
+        }
+      }
+
+      function _saveIndexedDbSnapshot(payload) {
+        if (typeof window.OfflineDrawingStore === 'undefined' ||
+          typeof window.OfflineDrawingStore.saveDataSnapshot !== 'function') return;
+        window.OfflineDrawingStore.saveDataSnapshot(payload).catch(function (error) {
+          console.warn('[SWR] Không thể ghi snapshot vào IndexedDB:', error);
+        });
+      }
+
+      function _checkServerVersion() {
+        if (versionCheckInFlight || !navigator.onLine || typeof google === 'undefined' || !google.script || !google.script.run) {
+          return;
+        }
+        versionCheckInFlight = true;
+        google.script.run
+          .withSuccessHandler(function (version) {
+            versionCheckInFlight = false;
+            if (!version || version.success === false) return;
+            var nextMain = Number(version.mainDataVersion || 0);
+            var nextRelease = Number(version.releaseDataVersion || 0);
+            if (!knownMainVersion && !knownReleaseVersion) {
+              knownMainVersion = nextMain;
+              knownReleaseVersion = nextRelease;
+              return;
+            }
+            if (nextMain !== knownMainVersion || nextRelease !== knownReleaseVersion) {
+              _fetch('mainData', true);
+            }
+          })
+          .withFailureHandler(function (error) {
+            versionCheckInFlight = false;
+            console.warn('[SWR] Không thể kiểm tra phiên bản Sheet:', error);
+          })
+          .checkDataVersion();
+      }
+
+      function _showExternalChangeNotice(previousMain, nextMain, previousRelease, nextRelease) {
+        var mainChanged = previousMain && previousMain !== nextMain;
+        var releaseChanged = previousRelease && previousRelease !== nextRelease;
+        var changeKey = String(nextMain || 0) + ':' + String(nextRelease || 0);
+        if ((!mainChanged && !releaseChanged) || changeKey === lastExternalChangeKey) return;
+        lastExternalChangeKey = changeKey;
+        window.dispatchEvent(new CustomEvent('app-data-external-change', {
+          detail: { mainChanged: mainChanged, releaseChanged: releaseChanged }
+        }));
+        if (typeof Swal !== 'undefined' && Swal.mixin) {
+          Swal.mixin({ toast: true, position: 'top-end', timer: 5000, showConfirmButton: true })
+            .fire({ icon: 'info', title: 'Dữ liệu Sheet đã thay đổi', text: 'Đã cập nhật lại dữ liệu mới nhất từ máy chủ.' });
+        } else {
+          console.info('[SWR] Dữ liệu trên Sheet đã thay đổi và đã được tải lại.');
+        }
+      }
 
       function _rowKey(row) {
         if (!Array.isArray(row)) return '';
@@ -1306,6 +1422,15 @@
       }
 
       function _notify(key) {
+        if (_notifyScheduled[key]) return;
+        _notifyScheduled[key] = true;
+        requestAnimationFrame(function () {
+          _notifyScheduled[key] = false;
+          _notifyNow(key);
+        });
+      }
+
+      function _notifyNow(key) {
         var entry = _cache[key];
         if (!entry || !entry.data) return;
         if (key === 'mainData') window.appTabRenderVersion.mainData++;
@@ -1334,29 +1459,43 @@
             var mainData = Array.isArray(payload.mainData) ? payload.mainData : [];
             var releaseData = Array.isArray(payload.releaseData) ? payload.releaseData : [];
 
-            var currentMain = (_cache.mainData && Array.isArray(_cache.mainData.data)) ? _cache.mainData.data : [];
-            var currentRelease = (_cache.releaseData && Array.isArray(_cache.releaseData.data)) ? _cache.releaseData.data : [];
-            var mergedMain = _mergeRows(currentMain, mainData);
-            var mergedRelease = _mergeRows(currentRelease, releaseData);
+              var previousMainVersion = _cache.mainData && _cache.mainData.version;
+              var previousReleaseVersion = _cache.releaseData && _cache.releaseData.version;
+              var fetchedAt = Date.now();
+              _cache.mainData = {
+                data: mainData,
+                fetchedAt: fetchedAt,
+                loading: false,
+                trusted: true,
+                stale: false,
+                version: payload.mainDataVersion || 0
+              };
+              _cache.releaseData = {
+                data: releaseData,
+                fetchedAt: fetchedAt,
+                loading: false,
+                trusted: true,
+                stale: false,
+                version: payload.releaseDataVersion || 0
+              };
+              knownMainVersion = Number(payload.mainDataVersion || 0);
+              knownReleaseVersion = Number(payload.releaseDataVersion || 0);
+              _cache.historicalData = { data: mainData, fetchedAt: fetchedAt, loading: false, trusted: true };
 
-            _cache.mainData = { data: mergedMain, fetchedAt: Date.now(), loading: false, trusted: true };
-            _cache.releaseData = { data: mergedRelease, fetchedAt: Date.now(), loading: false, trusted: true };
-            _cache.historicalData = { data: mergedMain, fetchedAt: Date.now(), loading: false, trusted: true };
+              _writeStaleSnapshot(mainData, releaseData, payload);
+              _saveIndexedDbSnapshot(payload);
+              _showExternalChangeNotice(previousMainVersion, payload.mainDataVersion || 0, previousReleaseVersion, payload.releaseDataVersion || 0);
 
             _inFlight.mainData = false;
             _inFlight.releaseData = false;
             _dashboardRequestInFlight = false;
 
-            window.pageData = mergedMain;
-            pageData = mergedMain;
-            updatePageDataIndex(mergedMain);
+            window.pageData = mainData;
+            pageData = mainData;
+            updatePageDataIndex(mainData);
 
-            if (typeof initThietKeBanVe === 'function') {
-              try { initThietKeBanVe(); } catch (e) { }
-            }
-            if (typeof initSubmitApproval === 'function') {
-              try { initSubmitApproval(); } catch (e) { }
-            }
+            window.__scheduleAppRender('design');
+            window.__scheduleAppRender('approval');
 
             _notify('mainData');
             _notify('releaseData');
@@ -1379,6 +1518,19 @@
             }
             _dashboardRequestInFlight = false;
             _lastRequestedAt[key] = 0;
+
+            // Chỉ dùng cache cũ khi server thực sự không phản hồi.
+            if (key !== 'historicalData' && _cache.mainData && _cache.mainData.stale) {
+              _cache.mainData.trusted = true;
+              _cache.releaseData.trusted = true;
+              window.pageData = _cache.mainData.data;
+              pageData = _cache.mainData.data;
+              updatePageDataIndex(_cache.mainData.data);
+              window.__scheduleAppRender('design');
+              window.__scheduleAppRender('approval');
+              _notify('mainData');
+              _notify('releaseData');
+            }
 
             if (key !== 'historicalData') {
               window._initialLoadedParts.mainData = true;
@@ -1416,6 +1568,12 @@
           return e.data;
         },
 
+        getMeta: function (key) {
+          var entry = _cache[key];
+          if (!entry) return null;
+          return { fetchedAt: entry.fetchedAt || 0, version: entry.version || 0, stale: !!entry.stale };
+        },
+
         invalidate: function (key) {
           var entry = _cache[key] || { data: [], fetchedAt: 0, loading: false };
           entry.fetchedAt = 0;
@@ -1423,7 +1581,7 @@
           _inFlight[key] = false;
           _lastRequestedAt[key] = 0;
           _cache[key] = entry;
-          _fetch(key, true);
+          return _fetch(key, true);
         },
 
         init: function () {
@@ -1431,7 +1589,23 @@
           _cache.mainData = _cache.mainData || { data: [], fetchedAt: 0, loading: false, trusted: false };
           _cache.releaseData = _cache.releaseData || { data: [], fetchedAt: 0, loading: false, trusted: false };
 
-          // Tải dữ liệu trực tiếp từ máy chủ Google Apps Script (không lưu tạm thời)
+          // Đọc snapshot chỉ để làm fallback; không render khi chưa xác nhận với server.
+          if (!_cache.mainData.trusted) _readStaleSnapshot();
+
+          if (!revalidateTimer) {
+            revalidateTimer = window.setInterval(function () {
+              if (document.visibilityState === 'visible' && navigator.onLine) {
+                _checkServerVersion();
+              }
+            }, 10000);
+            document.addEventListener('visibilitychange', function () {
+              if (document.visibilityState === 'visible' && navigator.onLine) {
+                _checkServerVersion();
+              }
+            });
+          }
+
+          // Stale-While-Revalidate: trả UI về ngay bằng snapshot, đồng thời tải bản mới.
           return _fetch('mainData', true).then(function () {
             window.__recordAppTiming && window.__recordAppTiming('AppDataStore.init.complete');
             var mainData = _cache.mainData ? _cache.mainData.data : [];
@@ -1449,6 +1623,10 @@
             window.__recordAppTiming && window.__recordAppTiming('AppDataStore.init.error');
             throw error;
           });
+        },
+
+        revalidate: function () {
+          return _fetch('mainData', true);
         },
 
         preloadBackground: function () {
@@ -1469,6 +1647,214 @@
         ensure: function (key) {
           _fetch(key);
         }
+      };
+    })();
+
+    // Hàng đợi cục bộ cho bản nháp và thao tác tạo bản vẽ khi mất mạng.
+    window.OfflineDrawingStore = (function () {
+      var dbPromise = null;
+      var dbName = 'QuanLyBanVeOffline';
+      var version = 3;
+      var pendingDraftWrite = null;
+      var draftWriteTimer = null;
+
+      function openDb() {
+        if (dbPromise) return dbPromise;
+        dbPromise = new Promise(function (resolve, reject) {
+          var request = indexedDB.open(dbName, version);
+          request.onupgradeneeded = function (event) {
+            var db = event.target.result;
+            if (!db.objectStoreNames.contains('drafts')) {
+              db.createObjectStore('drafts', { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains('mutations')) {
+              var store = db.createObjectStore('mutations', { keyPath: 'operationId' });
+              store.createIndex('createdAt', 'createdAt', { unique: false });
+            } else {
+              var mutationStore = event.target.transaction.objectStore('mutations');
+              if (!mutationStore.indexNames.contains('createdAt')) {
+                mutationStore.createIndex('createdAt', 'createdAt', { unique: false });
+              }
+            }
+            if (!db.objectStoreNames.contains('snapshots')) {
+              db.createObjectStore('snapshots', { keyPath: 'id' });
+            }
+          };
+          request.onsuccess = function () {
+            var db = request.result;
+            db.onversionchange = function () { db.close(); };
+            resolve(db);
+          };
+          request.onerror = function () { reject(request.error); };
+        });
+        return dbPromise;
+      }
+
+      function request(storeName, mode, action) {
+        return openDb().then(function (db) {
+          return new Promise(function (resolve, reject) {
+            var transaction = db.transaction(storeName, mode);
+            var result;
+            try { result = action(transaction.objectStore(storeName)); } catch (error) { reject(error); return; }
+            if (result && typeof result.onsuccess !== 'undefined') {
+              result.onsuccess = function () { resolve(result.result); };
+              result.onerror = function () { reject(result.error); };
+            } else {
+              transaction.oncomplete = function () { resolve(result); };
+              transaction.onerror = function () { reject(transaction.error); };
+            }
+          });
+        });
+      }
+
+      function saveDraft(fields) {
+        pendingDraftWrite = { id: 'new-drawing', fields: fields, updatedAt: Date.now() };
+        if (draftWriteTimer) window.clearTimeout(draftWriteTimer);
+        draftWriteTimer = window.setTimeout(function () {
+          var draft = pendingDraftWrite;
+          pendingDraftWrite = null;
+          draftWriteTimer = null;
+          request('drafts', 'readwrite', function (store) { return store.put(draft); })
+            .catch(function (error) { console.warn('Không thể ghi bản nháp:', error); });
+        }, 120);
+        return Promise.resolve();
+      }
+
+      function getDraft() {
+        return request('drafts', 'readonly', function (store) { return store.get('new-drawing'); });
+      }
+
+      function clearDraft() {
+        return request('drafts', 'readwrite', function (store) { return store.delete('new-drawing'); });
+      }
+
+      function saveDataSnapshot(payload) {
+        return request('snapshots', 'readwrite', function (store) {
+          return store.put({
+            id: 'dashboard-payload',
+            payload: payload,
+            mainDataVersion: payload && payload.mainDataVersion || 0,
+            releaseDataVersion: payload && payload.releaseDataVersion || 0,
+            updatedAt: Date.now()
+          });
+        });
+      }
+
+      function queueCreate(subject, rowData, clientId) {
+        var operationId = clientId || crypto.randomUUID();
+        return request('mutations', 'readwrite', function (store) {
+          return store.put({
+            operationId: operationId,
+            type: 'create_drawing',
+            subject: subject || '',
+            rowData: rowData,
+            clientId: operationId,
+            createdAt: Date.now(),
+            attempts: 0
+          });
+        });
+      }
+
+      function listMutations(limit) {
+        return openDb().then(function (db) {
+          return new Promise(function (resolve, reject) {
+            var transaction = db.transaction('mutations', 'readonly');
+            var index = transaction.objectStore('mutations').index('createdAt');
+            var items = [];
+            var cursorRequest = index.openCursor();
+            cursorRequest.onsuccess = function () {
+              var cursor = cursorRequest.result;
+              if (!cursor || items.length >= (limit || 50)) {
+                resolve(items);
+                return;
+              }
+              items.push(cursor.value);
+              cursor.continue();
+            };
+            cursorRequest.onerror = function () { reject(cursorRequest.error); };
+          });
+        });
+      }
+
+      function removeMutations(operationIds) {
+        if (!operationIds || !operationIds.length) return Promise.resolve();
+        return openDb().then(function (db) {
+          return new Promise(function (resolve, reject) {
+            var transaction = db.transaction('mutations', 'readwrite');
+            var store = transaction.objectStore('mutations');
+            operationIds.forEach(function (operationId) { store.delete(operationId); });
+            transaction.oncomplete = resolve;
+            transaction.onerror = function () { reject(transaction.error); };
+          });
+        });
+      }
+
+      function callSyncBatch(batch) {
+        return new Promise(function (resolve, reject) {
+          if (!navigator.onLine || typeof google === 'undefined' || !google.script || !google.script.run) {
+            reject(new Error('offline'));
+            return;
+          }
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .syncDrawingOperations(batch);
+        });
+      }
+
+      var syncing = false;
+      var hasPendingWork = false;
+      function flush() {
+        if (syncing || !navigator.onLine || !hasPendingWork) return Promise.resolve();
+        syncing = true;
+        return listMutations(20).then(function (items) {
+          if (!items.length) {
+            hasPendingWork = false;
+            return null;
+          }
+          return callSyncBatch(items).then(function (response) {
+            var results = response && Array.isArray(response.results) ? response.results : [];
+            var successfulIds = results.filter(function (item) { return item && item.success; })
+              .map(function (item) { return item.operationId; });
+            return removeMutations(successfulIds).then(function () {
+              hasPendingWork = items.length === 20 || results.some(function (item) {
+                return !item || !item.success;
+              });
+              return response;
+            });
+          });
+        }).catch(function (error) {
+          console.warn('Đồng bộ bản vẽ sẽ thử lại sau:', error && error.message ? error.message : error);
+        }).then(function (result) {
+          syncing = false;
+          return result;
+        }, function (error) {
+          syncing = false;
+          throw error;
+        });
+      }
+
+      window.addEventListener('online', function () {
+        hasPendingWork = true;
+        flush();
+      });
+      window.setInterval(function () {
+        if (navigator.onLine) {
+          hasPendingWork = true;
+          flush();
+        }
+      }, 30000);
+
+      return {
+        saveDraft: saveDraft,
+        getDraft: getDraft,
+        clearDraft: clearDraft,
+        saveDataSnapshot: saveDataSnapshot,
+        queueCreate: function (subject, rowData, clientId) {
+          hasPendingWork = true;
+          return queueCreate(subject, rowData, clientId);
+        },
+        flush: flush
       };
     })();
 
@@ -1774,6 +2160,7 @@
     // Phân quyền menu theo chức vụ của người dùng.
     var menuPermissionsByPosition = {
       ST: ['dashboard', 'dwInformation', 'seachDwByAi', 'dwDesign', 'submitDrawingsForApproval', 'release', 'dwHistory'],
+      Checker: ['dashboard', 'submitDrawingsForApproval', 'dwHistory'],
       Leader: ['dashboard', 'seachDwByAi', 'submitDrawingsForApproval', 'dwHistory'],
       MGR: ['dashboard', 'submitDrawingsForApproval', 'dwHistory'],
       GM: ['dashboard', 'submitDrawingsForApproval', 'dwHistory']
@@ -1785,6 +2172,9 @@
       if (!clean) return 'ST';
       if (clean === 'charger' || clean === 'chager' || clean === 'st' || clean === 'soanthao' || clean === 'charge') {
         return 'ST';
+      }
+      if (clean === 'checker' || clean === 'kiemtraso') {
+        return 'Checker';
       }
       if (clean === 'checker1' || clean === 'c1' || clean === 'leader' || clean === 'kiemtra1' || clean === 'check1') {
         return 'Leader';
@@ -1803,6 +2193,9 @@
       var raw = String(rawPosition || '').trim();
       if (norm === 'Leader') {
         return (/leader/i.test(raw) && !/checker/i.test(raw)) ? 'Leader (Checker 1)' : 'Checker 1';
+      }
+      if (norm === 'Checker') {
+        return raw || 'Checker';
       }
       if (norm === 'MGR') {
         return (/mgr|manager/i.test(raw) && !/checker/i.test(raw)) ? 'MGR (Checker 2)' : 'Checker 2';

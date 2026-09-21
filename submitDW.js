@@ -272,6 +272,10 @@ const sendMailFromDeptToCharge = (dataToNotify, deptName) => {
 const _getNextStep = (currentStatus) => {
   var st = _cleanStr(currentStatus);
 
+  if (st.indexOf('cho checker') !== -1 && st.indexOf('cho checker 1') === -1 && st.indexOf('cho checker 2') === -1 && st.indexOf('checker 1') === -1 && st.indexOf('checker 2') === -1) {
+    return { nextStatus: 'Chờ Checker 1', level: 'Checker', appendMode: false };
+  }
+
   if (st.indexOf('checker 1') !== -1 || st.indexOf('checker1') !== -1 ||
     st.indexOf('cho charger') !== -1 || st.indexOf('cho checker 1') !== -1 ||
     st.indexOf('cho duyet') !== -1) {
@@ -533,35 +537,68 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
     return false;
   }
 
-  // 4. Tiêu đề email (Subject) theo 2 trường hợp:
-  // - [PDMSystem] Yêu cầu xác nhận bản vẽ ...
-  // - [PDMSystem] Quy trình kí duyệt đã hoàn thành ...
+  // 4. Tiêu đề email (Subject) song ngữ Việt - Nhật
   var subject = isCompleted
-    ? '[PDMSystem] Quy trình kí duyệt đã hoàn thành ' + displayDwNo
-    : '[PDMSystem] Yêu cầu xác nhận bản vẽ ' + displayDwNo;
+    ? '[PDMSystem] Quy trình kí duyệt đã hoàn thành / 承認完了 - ' + displayDwNo
+    : '[PDMSystem] Yêu cầu xác nhận bản vẽ / 図面確認依頼 - ' + displayDwNo;
 
-  // 5. Lời chào: Dear + Người đảm trách,
-  var assigneeName = String(details.assignee || details.drafter || details.pic || details.assigneeName || '').trim();
-  if (!assigneeName && targetEmail) {
-    var targetUserName = _getUserNameByEmail(targetEmail);
-    if (targetUserName && targetUserName !== 'System' && targetUserName !== targetEmail) {
-      assigneeName = targetUserName;
-    }
-  }
-  if (!assigneeName) {
-    assigneeName = 'Anh/Chị';
-  }
-  var salutation = 'Dear ' + assigneeName + ',';
+  // 5. Lời chào: Gắn cố định theo cấp / người nhận:
+  // - Checker 1 = Dear chị Liên,
+  // - Checker 2 = Dear chị Vi,
+  // - Approval = Dear Okuda-san,
+  var salutation = '';
+  var normLevel = _cleanStr(currentLevel);
+  var normNext = _cleanStr(nextStatus);
+  var targetUserName = targetEmail ? _getUserNameByEmail(targetEmail) : '';
+  var normTargetName = _cleanStr(targetUserName);
 
-  // 6. Thông tin chi tiết (2 trường hợp: danh sách bản vẽ hoặc bản vẽ xx đã được ...)
-  var detailMessage = '';
+  if (
+    normNext.indexOf('cho approval') !== -1 ||
+    normNext.indexOf('approval') !== -1 ||
+    normTargetName.indexOf('okuda') !== -1 ||
+    (normLevel === 'approval' && !isCompleted) ||
+    (normLevel === 'checker 2' && normNext.indexOf('approval') !== -1)
+  ) {
+    salutation = 'Dear Okuda-san,';
+  } else if (
+    normNext.indexOf('cho checker 2') !== -1 ||
+    normNext.indexOf('checker 2') !== -1 ||
+    normNext.indexOf('checker2') !== -1 ||
+    normTargetName.indexOf('vi') !== -1 ||
+    (normLevel === 'checker 1' && normNext.indexOf('checker 2') !== -1)
+  ) {
+    salutation = 'Dear chị Vi,';
+  } else if (
+    normNext.indexOf('cho checker 1') !== -1 ||
+    normNext.indexOf('checker 1') !== -1 ||
+    normNext.indexOf('checker1') !== -1 ||
+    normTargetName.indexOf('lien') !== -1 ||
+    normLevel === 'checker 1'
+  ) {
+    salutation = 'Dear chị Liên,';
+  } else if (normLevel === 'checker 2') {
+    salutation = 'Dear chị Vi,';
+  } else {
+    var recipientName = (targetUserName && targetUserName !== 'System' && targetUserName !== targetEmail)
+      ? targetUserName
+      : String(details.assignee || details.drafter || details.pic || details.assigneeName || 'Anh/Chị').trim();
+    salutation = 'Dear ' + (recipientName || 'Anh/Chị') + ',';
+  }
+
+  // 6. Thông tin chi tiết song ngữ Việt - Nhật
+  var detailMessageVi = '';
+  var detailMessageJa = '';
   var detailsHtml = '';
 
   if (isList) {
     // Trường hợp: Danh sách bản vẽ
-    detailMessage = isCompleted
-      ? 'Các bản vẽ trong danh sách dưới đây đã được hoàn tất quy trình ký duyệt.'
-      : 'Danh sách các bản vẽ dưới đây đã được trình ký, yêu cầu xác nhận để tiếp tục quy trình.';
+    if (isCompleted) {
+      detailMessageVi = 'Các bản vẽ trong danh sách dưới đây đã được hoàn tất quy trình ký duyệt.';
+      detailMessageJa = '以下の図面リストの承認プロセスがすべて完了しました。';
+    } else {
+      detailMessageVi = 'Danh sách các bản vẽ dưới đây đã được trình ký, yêu cầu xác nhận để tiếp tục quy trình.';
+      detailMessageJa = '以下の図面リストが提出されました。次工程に進めるため、確認・承認をお願いいたします。';
+    }
 
     var drawingRowsHtml = drawingList.map(function (item, idx) {
       var dNo = typeof item === 'object' ? (item.dwNo || item.id || '') : String(item);
@@ -570,7 +607,7 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
       var dStatus = typeof item === 'object' ? (item.status || nextStatus || '---') : (nextStatus || '---');
       var dUrl = typeof item === 'object' ? (item.pdfUrl || '') : '';
       var linkCol = dUrl
-        ? '<a href="' + _escapeApprovalEmailHtml(dUrl) + '" style="color:#2563eb;font-weight:600;text-decoration:none;">Xem file</a>'
+        ? '<a href="' + _escapeApprovalEmailHtml(dUrl) + '" style="color:#2563eb;font-weight:600;text-decoration:none;">Xem / 閲覧</a>'
         : '---';
 
       return '<tr>'
@@ -588,12 +625,12 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
         <table style="width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid #d1d5db; font-size: 13px;">
           <thead>
             <tr style="background: #f1f5f9; color: #334155; border-bottom: 2px solid #cbd5e1;">
-              <th style="padding: 10px 8px; border: 1px solid #d1d5db; text-align: center; width: 45px;">STT</th>
-              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Mã bản vẽ</th>
-              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Khách hàng / Dự án</th>
-              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Loại bản vẽ</th>
-              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: center;">Trạng thái</th>
-              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: center;">Xem</th>
+              <th style="padding: 10px 8px; border: 1px solid #d1d5db; text-align: center; width: 45px;">STT<br><span style="font-size:10px;font-weight:normal;">No.</span></th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Mã bản vẽ<br><span style="font-size:10px;font-weight:normal;">図面番号</span></th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Khách hàng / Dự án<br><span style="font-size:10px;font-weight:normal;">顧客 / プロジェクト</span></th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: left;">Loại bản vẽ<br><span style="font-size:10px;font-weight:normal;">図面種別</span></th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: center;">Trạng thái<br><span style="font-size:10px;font-weight:normal;">ステータス</span></th>
+              <th style="padding: 10px 12px; border: 1px solid #d1d5db; text-align: center;">Xem<br><span style="font-size:10px;font-weight:normal;">閲覧</span></th>
             </tr>
           </thead>
           <tbody>
@@ -603,30 +640,49 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
       </div>
     `;
   } else {
-    // Trường hợp: 1 bản vẽ cụ thể -> "Bản vẽ xx đã được ..."
+    // Trường hợp: 1 bản vẽ cụ thể
     if (isCompleted) {
-      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + (actorName ? actorName + ' ' : '') + 'ký duyệt hoàn thành.\n'
+      detailMessageVi = 'Bản vẽ ' + displayDwNo + ' đã được ' + (actorName ? actorName + ' ' : '') + 'ký duyệt hoàn thành.\n'
         + 'Đã chuyển sang trạng thái: ' + (nextStatus || 'Chờ ban hành') + '.';
-    } else if (currentLevel === 'Checker 1') {
-      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Checker 1.\n'
-        + 'Hiện tại cần bạn xác nhận ở cấp Checker 2 để tiếp tục quy trình.';
-    } else if (currentLevel === 'Checker 2') {
-      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' xác nhận ở cấp Checker 2.\n'
-        + 'Hiện tại cần bạn ký duyệt ở cấp Approval để tiếp tục quy trình.';
-    } else if (currentLevel === 'Approval') {
-      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Approval.\n'
+      detailMessageJa = '図面 ' + displayDwNo + ' の承認が完了しました（承認者: ' + (actorName || '---') + '）。\n'
+        + 'ステータス: 「' + (nextStatus || 'Chờ ban hành') + '」に更新されました。';
+    } else if (normLevel === 'checker') {
+      detailMessageVi = 'Bản vẽ ' + displayDwNo + ' đã được xác nhận trước bởi Checker.\n'
+        + 'Hiện tại cần ký duyệt ở cấp Checker 1.';
+      detailMessageJa = '図面 ' + displayDwNo + ' は Checker による事前確認が完了しました。\n'
+        + '現在、Checker 1 の署名待ちです。';
+    } else if (normLevel === 'charger') {
+      detailMessageVi = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Charger.\n'
+        + 'Hiện tại cần xác nhận ở cấp Leader.';
+      detailMessageJa = '図面 ' + displayDwNo + ' は ' + actorName + ' により Charger の確認が完了しました。\n'
+        + '現在、Leader の確認待ちです。ご確認をお願いいたします。';
+    } else if (normLevel === 'checker 1' || normNext.indexOf('checker 2') !== -1) {
+      detailMessageVi = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp Leader.\n'
+        + 'Hiện tại cần xác nhận ở cấp MGR.';
+      detailMessageJa = '図面 ' + displayDwNo + ' は ' + actorName + ' により Leader の確認が完了しました。\n'
+        + '現在、MGR の確認待ちです。ご確認をお願いいたします。';
+    } else if (normLevel === 'checker 2' || normNext.indexOf('approval') !== -1) {
+      detailMessageVi = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' xác nhận ở cấp MGR.\n'
+        + 'Hiện tại cần ký duyệt ở cấp GM.';
+      detailMessageJa = '図面 ' + displayDwNo + ' は ' + actorName + ' により MGR の確認が完了しました。\n'
+        + '現在、GM の確認待ちです。ご確認をお願いいたします。';
+    } else if (normLevel === 'approval') {
+      detailMessageVi = 'Bản vẽ ' + displayDwNo + ' đã được ' + actorName + ' ký duyệt ở cấp GM.\n'
         + 'Đã chuyển sang trạng thái: ' + (nextStatus || 'Chờ ban hành') + '.';
+      detailMessageJa = '図面 ' + displayDwNo + ' は ' + actorName + ' により GM の承認が完了しました。\n'
+        + 'ステータス: 「' + (nextStatus || 'Chờ ban hành') + '」に更新されました。';
     } else {
-      detailMessage = 'Bản vẽ ' + displayDwNo + ' đã được ' + (actorName || 'người đảm trách') + ' trình ký, yêu cầu xác nhận để tiếp tục quy trình.';
+      detailMessageVi = 'Bản vẽ ' + displayDwNo + ' đã được ' + (actorName || 'người đảm trách') + ' trình ký, yêu cầu xác nhận để tiếp tục quy trình.';
+      detailMessageJa = '図面 ' + displayDwNo + ' が ' + (actorName || '担当者') + ' より提出されました。ご確認・ご承認をお願いいたします。';
     }
 
     var receivedDate = _formatApprovalEmailDate(details.receivedDate);
     var dueDate = _formatApprovalEmailDate(details.dueDate);
     var linkHtml = details.pdfUrl
-      ? '<a href="' + _escapeApprovalEmailHtml(details.pdfUrl) + '" style="display:inline-block;margin:4px 6px 4px 0;color:#2563eb;font-weight:600;">Mở file PDF bản vẽ</a>'
+      ? '<a href="' + _escapeApprovalEmailHtml(details.pdfUrl) + '" style="display:inline-block;margin:4px 6px 4px 0;color:#2563eb;font-weight:600;">Mở file PDF bản vẽ / PDF図面を開く</a>'
       : '';
     var imageHtml = details.cutDrawingBlob
-      ? '<p style="margin:24px 0 8px;font-weight:700;color:#334155;">Hình mặt cắt</p><div style="padding:12px;text-align:center;background:#f8fafc;border:1px solid #dbeafe;border-radius:8px;"><img src="cid:approvalCutDrawing" style="max-width:100%;max-height:280px;object-fit:contain;border-radius:6px;" alt="Hình mặt cắt" /></div>'
+      ? '<p style="margin:24px 0 8px;font-weight:700;color:#334155;">Hình mặt cắt / 断面図</p><div style="padding:12px;text-align:center;background:#f8fafc;border:1px solid #dbeafe;border-radius:8px;"><img src="cid:approvalCutDrawing" style="max-width:100%;max-height:280px;object-fit:contain;border-radius:6px;" alt="Hình mặt cắt / 断面図" /></div>'
       : '';
 
     detailsHtml = `
@@ -634,21 +690,15 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
       <table style="width: 100%; border-collapse: collapse; background: #f8f9fa; margin-bottom: 24px;">
         <tbody>
           <tr>
-            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; width: 35%; border-bottom: 1px solid #ddd; border-right: 1px solid #ddd;">Mã bản vẽ</td>
+            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; width: 38%; border-bottom: 1px solid #ddd; border-right: 1px solid #ddd;">
+              Mã bản vẽ<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">図面番号</span>
+            </td>
             <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong style="color: #0d6efd; font-size: 15px;">${_escapeApprovalEmailHtml(displayDwNo)}</strong></td>
           </tr>
           <tr>
-            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Cấp xét duyệt</td>
-            <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;"><strong>${_escapeApprovalEmailHtml(currentLevel || '---')}</strong></td>
-          </tr>
-          <tr>
-            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Trạng thái tiếp theo</td>
-            <td style="padding: 12px 15px; border-bottom: 1px solid #ddd;">
-              <span style="display: inline-block; background: #fff3cd; color: #856404; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 13px;">${_escapeApprovalEmailHtml(nextStatus || '---')}</span>
+            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">
+              Người xử lý<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">処理者</span>
             </td>
-          </tr>
-          <tr>
-            <td style="padding: 12px 15px; font-weight: 600; background: #e8eef5; border-right: 1px solid #ddd;">Người xử lý</td>
             <td style="padding: 12px 15px;"><strong>${_escapeApprovalEmailHtml(actorName || '---')}</strong></td>
           </tr>
         </tbody>
@@ -656,15 +706,56 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
 
       <!-- DETAILED SPECS TABLE -->
       <table style="width:100%;border-collapse:collapse;background:#ffffff;margin-top:10px;">
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;width:35%;">TO</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.to)}</td></tr>
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Khách hàng</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.customer)}</td></tr>
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Dự án</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.project)}</td></tr>
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type / Version</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.type)} / ${_escapeApprovalEmailHtml(details.version)}</td></tr>
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type DW</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.typeDw)}</td></tr>
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Người đảm trách</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.assignee || '---')}</td></tr>
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Ngày tiếp nhận / Deadline</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(receivedDate)} / ${_escapeApprovalEmailHtml(dueDate)}</td></tr>
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Width / Height</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.width)} / ${_escapeApprovalEmailHtml(details.height)} mm</td></tr>
-        <tr><td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Số SO / FYE</td><td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.so)} / ${_escapeApprovalEmailHtml(details.fye)}</td></tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;width:38%;">TO</td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.to)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">
+            Khách hàng<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">顧客</span>
+          </td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.customer)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">
+            Dự án<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">プロジェクト</span>
+          </td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.project)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">Type / Version</td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.type)} / ${_escapeApprovalEmailHtml(details.version)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">
+            Type DW<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">図面種別</span>
+          </td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.typeDw)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">
+            Người đảm trách<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">担当者</span>
+          </td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.assignee || '---')}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">
+            Ngày tiếp nhận / Deadline<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">受付日 / 納期</span>
+          </td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(receivedDate)} / ${_escapeApprovalEmailHtml(dueDate)}</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">
+            Width / Height<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">寸法 (W / H)</span>
+          </td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.width)} / ${_escapeApprovalEmailHtml(details.height)} mm</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;background:#f8fafc;font-weight:700;">
+            Số SO / FYE<br><span style="font-size: 11px; font-weight: 400; color: #64748b;">SO / FYE 番号</span>
+          </td>
+          <td style="padding:8px 10px;border:1px solid #d1d5db;">${_escapeApprovalEmailHtml(details.so)} / ${_escapeApprovalEmailHtml(details.fye)}</td>
+        </tr>
       </table>
       <div style="margin-top:10px;">${linkHtml}</div>
       ${imageHtml}
@@ -675,12 +766,12 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
   var actionButtonsHtml = '';
   if (!isCompleted) {
     var systemUrl = _getApprovalWebUrl(details.id || displayDwNo, 'view');
-    var approvalButtons = _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'approve'), 'Approval', '#16a34a')
-      + _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'reject'), 'Reject', '#dc2626');
+    var approvalButtons = _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'approve'), 'Approval / 承認', '#16a34a')
+      + _approvalEmailButton(_getApprovalWebUrl(details.id || displayDwNo, 'reject'), 'Reject / 却下', '#dc2626');
     var drawingUrl = details.pdfUrl || systemUrl;
     var actionButtons = approvalButtons
-      + _approvalEmailButton(drawingUrl, 'Xem bản vẽ', '#2563eb')
-      + _approvalEmailButton(systemUrl, 'Vào hệ thống', '#475569');
+      + _approvalEmailButton(drawingUrl, 'Xem bản vẽ / 図面確認', '#2563eb')
+      + _approvalEmailButton(systemUrl, 'Vào hệ thống / システムへ', '#475569');
 
     actionButtonsHtml = `
       <!-- CALL TO ACTION -->
@@ -691,9 +782,8 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
   }
 
   // 8. Tiêu đề header banner
-  var titleText = isCompleted
-    ? 'Quy Trình Kí Duyệt Đã Hoàn Thành'
-    : (currentLevel ? ('Yêu Cầu Xác Nhận Bản Vẽ - ' + currentLevel) : 'Yêu Cầu Xác Nhận Bản Vẽ');
+  var titleMain = isCompleted ? 'Quy Trình Kí Duyệt Đã Hoàn Thành' : 'Yêu Cầu Xác Nhận Bản Vẽ';
+  var titleSub = isCompleted ? '図面承認プロセス完了' : '図面確認・承認依頼';
   var headerGradient = isCompleted
     ? 'linear-gradient(135deg, #15803d 0%, #166534 100%)'
     : 'linear-gradient(135deg, #1a3a52 0%, #2d5a7b 100%)';
@@ -702,26 +792,30 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
   var htmlBody = `
     <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; padding: 20px; max-width: 700px; margin: 0 auto; color: #333;">
       <!-- HEADER -->
-      <div style="background: ${headerGradient}; border-radius: 12px 12px 0 0; padding: 30px 25px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-        <div style="font-size: 12px; font-weight: 600; letter-spacing: 1px; margin-bottom: 12px; opacity: 0.9; text-transform: uppercase;">Hệ thống quản lý bản vẽ</div>
-        <h1 style="margin: 0 0 8px 0; font-size: 22px; font-weight: 700; letter-spacing: 0.5px;">${titleText}</h1>
-        <div style="font-size: 13px; font-weight: 500; color: #b0d0f0; margin-top: 8px;">${isList ? 'Danh sách bản vẽ' : 'Bản vẽ'}: <span style="color: #ffc107; font-weight: 700;">${_escapeApprovalEmailHtml(displayDwNo)}</span></div>
+      <div style="background: ${headerGradient}; border-radius: 12px 12px 0 0; padding: 28px 22px; text-align: center; color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="font-size: 11px; font-weight: 600; letter-spacing: 1px; margin-bottom: 8px; opacity: 0.9; text-transform: uppercase;">Hệ thống quản lý bản vẽ / 図面管理システム</div>
+        <h1 style="margin: 0 0 4px 0; font-size: 21px; font-weight: 700; letter-spacing: 0.5px;">${titleMain}</h1>
+        <div style="font-size: 14px; font-weight: 500; opacity: 0.9; margin-bottom: 8px;">${titleSub}</div>
+        <div style="font-size: 13px; font-weight: 500; color: #b0d0f0; margin-top: 8px;">${isList ? 'Danh sách bản vẽ / 図面リスト' : 'Bản vẽ / 図面'}: <span style="color: #ffc107; font-weight: 700;">${_escapeApprovalEmailHtml(displayDwNo)}</span></div>
       </div>
 
       <!-- MAIN CONTENT -->
       <div style="background: white; padding: 32px 25px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
-        <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #333;">
+        <p style="margin: 0 0 20px 0; font-size: 16px; line-height: 1.6; color: #1e293b;">
           <strong>${_escapeApprovalEmailHtml(salutation)}</strong>
         </p>
 
         <!-- STATUS INFO BOX -->
         <div style="background: #f0f7ff; border-left: 4px solid #0d6efd; padding: 16px 18px; border-radius: 6px; margin-bottom: 24px;">
-          <p style="margin: 0 0 6px 0; font-size: 14px; font-weight: 700; color: #0d6efd;">
-            ℹ Thông tin chi tiết:
+          <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: #0d6efd;">
+            ℹ Thông tin chi tiết / 詳細情報:
           </p>
-          <p style="margin: 0; font-size: 14px; line-height: 1.7; color: #1e3a8a;">
-            ${_escapeApprovalEmailHtml(detailMessage).split('\n').join('<br>')}
-          </p>
+          <div style="font-size: 14px; line-height: 1.7; color: #1e3a8a; margin-bottom: 8px;">
+            ${_escapeApprovalEmailHtml(detailMessageVi).split('\n').join('<br>')}
+          </div>
+          <div style="font-size: 13px; line-height: 1.6; color: #475569; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+            ${_escapeApprovalEmailHtml(detailMessageJa).split('\n').join('<br>')}
+          </div>
         </div>
 
         ${detailsHtml}
@@ -730,12 +824,13 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
 
         <!-- FOOTER -->
         <div style="border-top: 1px solid #e0e0e0; margin-top: 32px; padding-top: 20px; text-align: center;">
-          <p style="margin: 0 0 8px 0; font-size: 13px; color: #999; line-height: 1.5;">
-            <strong>Trân trọng,</strong><br>
-            <span style="color: #0d6efd; font-weight: 600;">Hệ thống Web App Quản Lý Bản Vẽ</span>
+          <p style="margin: 0 0 6px 0; font-size: 13px; color: #64748b; line-height: 1.5;">
+            <strong>Trân trọng / 敬具,</strong><br>
+            <span style="color: #0d6efd; font-weight: 600;">Hệ thống Web App Quản Lý Bản Vẽ / 図面管理システム</span>
           </p>
-          <p style="margin: 12px 0 0 0; font-size: 11px; color: #bbb;">
-            Email này được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.
+          <p style="margin: 10px 0 0 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">
+            Email này được gửi tự động từ hệ thống. Vui lòng không trả lời trực tiếp.<br>
+            本メールはシステムより自動送信されています。直接の返信はご遠慮ください。
           </p>
         </div>
       </div>
@@ -746,10 +841,11 @@ function _sendApprovalWorkflowEmail(targetEmail, dwNo, currentLevel, nextStatus,
   `;
 
   var bodyText = salutation + '\n\n'
-    + 'Thông tin chi tiết:\n'
-    + detailMessage + '\n\n'
-    + (isList ? '' : 'Mã bản vẽ: ' + displayDwNo + '\nTrạng thái: ' + nextStatus + '\n\n')
-    + 'Trân trọng,\nHệ thống Web App Quản Lý Bản Vẽ';
+    + 'Thông tin chi tiết / 詳細情報:\n'
+    + detailMessageVi + '\n'
+    + detailMessageJa + '\n\n'
+    + (isList ? '' : 'Mã bản vẽ / 図面番号: ' + displayDwNo + '\nTrạng thái / ステータス: ' + nextStatus + '\n\n')
+    + 'Trân trọng / 敬具,\nHệ thống Web App Quản Lý Bản Vẽ / 図面管理システム';
 
   try {
     var mailOptions = { htmlBody: htmlBody };
@@ -872,7 +968,17 @@ const approveDrawingOnServer = (drawingId, approvedLevel) => {
   var currentStatus = String(sheet.getRange(sheetRow, COL_STATUS + 1).getValue() || '');
   var step = null;
 
-  if (approvedLevel === 'Checker 1') {
+  if (approvedLevel === 'Checker') {
+    var checkerProfile = typeof getUserProfile === 'function' ? getUserProfile() : null;
+    var checkerPosition = checkerProfile ? _cleanStr(checkerProfile.position) : '';
+    if (checkerPosition !== 'checker') {
+      throw new Error('Tài khoản hiện tại không có quyền xác nhận bước Checker.');
+    }
+    if (!_cleanStr(currentStatus).includes('cho checker') || _cleanStr(currentStatus).includes('checker 1') || _cleanStr(currentStatus).includes('checker 2')) {
+      throw new Error('Bản vẽ không ở trạng thái Chờ Checker.');
+    }
+    step = { nextStatus: 'Chờ Checker 1', level: 'Checker', appendMode: false };
+  } else if (approvedLevel === 'Checker 1') {
     step = { nextStatus: 'Chờ Checker 2', byCol: COL_CHECKER_BY, dateCol: COL_CHECKER_DATE, level: 'Checker 1', appendMode: true };
   } else if (approvedLevel === 'Checker 2') {
     step = { nextStatus: 'Chờ Approval', byCol: COL_CHECKER_BY, dateCol: COL_CHECKER_DATE, level: 'Checker 2', appendMode: true };
@@ -892,6 +998,12 @@ const approveDrawingOnServer = (drawingId, approvedLevel) => {
   var nowStr = Utilities.formatDate(new Date(), timezone, 'yyyy/MM/dd');
 
   sheet.getRange(sheetRow, COL_STATUS + 1).setValue(step.nextStatus);
+
+  if (step.level === 'Checker') {
+    var checkerNote = '[' + nowStr + ' - ' + approverEmail + '] CHECKER XÁC NHẬN: Đã kiểm tra trước khi chuyển Checker 1.';
+    var existingNote = String(sheet.getRange(sheetRow, COL_NOTE + 1).getValue() || '');
+    sheet.getRange(sheetRow, COL_NOTE + 1).setValue(checkerNote + (existingNote ? '\n' + existingNote : ''));
+  }
 
   if (step.appendMode) {
     var oldBy = String(sheet.getRange(sheetRow, step.byCol + 1).getValue() || '');
@@ -914,7 +1026,9 @@ const approveDrawingOnServer = (drawingId, approvedLevel) => {
 
   // Gửi email thông báo theo luồng ký duyệt
   var notifyEmail = '';
-  if (step.level === 'Checker 1') {
+  if (step.level === 'Checker') {
+    notifyEmail = _getUserEmailByRole(['Checker 1', 'checker1']);
+  } else if (step.level === 'Checker 1') {
     notifyEmail = _getUserEmailByRole(['Checker 2', 'checker2']);
   } else if (step.level === 'Checker 2') {
     notifyEmail = _getUserEmailByRole(['Approval', 'Approver', 'GMQA', 'QA', 'Approval QA']);
@@ -962,6 +1076,21 @@ const rejectDrawingOnServer = (drawingId, reason) => {
 
   var prevStatus = String(sheet.getRange(sheetRow, COL_STATUS + 1).getValue() || '');
   sheet.getRange(sheetRow, COL_STATUS + 1).setValue('Tra lai - ' + prevStatus);
+
+  // Di chuyển link PDF từ cột AF (32) sang cột O (15) và xóa cột AF
+  var COL_PDF_SUBMISSION = 32; // Cột AF (1-based) = nơi lưu link PDF gửi ký
+  var COL_PDF_REJECTED   = 15; // Cột O  (1-based) = nơi lưu link PDF bị trả lại
+  try {
+    var pdfLinkCell = sheet.getRange(sheetRow, COL_PDF_SUBMISSION);
+    var pdfLinkValue = String(pdfLinkCell.getValue() || '').trim();
+    if (pdfLinkValue) {
+      sheet.getRange(sheetRow, COL_PDF_REJECTED).setValue(pdfLinkValue);
+      pdfLinkCell.clearContent();
+    }
+  } catch (pdfErr) {
+    // Không block reject nếu di chuyển PDF lỗi
+    Logger.log('Lỗi di chuyển link PDF khi reject: ' + pdfErr.message);
+  }
 
   var oldNote = String(sheet.getRange(sheetRow, COL_NOTE + 1).getValue() || '');
   sheet.getRange(sheetRow, COL_NOTE + 1).setValue(

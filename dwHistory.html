@@ -1,68 +1,246 @@
-<div id="page-dwHistory" class="custom-scroll" style="width:100%;height:100%;overflow-y:auto;background:transparent;padding:4px;">
+<div id="page-dwHistory" class="custom-scroll"
+  style="width:100%;height:100%;overflow-y:auto;background:transparent;padding:4px;">
   <style>
-    #page-dwHistory { color: var(--liquid-text); }
+    #page-dwHistory {
+      color: var(--liquid-text);
+    }
+
     #page-dwHistory .history-shell,
     #page-dwHistory .history-panel {
       border: var(--liquid-border);
       border-radius: var(--liquid-radius-lg);
       background: var(--liquid-glass-elevated);
-      box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255,255,255,.95);
+      box-shadow: var(--liquid-shadow-md), inset 0 1px 1px rgba(255, 255, 255, .95);
     }
-    #page-dwHistory .history-shell { padding: 16px 20px; }
+
+    #page-dwHistory .history-shell {
+      padding: 16px 20px;
+    }
+
     #page-dwHistory .history-header {
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-      flex-wrap:wrap; margin-bottom:14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
     }
-    #page-dwHistory .history-title { margin:0; font-size:.98rem; font-weight:800; }
-    #page-dwHistory .history-subtitle { margin:4px 0 0; color:var(--liquid-text-muted); font-size:.76rem; }
+
+    #page-dwHistory .history-title {
+      margin: 0;
+      font-size: .98rem;
+      font-weight: 800;
+    }
+
+    #page-dwHistory .history-subtitle {
+      margin: 4px 0 0;
+      color: var(--liquid-text-muted);
+      font-size: .76rem;
+    }
+
     #page-dwHistory .history-tabs {
-      display:inline-flex; gap:5px; padding:4px; margin-bottom:14px;
-      border:1px solid rgba(16,185,129,.2); border-radius:var(--liquid-radius-pill);
-      background:rgba(240,253,244,.7); box-shadow:var(--liquid-shadow-sm);
+      display: inline-flex;
+      gap: 5px;
+      padding: 4px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(16, 185, 129, .2);
+      border-radius: var(--liquid-radius-pill);
+      background: rgba(240, 253, 244, .7);
+      box-shadow: var(--liquid-shadow-sm);
     }
+
     #page-dwHistory .history-tabs button {
-      border:0; border-radius:var(--liquid-radius-pill); padding:7px 14px;
-      background:transparent; color:var(--liquid-text-soft); font-size:.76rem; font-weight:700;
+      border: 0;
+      border-radius: var(--liquid-radius-pill);
+      padding: 7px 14px;
+      background: transparent;
+      color: var(--liquid-text-soft);
+      font-size: .76rem;
+      font-weight: 700;
     }
+
     #page-dwHistory .history-tabs button.active {
-      color:#fff; background:linear-gradient(135deg,#10b981,#059669);
-      box-shadow:0 4px 12px rgba(16,185,129,.3);
+      color: #fff;
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, .3);
     }
-    #page-dwHistory .history-panel { padding:16px; }
-    #page-dwHistory .history-toolbar { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:14px; }
+
+    #page-dwHistory .history-panel {
+      padding: 16px;
+    }
+
+    #page-dwHistory .history-toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
     #page-dwHistory .history-toolbar input,
     #page-dwHistory .history-toolbar select {
-      min-height:36px; padding:6px 10px; border:var(--liquid-border-subtle);
-      border-radius:var(--liquid-radius-sm); background:rgba(255,255,255,.82);
-      color:var(--liquid-text); font-size:.78rem; box-shadow:var(--liquid-shadow-sm);
+      min-height: 36px;
+      padding: 6px 10px;
+      border: var(--liquid-border-subtle);
+      border-radius: var(--liquid-radius-sm);
+      background: rgba(255, 255, 255, .82);
+      color: var(--liquid-text);
+      font-size: .78rem;
+      box-shadow: var(--liquid-shadow-sm);
     }
+
     #page-dwHistory .history-toolbar input:focus,
-    #page-dwHistory .history-toolbar select:focus { outline:0; border-color:var(--liquid-primary); box-shadow:0 0 0 3px rgba(16,185,129,.18); }
-    #page-dwHistory .history-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:14px; }
-    #page-dwHistory .history-stat {
-      padding:12px 14px; border:var(--liquid-border-soft); border-left:3px solid var(--liquid-primary);
-      border-radius:var(--liquid-radius-md); background:rgba(255,255,255,.78); box-shadow:var(--liquid-shadow-sm);
+    #page-dwHistory .history-toolbar select:focus {
+      outline: 0;
+      border-color: var(--liquid-primary);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, .18);
     }
-    #page-dwHistory .history-stat small { display:block; color:var(--liquid-text-muted); font-size:.68rem; font-weight:800; text-transform:uppercase; }
-    #page-dwHistory .history-stat strong { display:block; margin-top:4px; color:var(--liquid-text); font-size:1.25rem; }
-    #page-dwHistory .history-table-wrap { overflow:auto; max-height:calc(100vh - 270px); border:var(--liquid-border); border-radius:var(--liquid-radius-md); background:rgba(255,255,255,.68); }
-    #page-dwHistory table { width:100%; border-collapse:separate; border-spacing:0; min-width:760px; }
-    #page-dwHistory th { position:sticky; top:0; z-index:1; padding:8px 10px; color:var(--liquid-text-muted); background:rgba(240,253,244,.9); border-bottom:1px solid rgba(16,185,129,.2); font-size:.68rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; white-space:nowrap; }
-    #page-dwHistory td { padding:8px 10px; border-bottom:var(--liquid-border-subtle); font-size:.76rem; vertical-align:middle; }
-    #page-dwHistory tbody tr:hover td { background:rgba(209,250,229,.65); }
-    #page-dwHistory .history-filter { display:block; width:100%; min-width:76px; margin-top:6px; padding:4px 7px; border:1px solid rgba(203,213,225,.85); border-radius:6px; background:#fff; font-size:.7rem; font-weight:500; text-transform:none; }
-    #page-dwHistory .so-code { font-family:ui-monospace,SFMono-Regular,Consolas,monospace; font-weight:800; }
-    #page-dwHistory .so-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:999px; font-size:.66rem; font-weight:700; white-space:nowrap; }
-    #page-dwHistory .so-badge.yes { color:#047857; background:rgba(209,250,229,.8); border:1px solid #a7f3d0; }
-    #page-dwHistory .so-badge.no { color:#b45309; background:rgba(254,243,199,.8); border:1px solid #fde68a; }
-    #page-dwHistory .history-empty { padding:32px!important; text-align:center; color:var(--liquid-text-muted); }
+
+    #page-dwHistory .history-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    #page-dwHistory .history-stat {
+      padding: 12px 14px;
+      border: var(--liquid-border-soft);
+      border-left: 3px solid var(--liquid-primary);
+      border-radius: var(--liquid-radius-md);
+      background: rgba(255, 255, 255, .78);
+      box-shadow: var(--liquid-shadow-sm);
+    }
+
+    #page-dwHistory .history-stat small {
+      display: block;
+      color: var(--liquid-text-muted);
+      font-size: .68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    #page-dwHistory .history-stat strong {
+      display: block;
+      margin-top: 4px;
+      color: var(--liquid-text);
+      font-size: 1.25rem;
+    }
+
+    #page-dwHistory .history-table-wrap {
+      overflow: auto;
+      max-height: calc(100vh - 270px);
+      border: var(--liquid-border);
+      border-radius: var(--liquid-radius-md);
+      background: rgba(255, 255, 255, .68);
+    }
+
+    #page-dwHistory table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      min-width: 760px;
+    }
+
+    #page-dwHistory th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 8px 10px;
+      color: var(--liquid-text-muted);
+      background: rgba(240, 253, 244, .9);
+      border-bottom: 1px solid rgba(16, 185, 129, .2);
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    #page-dwHistory td {
+      padding: 8px 10px;
+      border-bottom: var(--liquid-border-subtle);
+      font-size: .76rem;
+      vertical-align: middle;
+    }
+
+    #page-dwHistory tbody tr:hover td {
+      background: rgba(209, 250, 229, .65);
+    }
+
+    #page-dwHistory .history-filter {
+      display: block;
+      width: 100%;
+      min-width: 76px;
+      margin-top: 6px;
+      padding: 4px 7px;
+      border: 1px solid rgba(203, 213, 225, .85);
+      border-radius: 6px;
+      background: #fff;
+      font-size: .7rem;
+      font-weight: 500;
+      text-transform: none;
+    }
+
+    #page-dwHistory .so-code {
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-weight: 800;
+    }
+
+    #page-dwHistory .so-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: .66rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    #page-dwHistory .so-badge.yes {
+      color: #047857;
+      background: rgba(209, 250, 229, .8);
+      border: 1px solid #a7f3d0;
+    }
+
+    #page-dwHistory .so-badge.no {
+      color: #b45309;
+      background: rgba(254, 243, 199, .8);
+      border: 1px solid #fde68a;
+    }
+
+    #page-dwHistory .history-empty {
+      padding: 32px !important;
+      text-align: center;
+      color: var(--liquid-text-muted);
+    }
+
     @media (max-width:768px) {
-      #page-dwHistory { padding:2px; }
-      #page-dwHistory .history-shell { padding:12px; }
-      #page-dwHistory .history-stats { grid-template-columns:1fr; }
-      #page-dwHistory .history-tabs { width:100%; overflow-x:auto; }
-      #page-dwHistory .history-tabs button { min-width:max-content; }
-      #page-dwHistory .history-table-wrap { max-height:calc(100vh - 300px); }
+      #page-dwHistory {
+        padding: 2px;
+      }
+
+      #page-dwHistory .history-shell {
+        padding: 12px;
+      }
+
+      #page-dwHistory .history-stats {
+        grid-template-columns: 1fr;
+      }
+
+      #page-dwHistory .history-tabs {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      #page-dwHistory .history-tabs button {
+        min-width: max-content;
+      }
+
+      #page-dwHistory .history-table-wrap {
+        max-height: calc(100vh - 300px);
+      }
     }
 
     /* CSS hiệu ứng Click cho thẻ KPI */
@@ -70,10 +248,12 @@
       cursor: pointer;
       transition: all 0.2s ease;
     }
+
     #page-dwHistory .history-stat:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
     }
+
     #page-dwHistory .history-stat.active-stat {
       background: rgba(209, 250, 229, 0.6);
       border-left: 4px solid var(--liquid-primary, #10b981);
@@ -83,56 +263,104 @@
   <div class="history-shell">
     <div class="history-header">
       <div>
-        <h5 class="history-title"><i class="fa fa-chart-line me-2 text-success"></i><span data-i18n="dw_history_title">Lịch sử và đối chiếu bản vẽ</span></h5>
-        <p class="history-subtitle" data-i18n="dw_history_subtitle">Theo dõi tần suất TO và kiểm tra trạng thái SO giữa email, dữ liệu bản vẽ và Check adjust.</p>
+        <h5 class="history-title"><i class="fa fa-chart-line me-2 text-success"></i><span
+            data-i18n="dw_history_title">Lịch sử và đối chiếu bản vẽ</span></h5>
+        <p class="history-subtitle" data-i18n="dw_history_subtitle">Theo dõi tần suất TO và kiểm tra trạng thái SO giữa
+          email, dữ liệu bản vẽ và Check adjust.</p>
       </div>
-      <button id="dwHistoryReloadBtn" class="btn btn-sm btn-success fw-bold" type="button" onclick="dwHistoryReloadActiveTab()"><i class="fa fa-rotate me-1"></i><span data-i18n="dw_history_reload">Cập nhật</span></button>
+      <button id="dwHistoryReloadBtn" class="btn btn-sm btn-success fw-bold" type="button"
+        onclick="dwHistoryReloadActiveTab()"><i class="fa fa-rotate me-1"></i><span data-i18n="dw_history_reload">Cập
+          nhật</span></button>
     </div>
 
     <div class="history-tabs" role="tablist">
-      <button type="button" class="active" data-history-tab="frequency" onclick="dwHistorySwitchTab('frequency')"><i class="fa fa-chart-bar me-1"></i><span data-i18n="dw_history_tab_frequency">Tần suất TO</span></button>
-      <button type="button" data-history-tab="comparison" onclick="dwHistorySwitchTab('comparison')"><i class="fa fa-code-compare me-1"></i><span data-i18n="dw_history_tab_comparison">Đối chiếu SO</span></button>
+      <button type="button" class="active" data-history-tab="frequency" onclick="dwHistorySwitchTab('frequency')"><i
+          class="fa fa-chart-bar me-1"></i><span data-i18n="dw_history_tab_frequency">Tần suất TO</span></button>
+      <button type="button" data-history-tab="comparison" onclick="dwHistorySwitchTab('comparison')"><i
+          class="fa fa-code-compare me-1"></i><span data-i18n="dw_history_tab_comparison">Đối chiếu SO</span></button>
     </div>
 
     <section id="dwHistoryFrequencyPanel" class="history-panel" role="tabpanel">
       <div class="history-table-wrap">
         <table>
-          <thead><tr>
-            <th data-i18n="dw_history_th_to">TO<input class="history-filter" data-history-filter="to" data-i18n-placeholder="dw_history_ph_to" placeholder="Lọc TO..." oninput="dwHistoryFilterFrequency()"></th>
-            <th data-i18n="dw_history_th_frequency">Tần suất<input class="history-filter" data-history-filter="frequency" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
-            <th data-i18n="dw_history_th_occurrences">Số lần xuất hiện<input class="history-filter" data-history-filter="totalOccurrences" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
-            <th data-i18n="dw_history_th_colors_count">Số màu<input class="history-filter" data-history-filter="colorCount" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
-            <th data-i18n="dw_history_th_customers_count">Số khách<input class="history-filter" data-history-filter="customerCount" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
-            <th data-i18n="dw_history_th_colors">Các màu<input class="history-filter" data-history-filter="colors" data-i18n-placeholder="dw_history_ph_colors" placeholder="Lọc màu..." oninput="dwHistoryFilterFrequency()"></th>
-            <th data-i18n="dw_history_th_customers">Khách hàng<input class="history-filter" data-history-filter="customers" data-i18n-placeholder="dw_history_ph_customers" placeholder="Lọc khách..." oninput="dwHistoryFilterFrequency()"></th>
-          </tr></thead>
-          <tbody id="dwHistoryFrequencyBody"><tr><td colspan="7" class="history-empty" data-i18n="dw_history_loading">Đang tải dữ liệu...</td></tr></tbody>
+          <thead>
+            <tr>
+              <th data-i18n="dw_history_th_to">TO<input class="history-filter" data-history-filter="to"
+                  data-i18n-placeholder="dw_history_ph_to" placeholder="Lọc TO..." oninput="dwHistoryFilterFrequency()">
+              </th>
+              <th data-i18n="dw_history_th_frequency">Tần suất<input class="history-filter"
+                  data-history-filter="frequency" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..."
+                  oninput="dwHistoryFilterFrequency()"></th>
+              <th data-i18n="dw_history_th_occurrences">Số lần xuất hiện<input class="history-filter"
+                  data-history-filter="totalOccurrences" data-i18n-placeholder="dw_history_ph_filter"
+                  placeholder="Lọc..." oninput="dwHistoryFilterFrequency()"></th>
+              <th data-i18n="dw_history_th_colors_count">Số màu<input class="history-filter"
+                  data-history-filter="colorCount" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..."
+                  oninput="dwHistoryFilterFrequency()"></th>
+              <th data-i18n="dw_history_th_customers_count">Số khách<input class="history-filter"
+                  data-history-filter="customerCount" data-i18n-placeholder="dw_history_ph_filter" placeholder="Lọc..."
+                  oninput="dwHistoryFilterFrequency()"></th>
+              <th data-i18n="dw_history_th_colors">Các màu<input class="history-filter" data-history-filter="colors"
+                  data-i18n-placeholder="dw_history_ph_colors" placeholder="Lọc màu..."
+                  oninput="dwHistoryFilterFrequency()"></th>
+              <th data-i18n="dw_history_th_customers">Khách hàng<input class="history-filter"
+                  data-history-filter="customers" data-i18n-placeholder="dw_history_ph_customers"
+                  placeholder="Lọc khách..." oninput="dwHistoryFilterFrequency()"></th>
+            </tr>
+          </thead>
+          <tbody id="dwHistoryFrequencyBody">
+            <tr>
+              <td colspan="7" class="history-empty" data-i18n="dw_history_loading">Đang tải dữ liệu...</td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </section>
 
     <section id="dwHistoryComparisonPanel" class="history-panel" role="tabpanel" style="display:none;">
       <div class="history-toolbar">
-        <input id="dwHistorySoSearch" type="search" data-i18n-placeholder="dw_history_ph_so" placeholder="Tìm mã SO..." oninput="dwHistoryFilterComparison()">
+        <input id="dwHistorySoSearch" type="search" data-i18n-placeholder="dw_history_ph_so" placeholder="Tìm mã SO..."
+          oninput="dwHistoryFilterComparison()">
         <select id="dwHistorySoFilter" onchange="dwHistoryFilterComparison()">
-          <option value="ALL" data-i18n="dw_history_filter_all">Tất cả</option><option value="RECEIVED" data-i18n="dw_history_filter_received">Đã tiếp nhận</option><option value="UNRECEIVED" data-i18n="dw_history_filter_unreceived">Chưa tiếp nhận</option><option value="NEW">NEW</option><option value="OLD">OLD</option>
+          <option value="ALL" data-i18n="dw_history_filter_all">Tất cả</option>
+          <option value="RECEIVED" data-i18n="dw_history_filter_received">Đã tiếp nhận</option>
+          <option value="UNRECEIVED" data-i18n="dw_history_filter_unreceived">Chưa tiếp nhận</option>
+          <option value="NEW">NEW</option>
+          <option value="OLD">OLD</option>
         </select>
       </div>
-        <div class="history-stats">
+      <div class="history-stats">
         <!-- Thêm onclick và data-kpi vào từng thẻ -->
-        <div class="history-stat active-stat" data-kpi="ALL" onclick="dwHistoryQuickFilter('ALL')" title="Lọc tất cả SO">
+        <div class="history-stat active-stat" data-kpi="ALL" onclick="dwHistoryQuickFilter('ALL')"
+          title="Lọc tất cả SO">
           <small data-i18n="dw_history_kpi_total">Tổng SO</small><strong id="dwHistorySoTotal">0</strong>
         </div>
-        <div class="history-stat" data-kpi="RECEIVED" onclick="dwHistoryQuickFilter('RECEIVED')" title="Lọc SO đã tiếp nhận">
+        <div class="history-stat" data-kpi="RECEIVED" onclick="dwHistoryQuickFilter('RECEIVED')"
+          title="Lọc SO đã tiếp nhận">
           <small data-i18n="dw_history_kpi_received">Đã tiếp nhận</small><strong id="dwHistorySoReceived">0</strong>
         </div>
-        <div class="history-stat" data-kpi="UNRECEIVED" onclick="dwHistoryQuickFilter('UNRECEIVED')" title="Lọc SO chưa tiếp nhận">
-          <small data-i18n="dw_history_kpi_unreceived">Chưa tiếp nhận</small><strong id="dwHistorySoUnreceived">0</strong>
+        <div class="history-stat" data-kpi="UNRECEIVED" onclick="dwHistoryQuickFilter('UNRECEIVED')"
+          title="Lọc SO chưa tiếp nhận">
+          <small data-i18n="dw_history_kpi_unreceived">Chưa tiếp nhận</small><strong
+            id="dwHistorySoUnreceived">0</strong>
         </div>
-      </div>      <div class="history-table-wrap">
+      </div>
+      <div class="history-table-wrap">
         <table style="min-width:700px;">
-          <thead><tr><th data-i18n="dw_history_th_so">Mã SO</th><th>Email</th><th data-i18n="dw_history_th_drawing">Bản vẽ</th><th>NEW</th><th>ORDER DIE</th></tr></thead>
-          <tbody id="dwHistoryComparisonBody"><tr><td colspan="5" class="history-empty" data-i18n="dw_history_select_tab">Chọn tab để tải dữ liệu.</td></tr></tbody>
+          <thead>
+            <tr>
+              <th data-i18n="dw_history_th_so">Mã SO</th>
+              <th>Nguồn dữ liệu</th>
+              <th data-i18n="dw_history_th_drawing">Bản vẽ</th>
+              <th title="Số lượng TO NEW trong Log">NEW <small style="font-weight:400;opacity:.7">(số)</small></th>
+              <th title="Số lượng TO OLD trong Log">OLD <small style="font-weight:400;opacity:.7">(số)</small></th>
+            </tr>
+          </thead>
+          <tbody id="dwHistoryComparisonBody">
+            <tr>
+              <td colspan="5" class="history-empty" data-i18n="dw_history_select_tab">Chọn tab để tải dữ liệu.</td>
+            </tr>
+          </tbody>
         </table>
       </div>
     </section>
@@ -177,7 +405,18 @@
         document.getElementById('dwHistorySoReceived').textContent = rows.filter(function (row) { return row.email; }).length;
         document.getElementById('dwHistorySoUnreceived').textContent = rows.filter(function (row) { return !row.email; }).length;
         if (!rows.length) { body.innerHTML = '<tr><td colspan="5" class="history-empty">Không có mã SO phù hợp.</td></tr>'; return; }
-        body.innerHTML = rows.map(function (row) { return '<tr><td class="so-code">' + esc(row.so) + '</td><td>' + badge(row.email) + '</td><td>' + badge(row.drawing) + '</td><td>' + badge(row.isNew) + '</td><td>' + badge(row.isOld) + '</td></tr>'; }).join('');
+        body.innerHTML = rows.map(function (row) {
+          var subjectHtml = row.emailSubject
+            ? '<span title="' + esc(row.emailSubject) + '" style="display:block;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.75rem;color:var(--liquid-text-soft)">' + esc(row.emailSubject) + '</span>'
+            : '<span style="color:var(--liquid-text-muted);font-size:.72rem">— Chưa tiếp nhận —</span>';
+          var newBadge = row.newCount > 0
+            ? '<span class="so-badge yes"><i class="fa fa-check"></i>' + esc(row.newCount) + '</span>'
+            : '<span class="so-badge no"><i class="fa fa-xmark"></i>0</span>';
+          var oldBadge = row.oldCount > 0
+            ? '<span class="so-badge" style="color:#0369a1;background:rgba(224,242,254,.8);border:1px solid #bae6fd"><i class="fa fa-clock-rotate-left"></i>' + esc(row.oldCount) + '</span>'
+            : '<span class="so-badge no"><i class="fa fa-xmark"></i>0</span>';
+          return '<tr><td class="so-code">' + esc(row.so) + '</td><td>' + subjectHtml + '</td><td>' + badge(row.drawing) + '</td><td>' + newBadge + '</td><td>' + oldBadge + '</td></tr>';
+        }).join('');
       }
 
       window.dwHistoryFilterComparison = function () {
@@ -253,7 +492,7 @@
 
 
       // 1. Hàm xử lý khi người dùng bấm vào thẻ KPI
-      window.dwHistoryQuickFilter = function(filterValue) {
+      window.dwHistoryQuickFilter = function (filterValue) {
         var filterSelect = document.getElementById('dwHistorySoFilter');
         if (filterSelect) {
           filterSelect.value = filterValue; // Tự động đổi giá trị của dropdown cho khớp
@@ -265,7 +504,7 @@
       window.dwHistoryFilterComparison = function () {
         var search = String(document.getElementById('dwHistorySoSearch').value || '').trim().toUpperCase().replace(/\s+/g, '');
         var filter = document.getElementById('dwHistorySoFilter').value;
-        
+
         // Làm nổi bật (tô màu) thẻ KPI đang được chọn
         document.querySelectorAll('#dwHistoryComparisonPanel .history-stat').forEach(function (card) {
           if (card.dataset.kpi === filter) {

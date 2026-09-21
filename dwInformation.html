@@ -723,10 +723,20 @@
         <!-- Thanh công cụ: Tìm kiếm & Thêm mới + Chọn lộc -->
         <div
           class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 pb-3 mb-3 border-bottom">
-          <div class="input-group order-1" style="max-width: 350px;">
-            <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
-            <input type="text" id="searchDrawingInput" class="form-control border-start-0 bg-light shadow-none"
-              data-i18n-placeholder="info_search_drawing" placeholder="Tìm kiếm Type, TO, Customer..." onkeyup="searchDrawingData()">
+          <div class="d-flex flex-wrap gap-2 align-items-center order-1">
+            <div class="input-group" style="max-width: 220px;">
+              <span class="input-group-text bg-light border-end-0 text-muted"><i class="fa fa-search"></i></span>
+              <input type="text" id="searchDrawingInput" class="form-control border-start-0 bg-light shadow-none"
+                data-i18n-placeholder="info_search_drawing" placeholder="Tìm kiếm TO, Customer..." onkeyup="searchDrawingData()">
+            </div>
+            <div class="input-group" style="max-width: 160px;">
+              <span class="input-group-text bg-warning bg-opacity-25 border-end-0 text-warning-emphasis" title="Nhập SO để bật chọn tất cả"><i class="fa fa-hashtag"></i></span>
+              <input type="text" id="bulkFilterSO" class="form-control border-start-0 shadow-none" placeholder="SO..." oninput="updateBulkFilterState()">
+            </div>
+            <div class="input-group" style="max-width: 180px;">
+              <span class="input-group-text bg-warning bg-opacity-25 border-end-0 text-warning-emphasis" title="Nhập Dự án để bật chọn tất cả"><i class="fa fa-folder"></i></span>
+              <input type="text" id="bulkFilterProject" class="form-control border-start-0 shadow-none" placeholder="Dự án..." oninput="updateBulkFilterState()">
+            </div>
           </div>
 
           <div class="d-flex align-items-center gap-2 order-2">
@@ -746,16 +756,17 @@
             <table class="table table-hover align-middle mb-0" id="drawingDataTable">
               <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
                 <tr>
-                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0" style="width: 40px;">
+                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0" style="width: 40px;" title="Cần nhập SO và Dự án để chọn tất cả">
                     <div class="form-check">
                       <input class="form-check-input" type="checkbox" id="tableSelectAll"
-                        onchange="toggleTableSelectAll()">
+                        onchange="toggleTableSelectAll()" disabled title="Nhập SO và Dự án để kích hoạt">
                     </div>
                   </th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_type">Type</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_to">TO</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_dw_code">Dw Code</th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_customer">Customer</th>
+                  <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0">SO</th>
                   <th scope="col" class="text-end pe-4 text-muted fw-semibold py-3 border-bottom-0"
                     data-i18n="info_th_action" style="width: 120px;">Action</th>
                 </tr>
@@ -1148,8 +1159,9 @@
       }
 
       var sortedEmails = filteredEmails.slice().sort(function (a, b) {
-        var aStatus = a.isReceived ? 1 : 0;
-        var bStatus = b.isReceived ? 1 : 0;
+        // Thứ tự: chưa tiếp nhận (0) → đã có log chưa complete (1) → đã nhận hoàn toàn (2)
+        var aStatus = a.isReceived ? 2 : a.isInLog ? 1 : 0;
+        var bStatus = b.isReceived ? 2 : b.isInLog ? 1 : 0;
         return aStatus - bStatus;
       });
 
@@ -1167,7 +1179,15 @@
         var dateText = escHtml(String(email.date));
         var subjectText = escHtml(String(email.subject));
         var progress = email.receivedProgress || {};
-        var statusLabel = email.isReceived ? '<span class="badge rounded-pill bg-success-subtle text-success border border-success ms-2 px-2 py-1" style="font-size:0.68rem;">Đã nhận</span>' : progress.total ? '<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning ms-2 px-2 py-1" style="font-size:0.68rem;">' + escHtml(progress.received + '/' + progress.total) + '</span>' : '<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning ms-2 px-2 py-1" style="font-size:0.68rem;">Chưa nhận</span>';
+        var statusLabel = email.isReceived
+          ? '<span class="badge rounded-pill bg-success-subtle text-success border border-success ms-2 px-2 py-1" style="font-size:0.68rem;">Đã nhận</span>'
+          : email.isInLog && progress.total
+            ? '<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning ms-2 px-2 py-1" style="font-size:0.68rem;">' + escHtml(progress.received + '/' + progress.total) + '</span>'
+            : email.isInLog
+              ? '<span class="badge rounded-pill bg-info-subtle text-info border border-info ms-2 px-2 py-1" style="font-size:0.68rem;"><i class="fa fa-inbox me-1"></i>Đã có trong Log</span>'
+              : progress.total
+                ? '<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning ms-2 px-2 py-1" style="font-size:0.68rem;">' + escHtml(progress.received + '/' + progress.total) + '</span>'
+                : '<span class="badge rounded-pill bg-warning-subtle text-warning border border-warning ms-2 px-2 py-1" style="font-size:0.68rem;">Chưa nhận</span>';
         var drawingStatusLabel = email.isDrawingDone ? '<span class="badge rounded-pill bg-primary-subtle text-primary border border-primary ms-2 px-2 py-1" style="font-size:0.68rem;"><i class="fa fa-check me-1"></i>Check SO OK</span>' : '<span class="badge rounded-pill bg-light text-secondary border ms-2 px-2 py-1" style="font-size:0.68rem;"><i class="fa fa-circle-xmark me-1"></i>Không có SO</span>';
 
         item.innerHTML = dot +
@@ -1208,10 +1228,10 @@
       });
 
       var currentEmail = state.emails.find(function (e) { return e.id === threadId; });
-      if (currentEmail && currentEmail.isReceived) {
+      if (currentEmail && (currentEmail.isReceived || currentEmail.isInLog)) {
         var btn = document.getElementById('btnTiepNhan');
         if (btn) btn.classList.add('d-none');
-        updateSidebarStatus(threadId, true);
+        if (currentEmail.isReceived) updateSidebarStatus(threadId, true);
       }
 
       try {
@@ -1326,17 +1346,25 @@
       var firstMsg = data.messages[0];
       var subject = data.subject || '(Không có tiêu đề)';
 
-      // Kiểm tra nhanh trạng thái tiếp nhận từ danh sách email
+      // Kiểm tra nhanh trạng thái tiếp nhận từ danh sách email hoặc từ dữ liệu chi tiết trả về
       var currentEmail = state.emails.find(function (e) { return e.id === data.threadId; });
       var isReceived = currentEmail ? currentEmail.isReceived : false;
+      // Nếu server-side xác nhận email đã có trong Log thì ẩn nút (kể cả khi isReceived chưa = true do progress chưa complete)
+      var isInLog = !!(data.isInLog || (currentEmail && currentEmail.isInLog));
+      var shouldHideBtn = isReceived || isInLog;
       var receiptProgress = currentEmail && currentEmail.receivedProgress ? currentEmail.receivedProgress : null;
+
+      // Đồng bộ lại state.emails nếu server nói isInLog nhưng client chưa biết
+      if (isInLog && currentEmail && !currentEmail.isInLog) {
+        currentEmail.isInLog = true;
+      }
 
       // Render Huy hiệu & Nút bấm dựa trên trạng thái
       var badgeHtml = '<span id="receivedBadge">' +
-        (isReceived ? '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>' : receiptProgress && receiptProgress.total ? '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-clock me-1"></i>' + escHtml(receiptProgress.received + '/' + receiptProgress.total) + '</span>' : '') +
+        (isReceived ? '<span class="badge bg-success bg-opacity-10 text-success border border-success ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-check-circle me-1"></i>Đã tiếp nhận</span>' : (isInLog && receiptProgress && receiptProgress.total) ? '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-clock me-1"></i>' + escHtml(receiptProgress.received + '/' + receiptProgress.total) + '</span>' : isInLog ? '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-clock me-1"></i>Đã tiếp nhận (một phần)</span>' : receiptProgress && receiptProgress.total ? '<span class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning ms-2 align-middle" style="font-size:0.75rem;"><i class="fa fa-clock me-1"></i>' + escHtml(receiptProgress.received + '/' + receiptProgress.total) + '</span>' : '') +
         '</span>';
 
-      var btnHtml = isReceived ? '' :
+      var btnHtml = shouldHideBtn ? '' :
         '<button id="btnTiepNhan" class="btn btn-primary shadow-sm text-nowrap" onclick="handleTiepNhanThietKe()">' +
         '<i class="fa fa-file-signature me-2"></i>Tiếp nhận thiết kế' +
         '</button>';
@@ -1756,7 +1784,7 @@
           resetBtnTiepNhan();
           showToast('Lỗi kết nối: ' + err.message, 'error');
         })
-        .saveToLogSheet(data.threadId, data.subject, parsedData, payloadText);
+        .saveToLogSheet(data.threadId, data.subject, parsedData, payloadText, (window.user && window.user.mail) ? window.user.mail : '');
     }
 
     function handleTiepNhanThietKe() {
@@ -1895,14 +1923,14 @@
             resetBtnTiepNhan();
             showToast('Lỗi kết nối: ' + err.message, 'error');
           })
-          .saveToLogSheet(data.threadId, data.subject, {}, '');
+          .saveToLogSheet(data.threadId, data.subject, {}, '', (window.user && window.user.mail) ? window.user.mail : '');
       }
     }
 
     /* ==========================================================================
        MODULE 1.2: NHẬP DỮ LIỆU BẢN VẼ
        ========================================================================== */
-    var pendingState = { selectedLogIdx: null, subject: '', isUpgradeMode: false, isFullEditMode: false, isBulkMode: false };
+    var pendingState = { selectedLogIdx: null, subject: '', clientId: null, isUpgradeMode: false, isFullEditMode: false, isBulkMode: false };
     var drawingDataList = [];
     var pendingDrawingViewData = [];
     var managedDrawingViewData = [];
@@ -1942,11 +1970,12 @@
       if (!isBackground) loadingRequests++;
       closeDrawingForm();
       try {
+        var currentUserEmail = (window.user && window.user.mail) ? window.user.mail : '';
         const res = await new Promise((resolve, reject) => {
           google.script.run
             .withSuccessHandler(resolve)
             .withFailureHandler(reject)
-            .getDrawingsWithoutImage();
+            .getDrawingsWithoutImage(currentUserEmail);
         });
 
         if (!isBackground) hideLoading(); // <--- TẮT LOADING
@@ -2042,6 +2071,7 @@
           var id = item.rowIdx;
           var subject = escHtml(String(item.subject || '')).replace(/'/g, "\\'");
           var soRaw = String(item.so || '');
+          var soDisplay = escHtml(soRaw);
 
           var actionHtml = '<div class="managed-action-group">' +
             '<button class="managed-action-btn managed-edit-btn" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen"></i>Sửa</button>' +
@@ -2049,10 +2079,12 @@
             '</div>';
 
           return '<tr class="bg-white">' +
+            '<td class="ps-4"><input class="form-check-input drawing-checkbox" type="checkbox" id="checkbox-' + id + '" data-row-id="' + id + '" onchange="toggleDrawingCheckbox(\'' + id + '\')" style="cursor:pointer;"></td>' +
             '<td class="ps-4 fw-bold text-dark">' + type + '</td>' +
             '<td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1">' + to + '</span></td>' +
             '<td><code class="text-danger bg-light px-2 py-1 rounded fw-bold border">' + dwCode + '</code></td>' +
             '<td class="text-secondary fw-medium">' + customer + '</td>' +
+            '<td>' + (soDisplay ? '<span class="badge bg-info bg-opacity-10 text-info border border-info-subtle px-2 py-1">' + soDisplay + '</span>' : '<span class="text-muted">–</span>') + '</td>' +
             '<td class="text-end pe-4">' + actionHtml + '</td>' +
             '</tr>';
         }).join('');
@@ -2231,9 +2263,53 @@
       btn.classList.add('text-white');
     }
 
+    var newDrawingDraftFieldIds = [
+      'formGroup', 'formType', 'formCustomer', 'formTO', 'formProject', 'formSO',
+      'formDwCode', 'formVersion', 'formCustomVersion', 'formTypeDw', 'formAssignee',
+      'formWidth', 'formHeight', 'formReceivedDate', 'formAssigneeDoneDate',
+      'formActualDoneDate', 'formFYE', 'formNote'
+    ];
+
+    function readNewDrawingDraftFields() {
+      var fields = {};
+      newDrawingDraftFieldIds.forEach(function (fieldId) {
+        var field = document.getElementById(fieldId);
+        if (field) fields[fieldId] = field.value || '';
+      });
+      fields.clientId = pendingState.clientId || crypto.randomUUID();
+      pendingState.clientId = fields.clientId;
+      return fields;
+    }
+
+    function saveNewDrawingDraft() {
+      if (pendingState.selectedLogIdx !== 'NEW' || typeof OfflineDrawingStore === 'undefined') return;
+      OfflineDrawingStore.saveDraft(readNewDrawingDraftFields()).catch(function (error) {
+        console.warn('Không thể lưu bản nháp bản vẽ:', error);
+      });
+    }
+
+    function restoreNewDrawingDraft() {
+      if (typeof OfflineDrawingStore === 'undefined') return;
+      OfflineDrawingStore.getDraft().then(function (draft) {
+        if (!draft || !draft.fields || pendingState.selectedLogIdx !== 'NEW') return;
+        var fields = draft.fields;
+        pendingState.clientId = fields.clientId || crypto.randomUUID();
+        newDrawingDraftFieldIds.forEach(function (fieldId) {
+          var field = document.getElementById(fieldId);
+          if (field && fields[fieldId] !== undefined) field.value = fields[fieldId];
+        });
+        setVersionOtherVisibility();
+        if (!fields.formDwCode) generateDwCode();
+        showToast('Đã khôi phục bản nháp cục bộ.', 'info');
+      }).catch(function (error) {
+        console.warn('Không thể khôi phục bản nháp bản vẽ:', error);
+      });
+    }
+
     function openAddDrawingForm() {
       pendingState.selectedLogIdx = 'NEW';
       pendingState.subject = 'Bản vẽ mới (Nhập thủ công)';
+      pendingState.clientId = null;
       document.getElementById('modalFormTitle').textContent = 'Thêm Mới Bản Vẽ';
 
       setToFieldVisibility(true);
@@ -2250,6 +2326,7 @@
       generateDwCode();
 
       getDrawingModal().show();
+      restoreNewDrawingDraft();
     }
 
     // Mở Popup Sửa
@@ -2312,6 +2389,7 @@
       if (oldNotice) oldNotice.style.display = 'none';
       window.__isSubmittingDrawing = false;
       pendingState.selectedLogIdx = null;
+      pendingState.clientId = null;
       pendingState.isUpgradeMode = false;
       pendingState.isFullEditMode = false;
       pendingState.isBulkMode = false;
@@ -2611,6 +2689,12 @@
         noteValue                       // 16: Note / Nội dung thay đổi
       ];
 
+      var isNewDrawing = pendingState.selectedLogIdx === 'NEW' &&
+        !pendingState.isFullEditMode && !pendingState.isBulkMode && !pendingState.isUpgradeMode;
+      if (isNewDrawing && !pendingState.clientId) {
+        pendingState.clientId = crypto.randomUUID();
+      }
+
       var form = document.getElementById('drawingForm');
       var fileInput = form ? form.querySelector('input[type="file"]') : null;
       var file = (fileInput && fileInput.files.length > 0) ? fileInput.files[0] : null;
@@ -2629,7 +2713,7 @@
           window.__pastedCutImageObject = null;
           if (pendingState.isFullEditMode) sendManagedEditToGas(rowData);
           else if (pendingState.isBulkMode) sendBulkDataToGas(rowData);
-          else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null);
+          else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null, pendingState.clientId);
         };
         reader.onerror = function () {
           window.__isSubmittingDrawing = false;
@@ -2643,13 +2727,13 @@
         window.__pastedCutImageObject = null;
         if (pendingState.isFullEditMode) sendManagedEditToGas(rowData);
         else if (pendingState.isBulkMode) sendBulkDataToGas(rowData);
-        else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null);
+        else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null, pendingState.clientId);
       } else {
         rowData.push(null);
         window.__pastedCutImageObject = null;
         if (pendingState.isFullEditMode) sendManagedEditToGas(rowData);
         else if (pendingState.isBulkMode) sendBulkDataToGas(rowData);
-        else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null);
+        else sendDataToGas(rowData, pendingState.isUpgradeMode ? pendingState.selectedLogIdx : null, pendingState.clientId);
       }
     }
 
@@ -2661,7 +2745,30 @@
       }
     }
 
-    function sendDataToGas(rowData, dataRowIdx) {
+    function finishOfflineCreate(rowData, clientId) {
+      OfflineDrawingStore.queueCreate(pendingState.subject, rowData, clientId).then(function () {
+        OfflineDrawingStore.clearDraft();
+        window.__isSubmittingDrawing = false;
+        hideLoading();
+        unlockModalSubmit();
+        closeDrawingForm();
+        showToast('Đã lưu cục bộ. Hệ thống sẽ tự đồng bộ khi có mạng.', 'info');
+        OfflineDrawingStore.flush();
+      }).catch(function (error) {
+        window.__isSubmittingDrawing = false;
+        hideLoading();
+        unlockModalSubmit();
+        showToast('Không thể lưu bản nháp cục bộ: ' + error.message, 'error');
+      });
+    }
+
+    function sendDataToGas(rowData, dataRowIdx, clientId) {
+      var isNewDrawing = pendingState.selectedLogIdx === 'NEW' && !dataRowIdx;
+      if (isNewDrawing && !navigator.onLine) {
+        finishOfflineCreate(rowData, clientId);
+        return;
+      }
+
       google.script.run
         .withSuccessHandler(function (res) {
           window.__isSubmittingDrawing = false;
@@ -2670,6 +2777,9 @@
           if (!res) return showToast('Lỗi phản hồi rỗng', 'error');
           if (res.success) {
             showToast('Đã lưu thành công!', 'success');
+            if (isNewDrawing) {
+              OfflineDrawingStore.clearDraft();
+            }
             closeDrawingForm();
 
             // Nếu là chế độ upgrade (nâng cấp bản vẽ) thì nhảy sang tab manage
@@ -2694,12 +2804,16 @@
           }
         })
         .withFailureHandler(function (err) {
+          if (isNewDrawing && !navigator.onLine) {
+            finishOfflineCreate(rowData, clientId);
+            return;
+          }
           window.__isSubmittingDrawing = false;
           hideLoading();
           unlockModalSubmit();
           showToast('Lỗi hệ thống: ' + err.message, 'error');
         })
-        .saveDataToTestSheet(pendingState.subject, [rowData], dataRowIdx);
+        .saveDataToTestSheet(pendingState.subject, [rowData], dataRowIdx, clientId);
     }
 
     function sendBulkDataToGas(rowData) {
@@ -2783,7 +2897,33 @@
       updateBulkEditButtonVisibility();
     }
 
+    function updateBulkFilterState() {
+      var soVal = (document.getElementById('bulkFilterSO') || {}).value || '';
+      var projVal = (document.getElementById('bulkFilterProject') || {}).value || '';
+      var checkbox = document.getElementById('tableSelectAll');
+      if (checkbox) {
+        var canEnable = soVal.trim() !== '' && projVal.trim() !== '';
+        checkbox.disabled = !canEnable;
+        checkbox.title = canEnable ? 'Chọn tất cả' : 'Nhập SO và Dự án để kích hoạt';
+        if (!canEnable) {
+          checkbox.checked = false;
+          document.querySelectorAll('.drawing-checkbox').forEach(cb => cb.checked = false);
+          bulkState.selectedRows.clear();
+          bulkState.selectedItems = {};
+          updateBulkEditButtonVisibility();
+        }
+      }
+    }
+
     function toggleTableSelectAll() {
+      var soVal = (document.getElementById('bulkFilterSO') || {}).value || '';
+      var projVal = (document.getElementById('bulkFilterProject') || {}).value || '';
+      if (!soVal.trim() || !projVal.trim()) {
+        showToast('Vui lòng nhập SO và Dự án trước khi chọn tất cả', 'warning');
+        var checkbox = document.getElementById('tableSelectAll');
+        if (checkbox) checkbox.checked = false;
+        return;
+      }
       var checkbox = document.getElementById('tableSelectAll');
       if (checkbox.checked) {
         document.querySelectorAll('.drawing-checkbox').forEach(cb => {
@@ -3167,6 +3307,12 @@
       if (!form) return;
       form.reset();
 
+      // Điền sẵn SO và Dự án từ ô lọc hàng loạt nếu có
+      var filterSoVal = (document.getElementById('bulkFilterSO') || {}).value || '';
+      var filterProjVal = (document.getElementById('bulkFilterProject') || {}).value || '';
+      if (document.getElementById('formSO') && filterSoVal) document.getElementById('formSO').value = filterSoVal.trim();
+      if (document.getElementById('formProject') && filterProjVal) document.getElementById('formProject').value = filterProjVal.trim();
+
       // Tự động điền ngày hoàn thành
       autoFillAssigneeDoneDate();
 
@@ -3229,7 +3375,11 @@
           var selectionKey = String(id) + '-' + itemIndex;
           bulkState.selectionCatalog[selectionKey] = item;
           var subject = escHtml(String(item.subject || '')).replace(/'/g, "\\'");
-          var soRaw = String(item.so || '');
+          var soRaw = String(item.so || '').trim();
+          var soDisplay = escHtml(soRaw);
+          var soBadge = soDisplay
+            ? '<span class="badge bg-info bg-opacity-10 text-info border border-info-subtle px-2 py-1">' + soDisplay + '</span>'
+            : '<span class="text-muted">–</span>';
 
           var actionHtml = '<div class="managed-action-group">' +
             '<button class="managed-action-btn managed-edit-btn" onclick="openEditDrawingForm(' + id + ', \'' + subject + '\', \'' + customer + '\', \'' + to + '\', \'' + escHtml(soRaw).replace(/'/g, "\\'") + '\')" title="Sửa"><i class="fa fa-pen"></i>Sửa</button>' +
@@ -3242,6 +3392,7 @@
             '<td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-2 py-1">' + to + '</span></td>' +
             '<td><code class="text-danger bg-light px-2 py-1 rounded fw-bold border">' + dwCode + '</code></td>' +
             '<td class="text-secondary fw-medium">' + customer + '</td>' +
+            '<td>' + soBadge + '</td>' +
             '<td class="text-end pe-4">' + actionHtml + '</td>' +
             '</tr>';
         }).join('');
@@ -3644,6 +3795,20 @@
       pendingDrawingViewData = filtered;
       renderDrawingTable(pendingDrawingViewData);
     }
+
+    var saveNewDrawingDraftDebounced = typeof appDebounce === 'function'
+      ? appDebounce(saveNewDrawingDraft, 350)
+      : saveNewDrawingDraft;
+    document.addEventListener('input', function (event) {
+      if (event.target && newDrawingDraftFieldIds.indexOf(event.target.id) !== -1) {
+        saveNewDrawingDraftDebounced();
+      }
+    });
+    document.addEventListener('change', function (event) {
+      if (event.target && newDrawingDraftFieldIds.indexOf(event.target.id) !== -1) {
+        saveNewDrawingDraftDebounced();
+      }
+    });
 
 
 

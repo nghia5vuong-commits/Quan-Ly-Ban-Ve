@@ -904,8 +904,16 @@
       // Nút PDF Gửi Ký       
       let btnPdfGuiKy = '';
       let canSubmit = false;
+      const noteRaw = String(row[22] || '').trim();
+      // Extract rejection reason from note if rejected
+      let rejectReason = '';
+      if (isRejected && noteRaw) {
+        var tuChoiMatch = noteRaw.match(/TU CHOI:\s*([^\n\[]+)/i);
+        if (tuChoiMatch && tuChoiMatch[1]) rejectReason = tuChoiMatch[1].trim();
+        else if (noteRaw.length < 200) rejectReason = noteRaw.split('\n')[0];
+      }
       if (pdfGuiKy && String(pdfGuiKy).includes('http')) {
-        btnPdfGuiKy = `<a href="${pdfGuiKy}" target="_blank" data-dw-preview="true" data-preview-url="${String(pdfGuiKy).replace(/"/g, '&quot;')}" class="btn btn-sm btn-primary py-0 px-2"><i class="bi bi-eye"></i> Xem</a>`;
+        btnPdfGuiKy = `<a href="${pdfGuiKy}" target="_blank" class="btn btn-sm btn-primary py-0 px-2"><i class="bi bi-eye"></i> Xem</a>`;
         canSubmit = true;
       } else {
         btnPdfGuiKy = `<span class="badge bg-warning text-dark">Chưa có link</span>`;
@@ -949,7 +957,8 @@
          <td>${to}</td>
          <td class="fw-bold text-dark">
            ${dwNo}
-           ${isRejected ? '<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 10px;">Bị trả lại</span>' : ''}
+           ${isRejected ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 10px;">Bị trả lại</span>` : ''}
+           ${isRejected && rejectReason ? `<div class="text-danger mt-1" style="font-size: 11px; font-weight: 400;"><i class="bi bi-chat-left-text me-1"></i>${rejectReason.substring(0, 120)}${rejectReason.length > 120 ? '...' : ''}</div>` : ''}
          </td>
          <td class="text-center">${ver}</td>
          <td>${project}</td>
@@ -1093,7 +1102,7 @@
           hideDwDesignLoading();
           Swal.fire({
             title: 'Thành công',
-            html: `Bản vẽ đã được đóng dấu và chuyển sang Chờ Duyệt!<br><br><a href="${saveRes}" target="_blank" class="btn btn-sm btn-primary fw-bold text-white px-3 py-2 mt-2 shadow-sm"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Xem ngay bản vẽ vừa ký</a>`,
+            html: `Bản vẽ đã được đóng dấu và chuyển sang Chờ Checker xác nhận!<br><br><a href="${saveRes}" target="_blank" class="btn btn-sm btn-primary fw-bold text-white px-3 py-2 mt-2 shadow-sm"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Xem ngay bản vẽ vừa ký</a>`,
             icon: 'success'
           });
 
@@ -1119,6 +1128,7 @@
   }
   // Khởi tạo tab event và load data ban đầu
   function initThietKeBanVe() {
+    if (dwDesignInitGuard && !document.getElementById('index-page-dwDesign')?.classList.contains('active')) return;
     initDropdownEvents();
     buildToDropdownList();
 
@@ -1163,7 +1173,7 @@
           window.pageData = data;
           if (typeof pageData !== 'undefined') pageData = data;
         }
-        initThietKeBanVe();
+        window.requestAnimationFrame(initThietKeBanVe);
       });
       return true;
     }
@@ -1185,7 +1195,7 @@
       if (container && container.classList.contains('active')) {
         var tbody = document.getElementById('dwDesignTableBody');
         if (!tbody || tbody.children.length === 0 || tbody.innerText.includes('Đang chờ tải')) {
-          initThietKeBanVe();
+          window.requestAnimationFrame(initThietKeBanVe);
         }
       }
     };
@@ -1210,7 +1220,7 @@
       var tbody = document.getElementById('dwDesignTableBody');
       if (container && container.classList.contains('active')) {
         if (!tbody || tbody.children.length === 0) {
-          initThietKeBanVe();
+          window.requestAnimationFrame(initThietKeBanVe);
         }
       }
       if (intervalCount >= 10 && tbody && tbody.children.length > 0) {
@@ -1219,7 +1229,7 @@
       if (intervalCount >= 20) {
         clearInterval(initInterval);
       }
-    }, 500);
+    }, 1000);
   })();
 
   // initThietKeBanVe() được gọi từ index.html qua AppDataStore.onReady('mainData')
@@ -1428,7 +1438,7 @@
             || (sendToCode && rTo && rTo.toLowerCase() === sendToCode.toLowerCase());
         });
         if (rowIndex !== -1) {
-          pageData[rowIndex][2] = 'Chờ Checker 1';
+          pageData[rowIndex][2] = 'Chờ Checker';
           pageData[rowIndex][30] = excelUrl;
           pageData[rowIndex][31] = pdfUrl;
         }

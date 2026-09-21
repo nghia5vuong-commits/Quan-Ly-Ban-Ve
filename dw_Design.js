@@ -89,9 +89,9 @@ const sendDesignUploadedNotification = (details) => {
   const toCode = String(details.toCode || '').trim();
   const customer = String(details.customer || '').trim();
   const project = String(details.project || '').trim();
-  const subject = `[THÔNG BÁO] Bản vẽ ${dwCode} đã chuyển sang Chờ Checker 1`;
+  const subject = `[THÔNG BÁO] Bản vẽ ${dwCode} đã chuyển sang Chờ Checker`;
   const body = [
-    'Hệ thống đã ghi nhận bản vẽ mới và chuyển sang trạng thái Chờ Checker 1.',
+    'Hệ thống đã ghi nhận bản vẽ mới và chuyển sang trạng thái Chờ Checker để xác nhận trước.',
     `Drawing Code: ${dwCode}`,
     `TO: ${toCode}`,
     `Customer: ${customer}`,
@@ -99,8 +99,8 @@ const sendDesignUploadedNotification = (details) => {
     'Vui lòng truy cập hệ thống để kiểm tra và xử lý bản vẽ.'
   ].join('\n');
   const htmlBody = `<div style="font-family:Arial,sans-serif;color:#1f2937;line-height:1.6;max-width:680px;">
-    <h2 style="color:#0f766e;">Bản vẽ chờ Checker 1</h2>
-    <p>Hệ thống đã ghi nhận bản vẽ mới và chuyển sang trạng thái <strong>Chờ Checker 1</strong>.</p>
+    <h2 style="color:#0f766e;">Bản vẽ chờ Checker xác nhận</h2>
+    <p>Hệ thống đã ghi nhận bản vẽ mới và chuyển sang trạng thái <strong>Chờ Checker</strong>.</p>
     <table style="border-collapse:collapse;width:100%;">
       <tr><td style="padding:8px;border:1px solid #d1d5db;font-weight:700;">Drawing Code</td><td style="padding:8px;border:1px solid #d1d5db;">${escapeDesignEmailHtml(dwCode)}</td></tr>
       <tr><td style="padding:8px;border:1px solid #d1d5db;font-weight:700;">TO</td><td style="padding:8px;border:1px solid #d1d5db;">${escapeDesignEmailHtml(toCode)}</td></tr>
@@ -147,8 +147,8 @@ const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelNa
         // Ghi link Excel vào cột AE (31) và PDF vào cột AF (32)
         sheet.getRange(targetRowIndex, designSheetConfig.fileLinkStartColumn, 1, designSheetConfig.fileLinkColumnCount).setValues([[excelUrl, pdfUrl]]);
 
-        // Tự động chuyển Trạng thái sang "Chờ Checker 1" (Cột C - cột 3)
-        sheet.getRange(targetRowIndex, 3).setValue("Chờ Checker 1");
+        // Chờ Checker xác nhận trước khi chuyển sang Checker 1.
+        sheet.getRange(targetRowIndex, 3).setValue("Chờ Checker");
 
         // Ghi ngày người đảm trách hoàn thành thiết kế (Cột Q - cột 17) nếu chưa có
         try {
@@ -185,7 +185,7 @@ const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelNa
       pdfUrl,
       excelUrl,
       id: resolvedId,
-      status: "Chờ Checker 1",
+      status: "Chờ Checker",
       notificationSent
     };
   } catch (error) {
@@ -225,7 +225,7 @@ const submitForApproval = (dataId, base64Data, stt) => {
     if (stt) {
       sheet.getRange(targetRowIndex, 3).setValue(stt);
     } else if (!currentStatus || currentStatus.toLowerCase().includes('dang thuc hien') || currentStatus.toLowerCase().includes('tra ve') || currentStatus.toLowerCase().includes('cho thiet ke')) {
-      sheet.getRange(targetRowIndex, 3).setValue("Chờ Checker 1");
+      sheet.getRange(targetRowIndex, 3).setValue("Chờ Checker");
     }
 
     sheet.getRange(targetRowIndex, 32).setValue(fileUrl);

@@ -220,14 +220,22 @@ const getSoDrawingComparison = () => {
     const so = normalizeComparisonSo(rawSo);
     if (!so) return;
     if (!resultBySo[so]) {
-      resultBySo[so] = { so, email: false, drawing: false, isNew: false, isOld: false, details: [] };
+      resultBySo[so] = { so, email: false, emailSubject: '', drawing: false, isNew: false, isOld: false, newCount: 0, oldCount: 0, details: [] };
     }
     resultBySo[so][source] = true;
     if (flags) {
       resultBySo[so].isNew = resultBySo[so].isNew || flags.isNew;
       resultBySo[so].isOld = resultBySo[so].isOld || flags.isOld;
+      if (flags.newCount) resultBySo[so].newCount += flags.newCount;
+      if (flags.oldCount) resultBySo[so].oldCount += flags.oldCount;
+      if (flags.emailSubject && !resultBySo[so].emailSubject) resultBySo[so].emailSubject = flags.emailSubject;
     }
     if (details) resultBySo[so].details.push(details);
+  };
+
+  const countTos = (rawValue) => {
+    if (!rawValue) return 0;
+    return String(rawValue).split(/[,;\n|]+/).map(s => s.trim()).filter(Boolean).length;
   };
 
   const checkAdjustSheet = getSheetByIdAndName(checkAdjustSpreadsheetId, 'Check adjust');
@@ -243,8 +251,16 @@ const getSoDrawingComparison = () => {
   const mainSpreadsheet = SpreadsheetApp.openById(sheetConfig.mainSpreadsheetId);
   const logSheet = mainSpreadsheet.getSheetByName('Log');
   if (logSheet && logSheet.getLastRow() >= 2) {
-    const logValues = logSheet.getRange(2, 1, logSheet.getLastRow() - 1, Math.max(7, logSheet.getLastColumn())).getDisplayValues();
-    logValues.forEach((row) => addSource(row[5], 'email', row[2] ? String(row[2]) : ''));
+    const logValues = logSheet.getRange(2, 1, logSheet.getLastRow() - 1, Math.max(11, logSheet.getLastColumn())).getDisplayValues();
+    logValues.forEach((row) => {
+      const subject = row[2] ? String(row[2]) : '';
+      // Col index 8 = TO NEW (cột I), Col index 9 = TO OLD (cột J)
+      const toNewRaw = row[8] || '';
+      const toOldRaw = row[9] || '';
+      const newCount = countTos(toNewRaw);
+      const oldCount = countTos(toOldRaw);
+      addSource(row[5], 'email', subject, { emailSubject: subject, newCount, oldCount });
+    });
   }
 
   const dataSheet = mainSpreadsheet.getSheetByName(sheetConfig.mainSheetName);
@@ -257,6 +273,7 @@ const getSoDrawingComparison = () => {
   rows.sort((a, b) => a.so.localeCompare(b.so, undefined, { numeric: true }));
   return { success: true, data: rows };
 };
+
 
 const getCheckAdjustSoSet = () => {
   const checkAdjustSpreadsheetId = '1sXSge8vRINt2x8PNjmxSUKMbX4nvVfBl1SBHmaOrUNI';
@@ -350,14 +367,22 @@ const getDashboardDataVersion = () => {
   };
 };
 
+// Kiểm tra nhẹ phiên bản dữ liệu trước khi tải lại toàn bộ payload.
+// Dùng thời gian cập nhật thực tế của Sheet để bắt cả chỉnh tay và thay đổi từ script/import.
+const checkDataVersion = () => getDashboardDataVersion();
+
 const getDashboardPayload = () => {
   // Trả về toàn bộ dữ liệu hệ thống (tất cả các năm) không lọc giới hạn năm hiện tại
   const mainData = getOptimizedSheetRows(sheetConfig.mainSpreadsheetId, sheetConfig.mainSheetName, 35, { includeImages: false });
+  const version = getDashboardDataVersion();
   return {
     mainData,
     releaseData: getReleaseData(mainData, { includeImages: false }),
     isCurrentYearOnly: false,
-    currentYear: getCurrentYearInScriptTimezone()
+    currentYear: getCurrentYearInScriptTimezone(),
+    mainDataVersion: version.mainDataVersion,
+    releaseDataVersion: version.releaseDataVersion,
+    serverTime: version.serverTime
   };
 };
 
