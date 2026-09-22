@@ -415,7 +415,7 @@
                 <th class="text-center" data-i18n="design_th_version" style="width: 5%">Ver</th>
                 <th data-i18n="design_th_project" style="width: 15%">Project</th>
                 <th data-i18n="design_th_customer" style="width: 15%">Customer</th>
-                <th class="text-center" data-i18n="design_th_excel" style="width: 8%">Excel Sample</th>
+                <th class="text-center" data-i18n="design_th_excel" style="width: 8%">Bị trả về</th>
                 <th class="text-center" data-i18n="design_th_pdf" style="width: 6%">PDF</th>
                 <th class="text-center" data-i18n="design_th_action" style="width: 10%">Action</th>
               </tr>
@@ -891,7 +891,7 @@
       const type = row[4];
       const dwNo = row[11];
       const deadlineStr = row[7];
-      const excelThamKhao = row[30];
+      const excelThamKhao = row[14];
       const pdfGuiKy = row[31];
       const customer = row[10];
       const statusRaw = String(row[2] || '').trim();
@@ -899,7 +899,7 @@
 
       // Nút Xem Tham Khảo
       const btnExcelTK = (excelThamKhao && String(excelThamKhao).includes('http'))
-        ? `<a href="${excelThamKhao}" target="_blank" class="btn btn-sm btn-light border py-0 px-2 text-success" title="Xem Excel"><i class="bi bi-file-excel-fill"></i></a>` : '-';
+        ? `<a href="${excelThamKhao}" target="_blank" class="btn btn-sm btn-light border py-0 px-2 text-success" title="Xem PDF"><i class="bi bi-eye"></i></a>` : '-';
 
       // Nút PDF Gửi Ký       
       let btnPdfGuiKy = '';
