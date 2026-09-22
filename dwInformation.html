@@ -730,7 +730,7 @@
                 data-i18n-placeholder="info_search_drawing" placeholder="Tìm kiếm TO, Customer..." onkeyup="searchDrawingData()">
             </div>
             <div class="input-group" style="max-width: 160px;">
-              <span class="input-group-text bg-warning bg-opacity-25 border-end-0 text-warning-emphasis" title="Nhập SO để bật chọn tất cả"><i class="fa fa-hashtag"></i></span>
+                  <span class="input-group-text bg-warning bg-opacity-25 border-end-0 text-warning-emphasis" title="Nhập SO hoặc Dự án để bật chọn tất cả"><i class="fa fa-hashtag"></i></span>
               <input type="text" id="bulkFilterSO" class="form-control border-start-0 shadow-none" placeholder="SO..." oninput="updateBulkFilterState()">
             </div>
             <div class="input-group" style="max-width: 180px;">
@@ -756,10 +756,10 @@
             <table class="table table-hover align-middle mb-0" id="drawingDataTable">
               <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
                 <tr>
-                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0" style="width: 40px;" title="Cần nhập SO và Dự án để chọn tất cả">
+                  <th scope="col" class="ps-4 text-muted fw-semibold py-3 border-bottom-0" style="width: 40px;" title="Cần nhập SO hoặc Dự án để chọn tất cả">
                     <div class="form-check">
                       <input class="form-check-input" type="checkbox" id="tableSelectAll"
-                        onchange="toggleTableSelectAll()" disabled title="Nhập SO và Dự án để kích hoạt">
+                        onchange="toggleTableSelectAll()" disabled title="Nhập SO hoặc Dự án để kích hoạt">
                     </div>
                   </th>
                   <th scope="col" class="text-muted fw-semibold py-3 border-bottom-0" data-i18n="info_th_type">Type</th>
@@ -2353,6 +2353,7 @@
     }
 
     function closeDrawingForm() {
+      setBulkEditFieldVisibility(false);
       setToFieldVisibility(true);
 
       // Hide "Nội dung thay đổi" field
@@ -2876,6 +2877,26 @@
     // ========== HỆ THỐNG CHECKBOX & BULK EDIT ==========
     var bulkState = { selectedRows: new Set(), selectedItems: {} };
 
+    function normalizeBulkFilterValue(value) {
+      return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
+    function getBulkFilteredDrawingData() {
+      var soFilter = normalizeBulkFilterValue((document.getElementById('bulkFilterSO') || {}).value);
+      var projectFilter = normalizeBulkFilterValue((document.getElementById('bulkFilterProject') || {}).value);
+      var source = Array.isArray(pendingDrawingViewData) ? pendingDrawingViewData : [];
+
+      return source.filter(function (item) {
+        var itemSo = normalizeBulkFilterValue(item && item.so);
+        var itemProject = normalizeBulkFilterValue(item && item.project);
+        var soMatches = !soFilter || itemSo.indexOf(soFilter) !== -1 || soFilter.indexOf(itemSo) !== -1;
+        // Log hiện chưa lưu Dự án; khi có project thì so khớp, còn không thì
+        // Dự án là giá trị sẽ áp dụng cho các dòng được chọn trong bulk edit.
+        var projectMatches = !projectFilter || !itemProject || itemProject === projectFilter;
+        return soMatches && projectMatches;
+      });
+    }
+
     function toggleSelectAll() {
       var checkbox = document.getElementById('selectAllDrawings');
       if (checkbox.checked) {
@@ -2900,11 +2921,13 @@
     function updateBulkFilterState() {
       var soVal = (document.getElementById('bulkFilterSO') || {}).value || '';
       var projVal = (document.getElementById('bulkFilterProject') || {}).value || '';
+      pendingDrawingPage = 1;
+      renderDrawingTable(getBulkFilteredDrawingData());
       var checkbox = document.getElementById('tableSelectAll');
       if (checkbox) {
-        var canEnable = soVal.trim() !== '' && projVal.trim() !== '';
+        var canEnable = soVal.trim() !== '' || projVal.trim() !== '';
         checkbox.disabled = !canEnable;
-        checkbox.title = canEnable ? 'Chọn tất cả' : 'Nhập SO và Dự án để kích hoạt';
+        checkbox.title = canEnable ? 'Chọn tất cả' : 'Nhập SO hoặc Dự án để kích hoạt';
         if (!canEnable) {
           checkbox.checked = false;
           document.querySelectorAll('.drawing-checkbox').forEach(cb => cb.checked = false);
@@ -2918,8 +2941,8 @@
     function toggleTableSelectAll() {
       var soVal = (document.getElementById('bulkFilterSO') || {}).value || '';
       var projVal = (document.getElementById('bulkFilterProject') || {}).value || '';
-      if (!soVal.trim() || !projVal.trim()) {
-        showToast('Vui lòng nhập SO và Dự án trước khi chọn tất cả', 'warning');
+      if (!soVal.trim() && !projVal.trim()) {
+        showToast('Vui lòng nhập SO hoặc Dự án trước khi chọn tất cả', 'warning');
         var checkbox = document.getElementById('tableSelectAll');
         if (checkbox) checkbox.checked = false;
         return;
@@ -3215,7 +3238,7 @@
 
       var itemStatus = drawingItem.status || (typeof getManagedItemStatus === 'function' ? getManagedItemStatus(drawingItem) : '');
       if (typeof isEditableDrawingStatus === 'function' && !isEditableDrawingStatus(itemStatus)) {
-        showToast('Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả về charger" mới được sửa!', 'warning');
+        showToast('Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả lại charge" mới được sửa!', 'warning');
         return;
       }
 
@@ -3307,16 +3330,36 @@
       if (!form) return;
       form.reset();
 
-      // Điền sẵn SO và Dự án từ ô lọc hàng loạt nếu có
-      var filterSoVal = (document.getElementById('bulkFilterSO') || {}).value || '';
-      var filterProjVal = (document.getElementById('bulkFilterProject') || {}).value || '';
-      if (document.getElementById('formSO') && filterSoVal) document.getElementById('formSO').value = filterSoVal.trim();
-      if (document.getElementById('formProject') && filterProjVal) document.getElementById('formProject').value = filterProjVal.trim();
-
-      // Tự động điền ngày hoàn thành
-      autoFillAssigneeDoneDate();
+      setBulkEditFieldVisibility(true);
 
       getDrawingModal().show();
+    }
+
+    function setBulkEditFieldVisibility(isBulk) {
+      var bulkVisibleFields = ['formGroup', 'formTypeDw', 'formAssigneeDoneDate'];
+      var allFieldIds = [
+        'formFYE', 'formProject', 'formAssignee', 'formReceivedDate', 'formGroup', 'formType',
+        'formCustomer', 'formTO', 'formSO', 'formDwCode', 'formVersion', 'formCustomVersion',
+        'formTypeDw', 'formWidth', 'formHeight', 'formImageFile', 'formAssigneeDoneDate',
+        'formActualDoneDate', 'formChangeLog'
+      ];
+
+      allFieldIds.forEach(function (fieldId) {
+        var field = document.getElementById(fieldId);
+        if (!field) return;
+        var visible = !isBulk || bulkVisibleFields.indexOf(fieldId) !== -1;
+        var requiredInNormalForm = ['formProject', 'formAssignee', 'formReceivedDate', 'formGroup',
+          'formType', 'formCustomer', 'formTO', 'formDwCode', 'formVersion', 'formTypeDw'].indexOf(fieldId) !== -1;
+        var wrapper = field.closest('.col-md-3, .col-md-6, .col-sm-6, .col-sm-12, .col-12');
+        if (wrapper && fieldId !== 'formChangeLog') wrapper.style.display = visible ? '' : 'none';
+        field.disabled = isBulk ? !visible : false;
+        field.required = !isBulk && requiredInNormalForm;
+      });
+
+      var singleFields = document.getElementById('singleEditFields');
+      if (singleFields) singleFields.style.display = isBulk ? 'none' : '';
+      var changeLogContainer = document.getElementById('changeLogContainer');
+      if (changeLogContainer) changeLogContainer.style.display = isBulk ? 'none' : '';
     }
 
     // Sửa hàm openEditDrawingForm để hiển thị single edit fields
@@ -3347,6 +3390,7 @@
     // ========== RENDER DRAWING TABLE VỚI CHECKBOX ==========
     var originalRenderDrawingTable = window.renderDrawingTable;
     window.renderDrawingTable = function (data) {
+      data = getBulkFilteredDrawingData();
       pendingState.selectedLogIdx = null;
       bulkState.selectedRows.clear();
       bulkState.selectedItems = {};
@@ -3649,7 +3693,7 @@
       if (targetItem) {
         var itemStatus = targetItem.status || (typeof getManagedItemStatus === 'function' ? getManagedItemStatus(targetItem) : '');
         if (typeof isEditableDrawingStatus === 'function' && !isEditableDrawingStatus(itemStatus)) {
-          showToast('Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả về charger" mới được xóa!', 'warning');
+          showToast('Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả lại charge" mới được xóa!', 'warning');
           return;
         }
       }

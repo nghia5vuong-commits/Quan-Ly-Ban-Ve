@@ -119,33 +119,27 @@ const sendDesignUploadedNotification = (details) => {
   }
 };
 
-const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelName, dataId, dwCode, toCode) => {
+const uploadPdfDesignToDrive = (pdfBase64, filePdfName, dataId, dwCode, toCode) => {
   try {
     const decodedPdfData = Utilities.base64Decode(pdfBase64);
     const pdfBlob = Utilities.newBlob(decodedPdfData, MimeType.PDF, filePdfName);
-
-    const decodedExcelData = Utilities.base64Decode(excelBase64);
-    const excelBlob = Utilities.newBlob(decodedExcelData, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileExcelName);
 
     const sheet = getDesignSheet();
     const folder = DriveApp.getFolderById(designSheetConfig.designFolderId);
 
     const pdfFile = folder.createFile(pdfBlob);
-    const excelFile = folder.createFile(excelBlob);
 
     pdfFile.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
-    excelFile.setSharing(DriveApp.Access.DOMAIN_WITH_LINK, DriveApp.Permission.VIEW);
 
     const pdfUrl = pdfFile.getUrl();
-    const excelUrl = excelFile.getUrl();
 
     let resolvedId = dataId;
     let notificationSent = false;
     if (sheet) {
       const targetRowIndex = findRowIndexById(sheet, dataId, dwCode, toCode);
       if (targetRowIndex > 1) {
-        // Ghi link Excel vào cột AE (31) và PDF vào cột AF (32)
-        sheet.getRange(targetRowIndex, designSheetConfig.fileLinkStartColumn, 1, designSheetConfig.fileLinkColumnCount).setValues([[excelUrl, pdfUrl]]);
+        // Chỉ ghi link PDF vào cột AF (32); không upload Excel lên Drive.
+        sheet.getRange(targetRowIndex, 32).setValue(pdfUrl);
 
         // Chờ Checker xác nhận trước khi chuyển sang Checker 1.
         sheet.getRange(targetRowIndex, 3).setValue("Chờ Checker");
@@ -183,7 +177,6 @@ const uploadPdfDesignToDrive = (pdfBase64, excelBase64, filePdfName, fileExcelNa
 
     return {
       pdfUrl,
-      excelUrl,
       id: resolvedId,
       status: "Chờ Checker",
       notificationSent

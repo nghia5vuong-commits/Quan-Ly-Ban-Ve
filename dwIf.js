@@ -1363,7 +1363,7 @@ function removeManagedDrawing(rowId) {
     var cleanSt = statusVal.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').trim();
     var isEditable = cleanSt.includes('dang thuc hien') || cleanSt.includes('tra ve') || cleanSt.includes('tra lai') || cleanSt.includes('tu choi');
     if (!isEditable && cleanSt !== '') {
-      return { success: false, error: 'Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả về charger" mới được xóa!' };
+      return { success: false, error: 'Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả lại charge" mới được xóa!' };
     }
 
     // Dữ liệu thực tế lưu ở AC, AD, AG => cột 29, 30, 33 (1-based)
@@ -1515,6 +1515,7 @@ function getDrawingsWithoutImage(userEmailFilter) {
             to: toValue || 'N/A',
             dwCode: '',
             customer: customer,
+            project: String(logValues[i][11] || '').trim(),
             subject: String(logValues[i][2] || ''),
             threadId: String(logValues[i][1] || '').trim(),
             so: rawSo,
@@ -1571,6 +1572,7 @@ function getDrawingsWithoutImage(userEmailFilter) {
             to: fallbackTo || 'N/A',
             dwCode: '',
             customer: fallbackCustomer,
+            project: String(logRow[11] || '').trim(),
             subject: String(logRow[2] || ''),
             so: fallbackRawSo,
             receiverEmail: fallbackReceiver,
@@ -1648,7 +1650,7 @@ function updateDrawingData(rowIdx, formRow) {
     var cleanSt = currentStatus.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').trim();
     var isEditable = cleanSt.includes('dang thuc hien') || cleanSt.includes('tra ve') || cleanSt.includes('tra lai') || cleanSt.includes('tu choi');
     if (!isEditable && cleanSt !== '') {
-      return { success: false, error: 'Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả về charger" mới được sửa dữ liệu!' };
+      return { success: false, error: 'Chỉ có bản vẽ ở trạng thái "Đang thực hiện" hoặc "Trả lại charge" mới được sửa dữ liệu!' };
     }
 
     var currentDwInSheet = String(row[11] || '');
@@ -1707,9 +1709,15 @@ function saveBulkDrawingData(subject, formRow, selectedItems) {
     var results = [];
     selectedItems.forEach(function (item) {
       var row = formRow.slice();
+      row[1] = item.type || 'New';
       row[2] = item.customer || row[2] || '';
       row[3] = item.to || row[3] || '';
+      row[4] = item.project || row[4] || '';
       row[5] = item.so || row[5] || '';
+      row[6] = item.dwCode || row[6] || '';
+      row[7] = item.version || row[7] || '0';
+      row[9] = item.assignee || row[9] || '';
+      row[12] = item.receivedDate || row[12] || Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
       results.push(saveDataToTestSheet(item.subject || subject, [row], null));
     });
 

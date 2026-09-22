@@ -471,6 +471,7 @@
     return st.includes('dang thuc hien')
       || st.includes('cho thiet ke')
       || st.includes('tra ve charger')
+      || st.includes('tra lai charge')
       || st.includes('tra ve')
       || st.includes('tra lai')
       || st.includes('tu choi');
@@ -934,7 +935,7 @@
       if (canSubmit) {
         btnGuiKy = `<button class="btn btn-sm btn-success w-100 fw-bold" data-dw-id="${id}" onclick="event.stopPropagation(); guiKyDuyetById(this)"><i class="bi bi-send"></i> ${isRejected ? 'Gửi ký lại' : 'Gửi ký'}</button>`;
       } else if (isRejected) {
-        btnGuiKy = `<span class="badge bg-danger w-100 py-1" title="${statusRaw}"><i class="bi bi-exclamation-triangle-fill me-1"></i>Trả về charger</span>`;
+        btnGuiKy = `<span class="badge bg-danger w-100 py-1" title="${statusRaw}"><i class="bi bi-exclamation-triangle-fill me-1"></i>Trả lại charge</span>`;
       } else {
         btnGuiKy = `<span class="badge bg-secondary w-100 py-1">Đang thực hiện</span>`;
       }
@@ -957,7 +958,7 @@
          <td>${to}</td>
          <td class="fw-bold text-dark">
            ${dwNo}
-           ${isRejected ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 10px;">Bị trả lại</span>` : ''}
+           ${isRejected ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 10px;">Trả lại charge</span>` : ''}
            ${isRejected && rejectReason ? `<div class="text-danger mt-1" style="font-size: 11px; font-weight: 400;"><i class="bi bi-chat-left-text me-1"></i>${rejectReason.substring(0, 120)}${rejectReason.length > 120 ? '...' : ''}</div>` : ''}
          </td>
          <td class="text-center">${ver}</td>
@@ -1394,7 +1395,6 @@
 
       const pdfBlob = await localResponse.blob();
       const pdfBase64 = await blobToBase64(pdfBlob);
-      const excelBase64 = await fileToBase64(excelFile);
 
       const rowEntry = (window._dwDesignRowMap && window._dwDesignRowMap[id])
         || (window._dwDesignRowMap && window._dwDesignRowMap[fileName.toLowerCase()])
@@ -1406,17 +1406,16 @@
         google.script.run
           .withSuccessHandler(resolve)
           .withFailureHandler(reject)
-          .uploadPdfDesignToDrive(pdfBase64, excelBase64, `${sendDwCode || id}.pdf`, `${sendDwCode || id}.xlsx`, id, sendDwCode, sendToCode);
+          .uploadPdfDesignToDrive(pdfBase64, `${sendDwCode || id}.pdf`, id, sendDwCode, sendToCode);
       });
 
-      if (!driveLinks || !driveLinks.pdfUrl || !driveLinks.excelUrl) {
-        throw new Error('Backend PDF/Excel đã convert nhưng Apps Script chưa trả về link Drive cần thiết.');
+      if (!driveLinks || !driveLinks.pdfUrl) {
+        throw new Error('Backend chưa trả về link PDF Drive cần thiết.');
       }
 
       const pdfUrl = driveLinks.pdfUrl;
-      const excelUrl = driveLinks.excelUrl;
 
-      // Khi Excel upload xong, vừa sinh PDF ở Drive vừa tự ký ở vị trí Charge trong dwDesign,
+      // Sau khi PDF được lưu trên Drive, tự ký ở vị trí Charge trong dwDesign,
       // không cần chờ vào màn hình submitDW.js.
       let chargeSignedPdfUrl = pdfUrl;
       try {
@@ -1439,7 +1438,6 @@
         });
         if (rowIndex !== -1) {
           pageData[rowIndex][2] = 'Chờ Checker';
-          pageData[rowIndex][30] = excelUrl;
           pageData[rowIndex][31] = pdfUrl;
         }
       }

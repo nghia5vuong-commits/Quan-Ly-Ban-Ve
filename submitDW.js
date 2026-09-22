@@ -1075,7 +1075,7 @@ const rejectDrawingOnServer = (drawingId, reason) => {
   var nowStr = Utilities.formatDate(new Date(), timezone, 'yyyy/MM/dd HH:mm');
 
   var prevStatus = String(sheet.getRange(sheetRow, COL_STATUS + 1).getValue() || '');
-  sheet.getRange(sheetRow, COL_STATUS + 1).setValue('Tra lai - ' + prevStatus);
+  sheet.getRange(sheetRow, COL_STATUS + 1).setValue('Trả lại charge');
 
   // Di chuyển link PDF từ cột AF (32) sang cột O (15) và xóa cột AF
   var COL_PDF_SUBMISSION = 32; // Cột AF (1-based) = nơi lưu link PDF gửi ký
