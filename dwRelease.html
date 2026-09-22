@@ -517,6 +517,21 @@
         #stats-history .app-card { padding: 14px !important; }
         #stats-history .table-responsive { max-height: calc(100vh - 390px) !important; }
     }
+
+
+    /* Tăng tốc độ render phần tử có Glassmorphism bằng GPU */
+  #stats-history .app-card, 
+  #stats-history .card-dashboard,
+  #stats-history .release-toolbar {
+      transform: translateZ(0);
+      will-change: transform, box-shadow;
+  }
+  
+  /* Khóa khung bảng để scroll mượt, không bắt trình duyệt vẽ lại background liên tục */
+  #stats-history .table-responsive {
+      contain: layout paint;
+      transform: translateZ(0);
+  }
 </style>
   <div id="stats-history" class="page-dwRelease container-fluid p-0" style="width: 100%; margin: 0 !important; min-height: 100%; height: auto; overflow-y: auto;">
 
@@ -838,13 +853,16 @@
         DEPT_NOTE_EDIT:33, CHECKER_NOTE_EDIT:34, APPROVER_NOTE_EDIT:35, TRANGTHAIDW:23, REMARK:36, FILE_DS_DW:37,CHANGE_TYPE:39,STAMPED:38
     };
 
+    const _qaG2gMemo = {};
     function isQaG2gRow(row) {
-        return String(row && row[COL.DEPT] || '')
-            .trim()
-            .toUpperCase()
-            .replace(/[^A-Z0-9]/g, '') === 'QAG2G';
+        const dept = row && row[COL.DEPT];
+        if (!dept) return false;
+        if (_qaG2gMemo[dept] !== undefined) return _qaG2gMemo[dept];
+        
+        const res = String(dept).trim().toUpperCase().replace(/[^A-Z0-9]/g, '') === 'QAG2G';
+        _qaG2gMemo[dept] = res;
+        return res;
     }
-   
     let wrapper = null;
     
     let masterRawData = []; 
@@ -1008,54 +1026,65 @@
 
     function history_getFilteredData() {
         const selectedFye = document.getElementById('fye-year-filter')?.value || 'ALL';
-        let filtered = deptRawData.filter(isQaG2gRow);
+        const checkMonth = deptFilterState.chartMonthIdx !== null;
+        const targetMonth = deptFilterState.chartMonthIdx;
+        const targetDept = deptFilterState.chartDept;
 
-        if (selectedFye !== 'ALL') {
-            filtered = filtered.filter(function (row) {
-                const dInfo = parseFyeDate(row[COL.REQ_DATE]);
-                return dInfo && dInfo.fyeStr === selectedFye;
-            });
-        }
+        // Chỉ dùng 1 vòng lặp filter duy nhất để tăng tốc độ
+        return deptRawData.filter(function (row) {
+            if (!isQaG2gRow(row)) return false;
 
-        if (deptFilterState.chartMonthIdx !== null) {
-            filtered = filtered.filter(function (row) {
-                const dInfo = parseFyeDate(row[COL.REQ_DATE]);
-                if (!dInfo) return false;
+            const dInfo = parseFyeDate(row[COL.REQ_DATE]);
+            
+            // Lọc theo năm FYE
+            if (selectedFye !== 'ALL') {
+                if (!dInfo || dInfo.fyeStr !== selectedFye) return false;
+            }
 
-                const matchMonth = dInfo.fyeMonthIndex === deptFilterState.chartMonthIdx;
-                const matchDept = deptFilterState.chartDept ? String(row[COL.DEPT]).trim() === deptFilterState.chartDept : true;
-                return matchMonth && matchDept;
-            });
-        }
+            // Lọc theo click biểu đồ (Tháng / Bộ phận)
+            if (checkMonth) {
+                if (!dInfo || dInfo.fyeMonthIndex !== targetMonth) return false;
+                if (targetDept && String(row[COL.DEPT]).trim() !== targetDept) return false;
+            }
 
-        return filtered;
+            return true;
+        });
     }
 
     function history_applyAllPageFilters() {
-        const filteredData = history_getFilteredData();
+        // Tách luồng (Asynchronous) để UI không bị treo
+        requestAnimationFrame(function() {
+            const filteredData = history_getFilteredData();
+            
+            // Cập nhật KPI ngay lập tức
+            history_updateKPIs(filteredData);
 
-        history_updateKPIs(filteredData);
-        history_renderChart();
-        history_renderTable(filteredData);
+            // Cho trình duyệt nghỉ 1 nhịp rồi vẽ Bảng và Biểu đồ
+            requestAnimationFrame(function() {
+                history_renderChart();
+                history_renderTable(filteredData);
 
-        const badgeElem = document.getElementById('chart-active-filter-badge');
-        const labelElem = document.getElementById('chart-filter-label');
-        if (deptFilterState.chartMonthIdx !== null && badgeElem && labelElem) {
-            const monthNames = [
-                t('his_month_4'), t('his_month_5'), t('his_month_6'), 
-                t('his_month_7'), t('his_month_8'), t('his_month_9'), 
-                t('his_month_10'), t('his_month_11'), t('his_month_12'), 
-                t('his_month_1'), t('his_month_2'), t('his_month_3')
-            ];
-            const monthName = monthNames[deptFilterState.chartMonthIdx];
-            const deptText = deptFilterState.chartDept ? ` - ${deptFilterState.chartDept}` : '';
-            labelElem.innerText = `${t('his_chart_filtering')} ${monthName}${deptText}`;
-            badgeElem.classList.remove('d-none');
-            badgeElem.classList.add('d-inline-flex');
-        } else if (badgeElem) {
-            badgeElem.classList.add('d-none');
-            badgeElem.classList.remove('d-inline-flex');
-        }
+                // Xử lý huy hiệu (Badge) đang lọc
+                const badgeElem = document.getElementById('chart-active-filter-badge');
+                const labelElem = document.getElementById('chart-filter-label');
+                if (deptFilterState.chartMonthIdx !== null && badgeElem && labelElem) {
+                    const monthNames = [
+                        t('his_month_4'), t('his_month_5'), t('his_month_6'), 
+                        t('his_month_7'), t('his_month_8'), t('his_month_9'), 
+                        t('his_month_10'), t('his_month_11'), t('his_month_12'), 
+                        t('his_month_1'), t('his_month_2'), t('his_month_3')
+                    ];
+                    const monthName = monthNames[deptFilterState.chartMonthIdx];
+                    const deptText = deptFilterState.chartDept ? ` - ${deptFilterState.chartDept}` : '';
+                    labelElem.innerText = `${t('his_chart_filtering')} ${monthName}${deptText}`;
+                    badgeElem.classList.remove('d-none');
+                    badgeElem.classList.add('d-inline-flex');
+                } else if (badgeElem) {
+                    badgeElem.classList.add('d-none');
+                    badgeElem.classList.remove('d-inline-flex');
+                }
+            });
+        });
     }
 
     window.history_resetChartClickFilter = function() {
@@ -1287,24 +1316,18 @@
 
     let deptCurrentPage = 1;
     const deptPageSize = 25;
-    var deptSearchDebounce = null;
+let deptSearchDebounce = null;
 
     window._onSearchInput = function () {
-        if (typeof window.appDebounce === 'function') {
-            if (!deptSearchDebounce) {
-                deptSearchDebounce = window.appDebounce(function () {
-                    deptCurrentPage = 1;
-                    history_renderTable();
-                }, 250);
-            }
-            deptSearchDebounce();
-        } else {
+        if (deptSearchDebounce) clearTimeout(deptSearchDebounce);
+        
+        deptSearchDebounce = setTimeout(function() {
             deptCurrentPage = 1;
-            history_renderTable();
-        }
+            // Dùng requestAnimationFrame để vẽ bảng mượt hơn khi gõ chữ
+            requestAnimationFrame(() => history_renderTable());
+        }, 250); // Chờ 250ms sau khi người dùng ngừng gõ mới render
     };
-
-    window.changeDeptPage = function (delta) {
+        window.changeDeptPage = function (delta) {
         deptCurrentPage += delta;
         history_renderTable();
     };
@@ -1721,7 +1744,7 @@ window.history_handleBulkAction = function(actionType, singleReqNo, sourceBtn) {
             }
 
             let Cheklinkstamp = "";
-            if (row[COL.TRANGTHAIDW] === "Đã ban hành") {
+            if (row[COL.STAMPED] !=="") {
                 Cheklinkstamp = row[COL.STAMPED];
             } else {
                 Cheklinkstamp = row[COL.LINK_DW];
@@ -1973,10 +1996,15 @@ window.history_handleBulkAction = function(actionType, singleReqNo, sourceBtn) {
         }
     };
 
+    const _dateVnMemo = {};
     function formatDateVN(d) {
         if(!d) return "";
+        if (_dateVnMemo[d]) return _dateVnMemo[d];
+
         const date = new Date(d);
-        return isNaN(date) ? d : date.toLocaleDateString('vi-VN');
+        const res = isNaN(date) ? d : date.toLocaleDateString('vi-VN');
+        _dateVnMemo[d] = res;
+        return res;
     }
 
     window.req_autoCheckVersionHistory = function(inputEl) {

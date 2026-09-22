@@ -523,27 +523,20 @@
 
       <div class="d-flex align-items-center gap-3 flex-wrap">
         <!-- Lọc FYE Select Dropdown -->
-        <div class="d-flex align-items-center fye-select-group shadow-sm">
+        <div class="d-flex align-items-center fye-select-group shadow-sm dropdown">
           <i class="bi bi-calendar3 text-primary me-2 ms-1" style="font-size: 0.9rem;"></i>
-          <select class="form-select form-select-sm border-0 bg-transparent fw-semibold text-dark shadow-none pe-4"
-            id="dashFyeFilter" onchange="updateDashboardStats()" style="cursor: pointer; font-size: 0.82rem;">
-            <option value="ALL" data-i18n="dash_all_fye">📅 Tất cả FYE</option>
-            <option value="FYE27" selected>FYE27</option>
-            <option value="FYE26">FYE26</option>
-            <option value="FYE25">FYE25</option>
-            <option value="FYE24">FYE24</option>
-            <option value="FYE23">FYE23</option>
-            <option value="FYE22">FYE22</option>
-            <option value="FYE21">FYE21</option>
-            <option value="FYE20">FYE20</option>
-            <option value="FYE19">FYE19</option>
-            <option value="FYE18">FYE18</option>
-            <option value="FYE17">FYE17</option>
-            <option value="FYE16">FYE16</option>
-            <option value="FYE15">FYE15</option>
-          </select>
+          <button class="btn border-0 bg-transparent fw-semibold text-dark shadow-none pe-2 d-flex align-items-center gap-1" 
+                  type="button" id="fyeDropdownBtn" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" 
+                  style="font-size: 0.82rem; padding: 0;">
+            📅 Tất cả FYE
+          </button>
+          
+          <!-- Danh sách Checkbox sẽ xổ ra -->
+          <ul class="dropdown-menu shadow border-0 p-2" aria-labelledby="fyeDropdownBtn" id="dashFyeCheckboxList" 
+              style="background: rgba(255,255,255,0.95); backdrop-filter: var(--liquid-blur); border-radius: var(--liquid-radius-md); min-width: 160px; max-height: 280px; overflow-y: auto;">
+            <!-- Dữ liệu checkbox sẽ được JavaScript tự động điền vào đây -->
+          </ul>
         </div>
-
         <!-- Lọc tháng tài chính T4→T3 Select Dropdown -->
         <div class="d-flex align-items-center month-select-group shadow-sm">
           <i class="bi bi-calendar4-range text-success me-2 ms-1" style="font-size: 0.9rem;"></i>
@@ -707,54 +700,25 @@
     </div>
   </div>
 
-  <!-- BIỂU ĐỒ PIE TỶ LỆ TRẠNG THÁI THEO FYE (Chỉ hiện khi chọn từng FYE cụ thể) -->
+  <!-- BIỂU ĐỒ CỘT TIẾN ĐỘ 12 THÁNG THEO FYE (Thay thế cho Pie Chart cũ) -->
   <div class="row g-4 mb-4 d-none" id="rowChartFyePie">
     <div class="col-12">
-      <div class="chart-card d-flex flex-column align-items-center">
-        <div class="w-100 d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div class="chart-card d-flex flex-column" style="height: 320px;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
             <h6 class="fw-bold text-dark mb-0">
-              <i class="bi bi-pie-chart-fill text-primary me-2"></i>
-              <span>Trạng Thái Bản Vẽ Theo Năm - <span id="fyePieTitleYear"
-                  class="text-primary fw-bold">FYE</span></span>
+              <i class="bi bi-bar-chart-steps text-primary me-2"></i>
+              <span>Tiến Độ Bản Vẽ 12 Tháng - <span id="fyePieTitleYear" class="text-primary fw-bold">FYE</span></span>
             </h6>
             <small class="text-muted" style="font-size: 0.78rem;">
-              Tỷ lệ giữa bản vẽ chưa ban hành và bản vẽ đã ban hành
+              Phân bổ trạng thái Hoàn thành, Tồn đọng và Mới theo từng tháng trong năm
             </small>
           </div>
-          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1.5 fw-bold"
-            id="badgeFyeSelected" style="font-size: 0.75rem;">FYE</span>
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-bold"
+            id="badgeFyeSelected" style="font-size: 0.72rem;">FYE</span>
         </div>
-
-        <!-- Biểu đồ Donut căn giữa gọn gàng -->
-        <div class="d-flex flex-column align-items-center justify-content-center py-2"
-          style="width: 100%; max-width: 380px;">
-          <div style="position: relative; width: 240px; height: 240px; margin: 0 auto;">
-            <canvas id="chartFyePie"></canvas>
-            <!-- Center Text hiển thị Tổng số bản vẽ -->
-            <div id="chartFyePieCenter"
-              style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
-              <div
-                style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-                Tổng số</div>
-              <div id="chartFyePieCenterCount"
-                style="font-size: 1.85rem; font-weight: 800; color: #0f172a; line-height: 1.15;">0</div>
-              <div style="font-size: 0.72rem; color: #64748b; font-weight: 500;">bản vẽ</div>
-            </div>
-          </div>
-          <!-- Legend tương tác bên dưới biểu đồ -->
-          <div class="d-flex justify-content-center gap-3 mt-3 flex-wrap">
-            <div class="fye-legend-badge" onclick="setKpiFilter(globalFilters.kpi === 'design' ? 'all' : 'design')"
-              title="Click để lọc bản vẽ Chưa ban hành">
-              <span class="fye-legend-dot" style="background: #f59e0b;"></span>
-              <span class="fw-semibold">Chưa ban hành</span>
-            </div>
-            <div class="fye-legend-badge" onclick="setKpiFilter(globalFilters.kpi === 'released' ? 'all' : 'released')"
-              title="Click để lọc bản vẽ Đã ban hành">
-              <span class="fye-legend-dot" style="background: #10b981;"></span>
-              <span class="fw-semibold">Đã ban hành</span>
-            </div>
-          </div>
+        <div class="flex-grow-1 position-relative">
+          <canvas id="chartFyePie"></canvas>
         </div>
       </div>
     </div>
@@ -896,7 +860,7 @@
   // GLOBAL STATE - QUẢN LÝ BỘ LỌC LIÊN KẾT ĐA CHIỀU
   // =========================================================
   var globalFilters = {
-    fye: 'FYE27',
+    fye: ['FYE27'],
     type: 'ALL',
     kpi: 'all',      // 'all', 'design', 'approve', 'release'
     project: null,   // Lưu tên dự án khi click biểu đồ
@@ -906,7 +870,8 @@
     creator: '',
     status: 'ALL',
     dateFrom: '',
-    dateTo: ''
+    dateTo: '',
+    progressStatus: null
   };
 
   var dashChart1Instance = null;
@@ -949,6 +914,60 @@
       resetDashFilters();
     }
   });
+
+
+
+  // Hàm xử lý khi người dùng tick vào các ô Checkbox FYE
+  function handleFyeCheckboxChange(checkbox) {
+    var allCheckboxes = document.querySelectorAll('.fye-chk');
+    var isAllOption = checkbox.value === 'ALL';
+    
+    if (isAllOption && checkbox.checked) {
+      // Nếu tick "Tất cả", tự động bỏ tick các năm lẻ
+      allCheckboxes.forEach(function(chk) { if (chk.value !== 'ALL') chk.checked = false; });
+    } else if (!isAllOption && checkbox.checked) {
+      // Nếu tick 1 năm, tự động bỏ tick "Tất cả"
+      var chkAll = document.getElementById('chkFyeAll');
+      if (chkAll) chkAll.checked = false;
+    } else if (!isAllOption && !checkbox.checked) {
+      // Nếu bỏ tick 1 năm mà không còn năm nào được tick, tự quay về "Tất cả"
+      var anyChecked = Array.from(allCheckboxes).some(function(chk) { return chk.value !== 'ALL' && chk.checked; });
+      if (!anyChecked) {
+        var chkAll = document.getElementById('chkFyeAll');
+        if (chkAll) chkAll.checked = true;
+      }
+    }
+    
+    // Thu thập các giá trị đang được tick và lưu vào globalFilters
+    var selected = [];
+    allCheckboxes.forEach(function(chk) {
+      if (chk.checked) selected.push(chk.value);
+    });
+    
+    globalFilters.fye = selected;
+    
+    // Gọi hàm render lại giao diện
+    requestDashboardRefresh();
+  }
+
+
+  // Hàm tắt bộ lọc Tháng
+function clearMonthFilter() {
+  globalFilters.month = ""; // Xóa dữ liệu tháng trong biến toàn cục
+  var dashMonthFilter = document.getElementById('dashMonthFilter');
+  if (dashMonthFilter) dashMonthFilter.value = ""; // Reset ô chọn tháng về mặc định
+  
+  updateDashboardStats(); // Gọi lại hàm render biểu đồ / bảng
+}
+
+// Hàm tắt bộ lọc Khách hàng (Search)
+function clearCustomerFilter() {
+  globalFilters.search = ""; // Xóa dữ liệu khách hàng
+  var dashSearchInput = document.getElementById('dashSearchInput');
+  if (dashSearchInput) dashSearchInput.value = ""; // Xóa chữ trong ô tìm kiếm
+  
+  updateDashboardStats(); // Gọi lại hàm render biểu đồ / bảng
+}
 
   function openDashboardPreview(url, title) {
     var modal = document.getElementById('dashboardPreviewModal');
@@ -1019,15 +1038,17 @@
   }
 
   function resetDashFilters() {
-    globalFilters = { fye: 'FYE27', type: 'ALL', kpi: 'all', project: null, month: null, isNew: null, search: '', creator: '', status: 'ALL', dateFrom: '', dateTo: '' };
-    var dashFyeFilter = document.getElementById('dashFyeFilter');
-    if (dashFyeFilter) dashFyeFilter.value = 'FYE27';
+    // Trả tất cả về mặc định (Lưu ý fye phải là mảng)
+    globalFilters = { fye: ['FYE27'], type: 'ALL', kpi: 'all', project: null, month: null, isNew: null, search: '', creator: '', status: 'ALL', dateFrom: '', dateTo: '', progressStatus: null };
+    
     var dashMonthFilter = document.getElementById('dashMonthFilter');
     if (dashMonthFilter) dashMonthFilter.value = 'ALL';
+    
     ['dashSearchInput'].forEach(function (id) {
       var input = document.getElementById(id);
       if (input) input.value = '';
     });
+    
     var firstTypeButton = document.querySelector('#dashTypeBtnGroup .btn');
     setDashTypeFilter('ALL', firstTypeButton);
     setKpiFilter('all');
@@ -1038,10 +1059,14 @@
     globalFilters.month = null;
     globalFilters.isNew = null;
     globalFilters.search = '';
+    globalFilters.progressStatus = null; // Fix: Xóa luôn cả bộ lọc tiến độ
+    
     var searchInput = document.getElementById('dashSearchInput');
     if (searchInput) searchInput.value = '';
+    
     var dashMonthFilter = document.getElementById('dashMonthFilter');
     if (dashMonthFilter) dashMonthFilter.value = 'ALL';
+    
     requestDashboardRefresh();
   }
 
@@ -1100,10 +1125,10 @@
         case 'fye': return String(row[23] || '').trim() || computeFYE(row[6]);
         case 'date': return String(row[6] || '');
         case 'note': return String(row[22] || row[13] || '');
-        case 'pdfSample': return String(row[31] || '');
+        case 'pdfSample': return String(row[34] || row[31]||"");
         case 'estimatedCompletionDate': return String(row[7] || '');
         case 'completionDate': return String(row[16] || '');
-        case 'releaseDate': return String(row[34] || '');
+        case 'releaseDate': return String(row[30] || '');
         case 'ngDamTrach': return String(row[15] || '');
         case 'checker': return String(row[17] || '');
         case 'approve': return String(row[19] || '');
@@ -1125,10 +1150,10 @@
         case 'fye': return String(row.fye || row.FYE || row[23] || '').trim() || computeFYE(row.date || row.Date || row[6]);
         case 'date': return String(row.date || row.Date || row[6] || '');
         case 'note': return String(row.note || row.Note || row[22] || '');
-        case 'pdfSample': return String(row.pdfSample || row[31] || '');
+        case 'pdfSample': return String(row.pdfSample || row[34] || row[31] || '');
         case 'estimatedCompletionDate': return String(row.estimatedCompletionDate || row[7] || '');
         case 'completionDate': return String(row.completionDate || row[16] || '');
-        case 'releaseDate': return String(row.releaseDate || row[34] || '');
+        case 'releaseDate': return String(row.releaseDate || row[30] || '');
         case 'ngDamTrach': return String(row.ngDamTrach || row[15] || '');
         case 'checker': return String(row.checker || row[17] || '');
         case 'approve': return String(row.approve || row[19] || '');
@@ -1172,10 +1197,14 @@
     return true;
   }
 
-  function populateDashFyeOptions(rawData) {
-    var select = document.getElementById('dashFyeFilter');
-    if (!select) return;
-    var currentVal = globalFilters.fye || 'FYE27';
+ function populateDashFyeOptions(rawData) {
+    var listContainer = document.getElementById('dashFyeCheckboxList');
+    var btnLabel = document.getElementById('fyeDropdownBtn');
+    if (!listContainer || !btnLabel) return;
+    
+    // Lấy giá trị hiện tại (đảm bảo luôn là mảng)
+    var currentVals = Array.isArray(globalFilters.fye) ? globalFilters.fye : ['ALL'];
+    
     var fyeSet = new Set();
     rawData.forEach(function (row) {
       // Dùng cùng nguồn FYE với bộ lọc dữ liệu: cột X trước, ngày cột G làm fallback.
@@ -1194,13 +1223,38 @@
       }
     });
     var allFye = Array.from(fyeSet).sort((a, b) => parseInt(b.replace('FYE', '')) - parseInt(a.replace('FYE', '')));
-    var optionsHtml = '<option value="ALL">📅 Tất cả FYE</option>';
     if (!allFye.includes('FYE27')) allFye.unshift('FYE27');
-    allFye.forEach(f => { optionsHtml += `<option value="${f}">${f}</option>`; });
-    select.innerHTML = optionsHtml;
-    select.value = currentVal === 'ALL' || allFye.includes(currentVal) ? currentVal : 'FYE27';
-    globalFilters.fye = select.value;
+    
+    var html = '';
+    
+    // Khởi tạo Checkbox "Tất cả"
+    var isAllChecked = (currentVals.includes('ALL') || currentVals.length === 0) ? 'checked' : '';
+    html += '<li><div class="dropdown-item form-check ms-1 me-1 mb-1 rounded" style="transition: 0.2s;">';
+    html += '<input class="form-check-input fye-chk border-success cursor-pointer" type="checkbox" value="ALL" id="chkFyeAll" ' + isAllChecked + ' onchange="handleFyeCheckboxChange(this)">';
+    html += '<label class="form-check-label fw-bold w-100 cursor-pointer" for="chkFyeAll" style="font-size: 0.85rem;">Tất cả FYE</label>';
+    html += '</div></li><li><hr class="dropdown-divider"></li>';
+    
+    // Khởi tạo Checkbox cho từng năm
+    allFye.forEach(function(f) {
+      var isChecked = currentVals.includes(f) ? 'checked' : '';
+      html += '<li><div class="dropdown-item form-check ms-1 me-1 rounded" style="transition: 0.2s;">';
+      html += '<input class="form-check-input fye-chk border-secondary cursor-pointer" type="checkbox" value="' + f + '" id="chkFye_' + f + '" ' + isChecked + ' onchange="handleFyeCheckboxChange(this)">';
+      html += '<label class="form-check-label w-100 cursor-pointer text-dark fw-medium" for="chkFye_' + f + '" style="font-size: 0.85rem;">' + f + '</label>';
+      html += '</div></li>';
+    });
+    
+    listContainer.innerHTML = html;
+    
+    // Đổi chữ trên Nút nhấn cho phù hợp với số năm đang chọn
+    if (currentVals.includes('ALL') || currentVals.length === 0) {
+      btnLabel.innerHTML = 'Tất cả FYE';
+    } else if (currentVals.length === 1) {
+      btnLabel.innerHTML = currentVals[0];
+    } else {
+      btnLabel.innerHTML = currentVals[0] + ' (+' + (currentVals.length - 1) + ')';
+    }
   }
+
 
   function populateDashFilterOptions(rawData) {
     var projectList = document.getElementById('dashProjectOptions');
@@ -1252,7 +1306,7 @@
   // =========================================================
   // VẼ NHÃN BỘ LỌC (UI CHIPS)
   // =========================================================
-  function renderFilterChips() {
+ function renderFilterChips() {
     var container = document.getElementById('activeFiltersContainer');
     var chipsArea = document.getElementById('filterChipsArea');
     if (!container || !chipsArea) return;
@@ -1266,20 +1320,30 @@
       hasSubFilters = true;
     }
     if (globalFilters.project) {
-      html += '<span class="filter-chip f-project">Dự án: ' + globalFilters.project + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.project=null; globalFilters.search=\'\'; document.getElementById(\'dashSearchInput\').value=\'\'; requestDashboardRefresh()"></i></span>';
+      html += '<span class="filter-chip f-project">Dự án: ' + globalFilters.project + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.project=null; globalFilters.search=\'\'; var dsi=document.getElementById(\'dashSearchInput\'); if(dsi) dsi.value=\'\'; requestDashboardRefresh()"></i></span>';
       hasSubFilters = true;
     }
+    
+    // ĐÃ SỬA: Thêm code reset ô dashMonthFilter để tắt hẳn tháng
     if (globalFilters.month) {
-      html += '<span class="filter-chip f-month">Tháng: ' + globalFilters.month + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.month=null; requestDashboardRefresh()"></i></span>';
+      html += '<span class="filter-chip f-month">Tháng: ' + globalFilters.month + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.month=null; var dmf=document.getElementById(\'dashMonthFilter\'); if(dmf) dmf.value=\'ALL\'; requestDashboardRefresh()"></i></span>';
       hasSubFilters = true;
     }
+    if (globalFilters.progressStatus) {
+      var pLabel = globalFilters.progressStatus === 'completed' ? 'Hoàn thành' : (globalFilters.progressStatus === 'overdue' ? 'Tồn đọng' : 'Mới');
+      html += '<span class="filter-chip f-progress">Tiến độ: ' + pLabel + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.progressStatus=null; requestDashboardRefresh()"></i></span>';
+      hasSubFilters = true;
+    }
+    
     if (globalFilters.isNew !== null) {
       var label = globalFilters.isNew ? 'Thiết kế mới (NEW)' : 'Chỉnh sửa (REVISE)';
       html += '<span class="filter-chip f-type">Phân loại: ' + label + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.isNew=null; requestDashboardRefresh()"></i></span>';
       hasSubFilters = true;
     }
+    
+    // ĐÃ SỬA: Thêm nút X và code reset ô dashSearchInput cho Khách hàng/Tìm kiếm
     if (globalFilters.search) {
-      html += '<span class="filter-chip">Tìm kiếm: ' + globalFilters.search + '</span>';
+      html += '<span class="filter-chip">Khách hàng: ' + globalFilters.search + ' <i class="bi bi-x-circle-fill" onclick="globalFilters.search=\'\'; var dsi=document.getElementById(\'dashSearchInput\'); if(dsi) dsi.value=\'\'; requestDashboardRefresh()"></i></span>';
       hasSubFilters = true;
     }
 
@@ -1293,8 +1357,7 @@
     chipsArea.innerHTML = html;
     if (hasSubFilters) container.classList.remove('d-none');
     else container.classList.add('d-none');
-  }
-
+}
 
   // =========================================================
   // TRÁI TIM HỆ THỐNG: CẬP NHẬT MỌI THỨ THEO BỘ LỌC
@@ -1308,10 +1371,6 @@
     if (!rawData || rawData.length === 0) return;
     if (rawData.length > 0 && String(getRowValue(rawData[0], 'id')).toLowerCase() === 'id') rawData = rawData.slice(1);
 
-    var dashFyeFilter = document.getElementById('dashFyeFilter');
-    if (dashFyeFilter) {
-      globalFilters.fye = dashFyeFilter.value || 'ALL';
-    }
 
     var dashMonthFilter = document.getElementById('dashMonthFilter');
     if (dashMonthFilter) {
@@ -1321,9 +1380,16 @@
     var searchInput = document.getElementById('dashSearchInput');
     globalFilters.search = searchInput ? searchInput.value.trim().toLowerCase() : '';
 
-    var renderKey = [globalFilters.fye, globalFilters.type, globalFilters.kpi,
-    globalFilters.project || '', globalFilters.month || '', globalFilters.isNew, globalFilters.search,
-    globalFilters.search].join('|');
+    var renderKey = [
+      (globalFilters.fye || []).join(','),
+      globalFilters.type, 
+      globalFilters.kpi,
+      globalFilters.project || '', 
+      globalFilters.month || '', 
+      globalFilters.isNew, 
+      globalFilters.search,
+      globalFilters.progressStatus || '' // Ghi nhận bộ lọc tiến độ
+    ].join('|');
 
     if (lastDashboardDataRef === sourceData && lastDashboardRenderKey === renderKey) return;
     dashboardCurrentPage = 1;
@@ -1348,6 +1414,9 @@
     var customerCountsByMonth = {};
     var typeByMonthMap = { BARSALE: new Array(12).fill(0), OEM: new Array(12).fill(0), 'WE SASH': new Array(12).fill(0) };
     var fyeDistributionMap = {};
+    var fyeMonthCompleted = new Array(12).fill(0);
+    var fyeMonthOverdue = new Array(12).fill(0);
+    var fyeMonthOnTrack = new Array(12).fill(0);
 
     rawData.forEach(function (row) {
       var itemGroup = ((getRowValue(row, 'group') || '') + ' ' + (getRowValue(row, 'type') || '')).toUpperCase();
@@ -1366,14 +1435,39 @@
       }
       var baseIsNewRow = detectIsNewRow(row);
 
+      // --- TÍNH TOÁN TIẾN ĐỘ ĐỂ LỌC SỐ LIỆU CHO THẺ KPI ---
+      var pCompletionDate = getRowValue(row, 'completionDate') || '—';
+      var pEstimatedDate = getRowValue(row, 'estimatedCompletionDate') || '—';
+      var pHasCompleted = pCompletionDate !== '—' && pCompletionDate.trim() !== '';
+      var pIsOverdue = false;
+
+      if (!pHasCompleted && pEstimatedDate !== '—') {
+        var tmDate = parseDashboardDate(pEstimatedDate);
+        if (tmDate) {
+          var today = new Date(); today.setHours(0, 0, 0, 0);
+          var compDay = new Date(tmDate.getTime()); compDay.setHours(0, 0, 0, 0);
+          if (compDay < today) {
+            pIsOverdue = true;
+          }
+        }
+      }
+      // ----------------------------------------------------
+
       if (globalFilters.type === 'BARSALE' && !itemGroup.includes('BARSALE')) matchesBaseFilter = false;
       if (globalFilters.type === 'OEM' && !itemGroup.includes('OEM')) matchesBaseFilter = false;
       if (globalFilters.type === 'WE SASH' && (itemGroup.includes('BARSALE') || itemGroup.includes('OEM'))) matchesBaseFilter = false;
-      if (globalFilters.fye !== 'ALL' && itemFye !== globalFilters.fye) matchesBaseFilter = false;
+      if (!globalFilters.fye.includes('ALL') && !globalFilters.fye.includes(itemFye)) matchesBaseFilter = false;
       if (globalFilters.search && !searchText.includes(globalFilters.search)) matchesBaseFilter = false;
       if (globalFilters.project && getRowValue(row, 'project').trim() !== globalFilters.project) matchesBaseFilter = false;
       if (globalFilters.month && baseMonthLabel !== globalFilters.month) matchesBaseFilter = false;
       if (globalFilters.isNew !== null && baseIsNewRow !== globalFilters.isNew) matchesBaseFilter = false;
+
+      // --- ÁP DỤNG BỘ LỌC TIẾN ĐỘ VÀO DATA GỐC ĐỂ KPI TỰ NHẢY ---
+      if (globalFilters.progressStatus === 'completed' && !pHasCompleted) matchesBaseFilter = false;
+      if (globalFilters.progressStatus === 'overdue' && !pIsOverdue) matchesBaseFilter = false;
+      if (globalFilters.progressStatus === 'new' && (pHasCompleted || pIsOverdue)) matchesBaseFilter = false;
+      // ----------------------------------------------------------
+
       if (!matchesBaseFilter) return;
 
       total += 1;
@@ -1427,7 +1521,38 @@
       var monthLabel = (monthIdx >= 0 && monthIdx <= 11) ? fyeMonthLabels[monthIdx] : null;
       var matchesKpiFilter = true;
 
+<<<<<<< HEAD
       if (globalFilters.kpi === 'design' && !(status.includes('trả về charger') || status.includes('trả lại charge') || status.includes('đang thực hiện'))) matchesKpiFilter = false;
+=======
+
+      // --- THÊM KHỐI TÍNH TOÁN VÀ KIỂM TRA TIẾN ĐỘ ---
+      var completionDate = getRowValue(row, 'completionDate') || '—';
+      var estimatedCompletionDate = getRowValue(row, 'estimatedCompletionDate') || '—';
+      
+      var hasCompletedDate = completionDate !== '—' && completionDate.trim() !== '';
+      var isOverdue = false;
+
+      if (!hasCompletedDate && estimatedCompletionDate !== '—') {
+        var tmDate = parseDashboardDate(estimatedCompletionDate);
+        if (tmDate) {
+          var today = new Date();
+          today.setHours(0, 0, 0, 0);
+          var compDay = new Date(tmDate.getTime());
+          compDay.setHours(0, 0, 0, 0);
+          if (compDay < today) {
+            isOverdue = true;
+          }
+        }
+      }
+
+      // Áp dụng bộ lọc Tiến độ
+      if (globalFilters.progressStatus === 'completed' && !hasCompletedDate) matchesKpiFilter = false;
+      if (globalFilters.progressStatus === 'overdue' && !isOverdue) matchesKpiFilter = false;
+      if (globalFilters.progressStatus === 'new' && (hasCompletedDate || isOverdue)) matchesKpiFilter = false;
+      // ----------------------------------------------
+
+      if (globalFilters.kpi === 'design' && !(status.includes('trả về charger') || status.includes('đang thực hiện'))) matchesKpiFilter = false;
+>>>>>>> fa18b05e36a7f34dc8fe93b493db01769d895d9e
       if (globalFilters.kpi === 'sign' && !(status.includes('chờ checker') || status.includes('chờ approval'))) matchesKpiFilter = false;
       if (globalFilters.kpi === 'released' && !(status.includes('đã ban hành'))) matchesKpiFilter = false;
       if (globalFilters.kpi === 'release' && !(status.includes('chờ ban hành') || status.includes('ban hành thất bại'))) matchesKpiFilter = false;
@@ -1441,9 +1566,51 @@
       finalData.push(row);
 
       if (currentFye) {
-        if (!fyeDistributionMap[currentFye]) fyeDistributionMap[currentFye] = { newCount: 0, reviseCount: 0 };
-        if (isNewRow) fyeDistributionMap[currentFye].newCount += 1;
-        else fyeDistributionMap[currentFye].reviseCount += 1;
+        // Lấy ngày tháng để kiểm tra tiến độ
+        var completionDate = getRowValue(row, 'completionDate') || '—';
+        var estimatedCompletionDate = getRowValue(row, 'estimatedCompletionDate') || '—';
+        
+        var hasCompletedDate = completionDate !== '—' && completionDate.trim() !== '';
+        var isOverdue = false;
+
+        // Nếu chưa hoàn thành và có ngày dự kiến, kiểm tra xem đã trễ hạn chưa
+        if (!hasCompletedDate && estimatedCompletionDate !== '—') {
+          var tmDate = parseDashboardDate(estimatedCompletionDate);
+          if (tmDate) {
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            var compDay = new Date(tmDate.getTime());
+            compDay.setHours(0, 0, 0, 0);
+            if (compDay < today) {
+              isOverdue = true;
+            }
+          }
+        }
+
+        // Khối này đi liền với phần khai báo hasCompletedDate và isOverdue của bạn
+      if (monthIdx >= 0 && monthIdx <= 11) {
+        if (hasCompletedDate) {
+          fyeMonthCompleted[monthIdx] += 1;
+        } else if (isOverdue) {
+          fyeMonthOverdue[monthIdx] += 1;
+        } else {
+          fyeMonthOnTrack[monthIdx] += 1;
+        }
+      }
+
+        // Khởi tạo cấu trúc đếm mới
+        if (!fyeDistributionMap[currentFye]) {
+          fyeDistributionMap[currentFye] = { completed: 0, overdue: 0, onTrack: 0 };
+        }
+
+        // Phân loại: Hoàn thành, Tồn đọng (quá hạn), Mới (chưa quá hạn)
+        if (hasCompletedDate) {
+          fyeDistributionMap[currentFye].completed += 1;
+        } else if (isOverdue) {
+          fyeDistributionMap[currentFye].overdue += 1;
+        } else {
+          fyeDistributionMap[currentFye].onTrack += 1;
+        }
       }
 
       if (monthIdx >= 0 && monthIdx <= 11) {
@@ -1456,7 +1623,8 @@
 
     var rowChartFye = document.getElementById('rowChartTotalFye');
     if (rowChartFye) {
-      if (globalFilters.fye === 'ALL') {
+      // Hiện biểu đồ so sánh nếu chọn Tất cả HOẶC chọn từ 2 năm trở lên
+      if (globalFilters.fye.includes('ALL') || globalFilters.fye.length > 1) {
         rowChartFye.classList.remove('d-none');
         renderFyeChart(fyeDistributionMap);
       } else {
@@ -1466,11 +1634,11 @@
 
     var rowChartFyePie = document.getElementById('rowChartFyePie');
     if (rowChartFyePie) {
-      if (globalFilters.fye !== 'ALL') {
+      // CHỈ hiện biểu đồ 12 tháng nếu chọn duy nhất 1 năm cụ thể
+      if (!globalFilters.fye.includes('ALL') && globalFilters.fye.length === 1) {
         rowChartFyePie.classList.remove('d-none');
-        // "Chưa ban hành" = chờ thiết kế + chờ ký duyệt + chờ ban hành
-        var chuaBanHanh = pendingDesign + pendingApprove + release;
-        renderFyePieChart(total, chuaBanHanh, released, globalFilters.fye);
+        // Truyền năm đầu tiên trong mảng vào hàm
+        renderFyePieChart(fyeMonthCompleted, fyeMonthOverdue, fyeMonthOnTrack, globalFilters.fye[0], fyeMonthLabels);
       } else {
         rowChartFyePie.classList.add('d-none');
       }
@@ -1498,25 +1666,44 @@
     if (typeof Chart === 'undefined') return;
     var ctx = document.getElementById('chartTotalByFye').getContext('2d');
 
+    // Sắp xếp nhãn FYE
     var labels = Object.keys(fyeDataMap).sort((a, b) => parseInt(a.replace('FYE', '')) - parseInt(b.replace('FYE', '')));
-    var newData = labels.map(l => fyeDataMap[l].newCount);
-    var reviseData = labels.map(l => fyeDataMap[l].reviseCount);
+    
+    // Tách 3 luồng dữ liệu
+    var completedData = labels.map(l => fyeDataMap[l].completed || 0);
+    var overdueData = labels.map(l => fyeDataMap[l].overdue || 0);
+    var onTrackData = labels.map(l => fyeDataMap[l].onTrack || 0);
 
+    // Update biểu đồ nếu đã tồn tại
     if (dashChartTotalFyeInstance) {
       dashChartTotalFyeInstance.data.labels = labels;
-      dashChartTotalFyeInstance.data.datasets[0].data = newData;
-      dashChartTotalFyeInstance.data.datasets[1].data = reviseData;
+      
+      // Nếu biểu đồ cũ chỉ có 2 dataset, ta cần cập nhật toàn bộ mảng datasets
+      if (dashChartTotalFyeInstance.data.datasets.length === 2) {
+         dashChartTotalFyeInstance.data.datasets = [
+          { label: 'Hoàn thành', data: completedData, backgroundColor: '#10b981', borderRadius: 4 },
+          { label: 'Tồn đọng', data: overdueData, backgroundColor: '#ef4444', borderRadius: 4 },
+          { label: 'Mới', data: onTrackData, backgroundColor: '#3b82f6', borderRadius: 4 }
+        ];
+      } else {
+        dashChartTotalFyeInstance.data.datasets[0].data = completedData;
+        dashChartTotalFyeInstance.data.datasets[1].data = overdueData;
+        dashChartTotalFyeInstance.data.datasets[2].data = onTrackData;
+      }
+      
       dashChartTotalFyeInstance.update('none');
       return;
     }
 
+    // Khởi tạo biểu đồ mới
     dashChartTotalFyeInstance = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: labels,
         datasets: [
-          { label: 'Thiết kế mới (NEW)', data: newData, backgroundColor: '#3b82f6', borderRadius: 4 },
-          { label: 'Chỉnh sửa (REVISE)', data: reviseData, backgroundColor: '#6366f1', borderRadius: 4 }
+          { label: 'Hoàn thành', data: completedData, backgroundColor: '#10b981', borderRadius: 4 }, // Xanh lá
+          { label: 'Tồn đọng', data: overdueData, backgroundColor: '#ef4444', borderRadius: 4 }, // Đỏ
+          { label: 'Mới', data: onTrackData, backgroundColor: '#3b82f6', borderRadius: 4 } // Xanh dương
         ]
       },
       options: {
@@ -1527,151 +1714,224 @@
         scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
         onClick: function (e, elements, chart) {
           if (elements.length > 0) {
-            // Khi click vào năm nào, đổi phễu lọc chính sang năm đó
-            globalFilters.fye = chart.data.labels[elements[0].index];
-            document.getElementById('dashFyeFilter').value = globalFilters.fye;
-            updateDashboardStats();
+            var dsIdx = elements[0].datasetIndex;
+            // dsIdx 0 = Hoàn thành, 1 = Tồn đọng, 2 = Mới
+            if (dsIdx === 0) globalFilters.progressStatus = 'completed';
+            else if (dsIdx === 1) globalFilters.progressStatus = 'overdue';
+            else if (dsIdx === 2) globalFilters.progressStatus = 'new';
+            
+            updateDashboardStats(); // Refresh lại dữ liệu
           }
         }
       }
     });
   }
 
-  function renderFyePieChart(total, pendingDesign, released, fyeYear) {
+
+  function renderFyePieChart(completedData, overdueData, onTrackData, year, labels) {
     if (typeof Chart === 'undefined') return;
 
     var canvas = document.getElementById('chartFyePie');
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
 
-    var year = fyeYear || '';
-
-    // Cập nhật text tiêu đề & badge FYE
+    // Cập nhật text tiêu đề & badge hiển thị FYE hiện tại
     var titleYearEl = document.getElementById('fyePieTitleYear');
     if (titleYearEl) titleYearEl.textContent = year;
     var badgeFye = document.getElementById('badgeFyeSelected');
     if (badgeFye) badgeFye.textContent = year || 'FYE';
 
-    var safeTotal = Number(total) || 0;
-    var safeDesign = Number(pendingDesign) || 0;
-    var safeReleased = Number(released) || 0;
-    var sumTwo = safeDesign + safeReleased;
-
-    var pctDesign = sumTwo > 0 ? Math.round((safeDesign / sumTwo) * 100) : 0;
-    var pctReleased = sumTwo > 0 ? (100 - pctDesign) : 0;
-
-    // Cập nhật thẻ thông tin và thanh tỷ lệ
-    var elTotal = document.getElementById('fyePieTotalCount');
-    var centerTotal = document.getElementById('chartFyePieCenterCount');
-    var elDesign = document.getElementById('fyePieDesignCount');
-    var elDesignPct = document.getElementById('fyePieDesignPercent');
-    var elReleased = document.getElementById('fyePieReleasedCount');
-    var elReleasedPct = document.getElementById('fyePieReleasedPercent');
-    var elRateText = document.getElementById('fyePieRateText');
-    var elRatioDesign = document.getElementById('fyeRatioDesignText');
-    var elRatioReleased = document.getElementById('fyeRatioReleasedText');
-    var barDesign = document.getElementById('fyeProgressDesign');
-    var barReleased = document.getElementById('fyeProgressReleased');
-
-    if (elTotal) elTotal.textContent = safeTotal.toLocaleString();
-    if (centerTotal) centerTotal.textContent = safeTotal.toLocaleString();
-    if (elDesign) elDesign.textContent = safeDesign.toLocaleString();
-    if (elDesignPct) elDesignPct.textContent = pctDesign + '%';
-    if (elReleased) elReleased.textContent = safeReleased.toLocaleString();
-    if (elReleasedPct) elReleasedPct.textContent = pctReleased + '%';
-    if (elRateText) elRateText.textContent = pctReleased + '%';
-    if (elRatioDesign) elRatioDesign.textContent = pctDesign + '% (' + safeDesign.toLocaleString() + ')';
-    if (elRatioReleased) elRatioReleased.textContent = pctReleased + '% (' + safeReleased.toLocaleString() + ')';
-
-    if (barDesign) barDesign.style.width = pctDesign + '%';
-    if (barReleased) barReleased.style.width = pctReleased + '%';
-
-    // Dữ liệu cho Pie / Doughnut: CHỈ 2 TRẠNG THÁI (Đang được thiết kế & Đã ban hành)
-    var labels = [];
-    var data = [];
-    var bgColors = [];
-    var hoverColors = [];
-
-    if (sumTwo === 0) {
-      labels = ['Chưa có dữ liệu'];
-      data = [1];
-      bgColors = ['#e2e8f0'];
-      hoverColors = ['#cbd5e1'];
-    } else {
-      labels.push('Chưa ban hành');
-      data.push(safeDesign);
-      bgColors.push('#f59e0b');
-      hoverColors.push('#d97706');
-
-      labels.push('Đã ban hành');
-      data.push(safeReleased);
-      bgColors.push('#10b981');
-      hoverColors.push('#059669');
-    }
-
+    // Xóa biểu đồ cũ nếu nó đang là biểu đồ tròn (Doughnut) từ lần render trước
     if (dashChartFyePieInstance) {
-      dashChartFyePieInstance.data.labels = labels;
-      dashChartFyePieInstance.data.datasets[0].data = data;
-      dashChartFyePieInstance.data.datasets[0].backgroundColor = bgColors;
-      dashChartFyePieInstance.data.datasets[0].hoverBackgroundColor = hoverColors;
-      dashChartFyePieInstance.update('none');
-      return;
+      if (dashChartFyePieInstance.config.type !== 'bar') {
+        dashChartFyePieInstance.destroy();
+        dashChartFyePieInstance = null;
+      } else {
+        dashChartFyePieInstance.data.labels = labels;
+        dashChartFyePieInstance.data.datasets[0].data = completedData;
+        dashChartFyePieInstance.data.datasets[1].data = overdueData;
+        dashChartFyePieInstance.data.datasets[2].data = onTrackData;
+        dashChartFyePieInstance.update('none');
+        return;
+      }
     }
 
     dashChartFyePieInstance = new Chart(ctx, {
-      type: 'doughnut',
+      type: 'bar',
       data: {
-        labels: labels,
-        datasets: [{
-          data: data,
-          backgroundColor: bgColors,
-          hoverBackgroundColor: hoverColors,
-          borderWidth: 3,
-          borderColor: '#ffffff',
-          hoverOffset: 6
-        }]
+        labels: labels, // Nhãn 12 tháng từ T4 tới T3
+        datasets: [
+          { label: 'Hoàn thành', data: completedData, backgroundColor: '#10b981', borderRadius: 4 }, // Xanh lá
+          { label: 'Tồn đọng', data: overdueData, backgroundColor: '#ef4444', borderRadius: 4 }, // Đỏ
+          { label: 'Mới', data: onTrackData, backgroundColor: '#3b82f6', borderRadius: 4 } // Xanh dương
+        ]
       },
       options: {
         ...chartInteractionOptions,
         animation: false,
         responsive: true,
         maintainAspectRatio: false,
-        cutout: '70%',
         plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: '#1e293b',
-            titleFont: { family: 'Inter', size: 13, weight: 'bold' },
-            bodyFont: { family: 'Inter', size: 12 },
-            padding: 12,
-            cornerRadius: 8,
-            callbacks: {
-              label: function (context) {
-                if (sumTwo === 0) return 'Chưa có bản vẽ';
-                var val = context.raw || 0;
-                var pct = Math.round((val / sumTwo) * 100);
-                return ' ' + context.label + ': ' + val.toLocaleString() + ' bản vẽ (' + pct + '%)';
-              }
-            }
-          }
+          legend: { position: 'top' },
+          tooltip: commonTooltip // Dùng chung format tooltip với các biểu đồ khác
+        },
+        scales: { 
+          y: { stacked: true, grid: { color: '#f1f5f9' } }, 
+          x: { stacked: true, grid: { display: false } } 
         },
         onClick: function (e, elements, chart) {
           if (elements.length > 0) {
-            var label = chart.data.labels[elements[0].index];
-            if (label.indexOf('Chưa') !== -1) {
-              setKpiFilter(globalFilters.kpi === 'design' ? 'all' : 'design');
-            } else if (label.indexOf('Đã ban hành') !== -1) {
-              setKpiFilter(globalFilters.kpi === 'released' ? 'all' : 'released');
-            }
+            var dsIdx = elements[0].datasetIndex;
+            // dsIdx 0 = Hoàn thành, 1 = Tồn đọng, 2 = Mới
+            if (dsIdx === 0) globalFilters.progressStatus = 'completed';
+            else if (dsIdx === 1) globalFilters.progressStatus = 'overdue';
+            else if (dsIdx === 2) globalFilters.progressStatus = 'new';
+            
+            updateDashboardStats(); // Refresh lại dữ liệu
           }
         }
       }
     });
   }
 
+
   var dashChart3Instance = null;
+
+
+  // ==========================================
+  // CUSTOM HTML TOOLTIP CHO BIỂU ĐỒ KHÁCH HÀNG
+  // ==========================================
+  let hideChart1TooltipTimeout = null;
+
+  // Hàm được gọi khi click vào 1 khách hàng trên Tooltip
+  // Hàm được gọi khi click vào 1 khách hàng trên Tooltip
+  window.filterFromCustomTooltip = function(customer, month) {
+    // 1. CHỈ Gán filter tìm kiếm theo tên khách hàng (BỎ lọc tháng)
+    globalFilters.search = customer.toLowerCase();
+    var searchInput = document.getElementById('dashSearchInput');
+    if (searchInput) searchInput.value = customer;
+
+    // 2. Cập nhật giao diện
+    updateDashboardStats();
+
+    // 3. Ẩn Tooltip sau khi click
+    var tooltipEl = document.getElementById('chartCustomerTooltip');
+    if (tooltipEl) {
+      tooltipEl.style.opacity = 0;
+      tooltipEl.style.pointerEvents = 'none';
+    }
+  };
+
+  // Hàm vẽ Tooltip bằng HTML cho Chart.js
+  function externalCustomerTooltipHandler(context) {
+    const { chart, tooltip } = context;
+    let tooltipEl = document.getElementById('chartCustomerTooltip');
+
+    // Khởi tạo khung Tooltip nếu chưa có
+    if (!tooltipEl) {
+      tooltipEl = document.createElement('div');
+      tooltipEl.id = 'chartCustomerTooltip';
+      tooltipEl.style.background = 'rgba(255, 255, 255, 0.95)';
+      tooltipEl.style.backdropFilter = 'blur(12px)';
+      tooltipEl.style.borderRadius = '12px';
+      tooltipEl.style.boxShadow = '0 8px 32px rgba(0,0,0,0.12)';
+      tooltipEl.style.border = '1px solid rgba(16, 185, 129, 0.3)';
+      tooltipEl.style.pointerEvents = 'none'; // Mặc định không bắt click
+      tooltipEl.style.position = 'absolute';
+      tooltipEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+      tooltipEl.style.zIndex = '9999';
+      tooltipEl.style.opacity = 0;
+      tooltipEl.style.transform = 'translate(-50%, 10px)';
+
+      // Giữ Tooltip sống khi rê chuột vào
+      tooltipEl.addEventListener('mouseenter', function() {
+        clearTimeout(hideChart1TooltipTimeout);
+        tooltipEl.style.opacity = 1;
+        tooltipEl.style.pointerEvents = 'auto'; // Mở khóa click
+      });
+      // Ẩn khi chuột rời khỏi Tooltip
+      tooltipEl.addEventListener('mouseleave', function() {
+        tooltipEl.style.opacity = 0;
+        tooltipEl.style.pointerEvents = 'none';
+        tooltipEl.style.transform = 'translate(-50%, 10px)';
+      });
+
+      document.body.appendChild(tooltipEl);
+    }
+
+    // Xử lý Ẩn Tooltip với độ trễ 300ms (để người dùng kịp rê chuột vào)
+    if (tooltip.opacity === 0) {
+      hideChart1TooltipTimeout = setTimeout(function() {
+        tooltipEl.style.opacity = 0;
+        tooltipEl.style.pointerEvents = 'none';
+        tooltipEl.style.transform = 'translate(-50%, 10px)';
+      }, 300);
+      return;
+    }
+
+    clearTimeout(hideChart1TooltipTimeout);
+    tooltipEl.style.opacity = 1;
+    tooltipEl.style.pointerEvents = 'auto';
+    tooltipEl.style.transform = 'translate(-50%, 0)';
+
+    // Đổ dữ liệu vào Tooltip
+    if (tooltip.body) {
+      const titleLines = tooltip.title || [];
+      const bodyLines = tooltip.dataPoints;
+
+      let innerHtml = '<div style="padding: 12px; min-width: 200px;">';
+      innerHtml += '<div style="font-weight: 700; color: #0f172a; margin-bottom: 8px; font-size: 0.85rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px;">';
+      innerHtml += '<i class="bi bi-calendar-event me-1 text-success"></i> Tháng ' + titleLines[0];
+      innerHtml += '</div>';
+      // Khung chứa danh sách có thể cuộn nếu quá dài
+      innerHtml += '<div class="custom-scrollbar" style="max-height: 240px; overflow-y: auto; overflow-x: hidden; padding-right: 4px;">';
+
+      let hasData = false;
+      
+      // Sắp xếp từ lớn xuống bé (tùy chọn)
+      let sortedBodyLines = [...bodyLines].sort((a, b) => b.raw - a.raw);
+
+      // Render từng khách hàng có dữ liệu (>0)
+      sortedBodyLines.forEach(function(bodyItem) {
+        const val = bodyItem.raw;
+        if (val > 0) {
+          hasData = true;
+          // Tìm màu tương ứng
+          const originalIndex = bodyLines.indexOf(bodyItem);
+          const colors = tooltip.labelColors[originalIndex];
+          const custName = bodyItem.dataset.label;
+
+          // Thiết kế từng dòng thành 1 nút bấm (Clickable)
+          innerHtml += '<div onclick="filterFromCustomTooltip(\'' + custName + '\', \'' + titleLines[0] + '\')" ';
+          innerHtml += 'style="display: flex; align-items: center; justify-content: space-between; padding: 7px 8px; cursor: pointer; border-radius: 6px; margin-bottom: 4px; transition: 0.2s;" ';
+          innerHtml += 'onmouseover="this.style.background=\'rgba(16, 185, 129, 0.1)\'" onmouseout="this.style.background=\'transparent\'">';
+          
+          innerHtml += '<div style="display: flex; align-items: center; gap: 8px;">';
+          innerHtml += '<span style="background: ' + colors.backgroundColor + '; border-radius: 4px; width: 12px; height: 12px; display: inline-block;"></span>';
+          innerHtml += '<span style="font-size: 0.8rem; font-weight: 600; color: #334155;">' + custName + '</span>';
+          innerHtml += '</div>';
+          innerHtml += '<span style="font-size: 0.82rem; font-weight: 700; color: #0f172a;">' + val + '</span>';
+          
+          innerHtml += '</div>';
+        }
+      });
+
+      if (!hasData) {
+         innerHtml += '<div style="font-size: 0.8rem; color: #64748b; padding: 8px 0; text-align: center;">Không có dữ liệu</div>';
+      }
+
+      innerHtml += '</div></div>';
+      tooltipEl.innerHTML = innerHtml;
+    }
+
+    // Tính toán tọa độ hiển thị Tooltip (Đặt ngay sát trỏ chuột để dễ di chuyển xuống)
+    const position = chart.canvas.getBoundingClientRect();
+    let leftPos = position.left + window.scrollX + tooltip.caretX;
+    if (leftPos + 100 > window.innerWidth) leftPos = window.innerWidth - 120; // Chống tràn màn hình
+    
+    tooltipEl.style.left = leftPos + 'px';
+    tooltipEl.style.top = position.top + window.scrollY + tooltip.caretY + 15 + 'px';
+  }
 
   function renderDashCharts(customerCountsByMonth, newCountsByMonth, reviseCountsByMonth, fyeMonthLabels, typeByMonthMap) {
     if (typeof Chart === 'undefined') return;
@@ -1689,8 +1949,13 @@
     if (dashChart1Instance) {
       dashChart1Instance.data.labels = fyeMonthLabels;
       dashChart1Instance.data.datasets = customerDatasets;
-      if (dashChart1Instance.options && dashChart1Instance.options.plugins && dashChart1Instance.options.plugins.legend) {
+      if (dashChart1Instance.options && dashChart1Instance.options.plugins) {
         dashChart1Instance.options.plugins.legend.display = false;
+        // Bật Custom Tooltip khi cập nhật lại chart
+        dashChart1Instance.options.plugins.tooltip = {
+           enabled: false, 
+           external: externalCustomerTooltipHandler 
+        };
       }
       dashChart1Instance.update('none');
     }
@@ -1704,22 +1969,26 @@
         responsive: true, maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: false // Bỏ hoàn toàn các mục chọn khách hàng
+            display: false
           },
-          tooltip: commonTooltip
+          tooltip: {
+            enabled: false, // Tắt Tooltip đen mặc định
+            external: externalCustomerTooltipHandler // Bật bảng Tooltip HTML tùy chỉnh mới viết
+          }
         },
         scales: { y: { stacked: true, grid: { color: '#f1f5f9' } }, x: { stacked: true, grid: { display: false } } },
         onClick: function (e, elements, chart) {
+          // Vẫn giữ lại tính năng nhấp trực tiếp vào thanh cột làm dự phòng
           if (elements.length > 0) {
-            globalFilters.month = chart.data.labels[elements[0].index];
-            var dashMonthFilter = document.getElementById('dashMonthFilter');
-            if (dashMonthFilter) dashMonthFilter.value = globalFilters.month;
-
+            // Lấy tên khách hàng từ dataset được click
             var custName = chart.data.datasets[elements[0].datasetIndex].label;
+            
+            // Gán giá trị vào ô tìm kiếm và lọc
             var searchInput = document.getElementById('dashSearchInput');
             globalFilters.search = custName.toLowerCase();
             if (searchInput) searchInput.value = custName;
-            updateDashboardStats(); // Gọi lại để lọc toàn bộ màn hình
+            
+            updateDashboardStats();
           }
         }
       }
@@ -1862,7 +2131,7 @@
       var checker2 = checkerList[1] || '';
 
       var pdf = (pdflink && String(pdflink).includes('http'))
-        ? '<button type="button" data-drawing-preview data-preview-url="' + String(pdflink).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" data-preview-title="' + String(dwNo).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" class="btn btn-sm btn-outline-danger border-0 py-1 px-2" title="Xem trước bản vẽ PDF"><i class="bi bi-file-earmark-pdf-fill fs-5"></i></button>'
+        ? '<a href="' + String(pdflink).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-danger border-0 py-1 px-2" title="Mở bản vẽ PDF ở tab mới"><i class="bi bi-file-earmark-pdf-fill fs-5"></i></a>'
         : '<span class="text-muted small"><i class="bi bi-dash"></i></span>';
 
       var signHtml = '<div class="mt-2 pt-2 border-top border-secondary border-opacity-25 text-start w-100" style="font-size: 0.75rem; line-height: 1.4;">';
