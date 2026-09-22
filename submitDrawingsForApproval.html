@@ -1304,8 +1304,8 @@
         showCancelButton: true,
         confirmButtonColor: '#10b981',
         cancelButtonColor: '#94a3b8',
-        confirmButtonText: 'Đồng ý, Đóng dấu & Ký!',
-        cancelButtonText: 'Hủy'
+        confirmButtonText: 'Approval',
+        cancelButtonText: 'Cancel'
       }).then(r => { if (r.isConfirmed) doIt(); });
     } else {
       if (confirm(`Xác nhận Ký duyệt ${level} cho ${dwNo}?`)) doIt();

@@ -957,7 +957,7 @@
          <td>${to}</td>
          <td class="fw-bold text-dark">
            ${dwNo}
-           ${isRejected ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 10px;">Bị trả lại</span>` : ''}
+           ${isRejected ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1" style="font-size: 10px;">Bị trả lại</span> ` : ''}
            ${isRejected && rejectReason ? `<div class="text-danger mt-1" style="font-size: 11px; font-weight: 400;"><i class="bi bi-chat-left-text me-1"></i>${rejectReason.substring(0, 120)}${rejectReason.length > 120 ? '...' : ''}</div>` : ''}
          </td>
          <td class="text-center">${ver}</td>
